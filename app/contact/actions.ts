@@ -15,10 +15,6 @@ export type ContactFormState = {
   fieldErrors?: Partial<Record<string, string>>;
 };
 
-export const CONTACT_FORM_INITIAL_STATE: ContactFormState = {
-  status: "idle",
-};
-
 function extractFieldErrors(error: unknown): Partial<Record<string, string>> {
   if (typeof error !== "object" || !error) {
     return {};

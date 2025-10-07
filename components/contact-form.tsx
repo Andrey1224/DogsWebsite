@@ -4,15 +4,16 @@ import { useActionState, useCallback, useEffect, useId, useRef, useState } from 
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { usePathname } from "next/navigation";
 
-import {
-  CONTACT_FORM_INITIAL_STATE,
-  submitContactInquiry,
-  type ContactFormState,
-} from "@/app/contact/actions";
+import { submitContactInquiry } from "@/app/contact/actions";
+import type { ContactFormState } from "@/app/contact/actions";
 import { useAnalytics } from "@/components/analytics-provider";
 
 const HC_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 const HC_BYPASS_TOKEN = process.env.NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN;
+
+const CONTACT_FORM_INITIAL_STATE: ContactFormState = {
+  status: "idle",
+};
 
 type ContactFormProps = {
   heading?: {
