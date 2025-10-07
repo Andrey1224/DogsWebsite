@@ -8,7 +8,12 @@ Sprint 0 stands up the Next.js 15 developer environment for the Exotic Bulldog L
 - Optional: Playwright browsers (`npx playwright install`)
 
 ## Setup
-1. Copy `.env.example` to `.env.local` and supply Supabase, payments, Crisp, and analytics keys when they are issued.
+1. Copy `.env.example` to `.env.local` and populate the following keys:
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE`
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+   - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV`
+   - `NEXT_PUBLIC_CRISP_WEBSITE_ID`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `META_PIXEL_ID`
+   - `NEXT_PUBLIC_SITE_URL` (matches the deployment base URL)
 2. Install dependencies:
    ```bash
    npm install
