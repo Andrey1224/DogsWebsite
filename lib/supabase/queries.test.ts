@@ -15,13 +15,13 @@ const basePuppy = {
   status: "available",
   weight_oz: 38,
   description: "",
-  photo_urls: [],
-  video_urls: [],
+  photo_urls: [] as string[],
+  video_urls: [] as string[],
   paypal_enabled: true,
   stripe_payment_link: null,
   created_at: "",
   updated_at: "",
-} as const;
+};
 
 const puppies: PuppyWithRelations[] = [
   {

@@ -36,8 +36,13 @@ export function CrispChat() {
     loadedRef.current = true;
 
     type CrispCommand = [string, ...unknown[]];
-    const queue: CrispCommand[] = Array.isArray(window.$crisp) ? window.$crisp : [];
-    window.$crisp = queue;
+    type CrispCommand = [string, ...unknown[]];
+    const crispQueue: CrispCommand[] = Array.isArray(window.$crisp) ? window.$crisp : [];
+    window.$crisp = crispQueue;
+
+    const pushCommand = (...command: CrispCommand) => {
+      window.$crisp?.push(command);
+    };
     window.CRISP_WEBSITE_ID = CRISP_WEBSITE_ID;
 
     const script = injectScript();
@@ -46,7 +51,7 @@ export function CrispChat() {
     const offlineMessage = CONTACT_COPY.crisp.offline;
 
     const sessionHandler = () => {
-      window.$crisp.push(["do", "message:show", ["text", welcomeMessage]]);
+      pushCommand("do", "message:show", ["text", welcomeMessage]);
       window.dispatchEvent(new CustomEvent("crisp:session", { detail: { status: "ready" } }));
     };
 
@@ -56,7 +61,7 @@ export function CrispChat() {
         availabilityNotifiedRef.current = true;
         if (offlineMessage) {
           const message = WHATSAPP_LINK ? `${offlineMessage} ${WHATSAPP_LINK}` : offlineMessage;
-          window.$crisp.push(["do", "message:show", ["text", message]]);
+          pushCommand("do", "message:show", ["text", message]);
         }
       }
     };
@@ -67,14 +72,14 @@ export function CrispChat() {
       });
     };
 
-    window.$crisp.push(["on", "session:loaded", sessionHandler]);
-    window.$crisp.push(["on", "website:availability:changed", availabilityHandler]);
-    window.$crisp.push(["on", "chat:opened", chatOpenedHandler]);
+    pushCommand("on", "session:loaded", sessionHandler);
+    pushCommand("on", "website:availability:changed", availabilityHandler);
+    pushCommand("on", "chat:opened", chatOpenedHandler);
 
     return () => {
-      window.$crisp.push(["off", "session:loaded", sessionHandler]);
-      window.$crisp.push(["off", "website:availability:changed", availabilityHandler]);
-      window.$crisp.push(["off", "chat:opened", chatOpenedHandler]);
+      pushCommand("off", "session:loaded", sessionHandler);
+      pushCommand("off", "website:availability:changed", availabilityHandler);
+      pushCommand("off", "chat:opened", chatOpenedHandler);
       script.remove();
     };
   }, [pathname, trackEvent]);

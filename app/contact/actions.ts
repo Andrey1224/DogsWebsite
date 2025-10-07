@@ -45,7 +45,9 @@ function asString(value: FormDataEntryValue | null): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function getClientIp(headerList: Headers): string | null {
+type HeaderLike = Awaited<ReturnType<typeof headers>>;
+
+function getClientIp(headerList: HeaderLike): string | null {
   const forwarded = headerList.get("x-forwarded-for");
   if (!forwarded) return null;
   const first = forwarded.split(",")[0]?.trim();
@@ -78,7 +80,7 @@ export async function submitContactInquiry(
   }
 
   const submission = parsed.data;
-  const headerList = headers();
+  const headerList = await headers();
   const clientIp = getClientIp(headerList);
   const rateLimitResult = await checkInquiryRateLimit({
     email: submission.email,

@@ -6,15 +6,16 @@ const uuidRegex =
 
 export const inquirySubmissionSchema = z.object({
   name: z
-    .string({ required_error: "Enter your name" })
+    .string()
     .trim()
     .min(2, "Name should be at least 2 characters")
     .max(80, "Name should be under 80 characters"),
   email: z
-    .string({ required_error: "Enter an email" })
+    .string()
     .trim()
-    .toLowerCase()
-    .email("Provide a valid email"),
+    .min(1, "Enter an email")
+    .email("Provide a valid email")
+    .transform((value) => value.toLowerCase()),
   phone: z
     .string()
     .optional()
@@ -23,7 +24,7 @@ export const inquirySubmissionSchema = z.object({
       message: "Phone number looks incorrect",
     }),
   message: z
-    .string({ required_error: "Share a short message" })
+    .string()
     .trim()
     .min(20, "Message should be at least 20 characters")
     .max(1200, "Message should be under 1200 characters"),
@@ -49,7 +50,8 @@ export const inquirySubmissionSchema = z.object({
       message: "Context path is too long",
     }),
   hcaptchaToken: z
-    .string({ required_error: "Complete the captcha" })
+    .string()
+    .trim()
     .min(1, "Complete the captcha"),
 });
 

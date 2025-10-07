@@ -23,6 +23,18 @@ type AnalyticsProviderProps = {
   children: React.ReactNode;
 };
 
+type FbqFunction = ((...args: unknown[]) => void) & {
+  queue?: unknown[];
+  loaded?: boolean;
+  version?: string;
+};
+
+declare global {
+  interface Window {
+    fbq?: FbqFunction;
+  }
+}
+
 
 function persistConsent(consent: ConsentState) {
   if (consent === "unknown") return;
@@ -88,24 +100,26 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
     if (!metaPixelId) return;
 
     if (consent === "granted" && !pixelLoadedRef.current) {
-      if (!window.fbq) {
-        const fbqPlaceholder: FacebookPixel = ((...args: FbqCommand) => {
-          (fbqPlaceholder.queue ||= []).push(args);
-        }) as FacebookPixel;
-        fbqPlaceholder.queue = [];
-        fbqPlaceholder.loaded = false;
-        fbqPlaceholder.version = "2.0";
-        window.fbq = fbqPlaceholder;
+      let fbq = window.fbq as FbqFunction | undefined;
 
+      if (!fbq) {
+        const placeholder: FbqFunction = (...args: unknown[]) => {
+          (placeholder.queue ||= []).push(args);
+        };
+        placeholder.queue = [];
+        placeholder.loaded = false;
+        placeholder.version = "2.0";
         const script = document.createElement("script");
         script.async = true;
         script.src = "https://connect.facebook.net/en_US/fbevents.js";
         document.head.appendChild(script);
+        window.fbq = placeholder;
+        fbq = placeholder;
       }
 
-      window.fbq("init", metaPixelId);
-      window.fbq("consent", "grant");
-      window.fbq("track", "PageView");
+      fbq?.("init", metaPixelId);
+      fbq?.("consent", "grant");
+      fbq?.("track", "PageView");
       pixelLoadedRef.current = true;
     }
 
@@ -123,7 +137,8 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
         return;
       }
       window.gtag?.("event", event, params);
-      window.fbq?.("trackCustom", event, params);
+      const fbq = window.fbq as FbqFunction | undefined;
+      fbq?.("trackCustom", event, params);
     },
     [consent],
   );
