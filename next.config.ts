@@ -25,6 +25,15 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.exoticbulldog.dev",
+      },
+    ],
+  },
+
   async headers() {
     return [
       {

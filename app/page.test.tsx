@@ -7,13 +7,12 @@ describe("Home", () => {
     render(<Home />);
 
     expect(
-      screen.getByRole("heading", {
-        name: /trusted home for french & english bulldog matches/i,
+      screen.getByRole('heading', {
+        name: /trusted french & english bulldogs, raised with southern warmth/i,
       }),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByText(/stripe and paypal deposits lock in your pick/i),
-    ).toBeVisible();
+    expect(screen.getByText(/akC pedigrees, OFA screenings/i)).toBeVisible();
+    expect(screen.getByRole('link', { name: /view available puppies/i })).toBeVisible();
   });
 });

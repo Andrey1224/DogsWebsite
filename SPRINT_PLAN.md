@@ -38,13 +38,13 @@ Initialize project, CI/CD, Supabase, and integrations.
 Base UI, routing, catalog pages, Supabase integration.
 
 ### Tasks
-- [ ] Pages: `/`, `/puppies`, `/puppies/[slug]`, `/about`, `/policies`, `/contact`
-- [ ] Components: `Hero`, `PuppyCard`, `PuppyGallery`, `ContactBar` (sticky)
-- [ ] Integrate Supabase (SSR/ISR): read `puppies`, `parents`, `litters`
-- [ ] Add demo seed (8–12 puppies) + CRUD via Supabase Studio
-- [ ] Responsive design + basic brand theme (warm natural tones)
-- [ ] Define cache strategy (ISR vs dynamic) in README
-- [ ] Add loading/empty/error states to lists and details
+- [x] Pages: `/`, `/puppies`, `/puppies/[slug]`, `/about`, `/policies`, `/contact`
+- [x] Components: `Hero`, `PuppyCard`, `PuppyGallery`, `ContactBar` (sticky)
+- [x] Integrate Supabase (SSR/ISR): read `puppies`, `parents`, `litters`
+- [x] Add demo seed (8–12 puppies) + CRUD via Supabase Studio
+- [x] Responsive design + basic brand theme (warm natural tones)
+- [x] Define cache strategy (ISR vs dynamic) in README
+- [x] Add loading/empty/error states to lists and details
 
 ### DoD
 ✅ Catalog grid + filters (breed/status)  

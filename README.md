@@ -1,6 +1,6 @@
 # Exotic Bulldog Level — Sprint Workspace
 
-Sprint 0 stands up the Next.js 15 developer environment for the Exotic Bulldog Level landing experience.
+Sprint workspace for Exotic Bulldog Level. Sprint 1 adds the Supabase-driven catalog, detailed puppy pages, and supporting content routes.
 
 ## Prerequisites
 - Node.js 20+ (repo tested with v24)
@@ -38,3 +38,8 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - `SPRINT_PLAN.md` — roadmap broken into sprints and DoD.
 - `AGENTS.md` — contributor practices, repo structure, and command reference.
 - `CLAUDE.md` — agent operating rules (Context7 usage, file ordering).
+
+## Data & Seeding
+- Run the schema migration in `supabase/migrations/20241007T000000Z_initial_schema.sql`.
+- Seed demo content by executing `supabase/seeds/initial_seed.sql` in the Supabase SQL editor (adds parents, litters, puppies, sample reservations/inquiries).
+- Catalog routes (`/puppies`, `/puppies/[slug]`) revalidate every 60s; adjust `revalidate` in route files if content freshness requirements change.

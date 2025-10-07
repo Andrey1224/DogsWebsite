@@ -5,10 +5,11 @@ test("home page highlights core pillars", async ({ page }) => {
 
   await expect(
     page.getByRole("heading", {
-      name: /coming soon: a trusted home/i,
+      name: /trusted french & english bulldogs, raised with southern warmth/i,
     }),
   ).toBeVisible();
 
-  await expect(page.getByText(/Stripe and PayPal deposits lock in your pick/i)).toBeVisible();
-  await expect(page.getByText(/Sprint 0 is focused on infrastructure/i)).toBeVisible();
+  await expect(page.getByText(/AKC pedigrees, OFA screenings/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /view available puppies/i })).toBeVisible();
+  await expect(page.getByText(/Sprint 1 focuses on catalogs and detail pages/i)).toBeVisible();
 });
