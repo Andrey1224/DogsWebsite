@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      '@': resolve(__dirname, '.'),
       'server-only': resolve(__dirname, 'test-utils/server-only.ts'),
     },
   },

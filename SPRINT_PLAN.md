@@ -60,13 +60,13 @@ Base UI, routing, catalog pages, Supabase integration.
 Lead capture + conversion tracking.
 
 ### Tasks
-- [ ] Deep links: `tel:`, `sms:`, `wa.me`, `t.me`, `ig.me`, `mailto:`  
-- [ ] Crisp setup: welcome message, offline redirect (“If offline → WhatsApp”)  
-- [ ] Add GA4 events: `contact_click(channel, puppy_slug)`, `form_submit`, `form_success`
-- [ ] Add Meta Pixel + Advanced Matching (email/phone only with consent)
-- [ ] Implement Consent Mode v2 (`ad_user_data`, `ad_personalization`)  
-- [ ] Add contact form (`Server Action → inquiries`)  
-- [ ] Add hCaptcha and minimal rate limit to prevent spam
+- [x] Deep links: `tel:`, `sms:`, `wa.me`, `t.me`, `ig.me`, `mailto:`  
+- [x] Crisp setup: welcome message, offline redirect (“If offline → WhatsApp”)  
+- [x] Add GA4 events: `contact_click(channel, puppy_slug)`, `form_submit`, `form_success`
+- [x] Add Meta Pixel + Advanced Matching (email/phone only with consent)
+- [x] Implement Consent Mode v2 (`ad_user_data`, `ad_personalization`)  
+- [x] Add contact form (`Server Action → inquiries`)  
+- [x] Add hCaptcha and minimal rate limit to prevent spam
 
 ### DoD
 ✅ Click events visible in GA4  

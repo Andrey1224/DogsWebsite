@@ -7,3 +7,11 @@ priorities. `SPRINT_PLAN.md` breaks that spec into execution sprints and referen
 same feature set. `AGENTS.md` is the contributor guide that explains how to work within
 those plans, while this `CLAUDE.md` captures agent-specific operating rules. Review the
 spec first, then the sprint plan, then follow `AGENTS.md` so all guidance stays aligned.
+
+Sprint 2 contact stack links several files:
+- UI submits via `components/contact-form.tsx`, which calls the server action in `app/contact/actions.ts`. Validation helpers live in `lib/inquiries/schema.ts`; rate-limit logic in `lib/inquiries/rate-limit.ts`; captcha checks in `lib/captcha/hcaptcha.ts`.
+- Contact metadata (deep links, copy) is centralized in `lib/config/contact.ts` and reused by the contact bar, contact cards, Crisp welcome/offline text, and analytics payloads.
+- `components/analytics-provider.tsx` must wrap the app (configured from `app/layout.tsx`) so `ContactBar`, `ContactForm`, and `components/crisp-chat.tsx` can call `useAnalytics().trackEvent`. The consent banner (`components/consent-banner.tsx`) also depends on that provider.
+- Crisp integration resides in `components/crisp-chat.tsx`; it dispatches custom `crisp:*` events that `ContactBar` listens to for availability messaging.
+
+When modifying any piece of that pipeline, update the rest of the chain and refresh the docs (`README.md`, `AGENTS.md`, sprint reports) so contributors understand the flow.

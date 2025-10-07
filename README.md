@@ -13,6 +13,8 @@ Sprint workspace for Exotic Bulldog Level. Sprint 1 adds the Supabase-driven cat
    - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
    - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV`
    - `NEXT_PUBLIC_CRISP_WEBSITE_ID`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `META_PIXEL_ID`
+   - `NEXT_PUBLIC_HCAPTCHA_SITE_KEY`, `HCAPTCHA_SECRET_KEY` (required for the contact form)
+   - Optional local/testing bypass: `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN`, `HCAPTCHA_BYPASS_TOKEN`
    - `NEXT_PUBLIC_SITE_URL` (matches the deployment base URL)
 2. Install dependencies:
    ```bash
@@ -29,7 +31,7 @@ Sprint workspace for Exotic Bulldog Level. Sprint 1 adds the Supabase-driven cat
 - `npm run lint` — Next.js + ESLint (Tailwind aware).
 - `npm run typecheck` — TypeScript in `strict` mode.
 - `npm run test` — Vitest unit/component suites.
-- `npm run e2e` — Playwright smoke flow (requires `npm run dev`).
+- `npm run e2e` — Playwright flows (catalog filters + contact form; requires `npm run dev`).
 
 CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass lint, test, and build before merging.
 
@@ -43,3 +45,10 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - Run the schema migration in `supabase/migrations/20241007T000000Z_initial_schema.sql`.
 - Seed demo content by executing `supabase/seeds/initial_seed.sql` in the Supabase SQL editor (adds parents, litters, puppies, sample reservations/inquiries).
 - Catalog routes (`/puppies`, `/puppies/[slug]`) revalidate every 60s; adjust `revalidate` in route files if content freshness requirements change.
+
+## Contact & Analytics Stack (Sprint 2)
+- Contact form (`components/contact-form.tsx`) posts to the server action in `app/contact/actions.ts`, which validates input with Zod, enforces Supabase-backed rate limits, and writes to the `inquiries` table.
+- Captcha verification lives in `lib/captcha/hcaptcha.ts`; enable real keys for production or supply the same bypass token (`NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` / `HCAPTCHA_BYPASS_TOKEN`) locally to exercise the flow in tests.
+- Crisp chat is injected via `components/crisp-chat.tsx`, sharing availability events with the sticky `ContactBar` and dispatching offline fallbacks to WhatsApp.
+- `components/analytics-provider.tsx` wraps the app with a consent-aware GA4/Meta Pixel client. Accept/decline decisions update Consent Mode (`ad_user_data`, `ad_personalization`) and gate tracking for `contact_click`, `form_submit`, `form_success`, and `chat_open` events.
+- Update `CONTACT_DETAILS` in `lib/config/contact.ts` when production phone/email/handles change so the contact bar, cards, Crisp copy, and analytics metadata stay aligned.

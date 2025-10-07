@@ -88,6 +88,7 @@ export type Inquiry = {
   message: string | null;
   puppy_id: string | null;
   utm: Record<string, unknown> | null;
+  client_ip: string | null;
   created_at: string | null;
 };
 

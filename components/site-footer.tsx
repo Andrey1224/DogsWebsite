@@ -1,3 +1,5 @@
+import { CONTACT_DETAILS } from "@/lib/config/contact";
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-neutral-200 bg-white/80 py-10 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/80">
@@ -19,10 +21,10 @@ export function SiteFooter() {
             <p className="font-semibold text-neutral-800 dark:text-neutral-100">Connect</p>
             <ul className="mt-1 space-y-1">
               <li>
-                <a href="mailto:hello@exoticbulldoglevel.com">hello@exoticbulldoglevel.com</a>
+                <a href={`mailto:${CONTACT_DETAILS.email.address}`}>{CONTACT_DETAILS.email.address}</a>
               </li>
               <li>
-                <a href="tel:+12055551234">+1 (205) 555-1234</a>
+                <a href={`tel:${CONTACT_DETAILS.phone.e164}`}>{CONTACT_DETAILS.phone.display}</a>
               </li>
               <li>
                 <a href="https://instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
