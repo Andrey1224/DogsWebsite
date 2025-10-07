@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 
 test("filters puppies by status and breed", async ({ page }) => {
   await page.goto("/puppies");
@@ -19,7 +20,8 @@ test("submits contact inquiry with captcha bypass", async ({ page }) => {
   }
 
   await page.getByLabel(/Your name/i).fill("Playwright Tester");
-  await page.getByLabel(/^Email$/i).fill("playwright@example.com");
+  const uniqueEmail = `playwright+${randomUUID()}@example.com`;
+  await page.getByLabel(/^Email$/i).fill(uniqueEmail);
   await page.getByLabel(/Phone/i).fill("+1 205 555 9999");
   await page
     .getByLabel(/How can we help\?/i)
