@@ -18,6 +18,7 @@ Sprint 0 stands up the Next.js 15 developer environment for the Exotic Bulldog L
    npm run dev
    ```
    Visit [http://localhost:3000](http://localhost:3000) to verify the scaffold.
+4. Apply the database schema via the Supabase SQL editor or CLI using `supabase/migrations/20241007T000000Z_initial_schema.sql`.
 
 ## Quality Gates
 - `npm run lint` — Next.js + ESLint (Tailwind aware).
