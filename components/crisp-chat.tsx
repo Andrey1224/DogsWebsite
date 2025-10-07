@@ -36,7 +36,6 @@ export function CrispChat() {
     loadedRef.current = true;
 
     type CrispCommand = [string, ...unknown[]];
-    type CrispCommand = [string, ...unknown[]];
     const crispQueue: CrispCommand[] = Array.isArray(window.$crisp) ? window.$crisp : [];
     window.$crisp = crispQueue;
 

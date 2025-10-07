@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { applyPuppyFilters } from "./queries";
 import type { PuppyWithRelations } from "./types";
 
-const basePuppy = {
+const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
   id: "id-1",
   litter_id: "litter-1",
   name: "Duke",
@@ -21,6 +21,8 @@ const basePuppy = {
   stripe_payment_link: null,
   created_at: "",
   updated_at: "",
+  parents: null,
+  litter: null,
 };
 
 const puppies: PuppyWithRelations[] = [

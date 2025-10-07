@@ -23,15 +23,18 @@ type AnalyticsProviderProps = {
   children: React.ReactNode;
 };
 
-type FbqFunction = ((...args: unknown[]) => void) & {
-  queue?: unknown[];
+type FbqArgs = [string, ...unknown[]];
+
+type FacebookPixel = {
+  (...args: FbqArgs): void;
+  queue?: FbqArgs[];
   loaded?: boolean;
   version?: string;
 };
 
 declare global {
   interface Window {
-    fbq?: FbqFunction;
+    fbq?: FacebookPixel;
   }
 }
 
@@ -100,10 +103,10 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
     if (!metaPixelId) return;
 
     if (consent === "granted" && !pixelLoadedRef.current) {
-      let fbq = window.fbq as FbqFunction | undefined;
+      let fbq = window.fbq;
 
       if (!fbq) {
-        const placeholder: FbqFunction = (...args: unknown[]) => {
+        const placeholder: FacebookPixel = (...args: FbqArgs) => {
           (placeholder.queue ||= []).push(args);
         };
         placeholder.queue = [];
@@ -137,8 +140,7 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
         return;
       }
       window.gtag?.("event", event, params);
-      const fbq = window.fbq as FbqFunction | undefined;
-      fbq?.("trackCustom", event, params);
+      window.fbq?.("trackCustom", event, params);
     },
     [consent],
   );
