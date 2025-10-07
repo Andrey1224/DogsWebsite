@@ -4,9 +4,9 @@ type CrispCommand = [string, ...unknown[]];
 
 type FbqCommand =
   | ["init", string, Record<string, unknown>?]
+  | ["consent", "grant" | "revoke"]
   | ["track", string, Record<string, unknown>?]
-  | ["trackCustom", string, Record<string, unknown>?]
-  | ["consent", "grant" | "revoke"];
+  | ["trackCustom", string, Record<string, unknown>?];
 
 type FacebookPixel = ((...args: FbqCommand) => void) & {
   queue?: FbqCommand[];

@@ -21,8 +21,6 @@ const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
   stripe_payment_link: null,
   created_at: "",
   updated_at: "",
-  parents: null,
-  litter: null,
 };
 
 const puppies: PuppyWithRelations[] = [

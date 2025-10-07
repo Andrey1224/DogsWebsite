@@ -23,20 +23,8 @@ type AnalyticsProviderProps = {
   children: React.ReactNode;
 };
 
-type FbqArgs = [string, ...unknown[]];
-
-type FacebookPixel = {
-  (...args: FbqArgs): void;
-  queue?: FbqArgs[];
-  loaded?: boolean;
-  version?: string;
-};
-
-declare global {
-  interface Window {
-    fbq?: FacebookPixel;
-  }
-}
+type FacebookPixel = NonNullable<Window["fbq"]>;
+type FbqCommand = Parameters<FacebookPixel>;
 
 
 function persistConsent(consent: ConsentState) {
@@ -106,9 +94,9 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
       let fbq = window.fbq;
 
       if (!fbq) {
-        const placeholder: FacebookPixel = (...args: FbqArgs) => {
+        const placeholder: FacebookPixel = ((...args: FbqCommand) => {
           (placeholder.queue ||= []).push(args);
-        };
+        }) as FacebookPixel;
         placeholder.queue = [];
         placeholder.loaded = false;
         placeholder.version = "2.0";
