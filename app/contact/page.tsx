@@ -12,11 +12,11 @@ export default function ContactPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-12 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-600">Contact</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
+        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Contact</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-text">
           Let’s plan your bulldog match
         </h1>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="text-sm text-muted">
           Send an inquiry or tap the quick actions in the contact bar. Share a bit about your family,
           desired timing, and any must-have traits so we can recommend the right puppy.
         </p>

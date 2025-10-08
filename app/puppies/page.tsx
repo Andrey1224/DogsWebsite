@@ -37,13 +37,13 @@ export default async function PuppiesPage({
   return (
     <div className="mx-auto max-w-5xl space-y-10 px-6 py-12">
       <div className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-600">
+        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
           Puppies
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-text">
           French & English bulldogs available and upcoming
         </h1>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="text-sm text-muted">
           Browse our current litters, review temperament notes, and reserve the companion who fits
           your lifestyle. Filters adjust in real-time so you can compare options confidently.
         </p>
@@ -54,7 +54,7 @@ export default async function PuppiesPage({
       </Suspense>
 
       {puppies.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-neutral-300 bg-white/60 p-10 text-center text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/60 dark:text-neutral-300">
+        <div className="rounded-3xl border border-dashed border-border bg-card/70 p-10 text-center text-sm text-muted">
           No puppies match the selected filters right now. Adjust your search or reach out via the
           contact bar for upcoming litters.
         </div>

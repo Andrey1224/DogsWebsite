@@ -17,7 +17,7 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
 
   return (
     <div>
-      <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
         <Image
           src={media[activeIndex]}
           fill
@@ -35,8 +35,8 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
               onClick={() => setActiveIndex(index)}
               className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border transition ${
                 index === activeIndex
-                  ? "border-emerald-500 ring-2 ring-emerald-200"
-                  : "border-transparent"
+                  ? "border-accent-aux/50 ring-2 ring-[color:color-mix(in srgb, var(--accent-aux) 35%, transparent)]"
+                  : "border-border"
               }`}
             >
               <Image src={url} alt="Puppy thumbnail" fill className="object-cover" sizes="80px" />
@@ -45,9 +45,9 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
         </div>
       )}
       {videos?.length ? (
-        <div className="mt-6 rounded-3xl border border-neutral-200 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
-          <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">Video snippets</p>
-          <ul className="mt-2 space-y-2 text-sm text-emerald-600">
+        <div className="mt-6 rounded-3xl border border-border bg-card p-4">
+          <p className="text-sm font-semibold text-text">Video snippets</p>
+          <ul className="mt-2 space-y-2 text-sm text-accent-aux">
             {videos.map((video) => (
               <li key={video}>
                 <a href={video} target="_blank" rel="noreferrer" className="underline">

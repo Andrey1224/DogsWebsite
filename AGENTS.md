@@ -20,6 +20,15 @@ Planning docs stay at the repo root beside the Next.js app. Keep routes under `a
 ## Coding Style & Naming Conventions
 Use TypeScript `strict` with Prettier defaults (2 spaces, 100 columns). Name components in PascalCase (`PuppyCard.tsx`), hooks as `useCamelCase`, Supabase helpers in `camelCase.ts`, and SQL artifacts in `snake_case.sql`. Favor Tailwind utilities and shadcn/ui patterns; add custom CSS only for reused styles. Colocate page-specific logic under `app/(section)/[slug]/`.
 
+## Theming & Color Tokens
+- Palette reference (keep synchronized when branding evolves):
+  - **Light** — `--bg #F9FAFB`, `--bg-card #FFFFFF`, `--text #111111`, `--text-muted #555555`, `--accent #FFB84D`, `--accent-2-start #FF4D79`, `--accent-2-end #FF7FA5`, `--accent-aux #0D1A44`, `--footer-bg #E5E7EB`, `--border rgba(0,0,0,0.08)`, `--hover rgba(0,0,0,0.04)`.
+  - **Dark** — `--bg #0D1A44`, `--bg-card #1C1C1C`, `--text #FFFFFF`, `--text-muted #D1D5DB`, `--accent #FFB84D`, `--accent-2-start #FF4D79`, `--accent-2-end #FF7FA5`, `--accent-aux #FFD166`, `--footer-bg #0A0F24`, `--border rgba(255,255,255,0.12)`, `--hover rgba(255,255,255,0.06)`.
+- `app/globals.css` maps these tokens via `@theme inline`, so Tailwind utilities like `bg-bg`, `bg-card`, `text-text`, `text-muted`, `border-border`, `text-accent-aux`, and `.bg-accent-gradient` resolve back to the palette.
+- Use `bg-[color:var(--btn-bg)]` / `text-[color:var(--btn-text)]` for primary buttons, and the shared `.bg-accent-gradient` utility for gradient CTAs. Accent tints rely on `color-mix` helpers (see contact callouts and puppy status badges) so avoid hard-coded hex values when adding new surfaces.
+- When introducing components, stick to these tokens (or extend them centrally) instead of Tailwind’s default palette. Update both light and dark token sets so the future theme toggle behaves predictably.
+- Theme state lives in `components/theme-provider.tsx`, which syncs the resolved theme to `document.documentElement` (`data-theme="light" | "dark"`) and persists the preference (`light`, `dark`, or `system`) in `localStorage`. Use `useTheme()` to read/update preferences from client components. The header toggle (`components/theme-toggle.tsx`) already consumes the hook—follow that pattern when exposing theme controls elsewhere.
+
 ## Environment & Security Notes
 Store secrets in `.env.local` (includes Supabase, Stripe, PayPal, Crisp, GA/Pixel, hCaptcha, and `NEXT_PUBLIC_CONTACT_*`). Refresh `.env.example` whenever new variables land and mirror production secrets to Vercel/GitHub. Only use `HCAPTCHA_BYPASS_TOKEN` / `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` locally; remove them for staging/production so captcha enforcement stays intact. Document Supabase policy or schema changes in `supabase/migrations/` and review RLS updates during code review. Never commit customer media; reference Supabase storage URLs instead.
 

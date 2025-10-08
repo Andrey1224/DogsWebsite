@@ -37,11 +37,11 @@ export default function PoliciesPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-10 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-600">Policies</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
+        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Policies</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-text">
           Clear policies for a transparent adoption journey
         </h1>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="text-sm text-muted">
           We operate with clarity and care so every family knows what to expect. Review the key policies
           below and reach out if you need clarification before reserving.
         </p>
@@ -51,21 +51,21 @@ export default function PoliciesPage() {
         {sections.map((section) => (
           <article
             key={section.heading}
-            className="rounded-3xl border border-neutral-200 bg-white/80 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/80"
+            className="rounded-3xl border border-border bg-card p-6 shadow-sm"
           >
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="text-xl font-semibold text-text">
               {section.heading}
             </h2>
-            <p className="mt-3 whitespace-pre-line text-sm text-neutral-600 dark:text-neutral-300">
+            <p className="mt-3 whitespace-pre-line text-sm text-muted">
               {section.body}
             </p>
           </article>
         ))}
       </section>
 
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-6 text-sm shadow-sm dark:border-neutral-800 dark:bg-neutral-900/80">
-        <p className="font-semibold text-neutral-900 dark:text-neutral-100">Documents & contracts</p>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-300">
+      <section className="rounded-3xl border border-border bg-card p-6 text-sm shadow-sm">
+        <p className="font-semibold text-text">Documents & contracts</p>
+        <p className="mt-2 text-muted">
           Adoption contracts, medical records, and AKC paperwork are compiled in a secure client portal
           before go-home day. Custom requests (co-ownership, guardian homes, or show prospects) are
           reviewed on a case-by-case basis.

@@ -39,20 +39,20 @@ export function PuppyFilters() {
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-neutral-200 bg-white/70 p-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/70 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-border bg-card/70 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">Filters</p>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-accent-aux">Filters</p>
+        <p className="text-xs text-muted">
           Refine by availability and lineage to match your family.
         </p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <label className="inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
+        <label className="inline-flex items-center gap-2 text-sm text-text">
           Status
           <select
             value={status}
             onChange={(event) => setParam("status", event.target.value)}
-            className="rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded-full border border-border bg-bg px-4 py-2 text-sm focus:border-accent focus:outline-none"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -61,12 +61,12 @@ export function PuppyFilters() {
             ))}
           </select>
         </label>
-        <label className="inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
+        <label className="inline-flex items-center gap-2 text-sm text-text">
           Breed
           <select
             value={breed}
             onChange={(event) => setParam("breed", event.target.value)}
-            className="rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded-full border border-border bg-bg px-4 py-2 text-sm focus:border-accent focus:outline-none"
           >
             {breedOptions.map((option) => (
               <option key={option.value} value={option.value}>

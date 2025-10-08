@@ -85,7 +85,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
   const renderError = (field: FieldName) => {
     const message = fieldErrors[field];
     if (!message) return null;
-    return <p className="text-xs text-red-600 dark:text-red-400">{message}</p>;
+    return <p className="text-xs text-red-600">{message}</p>;
   };
 
   return (
@@ -93,29 +93,29 @@ export function ContactForm({ heading, context }: ContactFormProps) {
       ref={formRef}
       action={formAction}
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-3xl border border-neutral-200 bg-white/80 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/80"
+      className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm"
     >
       {heading ? (
         <header className="space-y-2">
           {heading.eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-accent-aux">
               {heading.eyebrow}
             </p>
           ) : null}
           {heading.title ? (
-            <h2 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
+            <h2 className="text-2xl font-semibold tracking-tight text-text">
               {heading.title}
             </h2>
           ) : null}
           {heading.description ? (
-            <p className="text-sm text-neutral-600 dark:text-neutral-300">{heading.description}</p>
+            <p className="text-sm text-muted">{heading.description}</p>
           ) : null}
         </header>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-200" htmlFor={nameId}>
+          <label className="block text-sm font-semibold text-text" htmlFor={nameId}>
             Your name
           </label>
           <input
@@ -124,13 +124,13 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             type="text"
             required
             placeholder="Jane Doe"
-            className="mt-2 w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm shadow-sm focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950"
+            className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
             aria-invalid={fieldErrors.name ? "true" : "false"}
           />
           {renderError("name")}
         </div>
         <div>
-          <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-200" htmlFor={emailId}>
+          <label className="block text-sm font-semibold text-text" htmlFor={emailId}>
             Email
           </label>
           <input
@@ -139,7 +139,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             type="email"
             required
             placeholder="you@example.com"
-            className="mt-2 w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm shadow-sm focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950"
+            className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
             aria-invalid={fieldErrors.email ? "true" : "false"}
             autoComplete="email"
           />
@@ -148,7 +148,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-200" htmlFor={phoneId}>
+        <label className="block text-sm font-semibold text-text" htmlFor={phoneId}>
           Phone (optional)
         </label>
         <input
@@ -156,7 +156,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           name="phone"
           type="tel"
           placeholder="+1 (205) 555-1234"
-          className="mt-2 w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm shadow-sm focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950"
+          className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
           aria-invalid={fieldErrors.phone ? "true" : "false"}
           autoComplete="tel"
         />
@@ -164,7 +164,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-200" htmlFor={messageId}>
+        <label className="block text-sm font-semibold text-text" htmlFor={messageId}>
           How can we help?
         </label>
         <textarea
@@ -173,7 +173,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           rows={4}
           required
           placeholder="Tell us about the puppy you’re interested in, your timeline, and any must-have traits."
-          className="mt-2 w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm shadow-sm focus:border-emerald-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950"
+          className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
           aria-invalid={fieldErrors.message ? "true" : "false"}
         />
         {renderError("message")}
@@ -185,11 +185,11 @@ export function ContactForm({ heading, context }: ContactFormProps) {
 
       <div className="space-y-2">
         {showCaptchaWarning ? (
-          <p className="rounded-2xl border border-dashed border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <p className="rounded-2xl border border-dashed border-accent/50 bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] px-4 py-3 text-sm text-accent-aux">
             Add `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` and `HCAPTCHA_SECRET_KEY` to enable spam protection.
           </p>
         ) : isBypass ? (
-          <p className="rounded-2xl border border-dashed border-emerald-500 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <p className="rounded-2xl border border-dashed border-accent-aux/40 bg-[color:color-mix(in srgb, var(--accent-aux) 14%, var(--bg))] px-4 py-3 text-sm text-accent-aux">
             Captcha bypass enabled for local testing. Remove `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` in production.
           </p>
         ) : (
@@ -208,27 +208,27 @@ export function ContactForm({ heading, context }: ContactFormProps) {
         {renderError("captcha")}
       </div>
 
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+      <p className="text-xs text-muted">
         We respond within one business day. By submitting, you consent to be contacted about current and
         upcoming litters.
       </p>
 
       <button
         type="submit"
-        className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-75"
+        className="w-full rounded-full bg-[color:var(--btn-bg)] px-6 py-3 text-sm font-semibold text-[color:var(--btn-text)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-75"
         disabled={isPending || showCaptchaWarning || !captchaToken}
       >
         {isPending ? "Sending…" : "Share my inquiry"}
       </button>
 
       {state.status === "success" ? (
-        <p className="rounded-2xl bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
+        <p className="rounded-2xl bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] px-4 py-3 text-sm text-accent-aux">
           {state.message}
         </p>
       ) : null}
 
       {state.status === "error" && state.message ? (
-        <p className="rounded-2xl bg-red-50/80 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">
+        <p className="rounded-2xl bg-red-50/80 px-4 py-3 text-sm text-red-700">
           {state.message}
         </p>
       ) : null}

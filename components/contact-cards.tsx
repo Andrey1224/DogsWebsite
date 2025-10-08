@@ -18,12 +18,12 @@ export function ContactCards({ cards }: ContactCardsProps) {
       {cards.map((channel) => (
         <article
           key={channel.id}
-          className="rounded-3xl border border-neutral-200 bg-white/80 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900/80"
+          className="rounded-3xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
         >
-          <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">{channel.label}</p>
+          <p className="text-sm font-semibold text-muted">{channel.label}</p>
           <a
             href={channel.href}
-            className="mt-2 block text-lg font-semibold text-emerald-600 hover:underline"
+            className="mt-2 block text-lg font-semibold text-accent-aux hover:opacity-80"
             onClick={() =>
               trackEvent("contact_click", {
                 channel: channel.id,
@@ -34,7 +34,7 @@ export function ContactCards({ cards }: ContactCardsProps) {
           >
             {channel.value}
           </a>
-          <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300">{channel.description}</p>
+          <p className="mt-3 text-sm text-muted">{channel.description}</p>
         </article>
       ))}
     </section>
