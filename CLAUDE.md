@@ -10,7 +10,7 @@ spec first, then the sprint plan, then follow `AGENTS.md` so all guidance stays 
 
 Sprint 2 contact stack links several files:
 - UI submits via `components/contact-form.tsx`, which calls the server action in `app/contact/actions.ts`. Validation helpers live in `lib/inquiries/schema.ts`; rate-limit logic in `lib/inquiries/rate-limit.ts`; captcha checks in `lib/captcha/hcaptcha.ts`.
-- Contact metadata (deep links, copy) is centralized in `lib/config/contact.ts` and reused by the contact bar, contact cards, Crisp welcome/offline text, and analytics payloads.
+- Contact metadata (deep links, copy) is centralized in `lib/config/contact.ts` and reused by the contact bar, contact cards, Crisp welcome/offline text, and analytics payloads. Values originate from `NEXT_PUBLIC_CONTACT_*` env vars; confirm those are set in every environment before expecting updates to appear.
 - `components/analytics-provider.tsx` must wrap the app (configured from `app/layout.tsx`) so `ContactBar`, `ContactForm`, and `components/crisp-chat.tsx` can call `useAnalytics().trackEvent`. The consent banner (`components/consent-banner.tsx`) also depends on that provider.
 - Crisp integration resides in `components/crisp-chat.tsx`; it dispatches custom `crisp:*` events that `ContactBar` listens to for availability messaging.
 

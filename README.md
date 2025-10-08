@@ -15,6 +15,7 @@ Sprint workspace for Exotic Bulldog Level. Sprint 1 adds the Supabase-driven cat
    - `NEXT_PUBLIC_CRISP_WEBSITE_ID`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `META_PIXEL_ID`
    - `NEXT_PUBLIC_HCAPTCHA_SITE_KEY`, `HCAPTCHA_SECRET_KEY` (required for the contact form)
    - Optional local/testing bypass: `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN`, `HCAPTCHA_BYPASS_TOKEN`
+   - `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_WHATSAPP`, `NEXT_PUBLIC_TELEGRAM_USERNAME`
    - `NEXT_PUBLIC_SITE_URL` (matches the deployment base URL)
 2. Install dependencies:
    ```bash
@@ -51,4 +52,4 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - Captcha verification lives in `lib/captcha/hcaptcha.ts`; enable real keys for production or supply the same bypass token (`NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` / `HCAPTCHA_BYPASS_TOKEN`) locally to exercise the flow in tests.
 - Crisp chat is injected via `components/crisp-chat.tsx`, sharing availability events with the sticky `ContactBar` and dispatching offline fallbacks to WhatsApp.
 - `components/analytics-provider.tsx` wraps the app with a consent-aware GA4/Meta Pixel client. Accept/decline decisions update Consent Mode (`ad_user_data`, `ad_personalization`) and gate tracking for `contact_click`, `form_submit`, `form_success`, and `chat_open` events.
-- Update `CONTACT_DETAILS` in `lib/config/contact.ts` when production phone/email/handles change so the contact bar, cards, Crisp copy, and analytics metadata stay aligned.
+- Production contact info is sourced from `NEXT_PUBLIC_CONTACT_*` variables. Update `.env.local`, `.env.example`, and Vercel/GitHub secrets to keep the contact bar, Crisp copy, and analytics payloads in sync.
