@@ -6,6 +6,8 @@ import { verifyHCaptcha } from "@/lib/captcha/hcaptcha";
 import { checkInquiryRateLimit } from "@/lib/inquiries/rate-limit";
 import { inquirySubmissionSchema } from "@/lib/inquiries/schema";
 import { createServiceRoleClient } from "@/lib/supabase/client";
+import { sendOwnerNotification } from "@/lib/emails/owner-notification";
+import { sendCustomerConfirmation } from "@/lib/emails/customer-confirmation";
 
 export type ContactFormStatus = "idle" | "error" | "success";
 
@@ -127,13 +129,46 @@ export async function submitContactInquiry(
     console.error("Failed to persist inquiry", error);
     return {
       status: "error",
-      message: "We couldn’t save your inquiry. Please try again shortly.",
+      message: "We couldn't save your inquiry. Please try again shortly.",
     };
+  }
+
+  // Send email notifications (async, don't block the response)
+  try {
+    const emailPromises = [
+      sendOwnerNotification({
+        inquiry: {
+          name: submission.name,
+          email: submission.email,
+          phone: submission.phone,
+          message: submission.message,
+          puppy_id: submission.puppyId,
+          puppy_slug: submission.puppySlug,
+          created_at: new Date().toISOString(),
+          source: "form",
+        },
+      }),
+      sendCustomerConfirmation({
+        name: submission.name,
+        email: submission.email,
+      }),
+    ];
+
+    // Send emails asynchronously without blocking the response
+    emailPromises.forEach((promise) => {
+      promise.catch((emailError) => {
+        console.error("Email notification failed:", emailError);
+        // Don't fail the form submission if emails fail
+      });
+    });
+  } catch (emailError) {
+    console.error("Failed to send email notifications:", emailError);
+    // Don't fail the form submission if emails fail
   }
 
   return {
     status: "success",
     message:
-      "Thanks for reaching out! We’ll respond within one business day with next steps and availability.",
+      "Thanks for reaching out! We'll respond within one business day with next steps and availability.",
   };
 }

@@ -47,6 +47,12 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - Seed demo content by executing `supabase/seeds/initial_seed.sql` in the Supabase SQL editor (adds parents, litters, puppies, sample reservations/inquiries).
 - Catalog routes (`/puppies`, `/puppies/[slug]`) revalidate every 60s; adjust `revalidate` in route files if content freshness requirements change.
 
+## Email Notifications (Sprint 2 - Security Hardened)
+- Contact form triggers email notifications via Resend API (owner gets inquiry details, customer gets confirmation).
+- **Security**: All email templates implement HTML escaping to prevent XSS attacks from malicious user input.
+- **Testing**: Email system uses factory pattern for proper testability; all tests pass with comprehensive coverage.
+- Required environment variables: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `OWNER_EMAIL`.
+
 ## Contact & Analytics Stack (Sprint 2)
 - Contact form (`components/contact-form.tsx`) posts to the server action in `app/contact/actions.ts`, which validates input with Zod, enforces Supabase-backed rate limits, and writes to the `inquiries` table.
 - Captcha verification lives in `lib/captcha/hcaptcha.ts`; enable real keys for production or supply the same bypass token (`NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` / `HCAPTCHA_BYPASS_TOKEN`) locally to exercise the flow in tests.

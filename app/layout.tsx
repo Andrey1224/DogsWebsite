@@ -7,6 +7,7 @@ import { CrispChat } from "@/components/crisp-chat";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { validateDevelopmentEnvironment, validateProductionEnvironment } from "@/lib/env-validation";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,6 +25,13 @@ export const metadata: Metadata = {
   description:
     "Sprint workspace for the Exotic Bulldog Level landing experience built with Next.js 15.",
 };
+
+// Environment validation
+if (process.env.NODE_ENV === "development") {
+  validateDevelopmentEnvironment();
+} else if (process.env.NODE_ENV === "production") {
+  validateProductionEnvironment();
+}
 
 export default function RootLayout({
   children,

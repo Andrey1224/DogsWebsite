@@ -18,6 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "tests/e2e/**/*.spec.ts", // E2E tests have special mocking needs
     ],
   },
 ];

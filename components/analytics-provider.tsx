@@ -65,12 +65,19 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
   useEffect(() => {
     if (consent === "unknown") return;
     persistConsent(consent);
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("📊 Analytics: Consent status changed:", consent);
+    }
   }, [consent]);
 
   useEffect(() => {
     if (!gaMeasurementId) return;
 
     if (consent === "granted" && typeof window.gtag === "function") {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 Analytics: GA4 consent granted", { gaMeasurementId });
+      }
       window.gtag("consent", "update", {
         ad_user_data: "granted",
         ad_personalization: "granted",
@@ -79,6 +86,9 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
     }
 
     if (consent === "denied" && typeof window.gtag === "function") {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 Analytics: GA4 consent denied");
+      }
       window.gtag("consent", "update", {
         ad_user_data: "denied",
         ad_personalization: "denied",
@@ -91,6 +101,10 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
     if (!metaPixelId) return;
 
     if (consent === "granted" && !pixelLoadedRef.current) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 Analytics: Meta Pixel consent granted", { metaPixelId });
+      }
+
       let fbq = window.fbq;
 
       if (!fbq) {
@@ -104,6 +118,11 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
         script.async = true;
         script.src = "https://connect.facebook.net/en_US/fbevents.js";
         document.head.appendChild(script);
+
+        if (process.env.NODE_ENV === "development") {
+          console.log("📊 Analytics: Meta Pixel script loaded");
+        }
+
         window.fbq = placeholder;
         fbq = placeholder;
       }
@@ -115,6 +134,9 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
     }
 
     if (consent === "denied" && pixelLoadedRef.current) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 Analytics: Meta Pixel consent denied");
+      }
       window.fbq?.("consent", "revoke");
     }
   }, [consent, metaPixelId]);
@@ -124,9 +146,21 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
 
   const trackEvent = useCallback(
     (event: string, params?: Record<string, unknown>) => {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📈 Analytics: trackEvent called", { event, params, consent });
+      }
+
       if (consent !== "granted") {
+        if (process.env.NODE_ENV === "development") {
+          console.log("📈 Analytics: Event blocked - consent not granted");
+        }
         return;
       }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📈 Analytics: Event fired", { event, params });
+      }
+
       window.gtag?.("event", event, params);
       window.fbq?.("trackCustom", event, params);
     },
@@ -151,12 +185,22 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
             id="ga-gtag"
             src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
             strategy="afterInteractive"
+            onLoad={() => {
+              if (process.env.NODE_ENV === "development") {
+                console.log("📊 Analytics: GA4 script loaded successfully", { gaMeasurementId });
+              }
+            }}
           />
           <Script
             id="ga-init"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaMeasurementId}', { send_page_view: false });`,
+            }}
+            onLoad={() => {
+              if (process.env.NODE_ENV === "development") {
+                console.log("📊 Analytics: GA4 initialized", { gaMeasurementId });
+              }
             }}
           />
         </>
