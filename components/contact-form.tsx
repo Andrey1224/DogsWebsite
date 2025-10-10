@@ -48,9 +48,18 @@ export function ContactForm({ heading, context }: ContactFormProps) {
   const phoneId = useId();
   const messageId = useId();
 
+  // Persist form values on validation errors
+  const [formValues, setFormValues] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
+      setFormValues({ name: "", email: "", phone: "", message: "" });
       setCaptchaToken(HC_BYPASS_TOKEN ?? null);
       if (!isBypass) {
         captchaRef.current?.resetCaptcha();
@@ -69,14 +78,27 @@ export function ContactForm({ heading, context }: ContactFormProps) {
     }
   }, [context?.puppySlug, pathname, state.status, trackEvent]);
 
-  const handleSubmit = useCallback(() => {
-    successTrackedRef.current = false;
-    trackEvent("form_submit", {
-      context_path: pathname,
-      location: context?.puppySlug ? "puppy_detail" : "contact_page",
-      puppy_slug: context?.puppySlug ?? undefined,
-    });
-  }, [context?.puppySlug, pathname, trackEvent]);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      successTrackedRef.current = false;
+
+      // Capture form values before submission
+      const formData = new FormData(e.currentTarget);
+      setFormValues({
+        name: formData.get("name") as string,
+        email: formData.get("email") as string,
+        phone: formData.get("phone") as string,
+        message: formData.get("message") as string,
+      });
+
+      trackEvent("form_submit", {
+        context_path: pathname,
+        location: context?.puppySlug ? "puppy_detail" : "contact_page",
+        puppy_slug: context?.puppySlug ?? undefined,
+      });
+    },
+    [context?.puppySlug, pathname, trackEvent],
+  );
 
   const showCaptchaWarning = !HC_SITE_KEY && !isBypass;
 
@@ -124,6 +146,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             type="text"
             required
             placeholder="Jane Doe"
+            defaultValue={formValues.name}
             className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
             aria-invalid={fieldErrors.name ? "true" : "false"}
           />
@@ -139,6 +162,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             type="email"
             required
             placeholder="you@example.com"
+            defaultValue={formValues.email}
             className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
             aria-invalid={fieldErrors.email ? "true" : "false"}
             autoComplete="email"
@@ -156,6 +180,7 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           name="phone"
           type="tel"
           placeholder="+1 (205) 555-1234"
+          defaultValue={formValues.phone}
           className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
           aria-invalid={fieldErrors.phone ? "true" : "false"}
           autoComplete="tel"
@@ -172,7 +197,8 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           name="message"
           rows={4}
           required
-          placeholder="Tell us about the puppy you’re interested in, your timeline, and any must-have traits."
+          placeholder="Tell us about the puppy you're interested in, your timeline, and any must-have traits."
+          defaultValue={formValues.message}
           className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
           aria-invalid={fieldErrors.message ? "true" : "false"}
         />
