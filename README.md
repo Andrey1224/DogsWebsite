@@ -1,6 +1,6 @@
 # Exotic Bulldog Level — Sprint Workspace
 
-Sprint workspace for Exotic Bulldog Level. Sprint 1 adds the Supabase-driven catalog, detailed puppy pages, and supporting content routes.
+Sprint workspace for Exotic Bulldog Level. Sprint 1 delivered the Supabase-driven catalog and supporting content routes; Sprint 3/4 now ship the dual-provider ($300) deposit flow via Stripe Checkout and PayPal Smart Buttons.
 
 ## Prerequisites
 - Node.js 20+ (repo tested with v24)
@@ -11,7 +11,7 @@ Sprint workspace for Exotic Bulldog Level. Sprint 1 adds the Supabase-driven cat
 1. Copy `.env.example` to `.env.local` and populate the following keys:
    - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE`
    - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-   - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV`
+   - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV`, `PAYPAL_WEBHOOK_ID`
    - `NEXT_PUBLIC_CRISP_WEBSITE_ID`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `META_PIXEL_ID`
    - `NEXT_PUBLIC_HCAPTCHA_SITE_KEY`, `HCAPTCHA_SECRET_KEY` (required for the contact form)
    - Optional local/testing bypass: `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN`, `HCAPTCHA_BYPASS_TOKEN`
@@ -61,13 +61,17 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - `components/analytics-provider.tsx` wraps the app with a consent-aware GA4/Meta Pixel client. Accept/decline decisions update Consent Mode (`ad_user_data`, `ad_personalization`) and gate tracking for `contact_click`, `form_submit`, `form_success`, and `chat_open` events.
 - Production contact info is sourced from `NEXT_PUBLIC_CONTACT_*` variables. Update `.env.local`, `.env.example`, and Vercel/GitHub secrets to keep the contact bar, Crisp copy, and analytics payloads in sync.
 
-## Payment Integration (Sprint 3)
+## Payment Integration (Sprint 3 & 4)
 
 ### Overview
-- **Stripe Payment Links**: Accept $300 deposits via hosted checkout pages
-- **PayPal Smart Buttons**: Alternative payment method with Orders API v2
-- **Webhook Processing**: Automated order fulfillment with signature verification
+- **Stripe Checkout Sessions**: Server-created sessions with hosted checkout and metadata
+- **PayPal Smart Buttons**: Orders API v2 with server-side create/capture endpoints
+- **Webhook Processing**: Automated fulfillment (Stripe + PayPal) with signature verification
 - **Idempotency**: Multi-layer protection against duplicate charges
+
+#### Follow-ups
+- Slack/email alerting for webhook 5xx responses (scheduled for Sprint 3 — Phase 6 monitoring)
+- GA4 `deposit_paid` analytics event wiring (scheduled for Sprint 3 — Phase 5)
 
 ### Stripe Setup
 
@@ -99,7 +103,12 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 stripe trigger checkout.session.completed
 ```
 
-#### 4. Required Environment Variables
+#### 4. Implementation Notes
+- Sessions are created via the server action in `app/puppies/[slug]/actions.ts`.
+- Metadata persists `puppy_id`, `puppy_slug`, and `channel` for webhook fulfillment.
+- Verified events are processed in `app/api/stripe/webhook/route.ts` → `lib/stripe/webhook-handler.ts`.
+
+#### 5. Required Environment Variables
 - `STRIPE_SECRET_KEY`: Get from [Stripe Dashboard > Developers > API Keys](https://dashboard.stripe.com/apikeys)
 - `STRIPE_WEBHOOK_SECRET`: From Stripe CLI or Dashboard > Webhooks
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Public key for client-side (if using Checkout Sessions)
@@ -121,7 +130,14 @@ stripe trigger checkout.session.completed
    - `PAYMENT.CAPTURE.COMPLETED`
 5. Copy the **Webhook ID** for signature verification
 
-#### 3. Required Environment Variables
+#### 3. Implementation Notes
+- Smart Buttons live in `components/paypal-button.tsx` and call two internal API routes:
+  - `POST /api/paypal/create-order` — validates puppy availability and issues an order.
+  - `POST /api/paypal/capture` — captures the order and creates the reservation.
+- Webhooks are verified in `app/api/paypal/webhook/route.ts` using `verify-webhook-signature`.
+- Fulfillment logic runs through `lib/paypal/webhook-handler.ts`, reusing the reservation service.
+
+#### 4. Required Environment Variables
 - `PAYPAL_CLIENT_ID`: From Dashboard > Apps & Credentials
 - `PAYPAL_CLIENT_SECRET`: From Dashboard > Apps & Credentials
 - `PAYPAL_ENV`: Set to `sandbox` for testing, `live` for production

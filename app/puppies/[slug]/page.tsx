@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PuppyGallery } from "@/components/puppy-gallery";
 import { PuppyCard } from "@/components/puppy-card";
 import { getPuppiesWithRelations, getPuppyBySlug } from "@/lib/supabase/queries";
+import { ReserveButton } from "./reserve-button";
 
 export const revalidate = 60;
 
@@ -72,6 +73,11 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   const statusLabel = puppy.status
     ? puppy.status.charAt(0).toUpperCase() + puppy.status.slice(1)
     : "Unknown";
+  const DEPOSIT_AMOUNT_USD = 300;
+  const depositAmount = puppy.price_usd
+    ? Math.min(DEPOSIT_AMOUNT_USD, puppy.price_usd)
+    : DEPOSIT_AMOUNT_USD;
+  const paypalClientId = process.env.PAYPAL_CLIENT_ID ?? null;
 
   return (
     <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
@@ -126,20 +132,13 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
               </div>
             </dl>
           </div>
-          <div className="space-y-3 rounded-3xl border border-accent/40 bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] p-6">
-            <p className="text-sm font-semibold text-accent-aux">Ready to reserve?</p>
-            <p className="text-sm text-accent-aux/80">
-              Secure deposits launch in Sprint 3. For now, tap the contact bar to talk with our team
-              and place a hold.
-            </p>
-            <button
-              type="button"
-              className="rounded-full bg-[color:var(--btn-bg)] px-6 py-3 text-sm font-semibold text-[color:var(--btn-text)] opacity-70"
-              disabled
-            >
-              Reserve coming soon
-            </button>
-          </div>
+          <ReserveButton
+            puppySlug={puppy.slug || ''}
+            isAvailable={puppy.status === 'available'}
+            status={puppy.status || 'unknown'}
+            depositAmount={depositAmount}
+            paypalClientId={paypalClientId}
+          />
           <div className="rounded-3xl border border-border bg-card p-6">
             <p className="text-sm font-semibold text-muted">Lineage</p>
             <ul className="mt-3 space-y-2 text-sm text-muted">

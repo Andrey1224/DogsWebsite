@@ -1,81 +1,207 @@
 /**
- * PayPal Client Configuration
+ * PayPal API Client
  *
- * Initializes PayPal REST API client for server-side order processing.
- * Uses client credentials flow for authentication.
- *
- * @see https://developer.paypal.com/docs/api/overview/
+ * Lightweight helper for interacting with PayPal's REST API without pulling
+ * in the full server SDK. Provides access token management, order creation,
+ * order capture, and generic request handling.
  */
 
-// Validate required environment variables
-const paypalClientId = process.env.PAYPAL_CLIENT_ID;
-const paypalClientSecret = process.env.PAYPAL_CLIENT_SECRET;
-const paypalEnv = (process.env.PAYPAL_ENV || 'sandbox') as 'sandbox' | 'live';
+import crypto from "node:crypto";
 
-if (!paypalClientId || !paypalClientSecret) {
-  throw new Error(
-    'Missing PayPal environment variables. ' +
-    'Please add PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to your .env.local file.'
-  );
+import type {
+  PayPalCaptureResponse,
+  PayPalCreateOrderResponse,
+  PayPalEnvironment,
+  PayPalOrderMetadata,
+} from "./types";
+
+const PAYPAL_API_BASE: Record<PayPalEnvironment, string> = {
+  sandbox: "https://api-m.sandbox.paypal.com",
+  live: "https://api-m.paypal.com",
+};
+
+interface AccessTokenCache {
+  token: string;
+  expiresAt: number;
 }
 
-/**
- * PayPal API base URL based on environment
- */
-export const paypalBaseUrl =
-  paypalEnv === 'live'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
+let accessTokenCache: AccessTokenCache | null = null;
 
-/**
- * PayPal configuration object
- */
-export const paypalConfig = {
-  clientId: paypalClientId,
-  clientSecret: paypalClientSecret,
-  env: paypalEnv,
-  baseUrl: paypalBaseUrl,
-} as const;
+function getClientConfig() {
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+  const env = (process.env.PAYPAL_ENV || "sandbox").toLowerCase() as PayPalEnvironment;
 
-/**
- * Get PayPal OAuth2 access token
- *
- * Uses client credentials grant type to obtain an access token
- * for making authenticated API requests.
- *
- * @returns Access token for API requests
- */
-export async function getPayPalAccessToken(): Promise<string> {
-  const auth = Buffer.from(
-    `${paypalClientId}:${paypalClientSecret}`
-  ).toString('base64');
+  if (!clientId || !clientSecret) {
+    throw new Error("PayPal client credentials are not configured");
+  }
 
-  const response = await fetch(`${paypalBaseUrl}/v1/oauth2/token`, {
-    method: 'POST',
+  if (env !== "sandbox" && env !== "live") {
+    throw new Error(`Invalid PAYPAL_ENV value: ${process.env.PAYPAL_ENV}`);
+  }
+
+  return { clientId, clientSecret, env };
+}
+
+export function getPayPalEnvironment(): PayPalEnvironment {
+  const { env } = getClientConfig();
+  return env;
+}
+
+export function getPayPalApiBaseUrl(): string {
+  const env = getPayPalEnvironment();
+  return PAYPAL_API_BASE[env];
+}
+
+async function requestAccessToken(forceRefresh = false): Promise<string> {
+  if (!forceRefresh && accessTokenCache && Date.now() < accessTokenCache.expiresAt) {
+    return accessTokenCache.token;
+  }
+
+  const { clientId, clientSecret } = getClientConfig();
+  const url = `${getPayPalApiBaseUrl()}/v1/oauth2/token`;
+
+  const response = await fetch(url, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${auth}`,
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: 'grant_type=client_credentials',
+    body: new URLSearchParams({ grant_type: "client_credentials" }).toString(),
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`PayPal auth failed: ${error}`);
+    const errorBody = await response.text();
+    throw new Error(
+      `Failed to obtain PayPal access token (${response.status} ${response.statusText}): ${errorBody}`,
+    );
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as { access_token: string; expires_in: number };
+
+  accessTokenCache = {
+    token: data.access_token,
+    expiresAt: Date.now() + (data.expires_in - 60) * 1000, // refresh one minute early
+  };
+
   return data.access_token;
 }
 
-/**
- * Webhook secret for signature verification
- */
-export const paypalWebhookId = process.env.PAYPAL_WEBHOOK_ID || '';
+export async function getPayPalAccessToken(forceRefresh = false): Promise<string> {
+  return requestAccessToken(forceRefresh);
+}
 
-if (!paypalWebhookId) {
-  console.warn(
-    'WARNING: PAYPAL_WEBHOOK_ID is not set. ' +
-    'Webhook signature verification will be skipped.'
-  );
+async function paypalFetch<T>(
+  path: string,
+  options: {
+    method?: "GET" | "POST";
+    body?: Record<string, unknown> | string;
+    requestId?: string;
+  } = {},
+): Promise<T> {
+  const accessToken = await requestAccessToken();
+  const url = `${getPayPalApiBaseUrl()}${path}`;
+  const headers = new Headers({
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+  });
+
+  if (options.requestId) {
+    headers.set("PayPal-Request-Id", options.requestId);
+  }
+
+  const response = await fetch(url, {
+    method: options.method ?? "GET",
+    headers,
+    body: typeof options.body === "string" ? options.body : options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  if (!response.ok) {
+    // Attempt to parse error structure from PayPal
+    const errorText = await response.text();
+    throw new Error(
+      `PayPal API request failed (${response.status} ${response.statusText}): ${errorText}`,
+    );
+  }
+
+  return (await response.json()) as T;
+}
+
+export interface CreatePayPalOrderOptions {
+  amount: number;
+  description: string;
+  metadata: PayPalOrderMetadata;
+  requestId?: string;
+  returnUrl?: string;
+  cancelUrl?: string;
+}
+
+export async function createPayPalOrder(
+  options: CreatePayPalOrderOptions,
+): Promise<PayPalCreateOrderResponse> {
+  const { amount, description, metadata, requestId, returnUrl, cancelUrl } = options;
+
+  const amountValue = amount.toFixed(2);
+  const metadataString = JSON.stringify({
+    ...metadata,
+    deposit_amount: metadata.deposit_amount ?? amount,
+  });
+
+  if (metadataString.length > 127) {
+    throw new Error("PayPal custom_id exceeds 127 character limit");
+  }
+
+  const body = {
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: "USD",
+          value: amountValue,
+        },
+        description,
+        custom_id: metadataString,
+      },
+    ],
+    application_context: {
+      user_action: "PAY_NOW",
+      shipping_preference: "NO_SHIPPING",
+      brand_name: "Exotic Bulldog Level",
+      return_url: returnUrl,
+      cancel_url: cancelUrl,
+    },
+  };
+
+  return paypalFetch<PayPalCreateOrderResponse>("/v2/checkout/orders", {
+    method: "POST",
+    body,
+    requestId: requestId ?? crypto.randomUUID(),
+  });
+}
+
+export interface CapturePayPalOrderOptions {
+  orderId: string;
+  requestId?: string;
+}
+
+export async function capturePayPalOrder(
+  options: CapturePayPalOrderOptions,
+): Promise<PayPalCaptureResponse> {
+  const { orderId, requestId } = options;
+
+  return paypalFetch<PayPalCaptureResponse>(`/v2/checkout/orders/${orderId}/capture`, {
+    method: "POST",
+    body: "{}",
+    requestId: requestId ?? crypto.randomUUID(),
+  });
+}
+
+export async function getPayPalOrder(
+  orderId: string,
+): Promise<PayPalCreateOrderResponse> {
+  return paypalFetch<PayPalCreateOrderResponse>(`/v2/checkout/orders/${orderId}`);
+}
+
+export function clearPayPalAccessTokenCache() {
+  accessTokenCache = null;
 }

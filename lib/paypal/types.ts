@@ -1,193 +1,121 @@
 /**
  * PayPal Type Definitions
  *
- * Custom types for PayPal Orders API v2 integration.
- * These types cover order creation, capture, and webhook handling.
- *
- * @see https://developer.paypal.com/docs/api/orders/v2/
+ * Minimal type surface tailored to our PayPal integration so we can work
+ * with strongly typed payloads without pulling in the entire SDK typings.
  */
 
-/**
- * PayPal order intent
- */
-export type PayPalIntent = 'CAPTURE' | 'AUTHORIZE';
+export type PayPalEnvironment = "sandbox" | "live";
 
-/**
- * PayPal order status
- */
-export type PayPalOrderStatus =
-  | 'CREATED'
-  | 'SAVED'
-  | 'APPROVED'
-  | 'VOIDED'
-  | 'COMPLETED'
-  | 'PAYER_ACTION_REQUIRED';
+export interface PayPalLink {
+  href: string;
+  rel: string;
+  method: string;
+}
 
-/**
- * PayPal capture status
- */
-export type PayPalCaptureStatus =
-  | 'COMPLETED'
-  | 'DECLINED'
-  | 'PARTIALLY_REFUNDED'
-  | 'PENDING'
-  | 'REFUNDED'
-  | 'FAILED';
-
-/**
- * Money amount with currency
- */
-export interface PayPalMoney {
+export interface PayPalAmount {
   currency_code: string;
   value: string;
 }
 
-/**
- * Purchase unit for order creation
- */
 export interface PayPalPurchaseUnit {
   reference_id?: string;
   description?: string;
   custom_id?: string;
-  soft_descriptor?: string;
-  amount: PayPalMoney;
-  payee?: {
-    email_address?: string;
-    merchant_id?: string;
+  amount?: PayPalAmount;
+  payments?: {
+    captures?: PayPalCapture[];
   };
 }
 
-/**
- * Application context for checkout flow
- */
-export interface PayPalApplicationContext {
-  brand_name?: string;
-  locale?: string;
-  landing_page?: 'LOGIN' | 'BILLING' | 'NO_PREFERENCE';
-  shipping_preference?: 'GET_FROM_FILE' | 'NO_SHIPPING' | 'SET_PROVIDED_ADDRESS';
-  user_action?: 'CONTINUE' | 'PAY_NOW';
-  return_url?: string;
-  cancel_url?: string;
+export interface PayPalPayerName {
+  given_name?: string;
+  surname?: string;
 }
 
-/**
- * Order creation request
- */
-export interface CreatePayPalOrderRequest {
-  intent: PayPalIntent;
-  purchase_units: PayPalPurchaseUnit[];
-  application_context?: PayPalApplicationContext;
+export interface PayPalPayer {
+  email_address?: string;
+  name?: PayPalPayerName;
+  payer_id?: string;
+  phone?: {
+    phone_number?: {
+      national_number?: string;
+    };
+  };
 }
 
-/**
- * PayPal order response
- */
-export interface PayPalOrder {
+export interface PayPalCreateOrderResponse {
   id: string;
-  status: PayPalOrderStatus;
-  intent: PayPalIntent;
-  purchase_units: Array<{
-    reference_id?: string;
-    amount: PayPalMoney;
-    payee?: {
-      email_address?: string;
-      merchant_id?: string;
-    };
-    payments?: {
-      captures?: PayPalCapture[];
-    };
-  }>;
-  payer?: {
-    name?: {
-      given_name?: string;
-      surname?: string;
-    };
-    email_address?: string;
-    payer_id?: string;
-  };
-  create_time?: string;
-  update_time?: string;
-  links?: Array<{
-    href: string;
-    rel: string;
-    method: string;
-  }>;
+  status: string;
+  intent?: string;
+  links: PayPalLink[];
+  purchase_units?: PayPalPurchaseUnit[];
+  payer?: PayPalPayer;
 }
 
-/**
- * PayPal capture details
- */
 export interface PayPalCapture {
   id: string;
-  status: PayPalCaptureStatus;
-  amount: PayPalMoney;
-  final_capture?: boolean;
-  seller_protection?: {
-    status: string;
-    dispute_categories?: string[];
+  status: string;
+  amount: PayPalAmount;
+  custom_id?: string;
+  seller_receivable_breakdown?: {
+    gross_amount: PayPalAmount;
+    paypal_fee?: PayPalAmount;
+    net_amount?: PayPalAmount;
   };
   create_time?: string;
   update_time?: string;
 }
 
-/**
- * Parameters for creating a PayPal order
- */
-export interface CreateOrderParams {
-  /** Puppy ID for tracking */
-  puppyId: string;
-  /** Puppy slug for URL generation */
-  puppySlug: string;
-  /** Puppy name for description */
-  puppyName: string;
-  /** Deposit amount in USD (e.g., 300.00) */
-  amountUsd: number;
-  /** Customer email (optional) */
-  customerEmail?: string;
-}
-
-/**
- * Result of order capture
- */
-export interface CaptureOrderResult {
-  /** Whether capture was successful */
-  success: boolean;
-  /** PayPal order ID */
-  orderId: string;
-  /** Capture ID */
-  captureId?: string;
-  /** Capture status */
-  status?: PayPalCaptureStatus;
-  /** Captured amount */
-  amount?: PayPalMoney;
-  /** Error message if capture failed */
-  error?: string;
-  /** Custom ID from purchase unit (contains puppy tracking data) */
-  customId?: string;
-}
-
-/**
- * Supported PayPal webhook event types
- */
-export type PayPalWebhookEvent =
-  | 'CHECKOUT.ORDER.APPROVED'
-  | 'PAYMENT.CAPTURE.COMPLETED'
-  | 'PAYMENT.CAPTURE.DENIED'
-  | 'PAYMENT.CAPTURE.REFUNDED';
-
-/**
- * PayPal webhook event structure
- */
-export interface PayPalWebhookPayload {
+export interface PayPalCaptureResponse {
   id: string;
-  event_type: PayPalWebhookEvent;
-  create_time: string;
+  status: string;
+  links: PayPalLink[];
+  purchase_units?: PayPalPurchaseUnit[];
+  payer?: PayPalPayer;
+}
+
+export interface PayPalWebhookEvent<T = unknown> {
+  id: string;
+  event_version?: string;
+  create_time?: string;
   resource_type: string;
-  resource: PayPalOrder | PayPalCapture;
+  event_type: string;
   summary?: string;
-  links?: Array<{
-    href: string;
-    rel: string;
-    method: string;
-  }>;
+  resource: T;
+  transmission_id?: string;
+  links?: PayPalLink[];
+}
+
+export interface PayPalWebhookVerificationPayload {
+  auth_algo: string;
+  cert_url: string;
+  transmission_id: string;
+  transmission_sig: string;
+  transmission_time: string;
+  webhook_id: string;
+  webhook_event: PayPalWebhookEvent<Record<string, unknown>>;
+}
+
+export interface PayPalWebhookVerificationResponse {
+  verification_status: "SUCCESS" | "FAILURE";
+}
+
+export interface PayPalOrderMetadata {
+  puppy_id: string;
+  puppy_slug: string;
+  channel?: string;
+  deposit_amount?: number;
+  customer_email?: string;
+  customer_name?: string;
+  customer_phone?: string;
+}
+
+export interface PayPalWebhookProcessingResult {
+  success: boolean;
+  eventType: string;
+  captureId?: string;
+  orderId?: string;
+  duplicate?: boolean;
+  error?: string;
 }

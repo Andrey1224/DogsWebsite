@@ -4,6 +4,8 @@
  * Tests for atomic reservation creation and race condition handling
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ReservationCreationService } from './create';
 import type { CreateReservationParams } from './types';

@@ -28,7 +28,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Storage**: Supabase Storage for media files
 - **Analytics**: GA4 + Meta Pixel with consent management
 - **Chat**: Crisp widget integration
-- **Payments**: Stripe Payment Links + PayPal Smart Buttons
+- **Payments**: Stripe Checkout Sessions + PayPal Smart Buttons
 - **Testing**: Vitest + React Testing Library + Playwright
 
 ### Key Architectural Patterns
@@ -71,6 +71,7 @@ STRIPE_WEBHOOK_SECRET=
 PAYPAL_CLIENT_ID=
 PAYPAL_CLIENT_SECRET=
 PAYPAL_ENV=
+PAYPAL_WEBHOOK_ID=
 
 # Contact & Analytics
 NEXT_PUBLIC_CONTACT_PHONE=
@@ -162,12 +163,12 @@ Track these events via `useAnalytics().trackEvent`:
 - `contact_click` (channel: whatsapp/telegram/call/sms/email)
 - `form_submit` and `form_success`
 - `chat_open` (Crisp interactions)
-- `reserve_click` and `deposit_paid`
+- `reserve_click` and `deposit_paid` _(pending GA4 wiring in Sprint 3 Phase 5)_
 
 ### Payment Processing
-- **Stripe**: Payment Links with webhook fulfillment (`/api/stripe/webhook`)
-- **PayPal**: Smart Buttons with order capture (`/api/paypal/capture`)
-- Updates `reservations.status` from `pending` → `paid`
+- **Stripe**: Checkout Sessions created in `app/puppies/[slug]/actions.ts`, fulfilled via `/api/stripe/webhook` → `lib/stripe/webhook-handler.ts`
+- **PayPal**: Smart Buttons call `/api/paypal/create-order` and `/api/paypal/capture`; webhooks verified at `/api/paypal/webhook`
+- All paths reuse `ReservationCreationService` to move `reservations.status` from `pending` → `paid`
 
 ### Media Handling
 - Store in Supabase Storage buckets: `puppies`, `parents`, `litters`

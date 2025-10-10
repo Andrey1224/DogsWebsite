@@ -83,22 +83,23 @@ Lead capture + conversion tracking.
 Process deposits via Stripe + PayPal, mark puppies reserved.
 
 ### Tasks
-- [ ] Stripe Payment Link (`deposit_300_usd`) on puppy pages  
-- [ ] PayPal Smart Buttons (`actions.order.capture`) as alternative  
-- [ ] Webhooks:
-  - `/api/stripe/webhook` — handle `checkout.session.completed`
-  - `/api/paypal/capture` — record `reservations` (status=`paid`)
-- [ ] Idempotency: unique keys (`stripe_payment_intent`, `paypal_order_id`)
-- [ ] Log webhook payloads + results (for debugging + retry visibility)
-- [ ] Add Slack/email alert for webhook 5xx
-- [ ] Prevent double-reserve (status check before redirect)
-- [ ] GA4 event: `deposit_paid` (value=300, label=puppy_slug, provider)
+- [x] Stripe Checkout Session (server action) on puppy pages  
+- [x] PayPal Smart Buttons (`actions.order.capture`) as alternative  
+- [x] Webhooks:
+  - `/api/stripe/webhook` — handle `checkout.session.completed`, async success/fail, expired
+  - `/api/paypal/webhook` — verify signature before fulfillment
+  - `/api/paypal/capture` — server-side capture + reservation
+- [x] Idempotency: unique keys (`stripe_payment_intent`, `paypal_capture_id`)
+- [x] Log webhook payloads + results (for debugging + retry visibility)
+- [ ] Add Slack/email alert for webhook 5xx _(moved to Phase 6 monitoring)_
+- [x] Prevent double-reserve (status check before redirect)
+- [ ] GA4 event: `deposit_paid` (value=300, label=puppy_slug, provider) _(planned for Phase 5 analytics)_
 
 ### DoD
 ✅ Test payments update reservation + puppy.status=`reserved`  
 ✅ Webhooks logged + idempotent  
 ✅ Retry works without duplication  
-✅ `deposit_paid` tracked in GA4
+⚠️ GA4 `deposit_paid` event pending (tracked in Sprint 3 Phase 5)
 
 ---
 

@@ -38,6 +38,13 @@ Store secrets in `.env.local` (includes Supabase, Stripe, PayPal, Crisp, GA/Pixe
 - `components/analytics-provider.tsx` wraps every page with consent-gated GA4/Meta Pixel tracking. Call `useAnalytics().trackEvent` for new telemetry; only events fired inside the provider respect consent state. The consent banner component (`components/consent-banner.tsx`) must remain inside the provider tree.
 - When contact numbers/handles change, update `NEXT_PUBLIC_CONTACT_*` values across local `.env`, Vercel, and GitHub Actions secrets—`lib/config/contact.ts` will convert them into the correct formats for every consumer (contact bar, Crisp, analytics).
 
+## Payment Flow
+- Stripe deposits use the server action in `app/puppies/[slug]/actions.ts` to create Checkout Sessions with metadata. Verified events hit `app/api/stripe/webhook/route.ts` → `lib/stripe/webhook-handler.ts` and must remain on the Node runtime for raw-body access.
+- PayPal Smart Buttons live in `components/paypal-button.tsx`. They call `POST /api/paypal/create-order` and `POST /api/paypal/capture`, while webhooks arrive at `app/api/paypal/webhook/route.ts` and are processed by `lib/paypal/webhook-handler.ts`.
+- Idempotency + reservation logic is centralized in `lib/reservations/` (see `create.ts` and `idempotency.ts`). When adding new payment providers, reuse these services instead of duplicating logic.
+- Store webhook environment secrets locally in `.env.local` and on Vercel (`STRIPE_WEBHOOK_SECRET`, `PAYPAL_WEBHOOK_ID`). Rotate them after testing with the Stripe CLI or PayPal sandbox.
+- Pending follow-ups: GA4 `deposit_paid` analytics event (Phase 5) and Slack/email alerts for webhook 5xx responses (Phase 6).
+
 ## Testing Guidelines
 Place Playwright specs in `tests/e2e/*.spec.ts`; current coverage includes catalog filters and the contact form (captcha bypass required). Co-locate unit/component tests with a `.test.tsx` suffix—e.g., `lib/inquiries/schema.test.ts`—and mock GA4/Meta Pixel in future suites. Target ≥80% coverage on shared logic and block merges on failing lint, unit, or e2e jobs.
 

@@ -68,7 +68,7 @@
 - **Хранилище данных:** Supabase (PostgreSQL + Row Level Security) для карточек щенков/помётов/заявок.
 - **Медиа:** Supabase Storage (или S3-совместимое) для фото/видео.
 - **Онлайн-чат:** Crisp (виджет на всех страницах, события открытий/сообщений).
-- **Платежи (депозит/бронь):** Stripe Payment Links (депозит фиксированной суммы, возможность возврата по политике питомника) + PayPal Smart Buttons.
+- **Платежи (депозит/бронь):** Stripe Checkout Sessions (фиксированный депозит, расширяемые метаданные) + PayPal Smart Buttons.
 - **Аналитика/маркетинг:** GA4 (через Google Tag или GTM), Meta Pixel для Facebook/Instagram Ads, события конверсий (клики по WhatsApp/Telegram/DM/Call, отправка форм, успешная оплата депозита).
 - **SEO/разметка:** Микроразметка `Organization`, `PetStore`, `Product` и `FAQ` + OpenGraph/Twitter Cards.
 
@@ -191,15 +191,15 @@ SSR/ISR + API Routes" as Next
 component "Supabase
 (PostgreSQL + Storage)" as DB
 component "Crisp Widget" as Crisp
-component "Stripe Payment Links" as Stripe
+component "Stripe/PayPal Payments" as Payments
 component "GA4 / Meta Pixel" as Analytics
 
 V --> Next : View pages, submit forms
 Next --> DB : read/write puppies, litters, reservations, inquiries
 V --> Crisp : live chat
-V --> Stripe : open payment link (deposit)
+V --> Payments : complete hosted checkout (deposit)
 Next --> Analytics : events (CTA clicks, form submit)
-Stripe --> Next : webhook (payment succeeded)
+Payments --> Next : webhook / capture callback
 Next --> DB : update reservations.status = paid
 @enduml
 ```
@@ -211,15 +211,15 @@ Next --> DB : update reservations.status = paid
 actor User
 participant "Landing" as L
 participant "Crisp Chat" as C
-participant "Stripe Link" as S
-participant "API /reservations" as R
+participant "Payments (Stripe/PayPal)" as P
+participant "Server APIs" as R
 
 User -> L : Open /puppies/[slug]
 L -> User : Show puppy details + CTA
 User -> L : Click "Reserve with Deposit"
-L -> S : Redirect to Stripe Payment Link
-S -> User : Checkout deposit
-S -> R : Webhook payment_intent.succeeded
+L -> P : Start checkout session / order
+P -> User : Hosted checkout experience
+P -> R : Webhook / capture callback
 R -> R : Upsert reservation(paid)
 R -> User : Email/SMS confirmation (via provider)
 User -> C : Ask questions in chat (optional)
@@ -276,16 +276,19 @@ User -> C : Ask questions in chat (optional)
 
 ### 4) Оплата депозита (Stripe + PayPal)
 
-- **Stripe Payment Links** (MVP, самый быстрый путь):
-  - В Stripe создать **Price** (например, `deposit_300_usd`).
-  - Создать **Payment Link** с этим Price. Включить Apple Pay/Google Pay, Link.
-  - В карточке щенка хранить `stripe_payment_link` и открывать в новой вкладке по кнопке **Reserve**.
-  - Обработать `payment_intent.succeeded` вебхуком (Next.js Route Handler `/api/stripe/webhook`) → обновить `reservations.status = 'paid'` и связать с `puppy_id` (метаданные в ссылке или URL-параметры).
-- **PayPal Checkout (Smart Buttons)** — альтернатива/второй способ оплаты депозита:
-  - Подключить PayPal JS SDK на странице щенка, отрисовать кнопку PayPal.
-  - `createOrder` → сумма депозита (например, \$300).
-  - `onApprove` → `actions.order.capture()` и POST на `/api/paypal/capture` для записи `reservations` в БД.
-  - Опционально включить **Venmo** для США и **Pay Later** (если разрешено правилами PayPal и бизнес-категорией).
+- **Stripe Checkout Sessions**:
+  - Серверный экшн (`app/puppies/[slug]/actions.ts`) создаёт Checkout Session с фиксированным депозитом и метаданными (`puppy_id`, `puppy_slug`, `channel`).
+  - Клиент перенаправляется на hosted checkout Stripe (Apple Pay/Google Pay/Link).
+  - Вебхуки (`app/api/stripe/webhook/route.ts`) обрабатывают `checkout.session.completed`, события асинхронных платежей и истечения сессии → `ReservationCreationService` обновляет `reservations` и `puppies.status`.
+- **PayPal Smart Buttons (Orders API v2)**:
+  - `components/paypal-button.tsx` загружает SDK и вызывает `POST /api/paypal/create-order` для серверной валидации и создания заказа.
+  - После `onApprove` выполняется `POST /api/paypal/capture`; параллельно слушаем вебхук `PAYMENT.CAPTURE.COMPLETED` в `app/api/paypal/webhook/route.ts`.
+  - Подпись вебхука проверяется через `verify-webhook-signature`; резервирование создаётся через `ReservationCreationService` с idempotency.
+- **Общее**:
+  - Фиксированный депозит \$300 (или фактическая цена, если меньше).
+  - Статус щенка: `available` → `reserved` только при успешной оплате.
+  - Idempotency: таблица `webhook_events` + уникальность `stripe_payment_intent` / `paypal_capture_id`.
+  - Логирование payload/result для отладки и ретраев.
 
 > В политике укажем: депозит невозвратный/условия возврата, сроки брони, доставка. Включим сбор налогов/комиссий, если применимо.
 
@@ -343,9 +346,10 @@ User -> C : Ask questions in chat (optional)
 **DoD:** письма/сообщения из чата доходят, события кликов ловятся в GA4.
 
 **4. Оплата депозита $300 (2 дня)**  
-- Stripe Payment Link + PayPal Smart Buttons на странице щенка.  
-- Webhooks: Stripe `/api/stripe/webhook`, PayPal `/api/paypal/capture` или webhook.  
-- Запись `reservations` (`paid`, `payment_provider`).  
+- Stripe Checkout Session (серверный экшн) + PayPal Smart Buttons на странице щенка.  
+- Webhooks: Stripe `/api/stripe/webhook`, PayPal `/api/paypal/webhook` + серверный `capture`.  
+- Запись `reservations` (`paid`, `payment_provider`) через `ReservationCreationService`.  
+- Alerting (Slack/email) на 5xx вебхуков — запланировано в фазе 6.
 **DoD:** успешный тест-платёж меняет статус щенка на `reserved`.
 
 **5. SEO/локалка и доверие (1–2 дня)**  
@@ -355,6 +359,7 @@ User -> C : Ask questions in chat (optional)
 
 **6. Аналитика и конверсии (0.5–1 день)**  
 - GA4 + Meta Pixel, события: `contact_click`, `reserve_click`, `form_submit`, `deposit_paid`.  
+- `deposit_paid` переносится на фазу 5 после завершения платежного потока.  
 **DoD:** видны тестовые конверсии в отчетах.
 
 **7. Релиз (0.5 дня)**  
@@ -381,6 +386,3 @@ User -> C : Ask questions in chat (optional)
 - A/B геро-блока (фото, текст УТП, 2 CTA).  
 - Упрощение формы (минимум полей), добавление «callback» кнопки.  
 - Оптимизация изображений, автогенерация WebP/AVIF.
-
-
-
