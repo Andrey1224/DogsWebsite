@@ -47,6 +47,41 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
       pattern: /^[a-f0-9-]{36}$/,
       description: "Crisp chat website ID"
     },
+    // Payment processing (Stripe)
+    STRIPE_SECRET_KEY: {
+      pattern: /^sk_(test|live)_[a-zA-Z0-9]+$/,
+      description: "Stripe secret key (sk_test_... or sk_live_...)"
+    },
+    STRIPE_WEBHOOK_SECRET: {
+      pattern: /^whsec_(test_)?[a-zA-Z0-9]+$/,
+      description: "Stripe webhook secret (whsec_...)"
+    },
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: {
+      pattern: /^pk_(test|live)_[a-zA-Z0-9]+$/,
+      description: "Stripe publishable key (pk_test_... or pk_live_...)"
+    },
+    // Payment processing (PayPal)
+    PAYPAL_CLIENT_ID: {
+      pattern: undefined,
+      description: "PayPal client ID"
+    },
+    PAYPAL_CLIENT_SECRET: {
+      pattern: undefined,
+      description: "PayPal client secret"
+    },
+    PAYPAL_ENV: {
+      pattern: /^(sandbox|live)$/,
+      description: "PayPal environment (sandbox or live)"
+    },
+    // Server-side analytics
+    GA4_API_SECRET: {
+      pattern: undefined,
+      description: "GA4 API secret for Measurement Protocol"
+    },
+    META_CONVERSION_API_TOKEN: {
+      pattern: undefined,
+      description: "Meta Conversion API access token"
+    },
   };
 
   // Check required variables

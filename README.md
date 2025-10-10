@@ -61,6 +61,116 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - `components/analytics-provider.tsx` wraps the app with a consent-aware GA4/Meta Pixel client. Accept/decline decisions update Consent Mode (`ad_user_data`, `ad_personalization`) and gate tracking for `contact_click`, `form_submit`, `form_success`, and `chat_open` events.
 - Production contact info is sourced from `NEXT_PUBLIC_CONTACT_*` variables. Update `.env.local`, `.env.example`, and Vercel/GitHub secrets to keep the contact bar, Crisp copy, and analytics payloads in sync.
 
+## Payment Integration (Sprint 3)
+
+### Overview
+- **Stripe Payment Links**: Accept $300 deposits via hosted checkout pages
+- **PayPal Smart Buttons**: Alternative payment method with Orders API v2
+- **Webhook Processing**: Automated order fulfillment with signature verification
+- **Idempotency**: Multi-layer protection against duplicate charges
+
+### Stripe Setup
+
+#### 1. Install Stripe CLI (for local webhook testing)
+```bash
+# macOS
+brew install stripe/stripe-cli/stripe
+
+# Other platforms: https://stripe.com/docs/stripe-cli
+```
+
+#### 2. Authenticate and forward webhooks
+```bash
+# Login to Stripe account
+stripe login
+
+# Forward webhooks to local server
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+The CLI will display a webhook signing secret (`whsec_...`). Add this to your `.env.local`:
+```bash
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+#### 3. Test webhook events
+```bash
+# Trigger a test checkout.session.completed event
+stripe trigger checkout.session.completed
+```
+
+#### 4. Required Environment Variables
+- `STRIPE_SECRET_KEY`: Get from [Stripe Dashboard > Developers > API Keys](https://dashboard.stripe.com/apikeys)
+- `STRIPE_WEBHOOK_SECRET`: From Stripe CLI or Dashboard > Webhooks
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Public key for client-side (if using Checkout Sessions)
+
+### PayPal Setup
+
+#### 1. Create Sandbox Account
+1. Visit [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/)
+2. Go to **Apps & Credentials** > **Sandbox**
+3. Create a new app or use default app
+4. Copy **Client ID** and **Secret**
+
+#### 2. Configure Webhooks
+1. In PayPal Dashboard, go to **Webhooks**
+2. Click **Add Webhook**
+3. Set webhook URL: `https://yourdomain.com/api/paypal/webhook`
+4. Subscribe to events:
+   - `CHECKOUT.ORDER.APPROVED`
+   - `PAYMENT.CAPTURE.COMPLETED`
+5. Copy the **Webhook ID** for signature verification
+
+#### 3. Required Environment Variables
+- `PAYPAL_CLIENT_ID`: From Dashboard > Apps & Credentials
+- `PAYPAL_CLIENT_SECRET`: From Dashboard > Apps & Credentials
+- `PAYPAL_ENV`: Set to `sandbox` for testing, `live` for production
+- `PAYPAL_WEBHOOK_ID`: From Dashboard > Webhooks (for signature verification)
+
+### Server-Side Analytics (Optional)
+
+For server-side conversion tracking:
+
+#### GA4 Measurement Protocol
+1. Go to **Google Analytics > Admin > Data Streams**
+2. Select your web stream
+3. Expand **Measurement Protocol API secrets**
+4. Create a new secret
+5. Add to `.env.local`:
+   ```bash
+   GA4_API_SECRET=your_secret_here
+   ```
+
+#### Meta Conversion API
+1. Go to **Meta Events Manager > Settings**
+2. Select **Conversions API**
+3. Generate access token
+4. Add to `.env.local`:
+   ```bash
+   META_CONVERSION_API_TOKEN=your_token_here
+   ```
+
+### Testing Payments Locally
+
+#### Stripe Test Mode
+- Use test card: `4242 4242 4242 4242`
+- Any future expiry date
+- Any 3-digit CVC
+- [Full test card list](https://stripe.com/docs/testing#cards)
+
+#### PayPal Sandbox
+- Use sandbox buyer account from [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/accounts)
+- Credentials are auto-generated (usually `sb-xxxxx@personal.example.com`)
+
+### Webhook Security
+
+Both Stripe and PayPal webhooks implement signature verification to prevent unauthorized requests:
+
+- **Stripe**: Uses `Stripe-Signature` header with HMAC-SHA256
+- **PayPal**: Uses `verify-webhook-signature` API endpoint
+
+**CRITICAL**: Never skip signature verification in production!
+
 ## Theming & Tokens
 - Light theme palette: `--bg #F9FAFB`, `--bg-card #FFFFFF`, `--text #111111`, `--text-muted #555555`, `--accent #FFB84D`, gradient `--accent-2-start #FF4D79 → --accent-2-end #FF7FA5`, aux navy `--accent-aux #0D1A44`, footer base `#E5E7EB`, borders `rgba(0,0,0,0.08)`, hover tint `rgba(0,0,0,0.04)`.
 - Dark theme palette: `--bg #0D1A44`, `--bg-card #1C1C1C`, `--text #FFFFFF`, `--text-muted #D1D5DB`, `--accent #FFB84D`, same gradient, aux gold `#FFD166`, footer base `#0A0F24`, borders `rgba(255,255,255,0.12)`, hover tint `rgba(255,255,255,0.06)`.
