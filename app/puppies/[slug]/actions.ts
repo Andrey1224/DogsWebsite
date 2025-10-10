@@ -49,6 +49,10 @@ export async function createCheckoutSession(
       };
     }
 
+    if (puppy.slug !== puppySlug) {
+      throw new Error('Slug mismatch: outdated client data');
+    }
+
     // Step 2: Validate puppy is available
     if (puppy.status !== 'available') {
       return {

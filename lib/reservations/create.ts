@@ -60,56 +60,15 @@ export class ReservationCreationService {
         };
       }
 
-      // Atomically reserve the puppy by updating status from 'available' to 'reserved'
-      // This prevents race conditions where two customers try to reserve the same puppy
+      const sanitizedCustomerName = validatedParams.customerName?.trim() || null;
+      const sanitizedCustomerEmail = validatedParams.customerEmail.toLowerCase().trim();
+      const sanitizedCustomerPhone = validatedParams.customerPhone?.trim() || null;
+      const sanitizedChannel = validatedParams.channel || 'site';
+      const sanitizedNotes = validatedParams.notes?.trim() || null;
+      const expiresAt =
+        validatedParams.expiresAt?.toISOString() || this.calculateDefaultExpiry();
+
       const supabase = createSupabaseClient();
-      const { data: reservedPuppy, error: reserveError } = await supabase
-        .from('puppies')
-        .update({ status: 'reserved' })
-        .eq('id', validatedParams.puppyId)
-        .eq('status', 'available') // CRITICAL: Only update if currently available
-        .select('id, price, name, status')
-        .single();
-
-      if (reserveError || !reservedPuppy) {
-        return {
-          success: false,
-          error: 'Puppy is no longer available for reservation',
-          errorCode: 'RACE_CONDITION_LOST',
-        };
-      }
-
-      // Validate deposit amount
-      if (validatedParams.depositAmount > reservedPuppy.price) {
-        // Rollback: revert puppy status back to available
-        await supabase
-          .from('puppies')
-          .update({ status: 'available' })
-          .eq('id', validatedParams.puppyId);
-
-        return {
-          success: false,
-          error: 'Deposit amount cannot exceed puppy price',
-          errorCode: 'VALIDATION_ERROR',
-        };
-      }
-
-      // Prepare reservation data
-      const reservationData: Omit<Reservation, 'id' | 'created_at' | 'updated_at'> = {
-        puppy_id: validatedParams.puppyId,
-        customer_name: validatedParams.customerName?.trim() || null,
-        customer_email: validatedParams.customerEmail.toLowerCase().trim(),
-        customer_phone: validatedParams.customerPhone?.trim() || null,
-        channel: validatedParams.channel || 'site',
-        status: 'pending',
-        deposit_amount: validatedParams.depositAmount,
-        amount: validatedParams.depositAmount,
-        payment_provider: validatedParams.paymentProvider,
-        external_payment_id: validatedParams.externalPaymentId,
-        webhook_event_id: null,
-        expires_at: validatedParams.expiresAt?.toISOString() || this.calculateDefaultExpiry(),
-        notes: validatedParams.notes?.trim() || null,
-      };
 
       // Create webhook event if provided
       let createdWebhookEvent: WebhookEvent | null = null;
@@ -126,13 +85,67 @@ export class ReservationCreationService {
       }
 
       try {
-        // Create the reservation
-        const reservation = await ReservationQueries.create(reservationData);
+        const { data: reservation, error: transactionError } = await supabase.rpc(
+          'create_reservation_transaction',
+          {
+            p_puppy_id: validatedParams.puppyId,
+            p_customer_name: sanitizedCustomerName,
+            p_customer_email: sanitizedCustomerEmail,
+            p_customer_phone: sanitizedCustomerPhone,
+            p_channel: sanitizedChannel,
+            p_deposit_amount: validatedParams.depositAmount,
+            p_amount: validatedParams.depositAmount,
+            p_payment_provider: validatedParams.paymentProvider,
+            p_external_payment_id: validatedParams.externalPaymentId,
+            p_expires_at: expiresAt,
+            p_notes: sanitizedNotes,
+          }
+        );
+
+        if (transactionError || !reservation) {
+          const message =
+            transactionError?.message ||
+            (transactionError as { details?: string } | undefined)?.details ||
+            'Failed to create reservation';
+          const normalizedMessage = message.toUpperCase();
+
+          if (normalizedMessage.includes('PUPPY_NOT_AVAILABLE')) {
+            return {
+              success: false,
+              error: 'Puppy is no longer available for reservation',
+              errorCode: 'RACE_CONDITION_LOST',
+            };
+          }
+
+          if (normalizedMessage.includes('PUPPY_NOT_FOUND')) {
+            return {
+              success: false,
+              error: 'Puppy not found',
+              errorCode: 'PUPPY_NOT_AVAILABLE',
+            };
+          }
+
+          if (normalizedMessage.includes('DEPOSIT_EXCEEDS_PRICE')) {
+            return {
+              success: false,
+              error: 'Deposit amount cannot exceed puppy price',
+              errorCode: 'VALIDATION_ERROR',
+            };
+          }
+
+          return {
+            success: false,
+            error: message,
+            errorCode: 'DATABASE_ERROR',
+          };
+        }
+
+        const reservationRecord = reservation as Reservation;
 
         // Update webhook event with reservation ID if we have one
-        if (createdWebhookEvent && reservation.id) {
+        if (createdWebhookEvent && reservationRecord.id) {
           await WebhookEventQueries.update(createdWebhookEvent.id, {
-            reservation_id: parseInt(reservation.id),
+            reservation_id: parseInt(reservationRecord.id),
           });
         }
 
@@ -141,16 +154,10 @@ export class ReservationCreationService {
 
         return {
           success: true,
-          reservation,
+          reservation: reservationRecord,
         };
       } catch (error) {
-        // If reservation creation fails, rollback puppy status to available
         console.error('Failed to create reservation:', error);
-
-        await supabase
-          .from('puppies')
-          .update({ status: 'available' })
-          .eq('id', validatedParams.puppyId);
 
         return {
           success: false,

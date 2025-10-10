@@ -42,3 +42,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# migration artifacts
+combined_migration.sql
+check_constraints.sql
+migration_step_by_step.sql

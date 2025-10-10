@@ -35,6 +35,22 @@ BEGIN
   ) THEN
     ALTER TABLE reservations ADD COLUMN expires_at TIMESTAMPTZ;
   END IF;
+
+  -- Add amount column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'reservations' AND column_name = 'amount'
+  ) THEN
+    ALTER TABLE reservations ADD COLUMN amount DECIMAL(10,2);
+  END IF;
+
+  -- Add updated_at column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'reservations' AND column_name = 'updated_at'
+  ) THEN
+    ALTER TABLE reservations ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
 END
 $$;
 
@@ -48,8 +64,9 @@ CREATE INDEX IF NOT EXISTS idx_reservations_expires_at ON reservations(expires_a
 CREATE INDEX IF NOT EXISTS idx_reservations_created_at ON reservations(created_at);
 
 -- Add unique constraint for external payment IDs per provider
-ALTER TABLE reservations ADD CONSTRAINT unique_external_payment_per_provider
-  UNIQUE (payment_provider, external_payment_id)
+-- Note: Using partial unique index instead of constraint with WHERE clause
+CREATE UNIQUE INDEX IF NOT EXISTS unique_external_payment_per_provider
+  ON reservations(payment_provider, external_payment_id)
   WHERE payment_provider IS NOT NULL AND external_payment_id IS NOT NULL;
 
 -- Ensure only one active reservation per puppy
@@ -59,11 +76,27 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_one_active_reservation_per_puppy
   WHERE status IN ('pending', 'paid');
 
 -- Add check constraints for data integrity
-ALTER TABLE reservations ADD CONSTRAINT valid_reservation_amount
-  CHECK (amount >= 0);
+DO $$
+BEGIN
+  -- Add amount constraint if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'valid_reservation_amount'
+  ) THEN
+    ALTER TABLE reservations ADD CONSTRAINT valid_reservation_amount
+      CHECK (amount IS NULL OR amount >= 0);
+  END IF;
 
-ALTER TABLE reservations ADD CONSTRAINT valid_reservation_status
-  CHECK (status IN ('pending', 'paid', 'cancelled', 'expired', 'refunded'));
+  -- Add status constraint if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'valid_reservation_status'
+  ) THEN
+    ALTER TABLE reservations ADD CONSTRAINT valid_reservation_status
+      CHECK (status IN ('pending', 'paid', 'cancelled', 'expired', 'refunded'));
+  END IF;
+END
+$$;
 
 -- Add function to check puppy availability
 CREATE OR REPLACE FUNCTION check_puppy_availability()
@@ -114,7 +147,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Add function to get reservation summary
-CREATE OR REPLACE FUNCTION get_reservation_summary(puppy_id_param BIGINT)
+CREATE OR REPLACE FUNCTION get_reservation_summary(puppy_id_param UUID)
 RETURNS TABLE(
   total_reservations BIGINT,
   pending_reservations BIGINT,

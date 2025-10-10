@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS webhook_events (
   processed_at TIMESTAMPTZ,
   processing_error TEXT,
   idempotency_key TEXT,
-  reservation_id BIGINT REFERENCES reservations(id) ON DELETE SET NULL,
+  reservation_id UUID REFERENCES reservations(id) ON DELETE SET NULL,
   payload JSONB NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -31,9 +31,10 @@ CREATE INDEX idx_webhook_events_created_at ON webhook_events(created_at);
 ALTER TABLE webhook_events ADD CONSTRAINT unique_webhook_event
   UNIQUE (provider, event_id);
 
--- Each idempotency key should be unique across all providers
-ALTER TABLE webhook_events ADD CONSTRAINT unique_idempotency_key
-  UNIQUE (idempotency_key) WHERE idempotency_key IS NOT NULL;
+-- Each idempotency key should be unique across all providers (using partial index)
+CREATE UNIQUE INDEX IF NOT EXISTS unique_idempotency_key
+  ON webhook_events(idempotency_key)
+  WHERE idempotency_key IS NOT NULL;
 
 -- Add RLS (Row Level Security) - only system can access webhook events
 ALTER TABLE webhook_events ENABLE ROW LEVEL SECURITY;

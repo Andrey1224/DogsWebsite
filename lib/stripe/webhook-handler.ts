@@ -14,6 +14,7 @@
  * @see https://stripe.com/docs/payments/checkout/fulfill-orders
  */
 
+import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 import { idempotencyManager } from '@/lib/reservations/idempotency';
 import { ReservationCreationService } from '@/lib/reservations/create';
@@ -314,6 +315,11 @@ export class StripeWebhookHandler {
     console.log(
       `[Stripe Webhook] Successfully created reservation ID: ${result.reservation?.id}`
     );
+
+    if (metadata.puppy_slug) {
+      revalidatePath(`/puppies/${metadata.puppy_slug}`);
+    }
+    revalidatePath('/puppies');
 
     // Store webhook event for audit trail
     await idempotencyManager.createWebhookEvent({
