@@ -8,6 +8,11 @@
 import { ReservationCreationService } from "@/lib/reservations/create";
 import { idempotencyManager } from "@/lib/reservations/idempotency";
 import type { ReservationChannel } from "@/lib/reservations/types";
+import { trackDepositPaid } from "@/lib/analytics/server-events";
+import {
+  sendOwnerDepositNotification,
+  sendCustomerDepositConfirmation,
+} from "@/lib/emails/deposit-notifications";
 import { getPayPalOrder } from "./client";
 import type {
   PayPalCapture,
@@ -216,6 +221,40 @@ export class PayPalWebhookHandler {
     console.log(
       `[PayPal Webhook] Reservation created for capture ${captureId}, reservation ID ${reservationResult.reservation?.id}`,
     );
+
+    // Track deposit_paid event in GA4
+    if (reservationResult.reservation) {
+      await trackDepositPaid({
+        value: amountValue,
+        currency: capture.amount?.currency_code?.toUpperCase() || 'USD',
+        puppy_slug: metadata.puppy_slug,
+        puppy_name: metadata.puppy_name,
+        payment_provider: 'paypal',
+        reservation_id: reservationResult.reservation.id.toString(),
+      });
+
+      // Send email notifications
+      const emailData = {
+        customerName: customerName || 'Valued Customer',
+        customerEmail: customerEmail,
+        puppyName: metadata.puppy_name,
+        puppySlug: metadata.puppy_slug,
+        depositAmount: amountValue,
+        currency: capture.amount?.currency_code?.toUpperCase() || 'USD',
+        paymentProvider: 'paypal' as const,
+        reservationId: reservationResult.reservation.id.toString(),
+        transactionId: captureId,
+      };
+
+      // Send emails in parallel (don't block webhook response)
+      Promise.all([
+        sendOwnerDepositNotification(emailData),
+        sendCustomerDepositConfirmation(emailData),
+      ]).catch((error) => {
+        console.error('[PayPal Webhook] Failed to send email notifications:', error);
+        // Don't fail the webhook - emails are non-critical
+      });
+    }
 
     return {
       success: true,

@@ -104,6 +104,7 @@ export interface PayPalWebhookVerificationResponse {
 export interface PayPalOrderMetadata {
   puppy_id: string;
   puppy_slug: string;
+  puppy_name: string;
   channel?: string;
   deposit_amount?: number;
   customer_email?: string;

@@ -26,6 +26,8 @@ export interface StripeCheckoutMetadata {
   puppy_id: string;
   /** Puppy slug for URL generation */
   puppy_slug: string;
+  /** Puppy name for display */
+  puppy_name: string;
   /** Customer name */
   customer_name?: string;
   /** Customer email */

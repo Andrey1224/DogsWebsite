@@ -17,6 +17,11 @@
 import Stripe from 'stripe';
 import { idempotencyManager } from '@/lib/reservations/idempotency';
 import { ReservationCreationService } from '@/lib/reservations/create';
+import { trackDepositPaid } from '@/lib/analytics/server-events';
+import {
+  sendOwnerDepositNotification,
+  sendCustomerDepositConfirmation,
+} from '@/lib/emails/deposit-notifications';
 import type {
   WebhookProcessingResult,
   StripeCheckoutMetadata,
@@ -324,6 +329,40 @@ export class StripeWebhookHandler {
       },
       reservationId: result.reservation?.id ? Number(result.reservation.id) : undefined,
     });
+
+    // Track deposit_paid event in GA4
+    if (result.reservation) {
+      await trackDepositPaid({
+        value: (session.amount_total || 0) / 100,
+        currency: session.currency?.toUpperCase() || 'USD',
+        puppy_slug: metadata.puppy_slug,
+        puppy_name: metadata.puppy_name,
+        payment_provider: 'stripe',
+        reservation_id: result.reservation.id.toString(),
+      });
+
+      // Send email notifications
+      const emailData = {
+        customerName: session.customer_details?.name || metadata.customer_name || 'Valued Customer',
+        customerEmail: session.customer_details?.email || metadata.customer_email,
+        puppyName: metadata.puppy_name,
+        puppySlug: metadata.puppy_slug,
+        depositAmount: (session.amount_total || 0) / 100,
+        currency: session.currency?.toUpperCase() || 'USD',
+        paymentProvider: 'stripe' as const,
+        reservationId: result.reservation.id.toString(),
+        transactionId: paymentIntentId,
+      };
+
+      // Send emails in parallel (don't block webhook response)
+      Promise.all([
+        sendOwnerDepositNotification(emailData),
+        sendCustomerDepositConfirmation(emailData),
+      ]).catch((error) => {
+        console.error('[Stripe Webhook] Failed to send email notifications:', error);
+        // Don't fail the webhook - emails are non-critical
+      });
+    }
 
     return {
       success: true,

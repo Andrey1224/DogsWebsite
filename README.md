@@ -68,10 +68,9 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - **PayPal Smart Buttons**: Orders API v2 with server-side create/capture endpoints
 - **Webhook Processing**: Automated fulfillment (Stripe + PayPal) with signature verification
 - **Idempotency**: Multi-layer protection against duplicate charges
-
-#### Follow-ups
-- Slack/email alerting for webhook 5xx responses (scheduled for Sprint 3 — Phase 6 monitoring)
-- GA4 `deposit_paid` analytics event wiring (scheduled for Sprint 3 — Phase 5)
+- **Email Notifications**: Automatic owner + customer emails on successful deposit
+- **Server-Side Analytics**: GA4 `deposit_paid` events via Measurement Protocol ✅
+- **Webhook Monitoring**: Health check endpoint + Slack/email alerts for failures ✅
 
 ### Stripe Setup
 
@@ -186,6 +185,33 @@ Both Stripe and PayPal webhooks implement signature verification to prevent unau
 - **PayPal**: Uses `verify-webhook-signature` API endpoint
 
 **CRITICAL**: Never skip signature verification in production!
+
+### Webhook Monitoring & Alerting (Sprint 3 Phase 6)
+
+Monitor webhook health and get notified of failures:
+
+#### Health Check Endpoint
+Visit `/api/health/webhooks` to check webhook system health:
+- Returns 200 OK if healthy, 503 if issues detected
+- Provides metrics for Stripe and PayPal webhooks
+- Tracks error rates, recent events, and last success/failure times
+
+#### Alert Configuration
+Configure email and/or Slack alerts for webhook failures:
+
+```bash
+# Email alerts (comma-separated list, defaults to OWNER_EMAIL)
+ALERT_EMAILS=admin@example.com,ops@example.com
+
+# Slack webhook URL (optional)
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+```
+
+#### Alert Features
+- **Email Alerts**: HTML templates with error details, customer context, and troubleshooting steps
+- **Slack Alerts**: Rich formatting with error blocks and action buttons
+- **Throttling**: 15-minute cooldown per event type to prevent spam
+- **Non-blocking**: Alert delivery doesn't delay webhook responses
 
 ## Theming & Tokens
 - Light theme palette: `--bg #F9FAFB`, `--bg-card #FFFFFF`, `--text #111111`, `--text-muted #555555`, `--accent #FFB84D`, gradient `--accent-2-start #FF4D79 → --accent-2-end #FF7FA5`, aux navy `--accent-aux #0D1A44`, footer base `#E5E7EB`, borders `rgba(0,0,0,0.08)`, hover tint `rgba(0,0,0,0.04)`.

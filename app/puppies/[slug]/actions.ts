@@ -102,6 +102,7 @@ export async function createCheckoutSession(
       metadata: {
         puppy_id: params.puppyId,
         puppy_slug: params.puppySlug,
+        puppy_name: params.puppyName,
         channel: 'site',
       },
       success_url: params.successUrl,

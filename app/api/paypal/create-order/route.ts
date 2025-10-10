@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         puppy_id: puppy.id,
         puppy_slug: puppy.slug || "",
+        puppy_name: puppy.name || "Bulldog Puppy",
         channel: "site",
         deposit_amount: depositAmount,
       },

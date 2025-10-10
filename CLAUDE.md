@@ -94,6 +94,13 @@ HCAPTCHA_SECRET_KEY=
 NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN=
 HCAPTCHA_BYPASS_TOKEN=
 
+# Analytics (Server-Side)
+GA4_API_SECRET=
+
+# Webhook Monitoring & Alerting
+ALERT_EMAILS=
+SLACK_WEBHOOK_URL=
+
 # Site
 NEXT_PUBLIC_SITE_URL=
 ```
@@ -163,12 +170,16 @@ Track these events via `useAnalytics().trackEvent`:
 - `contact_click` (channel: whatsapp/telegram/call/sms/email)
 - `form_submit` and `form_success`
 - `chat_open` (Crisp interactions)
-- `reserve_click` and `deposit_paid` _(pending GA4 wiring in Sprint 3 Phase 5)_
+- `reserve_click` and `deposit_paid` (tracked via GA4 Measurement Protocol)
 
-### Payment Processing
+### Payment Processing (Sprint 3 - Complete)
 - **Stripe**: Checkout Sessions created in `app/puppies/[slug]/actions.ts`, fulfilled via `/api/stripe/webhook` → `lib/stripe/webhook-handler.ts`
 - **PayPal**: Smart Buttons call `/api/paypal/create-order` and `/api/paypal/capture`; webhooks verified at `/api/paypal/webhook`
-- All paths reuse `ReservationCreationService` to move `reservations.status` from `pending` → `paid`
+- **Reservation Flow**: `ReservationCreationService` handles atomic puppy reservation with race condition protection
+- **Idempotency**: Multi-layer deduplication (webhook events, payment IDs, database constraints)
+- **Email Notifications**: Owner + customer emails sent automatically on successful deposit
+- **Analytics**: Server-side `deposit_paid` events tracked via GA4 Measurement Protocol
+- **Monitoring**: `/api/health/webhooks` endpoint + email/Slack alerts for webhook failures
 
 ### Media Handling
 - Store in Supabase Storage buckets: `puppies`, `parents`, `litters`

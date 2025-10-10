@@ -21,6 +21,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, webhookSecret } from '@/lib/stripe/client';
 import { StripeWebhookHandler } from '@/lib/stripe/webhook-handler';
+import { alertWebhookError, trackWebhookSuccess } from '@/lib/monitoring/webhook-alerts';
 import Stripe from 'stripe';
 
 // CRITICAL: Must use Node.js runtime for raw body reading
@@ -91,6 +92,11 @@ export async function POST(req: NextRequest) {
 
     // Step 5: Return appropriate response
     if (result.success || result.duplicate) {
+      // Track successful webhook processing
+      trackWebhookSuccess('stripe', event.type).catch((err) => {
+        console.error('[Stripe Webhook] Failed to track success:', err);
+      });
+
       // Return 200 OK for both success and duplicates
       // This prevents Stripe from retrying the webhook
       return NextResponse.json(
@@ -103,10 +109,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Processing failed - return 500 to trigger Stripe retry
+    // Processing failed - send alert and return 500 to trigger Stripe retry
     console.error(
       `[Stripe Webhook] Processing failed: ${result.error} (Event: ${event.type}, ID: ${event.id})`
     );
+
+    // Send alert for failed webhook (non-blocking)
+    const session = event.data.object as Stripe.Checkout.Session;
+    alertWebhookError({
+      provider: 'stripe',
+      eventType: event.type,
+      eventId: event.id,
+      error: result.error || 'Unknown processing error',
+      puppyId: session.metadata?.puppy_id,
+      customerEmail: session.customer_details?.email || session.metadata?.customer_email,
+      timestamp: new Date(),
+    }).catch((err) => {
+      console.error('[Stripe Webhook] Failed to send alert:', err);
+    });
 
     return NextResponse.json(
       {
@@ -119,6 +139,17 @@ export async function POST(req: NextRequest) {
     // Unexpected error - return 500 to trigger Stripe retry
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Stripe Webhook] Unexpected error: ${errorMessage}`);
+
+    // Send alert for unexpected errors (non-blocking)
+    alertWebhookError({
+      provider: 'stripe',
+      eventType: 'unknown',
+      eventId: 'unknown',
+      error: `Unexpected error: ${errorMessage}`,
+      timestamp: new Date(),
+    }).catch((err) => {
+      console.error('[Stripe Webhook] Failed to send alert for unexpected error:', err);
+    });
 
     return NextResponse.json(
       { error: 'Internal server error', details: errorMessage },

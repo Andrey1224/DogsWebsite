@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { PayPalWebhookHandler } from "@/lib/paypal/webhook-handler";
 import { verifyPayPalWebhookSignature } from "@/lib/paypal/webhook-verification";
+import { alertWebhookError, trackWebhookSuccess } from "@/lib/monitoring/webhook-alerts";
 import type { PayPalWebhookEvent } from "@/lib/paypal/types";
 
 export const runtime = "nodejs";
@@ -55,6 +56,11 @@ export async function POST(request: NextRequest) {
     const result = await PayPalWebhookHandler.processEvent(event);
 
     if (result.success || result.duplicate) {
+      // Track successful webhook processing
+      trackWebhookSuccess('paypal', event.event_type).catch((err) => {
+        console.error('[PayPal Webhook] Failed to track success:', err);
+      });
+
       return NextResponse.json(
         {
           received: true,
@@ -64,6 +70,39 @@ export async function POST(request: NextRequest) {
         { status: 200 },
       );
     }
+
+    // Processing failed - send alert and return 500 to trigger PayPal retry
+    console.error(
+      `[PayPal Webhook] Processing failed: ${result.error} (Event: ${event.event_type}, ID: ${event.id})`
+    );
+
+    // Extract metadata for alert context
+    const resource = event.resource as { custom_id?: string };
+    let puppyId: string | undefined;
+    let customerEmail: string | undefined;
+
+    if (resource.custom_id) {
+      try {
+        const metadata = JSON.parse(resource.custom_id);
+        puppyId = metadata.puppy_id;
+        customerEmail = metadata.customer_email;
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    // Send alert for failed webhook (non-blocking)
+    alertWebhookError({
+      provider: 'paypal',
+      eventType: event.event_type,
+      eventId: event.id,
+      error: result.error || 'Failed to process PayPal webhook',
+      puppyId,
+      customerEmail,
+      timestamp: new Date(),
+    }).catch((err) => {
+      console.error('[PayPal Webhook] Failed to send alert:', err);
+    });
 
     return NextResponse.json(
       {
@@ -75,6 +114,17 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("[PayPal Webhook] Error processing request:", message);
+
+    // Send alert for unexpected errors (non-blocking)
+    alertWebhookError({
+      provider: 'paypal',
+      eventType: 'unknown',
+      eventId: 'unknown',
+      error: `Unexpected error: ${message}`,
+      timestamp: new Date(),
+    }).catch((err) => {
+      console.error('[PayPal Webhook] Failed to send alert for unexpected error:', err);
+    });
 
     return NextResponse.json(
       { error: message },
