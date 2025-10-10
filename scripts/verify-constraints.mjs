@@ -81,61 +81,6 @@ async function verifyColumns() {
   return missing;
 }
 
-async function applyMigrationSQL() {
-  console.log('\n📝 Applying reservation_constraints migration...\n');
-
-  const migrationPath = join(rootDir, 'supabase/migrations/20251010T021104Z_reservation_constraints.sql');
-  const sql = readFileSync(migrationPath, 'utf-8');
-
-  // Split SQL into statements and execute them
-  const statements = sql
-    .split(';')
-    .map(s => s.trim())
-    .filter(s => s && !s.startsWith('--'));
-
-  let successCount = 0;
-  let errorCount = 0;
-
-  for (let i = 0; i < statements.length; i++) {
-    const statement = statements[i];
-    if (!statement) continue;
-
-    try {
-      // Use the REST API directly for DDL
-      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseServiceRole,
-          'Authorization': `Bearer ${supabaseServiceRole}`
-        },
-        body: JSON.stringify({ query: statement })
-      });
-
-      if (response.ok) {
-        successCount++;
-        console.log(`✅ Statement ${i + 1} executed`);
-      } else {
-        const error = await response.text();
-        // Ignore "already exists" errors
-        if (error.includes('already exists') || error.includes('duplicate')) {
-          console.log(`⏭️  Statement ${i + 1} skipped (already exists)`);
-          successCount++;
-        } else {
-          console.error(`❌ Statement ${i + 1} failed:`, error);
-          errorCount++;
-        }
-      }
-    } catch (err) {
-      console.error(`❌ Statement ${i + 1} error:`, err.message);
-      errorCount++;
-    }
-  }
-
-  console.log(`\n📊 Results: ${successCount} success, ${errorCount} errors`);
-  return errorCount === 0;
-}
-
 async function testTransaction() {
   console.log('\n🧪 Testing create_reservation_transaction function...\n');
 
@@ -191,10 +136,7 @@ async function main() {
   if (missingColumns.length > 0) {
     console.log(`\n⚠️  Missing ${missingColumns.length} columns. Need to apply migration.`);
     console.log('\nMissing columns:', missingColumns);
-
-    // Ask for confirmation in a real scenario, but for now let's proceed
-    console.log('\nAttempting to apply migration via direct SQL execution...');
-    console.log('Note: This may fail. If so, you need to run the migration manually via Supabase dashboard.\n');
+    console.log('\nManually run migration 20251010T021104Z_reservation_constraints.sql to resolve.\n');
   } else {
     console.log('\n✅ All required columns exist!');
   }
@@ -207,6 +149,14 @@ async function main() {
   console.log('  - Reservations table: accessible');
   console.log('  - Required columns: ' + (missingColumns.length === 0 ? 'present' : `${missingColumns.length} missing`));
   console.log('  - Transaction function: exists');
+  console.log('  - Required constraints to confirm:');
+  REQUIRED_CONSTRAINTS.forEach(name => {
+    console.log(`    • ${name}`);
+  });
+  console.log('  - Required indexes to confirm:');
+  REQUIRED_INDEXES.forEach(name => {
+    console.log(`    • ${name}`);
+  });
 
   if (missingColumns.length > 0) {
     console.log('\n⚠️  Action required: Apply migration 20251010T021104Z_reservation_constraints.sql');
