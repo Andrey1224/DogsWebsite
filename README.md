@@ -55,6 +55,7 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 
 ## Contact & Analytics Stack (Sprint 2)
 - Contact form (`components/contact-form.tsx`) posts to the server action in `app/contact/actions.ts`, which validates input with Zod, enforces Supabase-backed rate limits, and writes to the `inquiries` table.
+- **Form UX Enhancement**: Form fields preserve user input on validation errors, preventing data loss and improving user experience.
 - Captcha verification lives in `lib/captcha/hcaptcha.ts`; enable real keys for production or supply the same bypass token (`NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` / `HCAPTCHA_BYPASS_TOKEN`) locally to exercise the flow in tests.
 - Crisp chat is injected via `components/crisp-chat.tsx`, sharing availability events with the sticky `ContactBar` and dispatching offline fallbacks to WhatsApp.
 - `components/analytics-provider.tsx` wraps the app with a consent-aware GA4/Meta Pixel client. Accept/decline decisions update Consent Mode (`ad_user_data`, `ad_personalization`) and gate tracking for `contact_click`, `form_submit`, `form_success`, and `chat_open` events.
