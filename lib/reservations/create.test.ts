@@ -9,18 +9,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ReservationCreationService } from './create';
 import type { CreateReservationParams } from './types';
+import type { SupabaseFixture } from '../../tests/fixtures/supabase-client-fixture';
 
-// Mock modules
-const mockSupabaseFrom = vi.fn();
-const mockUpdate = vi.fn();
-const mockEq = vi.fn();
-const mockSelect = vi.fn();
-const mockSingle = vi.fn();
+const supabaseFixture =
+  (globalThis as { __SUPABASE_FIXTURE__?: SupabaseFixture })
+    .__SUPABASE_FIXTURE__;
 
 vi.mock('@/lib/supabase/client', () => ({
-  createSupabaseClient: vi.fn(() => ({
-    from: mockSupabaseFrom,
-  })),
+  createSupabaseClient: () => supabaseFixture,
 }));
 
 vi.mock('./queries', () => ({
@@ -50,41 +46,31 @@ describe('ReservationCreationService', () => {
     channel: 'site',
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  if (!supabaseFixture) {
+    throw new Error('Supabase fixture not initialized');
+  }
 
-    // Setup default mock chain
-    mockSupabaseFrom.mockReturnValue({
-      update: mockUpdate,
-    });
-    mockUpdate.mockReturnValue({
-      eq: mockEq,
-    });
-    mockEq.mockReturnValue({
-      eq: mockEq,
-      select: mockSelect,
-      update: mockUpdate,
-    });
-    mockSelect.mockReturnValue({
-      single: mockSingle,
-    });
+  beforeEach(() => {
+    supabaseFixture.reset();
   });
+
+  const registerReservationTransaction = (
+    impl: (args: Record<string, unknown>) => Promise<{
+      data: unknown;
+      error: { message: string } | null;
+    }>,
+  ) => {
+    const handler = vi.fn(impl);
+    supabaseFixture.registerRpc(
+      'create_reservation_transaction',
+      handler as Parameters<SupabaseFixture['registerRpc']>[1],
+    );
+    return handler;
+  };
 
   describe('Atomic Puppy Reservation', () => {
     it('should atomically reserve puppy by updating status from available to reserved', async () => {
       const { idempotencyManager } = await import('./idempotency');
-      const { ReservationQueries } = await import('./queries');
-
-      // Setup successful puppy reservation
-      mockSingle.mockResolvedValue({
-        data: {
-          id: validParams.puppyId,
-          price: 2500,
-          name: 'Test Puppy',
-          status: 'reserved',
-        },
-        error: null,
-      });
 
       (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
         exists: false,
@@ -92,38 +78,54 @@ describe('ReservationCreationService', () => {
         provider: validParams.paymentProvider,
       });
 
-      (ReservationQueries.create as any).mockResolvedValue({
+      const reservationRecord = {
         id: 'reservation-123',
         puppy_id: validParams.puppyId,
         customer_email: validParams.customerEmail,
         status: 'pending',
+        deposit_amount: validParams.depositAmount,
+        amount: validParams.depositAmount,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      });
+      };
+
+      const rpcHandler = registerReservationTransaction(async () => ({
+        data: reservationRecord,
+        error: null,
+      }));
 
       const result = await ReservationCreationService.createReservation(validParams);
 
       expect(result.success).toBe(true);
-      expect(mockSupabaseFrom).toHaveBeenCalledWith('puppies');
-      expect(mockUpdate).toHaveBeenCalledWith({ status: 'reserved' });
-      expect(mockEq).toHaveBeenCalledWith('id', validParams.puppyId);
-      expect(mockEq).toHaveBeenCalledWith('status', 'available');
+      expect(result.reservation).toEqual(reservationRecord);
+      expect(rpcHandler).toHaveBeenCalledWith({
+        p_amount: validParams.depositAmount,
+        p_channel: validParams.channel,
+        p_customer_email: validParams.customerEmail,
+        p_customer_name: validParams.customerName,
+        p_customer_phone: null,
+        p_deposit_amount: validParams.depositAmount,
+        p_expires_at: expect.any(String),
+        p_external_payment_id: validParams.externalPaymentId,
+        p_notes: null,
+        p_payment_provider: validParams.paymentProvider,
+        p_puppy_id: validParams.puppyId,
+      });
     });
 
     it('should return RACE_CONDITION_LOST when puppy is no longer available', async () => {
       const { idempotencyManager } = await import('./idempotency');
 
-      // Puppy not available (atomic update returns no data)
-      mockSingle.mockResolvedValue({
-        data: null,
-        error: { message: 'No rows returned' },
-      });
-
       (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
         exists: false,
         paymentId: validParams.externalPaymentId,
         provider: validParams.paymentProvider,
       });
+
+      registerReservationTransaction(async () => ({
+        data: null,
+        error: { message: 'PUPPY_NOT_AVAILABLE' },
+      }));
 
       const result = await ReservationCreationService.createReservation(validParams);
 
@@ -134,18 +136,6 @@ describe('ReservationCreationService', () => {
 
     it('should rollback puppy status on reservation creation failure', async () => {
       const { idempotencyManager } = await import('./idempotency');
-      const { ReservationQueries } = await import('./queries');
-
-      // First call: successfully reserve puppy
-      mockSingle.mockResolvedValueOnce({
-        data: {
-          id: validParams.puppyId,
-          price: 2500,
-          name: 'Test Puppy',
-          status: 'reserved',
-        },
-        error: null,
-      });
 
       (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
         exists: false,
@@ -153,45 +143,38 @@ describe('ReservationCreationService', () => {
         provider: validParams.paymentProvider,
       });
 
-      // Mock reservation creation to fail
-      (ReservationQueries.create as any).mockRejectedValue(new Error('Database error'));
+      const rpcHandler = registerReservationTransaction(async () => ({
+        data: null,
+        error: { message: 'Database error' },
+      }));
 
       const result = await ReservationCreationService.createReservation(validParams);
 
       expect(result.success).toBe(false);
       expect(result.errorCode).toBe('DATABASE_ERROR');
-
-      // Verify rollback was attempted (update called twice: reserve + rollback)
-      expect(mockUpdate).toHaveBeenCalledWith({ status: 'available' });
+      expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
 
     it('should handle deposit amount exceeding puppy price with rollback', async () => {
       const { idempotencyManager } = await import('./idempotency');
-
-      mockSingle.mockResolvedValueOnce({
-        data: {
-          id: validParams.puppyId,
-          price: 100, // Lower than deposit amount (500)
-          name: 'Test Puppy',
-          status: 'reserved',
-        },
-        error: null,
-      });
 
       (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
         exists: false,
         paymentId: validParams.externalPaymentId,
         provider: validParams.paymentProvider,
       });
+
+      const rpcHandler = registerReservationTransaction(async () => ({
+        data: null,
+        error: { message: 'DEPOSIT_EXCEEDS_PRICE' },
+      }));
 
       const result = await ReservationCreationService.createReservation(validParams);
 
       expect(result.success).toBe(false);
       expect(result.errorCode).toBe('VALIDATION_ERROR');
       expect(result.error).toContain('cannot exceed puppy price');
-
-      // Verify rollback was attempted
-      expect(mockUpdate).toHaveBeenCalledWith({ status: 'available' });
+      expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
   });
 
