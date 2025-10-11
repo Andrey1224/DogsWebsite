@@ -49,6 +49,10 @@ export async function createCheckoutSession(
       };
     }
 
+    if (!puppy.id) {
+      throw new Error('Puppy record missing primary key');
+    }
+
     if (puppy.slug !== puppySlug) {
       throw new Error('Slug mismatch: outdated client data');
     }

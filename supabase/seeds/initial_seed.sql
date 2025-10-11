@@ -18,27 +18,27 @@ values
 -- Puppies (English Bulldogs)
 insert into puppies (id, litter_id, name, slug, sex, color, birth_date, price_usd, status, weight_oz, description, photo_urls, video_urls, stripe_payment_link)
 values
-  ('aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Duke', 'duke-english-bulldog', 'male', 'Brindle', '2024-10-12', 4200, 'available', 38, 'Confident male with playful energy and early crate training.', '{"https://images.exoticbulldog.dev/puppies/duke-1.jpg","https://images.exoticbulldog.dev/puppies/duke-2.jpg"}', '{"https://videos.exoticbulldog.dev/duke-walk.mp4"}', 'https://buy.stripe.com/test_4gw4iT4s09kU5R68wy'),
-  ('bbbb1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Pearl', 'pearl-english-bulldog', 'female', 'Fawn & White', '2024-10-12', 4300, 'reserved', 36, 'Gentle female, loves cuddles, vet health certificate ready.', '{"https://images.exoticbulldog.dev/puppies/pearl-1.jpg","https://images.exoticbulldog.dev/puppies/pearl-2.jpg"}', '{"https://videos.exoticbulldog.dev/pearl-play.mp4"}', 'https://buy.stripe.com/test_eVa3gV4s02dC7hK8wz'),
-  ('cccc1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Regal', 'regal-english-bulldog', 'male', 'White & Tan', '2024-10-12', 4100, 'available', 37, 'Calm demeanor, excels with children, AKC paperwork included.', '{"https://images.exoticbulldog.dev/puppies/regal-1.jpg"}', '{"https://videos.exoticbulldog.dev/regal-rest.mp4"}', 'https://buy.stripe.com/test_6oE9AJ5P4cEM8zG6op')
+  ('21745fea-f84f-4541-99b1-528bdbfd0dbd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Duke', 'duke-english-bulldog', 'male', 'Brindle', '2024-10-12', 4200, 'available', 38, 'Confident male with playful energy and early crate training.', '{"https://images.exoticbulldog.dev/puppies/duke-1.jpg","https://images.exoticbulldog.dev/puppies/duke-2.jpg"}', '{"https://videos.exoticbulldog.dev/duke-walk.mp4"}', 'https://buy.stripe.com/test_4gw4iT4s09kU5R68wy'),
+  ('c4c7eebc-3528-42a9-8996-73cb042d3d90', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Pearl', 'pearl-english-bulldog', 'female', 'Fawn & White', '2024-10-12', 4300, 'reserved', 36, 'Gentle female, loves cuddles, vet health certificate ready.', '{"https://images.exoticbulldog.dev/puppies/pearl-1.jpg","https://images.exoticbulldog.dev/puppies/pearl-2.jpg"}', '{"https://videos.exoticbulldog.dev/pearl-play.mp4"}', 'https://buy.stripe.com/test_eVa3gV4s02dC7hK8wz'),
+  ('685a0f9a-2ec0-4be4-b2c3-516428a462b2', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Regal', 'regal-english-bulldog', 'male', 'White & Tan', '2024-10-12', 4100, 'available', 37, 'Calm demeanor, excels with children, AKC paperwork included.', '{"https://images.exoticbulldog.dev/puppies/regal-1.jpg"}', '{"https://videos.exoticbulldog.dev/regal-rest.mp4"}', 'https://buy.stripe.com/test_6oE9AJ5P4cEM8zG6op')
   on conflict (slug) do nothing;
 
 -- Puppies (French Bulldogs)
 insert into puppies (id, litter_id, name, slug, sex, color, birth_date, price_usd, status, weight_oz, description, photo_urls, video_urls, stripe_payment_link)
 values
-  ('dddd1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Marcel', 'marcel-french-bulldog', 'male', 'Blue Fawn', '2024-11-19', 5200, 'available', 22, 'Curious explorer with great structure and clear DNA panel.', '{"https://images.exoticbulldog.dev/puppies/marcel-1.jpg","https://images.exoticbulldog.dev/puppies/marcel-2.jpg"}', '{"https://videos.exoticbulldog.dev/marcel-sniff.mp4"}', 'https://buy.stripe.com/test_fZe5mH9s0fV28zG8wC'),
-  ('eeee1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Amélie', 'amelie-french-bulldog', 'female', 'Lilac & Tan', '2024-11-19', 5400, 'available', 21, 'Sweet companion temperament, early socialization complete.', '{"https://images.exoticbulldog.dev/puppies/amelie-1.jpg","https://images.exoticbulldog.dev/puppies/amelie-2.jpg"}', '{"https://videos.exoticbulldog.dev/amelie-cuddle.mp4"}', 'https://buy.stripe.com/test_8wM7uH4s0bhM8zG288'),
-  ('ffff1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Éclair', 'eclair-french-bulldog', 'female', 'Merle', '2024-11-19', 5600, 'upcoming', 20, 'Rare merle coat, vet check scheduled at 8 weeks.', '{"https://images.exoticbulldog.dev/puppies/eclair-1.jpg"}', '{"https://videos.exoticbulldog.dev/eclair-wiggle.mp4"}', 'https://buy.stripe.com/test_9AQa7B5P4bZM8zG3cf')
+  ('efe8be6b-5242-4aba-8d82-13181a44ea8f', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Marcel', 'marcel-french-bulldog', 'male', 'Blue Fawn', '2024-11-19', 5200, 'available', 22, 'Curious explorer with great structure and clear DNA panel.', '{"https://images.exoticbulldog.dev/puppies/marcel-1.jpg","https://images.exoticbulldog.dev/puppies/marcel-2.jpg"}', '{"https://videos.exoticbulldog.dev/marcel-sniff.mp4"}', 'https://buy.stripe.com/test_fZe5mH9s0fV28zG8wC'),
+  ('2ebfe56f-74a9-4cd1-890d-ab0f7fc74d5f', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Amélie', 'amelie-french-bulldog', 'female', 'Lilac & Tan', '2024-11-19', 5400, 'available', 21, 'Sweet companion temperament, early socialization complete.', '{"https://images.exoticbulldog.dev/puppies/amelie-1.jpg","https://images.exoticbulldog.dev/puppies/amelie-2.jpg"}', '{"https://videos.exoticbulldog.dev/amelie-cuddle.mp4"}', 'https://buy.stripe.com/test_8wM7uH4s0bhM8zG288'),
+  ('2c1bbe6f-8418-4ade-9f34-b21bf783ae57', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Éclair', 'eclair-french-bulldog', 'female', 'Merle', '2024-11-19', 5600, 'upcoming', 20, 'Rare merle coat, vet check scheduled at 8 weeks.', '{"https://images.exoticbulldog.dev/puppies/eclair-1.jpg"}', '{"https://videos.exoticbulldog.dev/eclair-wiggle.mp4"}', 'https://buy.stripe.com/test_9AQa7B5P4bZM8zG3cf')
   on conflict (slug) do nothing;
 
 -- Example reservations (optional demo)
 insert into reservations (id, puppy_id, customer_name, customer_email, customer_phone, channel, status, deposit_amount, payment_provider, stripe_payment_intent, created_at)
 values
-  ('aaaa2222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'bbbb1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Jessica Moore', 'jessica@example.com', '+12055550123', 'site', 'paid', 300, 'stripe', 'pi_demo_123', now())
+  ('231eb554-4c8e-4490-9ff2-19adeb207df9', 'c4c7eebc-3528-42a9-8996-73cb042d3d90', 'Jessica Moore', 'jessica@example.com', '+12055550123', 'site', 'paid', 300, 'stripe', 'pi_demo_123', now())
   on conflict do nothing;
 
 -- Example inquiry
 insert into inquiries (id, source, name, email, phone, message, puppy_id, utm)
 values
-  ('aaaa3333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'form', 'Daniel Carter', 'daniel@example.com', '+12055550145', 'Interested in upcoming French bulldog puppies shipping to GA.', 'ffff1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '{"utm_source":"instagram","utm_campaign":"holiday"}')
+  ('750c4c2d-c9e5-46bf-a75c-ffa8afbdaf93', 'form', 'Daniel Carter', 'daniel@example.com', '+12055550145', 'Interested in upcoming French bulldog puppies shipping to GA.', '2c1bbe6f-8418-4ade-9f34-b21bf783ae57', '{"utm_source":"instagram","utm_campaign":"holiday"}')
   on conflict do nothing;
