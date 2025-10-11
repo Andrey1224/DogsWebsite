@@ -53,26 +53,33 @@ export function createSupabaseFixture(initial: { tables?: TableStore } = {}) {
     },
   });
 
-  const rpc = async (fn: string, params?: unknown) => {
-    const handler = rpcHandlers[fn];
-    if (!handler) {
-      return {
-        data: null,
-        error: { message: `rpc ${fn} not implemented in fixture` },
-      } as QueryResult;
-    }
+  const rpc = (fn: string, params?: unknown) => {
+    const execute = async (): Promise<QueryResult> => {
+      const handler = rpcHandlers[fn];
+      if (!handler) {
+        return {
+          data: null,
+          error: { message: `rpc ${fn} not implemented in fixture` },
+        } as QueryResult;
+      }
 
-    try {
-      return await handler(params);
-    } catch (error) {
-      return {
-        data: null,
-        error: {
-          message:
-            error instanceof Error ? error.message : String(error),
-        },
-      } as QueryResult;
-    }
+      try {
+        return await handler(params);
+      } catch (error) {
+        return {
+          data: null,
+          error: {
+            message:
+              error instanceof Error ? error.message : String(error),
+          },
+        } as QueryResult;
+      }
+    };
+
+    return {
+      single: execute,
+      maybeSingle: execute,
+    } as const;
   };
 
   const createClientView = () => ({

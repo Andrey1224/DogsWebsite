@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ReservationCreationService } from './create';
+import { ReservationCreationError, ReservationCreationService } from './create';
 import type { CreateReservationParams } from './types';
 import type { SupabaseFixture } from '../../tests/fixtures/supabase-client-fixture';
 
@@ -94,10 +94,9 @@ describe('ReservationCreationService', () => {
         error: null,
       }));
 
-      const result = await ReservationCreationService.createReservation(validParams);
+      const { reservationId } = await ReservationCreationService.createReservation(validParams);
 
-      expect(result.success).toBe(true);
-      expect(result.reservation).toEqual(reservationRecord);
+      expect(reservationId).toBe(reservationRecord.id);
       expect(rpcHandler).toHaveBeenCalledWith({
         p_amount: validParams.depositAmount,
         p_channel: validParams.channel,
@@ -127,11 +126,15 @@ describe('ReservationCreationService', () => {
         error: { message: 'PUPPY_NOT_AVAILABLE' },
       }));
 
-      const result = await ReservationCreationService.createReservation(validParams);
-
-      expect(result.success).toBe(false);
-      expect(result.errorCode).toBe('RACE_CONDITION_LOST');
-      expect(result.error).toContain('no longer available');
+      await ReservationCreationService.createReservation(validParams)
+        .then(() => {
+          throw new Error('Expected reservation creation to fail');
+        })
+        .catch((error) => {
+          expect(error).toBeInstanceOf(ReservationCreationError);
+          expect(error.code).toBe('RACE_CONDITION_LOST');
+          expect(error.message.toLowerCase()).toContain('no longer available');
+        });
     });
 
     it('should rollback puppy status on reservation creation failure', async () => {
@@ -148,10 +151,12 @@ describe('ReservationCreationService', () => {
         error: { message: 'Database error' },
       }));
 
-      const result = await ReservationCreationService.createReservation(validParams);
-
-      expect(result.success).toBe(false);
-      expect(result.errorCode).toBe('DATABASE_ERROR');
+      await expect(
+        ReservationCreationService.createReservation(validParams)
+      ).rejects.toMatchObject({
+        code: 'DATABASE_ERROR',
+        message: expect.any(String),
+      });
       expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
 
@@ -169,11 +174,12 @@ describe('ReservationCreationService', () => {
         error: { message: 'DEPOSIT_EXCEEDS_PRICE' },
       }));
 
-      const result = await ReservationCreationService.createReservation(validParams);
-
-      expect(result.success).toBe(false);
-      expect(result.errorCode).toBe('VALIDATION_ERROR');
-      expect(result.error).toContain('cannot exceed puppy price');
+      await expect(
+        ReservationCreationService.createReservation(validParams)
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('cannot exceed puppy price'),
+      });
       expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
   });
@@ -208,11 +214,9 @@ describe('ReservationCreationService', () => {
         provider: validParams.paymentProvider,
       });
 
-      const result = await ReservationCreationService.createReservation(validParams);
+      const { reservationId } = await ReservationCreationService.createReservation(validParams);
 
-      expect(result.success).toBe(true);
-      expect(result.reservation).toEqual(existingReservation);
-      expect(result.error).toContain('already exists');
+      expect(reservationId).toBe(existingReservation.id);
     });
   });
 
@@ -223,11 +227,12 @@ describe('ReservationCreationService', () => {
         customerEmail: 'invalid-email',
       };
 
-      const result = await ReservationCreationService.createReservation(invalidParams);
-
-      expect(result.success).toBe(false);
-      expect(result.errorCode).toBe('VALIDATION_ERROR');
-      expect(result.error).toContain('Validation error');
+      await expect(
+        ReservationCreationService.createReservation(invalidParams)
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('Validation error'),
+      });
     });
 
     it('should reject invalid Stripe payment ID format', async () => {
@@ -237,11 +242,12 @@ describe('ReservationCreationService', () => {
         externalPaymentId: 'invalid-format',
       };
 
-      const result = await ReservationCreationService.createReservation(invalidParams);
-
-      expect(result.success).toBe(false);
-      expect(result.errorCode).toBe('VALIDATION_ERROR');
-      expect(result.error).toContain('Invalid payment ID format');
+      await expect(
+        ReservationCreationService.createReservation(invalidParams)
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('Invalid payment ID format'),
+      });
     });
   });
 });

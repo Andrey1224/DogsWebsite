@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
           received: true,
           eventType: result.eventType,
           duplicate: result.duplicate || false,
+          reservationId: result.reservationId ?? null,
         },
         { status: 200 }
       );

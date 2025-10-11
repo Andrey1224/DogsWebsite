@@ -5,7 +5,7 @@
  * service and idempotency manager to ensure safe, atomic operations.
  */
 
-import { ReservationCreationService } from "@/lib/reservations/create";
+import { ReservationCreationError, ReservationCreationService } from "@/lib/reservations/create";
 import { idempotencyManager } from "@/lib/reservations/idempotency";
 import type { ReservationChannel } from "@/lib/reservations/types";
 import { trackDepositPaid } from "@/lib/analytics/server-events";
@@ -173,67 +173,41 @@ export class PayPalWebhookHandler {
       };
     }
 
-    const reservationResult = await ReservationCreationService.createReservation(
-      {
-        puppyId: metadata.puppy_id,
-        customerEmail,
-        customerName: customerName || undefined,
-        customerPhone: customerPhone || undefined,
-        depositAmount: amountValue,
-        paymentProvider: "paypal",
-        externalPaymentId: captureId,
-        channel: (metadata.channel || "site") as ReservationChannel,
-        notes: orderId ? `PayPal Order ${orderId}` : "PayPal capture",
-      },
-      {
-        provider: "paypal",
-        eventId,
-        eventType: event.event_type,
-        payload: event,
-        idempotencyKey: `paypal:${captureId}`,
-      },
-    );
-
-    if (!reservationResult.success) {
-      if (reservationResult.errorCode === "RACE_CONDITION_LOST") {
-        return {
-          success: true,
+    try {
+      const { reservationId } = await ReservationCreationService.createReservation(
+        {
+          puppyId: metadata.puppy_id,
+          customerEmail,
+          customerName: customerName || undefined,
+          customerPhone: customerPhone || undefined,
+          depositAmount: amountValue,
+          paymentProvider: "paypal",
+          externalPaymentId: captureId,
+          channel: (metadata.channel || "site") as ReservationChannel,
+          notes: orderId ? `PayPal Order ${orderId}` : "PayPal capture",
+        },
+        {
+          provider: "paypal",
+          eventId,
           eventType: event.event_type,
-          captureId,
-          duplicate: true,
-          error: reservationResult.error,
-        };
-      }
-
-      console.error(
-        "[PayPal Webhook] Failed to create reservation:",
-        reservationResult.error,
+          payload: event,
+          idempotencyKey: `paypal:${captureId}`,
+        },
       );
 
-      return {
-        success: false,
-        eventType: event.event_type,
-        captureId,
-        error: reservationResult.error || "Failed to create reservation",
-      };
-    }
+      console.log(
+        `[PayPal Webhook] Reservation created for capture ${captureId}, reservation ID ${reservationId}`,
+      );
 
-    console.log(
-      `[PayPal Webhook] Reservation created for capture ${captureId}, reservation ID ${reservationResult.reservation?.id}`,
-    );
-
-    // Track deposit_paid event in GA4
-    if (reservationResult.reservation) {
       await trackDepositPaid({
         value: amountValue,
         currency: capture.amount?.currency_code?.toUpperCase() || 'USD',
         puppy_slug: metadata.puppy_slug,
         puppy_name: metadata.puppy_name,
         payment_provider: 'paypal',
-        reservation_id: reservationResult.reservation.id.toString(),
+        reservation_id: reservationId,
       });
 
-      // Send email notifications
       const emailData = {
         customerName: customerName || 'Valued Customer',
         customerEmail: customerEmail,
@@ -242,25 +216,53 @@ export class PayPalWebhookHandler {
         depositAmount: amountValue,
         currency: capture.amount?.currency_code?.toUpperCase() || 'USD',
         paymentProvider: 'paypal' as const,
-        reservationId: reservationResult.reservation.id.toString(),
+        reservationId,
         transactionId: captureId,
       };
 
-      // Send emails in parallel (don't block webhook response)
-      Promise.all([
+      void Promise.all([
         sendOwnerDepositNotification(emailData),
         sendCustomerDepositConfirmation(emailData),
       ]).catch((error) => {
         console.error('[PayPal Webhook] Failed to send email notifications:', error);
-        // Don't fail the webhook - emails are non-critical
       });
-    }
 
-    return {
-      success: true,
-      eventType: event.event_type,
-      captureId,
-      orderId,
-    };
+      return {
+        success: true,
+        eventType: event.event_type,
+        captureId,
+        orderId,
+        reservationId,
+      };
+    } catch (error) {
+      if (error instanceof ReservationCreationError) {
+        if (error.code === 'RACE_CONDITION_LOST') {
+          return {
+            success: true,
+            eventType: event.event_type,
+            captureId,
+            duplicate: true,
+            error: error.message,
+          };
+        }
+
+        return {
+          success: false,
+          eventType: event.event_type,
+          captureId,
+          error: error.message,
+          errorCode: error.code,
+        };
+      }
+
+      console.error('[PayPal Webhook] Failed to create reservation:', error);
+
+      return {
+        success: false,
+        eventType: event.event_type,
+        captureId,
+        error: error instanceof Error ? error.message : 'Failed to create reservation',
+      };
+    }
   }
 }

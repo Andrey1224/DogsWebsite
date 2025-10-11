@@ -7,11 +7,12 @@
 
 import type {
   CreateReservationParams,
-  CreateReservationResult,
+  CreateReservationResponse,
   Reservation,
   CreateWebhookEventParams,
   WebhookEvent,
   PaymentProvider,
+  ReservationCreationErrorCode,
 } from './types';
 import {
   enhancedCreateReservationParamsSchema,
@@ -20,6 +21,16 @@ import { ReservationQueries, WebhookEventQueries } from './queries';
 import { idempotencyManager } from './idempotency';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { formatCentsToUSD } from '@/lib/utils/currency';
+
+export class ReservationCreationError extends Error {
+  constructor(
+    message: string,
+    public code: ReservationCreationErrorCode
+  ) {
+    super(message);
+    this.name = 'ReservationCreationError';
+  }
+}
 
 /**
  * Reservation creation service
@@ -31,20 +42,20 @@ export class ReservationCreationService {
   static async createReservation(
     params: CreateReservationParams,
     webhookEvent?: CreateWebhookEventParams
-  ): Promise<CreateReservationResult> {
+  ): Promise<CreateReservationResponse> {
     try {
       // Validate input parameters
       const validationResult = enhancedCreateReservationParamsSchema.safeParse(params);
       if (!validationResult.success) {
         const errorMessages = validationResult.error.issues.map((e) => e.message).join(', ');
-        return {
-          success: false,
-          error: `Validation error: ${errorMessages}`,
-          errorCode: 'VALIDATION_ERROR',
-        };
+        throw new ReservationCreationError(
+          `Validation error: ${errorMessages}`,
+          'VALIDATION_ERROR'
+        );
       }
 
       const validatedParams = validationResult.data;
+      const supabase = createSupabaseClient();
 
       // Check idempotency - prevent duplicate reservations
       const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
@@ -52,12 +63,19 @@ export class ReservationCreationService {
         validatedParams.externalPaymentId
       );
 
-      if (idempotencyCheck.exists && idempotencyCheck.reservation) {
-        return {
-          success: true,
-          reservation: idempotencyCheck.reservation,
-          error: 'Reservation already exists for this payment',
-        };
+      if (idempotencyCheck.exists) {
+        if (idempotencyCheck.reservation?.id) {
+          return { reservationId: idempotencyCheck.reservation.id };
+        }
+
+        const existingReservation = await ReservationQueries.getByPayment(
+          validatedParams.paymentProvider,
+          validatedParams.externalPaymentId
+        );
+
+        if (existingReservation?.id) {
+          return { reservationId: existingReservation.id };
+        }
       }
 
       const sanitizedCustomerName = validatedParams.customerName?.trim() || null;
@@ -68,110 +86,92 @@ export class ReservationCreationService {
       const expiresAt =
         validatedParams.expiresAt?.toISOString() || this.calculateDefaultExpiry();
 
-      const supabase = createSupabaseClient();
-
       // Create webhook event if provided
       let createdWebhookEvent: WebhookEvent | null = null;
       if (webhookEvent) {
         const webhookResult = await idempotencyManager.createWebhookEvent(webhookEvent);
         if (!webhookResult.success) {
-          return {
-            success: false,
-            error: `Failed to create webhook event: ${webhookResult.error}`,
-            errorCode: 'DATABASE_ERROR',
-          };
+          throw new ReservationCreationError(
+            `Failed to create webhook event: ${webhookResult.error}`,
+            'DATABASE_ERROR'
+          );
         }
         createdWebhookEvent = webhookResult.webhookEvent || null;
       }
 
-      try {
-        const { data: reservation, error: transactionError } = await supabase.rpc(
-          'create_reservation_transaction',
-          {
-            p_puppy_id: validatedParams.puppyId,
-            p_customer_name: sanitizedCustomerName,
-            p_customer_email: sanitizedCustomerEmail,
-            p_customer_phone: sanitizedCustomerPhone,
-            p_channel: sanitizedChannel,
-            p_deposit_amount: validatedParams.depositAmount,
-            p_amount: validatedParams.depositAmount,
-            p_payment_provider: validatedParams.paymentProvider,
-            p_external_payment_id: validatedParams.externalPaymentId,
-            p_expires_at: expiresAt,
-            p_notes: sanitizedNotes,
-          }
-        );
+      const { data, error: transactionError } = await supabase
+        .rpc('create_reservation_transaction', {
+          p_puppy_id: validatedParams.puppyId,
+          p_customer_name: sanitizedCustomerName,
+          p_customer_email: sanitizedCustomerEmail,
+          p_customer_phone: sanitizedCustomerPhone,
+          p_channel: sanitizedChannel,
+          p_deposit_amount: validatedParams.depositAmount,
+          p_amount: validatedParams.depositAmount,
+          p_payment_provider: validatedParams.paymentProvider,
+          p_external_payment_id: validatedParams.externalPaymentId,
+          p_expires_at: expiresAt,
+          p_notes: sanitizedNotes,
+        })
+        .single();
 
-        if (transactionError || !reservation) {
-          const message =
-            transactionError?.message ||
-            (transactionError as { details?: string } | undefined)?.details ||
-            'Failed to create reservation';
-          const normalizedMessage = message.toUpperCase();
+      if (transactionError || !data) {
+        const message =
+          transactionError?.message ||
+          (transactionError as { details?: string } | undefined)?.details ||
+          'Failed to create reservation';
+        const normalizedMessage = message.toUpperCase();
 
-          if (normalizedMessage.includes('PUPPY_NOT_AVAILABLE')) {
-            return {
-              success: false,
-              error: 'Puppy is no longer available for reservation',
-              errorCode: 'RACE_CONDITION_LOST',
-            };
-          }
-
-          if (normalizedMessage.includes('PUPPY_NOT_FOUND')) {
-            return {
-              success: false,
-              error: 'Puppy not found',
-              errorCode: 'PUPPY_NOT_AVAILABLE',
-            };
-          }
-
-          if (normalizedMessage.includes('DEPOSIT_EXCEEDS_PRICE')) {
-            return {
-              success: false,
-              error: 'Deposit amount cannot exceed puppy price',
-              errorCode: 'VALIDATION_ERROR',
-            };
-          }
-
-          return {
-            success: false,
-            error: message,
-            errorCode: 'DATABASE_ERROR',
-          };
+        if (normalizedMessage.includes('PUPPY_NOT_AVAILABLE')) {
+          throw new ReservationCreationError(
+            'Puppy is no longer available for reservation',
+            'RACE_CONDITION_LOST'
+          );
         }
 
-        const reservationRecord = reservation as Reservation;
-
-        // Update webhook event with reservation ID if we have one
-        if (createdWebhookEvent && reservationRecord.id) {
-          await WebhookEventQueries.update(createdWebhookEvent.id, {
-            reservation_id: parseInt(reservationRecord.id),
-          });
+        if (normalizedMessage.includes('PUPPY_NOT_FOUND')) {
+          throw new ReservationCreationError('Puppy not found', 'PUPPY_NOT_AVAILABLE');
         }
 
-        // NOTE: Puppy status remains 'reserved' after successful reservation creation
-        // It will be updated to 'sold' when payment is confirmed or back to 'available' if cancelled/expired
+        if (normalizedMessage.includes('DEPOSIT_EXCEEDS_PRICE')) {
+          throw new ReservationCreationError(
+            'Deposit amount cannot exceed puppy price',
+            'VALIDATION_ERROR'
+          );
+        }
 
-        return {
-          success: true,
-          reservation: reservationRecord,
-        };
-      } catch (error) {
-        console.error('Failed to create reservation:', error);
-
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error occurred',
-          errorCode: 'DATABASE_ERROR',
-        };
+        throw new ReservationCreationError(message, 'DATABASE_ERROR');
       }
+
+      const reservationData = data as Partial<Reservation> & { reservation_id?: string };
+      const reservationId =
+        reservationData.id ?? reservationData.reservation_id;
+
+      if (!reservationId) {
+        throw new ReservationCreationError(
+          'Reservation ID not returned by transaction',
+          'DATABASE_ERROR'
+        );
+      }
+
+      // Update webhook event with reservation ID if we have one
+      if (createdWebhookEvent) {
+        await WebhookEventQueries.update(createdWebhookEvent.id, {
+          reservation_id: reservationId,
+        });
+      }
+
+      return { reservationId };
     } catch (error) {
+      if (error instanceof ReservationCreationError) {
+        throw error;
+      }
+
       console.error('Unexpected error in createReservation:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        errorCode: 'DATABASE_ERROR',
-      };
+      throw new ReservationCreationError(
+        error instanceof Error ? error.message : 'Unknown error occurred',
+        'DATABASE_ERROR'
+      );
     }
   }
 
@@ -187,7 +187,7 @@ export class ReservationCreationService {
     customerPhone?: string,
     amount?: number,
     webhookEvent?: CreateWebhookEventParams
-  ): Promise<CreateReservationResult> {
+  ): Promise<CreateReservationResponse> {
     const params: CreateReservationParams = {
       puppyId,
       customerEmail,
@@ -210,35 +210,20 @@ export class ReservationCreationService {
     params: CreateReservationParams,
     paymentAmount: number,
     webhookEvent?: CreateWebhookEventParams
-  ): Promise<CreateReservationResult> {
+  ): Promise<CreateReservationResponse> {
     // First create as pending
-    const result = await this.createReservation(params, webhookEvent);
-
-    if (!result.success || !result.reservation) {
-      return result;
-    }
+    const { reservationId } = await this.createReservation(params, webhookEvent);
 
     // If payment amount matches, mark as paid immediately
     if (Math.abs(paymentAmount - params.depositAmount) < 0.01) {
       try {
-        const updatedReservation = await ReservationQueries.updateStatus(
-          result.reservation.id,
-          'paid'
-        );
-
-        if (updatedReservation) {
-          return {
-            success: true,
-            reservation: updatedReservation,
-          };
-        }
+        await ReservationQueries.updateStatus(reservationId, 'paid');
       } catch (error) {
         console.error('Failed to update reservation to paid:', error);
-        // Still return success since reservation was created
       }
     }
 
-    return result;
+    return { reservationId };
   }
 
   /**
@@ -402,7 +387,7 @@ export class ReservationCreationService {
 export async function createReservation(
   params: CreateReservationParams,
   webhookEvent?: CreateWebhookEventParams
-): Promise<CreateReservationResult> {
+): Promise<CreateReservationResponse> {
   return ReservationCreationService.createReservation(params, webhookEvent);
 }
 
@@ -418,7 +403,7 @@ export async function createReservationFromPayment(
   customerPhone?: string,
   amount?: number,
   webhookEvent?: CreateWebhookEventParams
-): Promise<CreateReservationResult> {
+): Promise<CreateReservationResponse> {
   return ReservationCreationService.createFromPayment(
     paymentProvider,
     externalPaymentId,
@@ -438,7 +423,7 @@ export async function createConfirmedReservation(
   params: CreateReservationParams,
   paymentAmount: number,
   webhookEvent?: CreateWebhookEventParams
-): Promise<CreateReservationResult> {
+): Promise<CreateReservationResponse> {
   return ReservationCreationService.createWithConfirmedPayment(
     params,
     paymentAmount,

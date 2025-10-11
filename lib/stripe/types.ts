@@ -6,6 +6,7 @@
  */
 
 import Stripe from 'stripe';
+import type { ReservationCreationErrorCode } from '@/lib/reservations/types';
 
 /**
  * Supported Stripe webhook event types for payment processing
@@ -79,8 +80,12 @@ export interface WebhookProcessingResult {
   eventType: string;
   /** Payment intent ID (for idempotency) */
   paymentIntentId?: string;
+  /** Reservation identifier when a record is created */
+  reservationId?: string;
   /** Error message if processing failed */
   error?: string;
   /** Whether this was a duplicate event */
   duplicate?: boolean;
+  /** Error code for failure scenarios */
+  errorCode?: ReservationCreationErrorCode;
 }

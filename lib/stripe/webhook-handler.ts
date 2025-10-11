@@ -17,7 +17,7 @@
 import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 import { idempotencyManager } from '@/lib/reservations/idempotency';
-import { ReservationCreationService } from '@/lib/reservations/create';
+import { ReservationCreationService, ReservationCreationError } from '@/lib/reservations/create';
 import { trackDepositPaid } from '@/lib/analytics/server-events';
 import {
   sendOwnerDepositNotification,
@@ -291,7 +291,6 @@ export class StripeWebhookHandler {
       `[Stripe Webhook] Creating reservation for puppy_id: ${metadata.puppy_id}, payment_intent: ${paymentIntentId}`
     );
 
-    // Idempotency guard — skip if puppy already has a paid reservation
     const supabase = getServiceRoleClient();
 
     if (supabase) {
@@ -323,85 +322,57 @@ export class StripeWebhookHandler {
           paymentIntentId,
           duplicate: true,
           error: 'Puppy already reserved',
+          reservationId: existingReservation.id,
         };
       }
     }
 
-    // Create reservation using Phase 2 service
-    const result = await ReservationCreationService.createReservation({
-      puppyId: metadata.puppy_id,
-      customerEmail: session.customer_details?.email || metadata.customer_email,
-      customerName:
-        session.customer_details?.name || metadata.customer_name || undefined,
-      customerPhone: session.customer_details?.phone || metadata.customer_phone,
-      depositAmount: (session.amount_total || 0) / 100, // Convert from cents to dollars
-      paymentProvider: 'stripe' as const,
-      externalPaymentId: paymentIntentId,
-      channel: (metadata.channel || 'site') as 'site' | 'whatsapp' | 'telegram' | 'instagram' | 'facebook' | 'phone',
-      notes: `Stripe Checkout Session: ${session.id}`,
-    });
+    try {
+      const { reservationId } = await ReservationCreationService.createReservation({
+        puppyId: metadata.puppy_id,
+        customerEmail: session.customer_details?.email || metadata.customer_email,
+        customerName:
+          session.customer_details?.name || metadata.customer_name || undefined,
+        customerPhone: session.customer_details?.phone || metadata.customer_phone,
+        depositAmount: (session.amount_total || 0) / 100,
+        paymentProvider: 'stripe',
+        externalPaymentId: paymentIntentId,
+        channel: (metadata.channel || 'site') as 'site' | 'whatsapp' | 'telegram' | 'instagram' | 'facebook' | 'phone',
+        notes: `Stripe Checkout Session: ${session.id}`,
+      });
 
-    if (!result.success) {
-      console.error(
-        `[Stripe Webhook] Failed to create reservation: ${result.error} (code: ${result.errorCode})`
+      console.log(
+        `[Stripe Webhook] Successfully created reservation ID: ${reservationId}`
       );
 
-      // For race condition errors, return success with duplicate flag
-      // This prevents Stripe from retrying the webhook
-      if (result.errorCode === 'RACE_CONDITION_LOST') {
-        return {
-          success: true,
-          eventType: eventType || 'checkout.session.completed',
-          paymentIntentId,
-          duplicate: true,
-          error: result.error,
-        };
+      if (metadata.puppy_slug) {
+        revalidatePath(`/puppies/${metadata.puppy_slug}`);
       }
+      revalidatePath('/puppies');
 
-      return {
-        success: false,
+      await idempotencyManager.createWebhookEvent({
+        provider: 'stripe',
+        eventId,
         eventType: eventType || 'checkout.session.completed',
-        paymentIntentId,
-        error: result.error,
-      };
-    }
+        idempotencyKey: `stripe:${paymentIntentId}`,
+        payload: {
+          event_id: eventId,
+          session_id: session.id,
+          payment_intent: paymentIntentId,
+          metadata,
+        },
+        reservationId,
+      });
 
-    console.log(
-      `[Stripe Webhook] Successfully created reservation ID: ${result.reservation?.id}`
-    );
-
-    if (metadata.puppy_slug) {
-      revalidatePath(`/puppies/${metadata.puppy_slug}`);
-    }
-    revalidatePath('/puppies');
-
-    // Store webhook event for audit trail
-    await idempotencyManager.createWebhookEvent({
-      provider: 'stripe',
-      eventId,
-      eventType: eventType || 'checkout.session.completed',
-      idempotencyKey: `stripe:${paymentIntentId}`,
-      payload: {
-        event_id: eventId,
-        session_id: session.id,
-        payment_intent: paymentIntentId,
-        metadata,
-      },
-      reservationId: result.reservation?.id ? Number(result.reservation.id) : undefined,
-    });
-
-    // Track deposit_paid event in GA4
-    if (result.reservation) {
       await trackDepositPaid({
         value: (session.amount_total || 0) / 100,
         currency: session.currency?.toUpperCase() || 'USD',
         puppy_slug: metadata.puppy_slug,
         puppy_name: metadata.puppy_name,
         payment_provider: 'stripe',
-        reservation_id: result.reservation.id.toString(),
+        reservation_id: reservationId,
       });
 
-      // Send email notifications
       const emailData = {
         customerName: session.customer_details?.name || metadata.customer_name || 'Valued Customer',
         customerEmail: session.customer_details?.email || metadata.customer_email,
@@ -410,24 +381,52 @@ export class StripeWebhookHandler {
         depositAmount: (session.amount_total || 0) / 100,
         currency: session.currency?.toUpperCase() || 'USD',
         paymentProvider: 'stripe' as const,
-        reservationId: result.reservation.id.toString(),
+        reservationId,
         transactionId: paymentIntentId,
       };
 
-      // Send emails in parallel (don't block webhook response)
-      Promise.all([
+      void Promise.all([
         sendOwnerDepositNotification(emailData),
         sendCustomerDepositConfirmation(emailData),
       ]).catch((error) => {
         console.error('[Stripe Webhook] Failed to send email notifications:', error);
-        // Don't fail the webhook - emails are non-critical
       });
-    }
 
-    return {
-      success: true,
-      eventType: eventType || 'checkout.session.completed',
-      paymentIntentId,
-    };
+      return {
+        success: true,
+        eventType: eventType || 'checkout.session.completed',
+        paymentIntentId,
+        reservationId,
+      };
+    } catch (error) {
+      if (error instanceof ReservationCreationError) {
+        if (error.code === 'RACE_CONDITION_LOST') {
+          return {
+            success: true,
+            eventType: eventType || 'checkout.session.completed',
+            paymentIntentId,
+            duplicate: true,
+            error: error.message,
+          };
+        }
+
+        return {
+          success: false,
+          eventType: eventType || 'checkout.session.completed',
+          paymentIntentId,
+          error: error.message,
+          errorCode: error.code,
+        };
+      }
+
+      console.error('[Stripe Webhook] Failed to create reservation:', error);
+
+      return {
+        success: false,
+        eventType: eventType || 'checkout.session.completed',
+        paymentIntentId,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
+    }
   }
 }

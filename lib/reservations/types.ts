@@ -149,22 +149,17 @@ export interface CreateWebhookEventParams {
 /**
  * Result of reservation creation
  */
-export interface CreateReservationResult {
-  /** Whether creation was successful */
-  success: boolean;
-  /** Created reservation */
-  reservation?: Reservation;
-  /** Error message if creation failed */
-  error?: string;
-  /** Error code for specific failure types */
-  errorCode?:
-    | 'PUPPY_NOT_AVAILABLE'
-    | 'RACE_CONDITION_LOST'
-    | 'DUPLICATE_PAYMENT'
-    | 'DATABASE_ERROR'
-    | 'VALIDATION_ERROR'
-    | 'PAYMENT_PROVIDER_ERROR';
+export interface CreateReservationResponse {
+  reservationId: string;
 }
+
+export type ReservationCreationErrorCode =
+  | 'PUPPY_NOT_AVAILABLE'
+  | 'RACE_CONDITION_LOST'
+  | 'DUPLICATE_PAYMENT'
+  | 'DATABASE_ERROR'
+  | 'VALIDATION_ERROR'
+  | 'PAYMENT_PROVIDER_ERROR';
 
 /**
  * Result of webhook event creation

@@ -20,11 +20,23 @@ vi.mock('@/lib/reservations/idempotency', () => ({
   },
 }));
 
-vi.mock('@/lib/reservations/create', () => ({
-  ReservationCreationService: {
-    createReservation: vi.fn(),
-  },
-}));
+vi.mock('@/lib/reservations/create', () => {
+  class ReservationCreationError extends Error {
+    code: string;
+    constructor(message: string, code: string) {
+      super(message);
+      this.code = code;
+      this.name = 'ReservationCreationError';
+    }
+  }
+
+  return {
+    ReservationCreationService: {
+      createReservation: vi.fn(),
+    },
+    ReservationCreationError,
+  };
+});
 
 vi.mock('./client', () => ({
   getPayPalOrder: vi.fn(),
@@ -82,12 +94,7 @@ describe('PayPalWebhookHandler', () => {
     });
 
     (ReservationCreationService.createReservation as any).mockResolvedValue({
-      success: true,
-      reservation: {
-        id: 'res_123',
-        puppy_id: mockPuppyId,
-        payment_provider: 'paypal',
-      },
+      reservationId: 'res_123',
     });
 
     const event = createEvent();
@@ -96,6 +103,7 @@ describe('PayPalWebhookHandler', () => {
     expect(result.success).toBe(true);
     expect(result.captureId).toBe(mockCaptureId);
     expect(result.orderId).toBe(mockOrderId);
+    expect(result.reservationId).toBe('res_123');
     expect(ReservationCreationService.createReservation).toHaveBeenCalledWith(
       expect.objectContaining({
         puppyId: mockPuppyId,
@@ -182,16 +190,17 @@ describe('PayPalWebhookHandler', () => {
       },
     });
 
-    (ReservationCreationService.createReservation as any).mockResolvedValue({
-      success: false,
-      error: 'Database error',
-      errorCode: 'DATABASE_ERROR',
-    });
+    const { ReservationCreationError } = await import('@/lib/reservations/create');
+
+    (ReservationCreationService.createReservation as any).mockRejectedValue(
+      new ReservationCreationError('Database error', 'DATABASE_ERROR')
+    );
 
     const event = createEvent();
     const result = await PayPalWebhookHandler.processEvent(event);
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Database error');
+    expect(result.errorCode).toBe('DATABASE_ERROR');
   });
 });

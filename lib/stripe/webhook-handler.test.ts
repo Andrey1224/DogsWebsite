@@ -25,11 +25,23 @@ vi.mock('@/lib/reservations/idempotency', () => ({
   },
 }));
 
-vi.mock('@/lib/reservations/create', () => ({
-  ReservationCreationService: {
-    createReservation: vi.fn(),
-  },
-}));
+vi.mock('@/lib/reservations/create', () => {
+  class ReservationCreationError extends Error {
+    code: string;
+    constructor(message: string, code: string) {
+      super(message);
+      this.code = code;
+      this.name = 'ReservationCreationError';
+    }
+  }
+
+  return {
+    ReservationCreationService: {
+      createReservation: vi.fn(),
+    },
+    ReservationCreationError,
+  };
+});
 
 describe('StripeWebhookHandler', () => {
   const mockPuppyId = '123e4567-e89b-12d3-a456-426614174000';
@@ -94,13 +106,7 @@ describe('StripeWebhookHandler', () => {
       });
 
       (ReservationCreationService.createReservation as any).mockResolvedValue({
-        success: true,
-        reservation: {
-          id: 'res_123',
-          puppy_id: mockPuppyId,
-          customer_email: 'test@example.com',
-          status: 'paid',
-        },
+        reservationId: 'res_123',
       });
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
@@ -115,7 +121,7 @@ describe('StripeWebhookHandler', () => {
       expect(result.success).toBe(true);
       expect(result.eventType).toBe('checkout.session.completed');
       expect(result.paymentIntentId).toBe(mockPaymentIntentId);
-      expect(result.duplicate).toBeUndefined();
+      expect(result.reservationId).toBe('res_123');
 
       expect(ReservationCreationService.createReservation).toHaveBeenCalledWith({
         puppyId: mockPuppyId,
@@ -204,11 +210,11 @@ describe('StripeWebhookHandler', () => {
         provider: 'stripe',
       });
 
-      (ReservationCreationService.createReservation as any).mockResolvedValue({
-        success: false,
-        error: 'Puppy no longer available',
-        errorCode: 'RACE_CONDITION_LOST',
-      });
+      const { ReservationCreationError } = await import('@/lib/reservations/create');
+
+      (ReservationCreationService.createReservation as any).mockRejectedValue(
+        new ReservationCreationError('Puppy no longer available', 'RACE_CONDITION_LOST')
+      );
 
       const session = createMockSession();
       const event = createMockEvent('checkout.session.completed', session);
@@ -234,11 +240,7 @@ describe('StripeWebhookHandler', () => {
       });
 
       (ReservationCreationService.createReservation as any).mockResolvedValue({
-        success: true,
-        reservation: {
-          id: 'res_123',
-          puppy_id: mockPuppyId,
-        },
+        reservationId: 'res_123',
       });
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
@@ -252,6 +254,7 @@ describe('StripeWebhookHandler', () => {
 
       expect(result.success).toBe(true);
       expect(result.eventType).toBe('checkout.session.async_payment_succeeded');
+      expect(result.reservationId).toBe('res_123');
       expect(ReservationCreationService.createReservation).toHaveBeenCalled();
     });
 
@@ -343,11 +346,11 @@ describe('StripeWebhookHandler', () => {
         provider: 'stripe',
       });
 
-      (ReservationCreationService.createReservation as any).mockResolvedValue({
-        success: false,
-        error: 'Database connection failed',
-        errorCode: 'DATABASE_ERROR',
-      });
+      const { ReservationCreationError } = await import('@/lib/reservations/create');
+
+      (ReservationCreationService.createReservation as any).mockRejectedValue(
+        new ReservationCreationError('Database connection failed', 'DATABASE_ERROR')
+      );
 
       const session = createMockSession();
       const event = createMockEvent('checkout.session.completed', session);
@@ -356,6 +359,7 @@ describe('StripeWebhookHandler', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database connection failed');
+      expect(result.errorCode).toBe('DATABASE_ERROR');
     });
   });
 });

@@ -5,6 +5,8 @@
  * with strongly typed payloads without pulling in the entire SDK typings.
  */
 
+import type { ReservationCreationErrorCode } from '@/lib/reservations/types';
+
 export type PayPalEnvironment = "sandbox" | "live";
 
 export interface PayPalLink {
@@ -119,4 +121,6 @@ export interface PayPalWebhookProcessingResult {
   orderId?: string;
   duplicate?: boolean;
   error?: string;
+  reservationId?: string;
+  errorCode?: ReservationCreationErrorCode;
 }

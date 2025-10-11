@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { capturePayPalOrder } from "@/lib/paypal/client";
 import type { PayPalOrderMetadata } from "@/lib/paypal/types";
-import { ReservationCreationService } from "@/lib/reservations/create";
+import { ReservationCreationError, ReservationCreationService } from "@/lib/reservations/create";
 import type { ReservationChannel } from "@/lib/reservations/types";
 
 export const runtime = "nodejs";
@@ -95,40 +95,44 @@ export async function POST(request: NextRequest) {
 
     const channel = (metadata.channel ?? "site") as ReservationChannel;
 
-    const reservationResult = await ReservationCreationService.createReservation({
-      puppyId: metadata.puppy_id,
-      customerEmail,
-      customerName,
-      customerPhone,
-      depositAmount: amountValue,
-      paymentProvider: "paypal",
-      externalPaymentId: capture.id,
-      channel,
-      notes: `PayPal capture ${capture.id}`,
-    });
+    try {
+      const { reservationId } = await ReservationCreationService.createReservation({
+        puppyId: metadata.puppy_id,
+        customerEmail,
+        customerName,
+        customerPhone,
+        depositAmount: amountValue,
+        paymentProvider: "paypal",
+        externalPaymentId: capture.id,
+        channel,
+        notes: `PayPal capture ${capture.id}`,
+      });
 
-    if (!reservationResult.success) {
-      const status =
-        reservationResult.errorCode === "RACE_CONDITION_LOST" ||
-        reservationResult.errorCode === "PUPPY_NOT_AVAILABLE"
-          ? 409
-          : 500;
+      return NextResponse.json({
+        success: true,
+        reservationId,
+        captureId: capture.id,
+        orderStatus: captureResponse.status,
+      });
+    } catch (reservationError) {
+      if (reservationError instanceof ReservationCreationError) {
+        const status =
+          reservationError.code === "RACE_CONDITION_LOST" ||
+          reservationError.code === "PUPPY_NOT_AVAILABLE"
+            ? 409
+            : 500;
 
-      return NextResponse.json(
-        {
-          error: reservationResult.error || "Failed to create reservation",
-          errorCode: reservationResult.errorCode,
-        },
-        { status },
-      );
+        return NextResponse.json(
+          {
+            error: reservationError.message,
+            errorCode: reservationError.code,
+          },
+          { status },
+        );
+      }
+
+      throw reservationError;
     }
-
-    return NextResponse.json({
-      success: true,
-      reservationId: reservationResult.reservation?.id,
-      captureId: capture.id,
-      orderStatus: captureResponse.status,
-    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
