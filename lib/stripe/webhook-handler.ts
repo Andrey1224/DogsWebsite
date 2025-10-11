@@ -23,11 +23,29 @@ import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
 } from '@/lib/emails/deposit-notifications';
+import { createServiceRoleClient } from '@/lib/supabase/client';
 import type {
   WebhookProcessingResult,
   StripeCheckoutMetadata,
   TypedCheckoutSession,
 } from './types';
+
+let supabaseAdminClient: ReturnType<typeof createServiceRoleClient> | null = null;
+
+function getServiceRoleClient() {
+  if (supabaseAdminClient) {
+    return supabaseAdminClient;
+  }
+
+  try {
+    supabaseAdminClient = createServiceRoleClient();
+    return supabaseAdminClient;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[Stripe Webhook] Service role client unavailable:', message);
+    return null;
+  }
+}
 
 /**
  * Webhook event handler for Stripe events
@@ -272,6 +290,42 @@ export class StripeWebhookHandler {
     console.log(
       `[Stripe Webhook] Creating reservation for puppy_id: ${metadata.puppy_id}, payment_intent: ${paymentIntentId}`
     );
+
+    // Idempotency guard — skip if puppy already has a paid reservation
+    const supabase = getServiceRoleClient();
+
+    if (supabase) {
+      const { data: existingReservation, error: existingReservationError } = await supabase
+        .from('reservations')
+        .select('id')
+        .eq('puppy_id', metadata.puppy_id)
+        .eq('status', 'paid')
+        .maybeSingle();
+
+      if (existingReservationError) {
+        console.error(
+          '[Stripe Webhook] Failed to check existing reservations:',
+          existingReservationError.message
+        );
+      }
+
+      if (existingReservation) {
+        console.log('[Stripe Webhook] Puppy already reserved, skipping duplicate event');
+        await supabase
+          .from('puppies')
+          .update({ status: 'reserved' })
+          .eq('id', metadata.puppy_id)
+          .neq('status', 'reserved');
+
+        return {
+          success: true,
+          eventType: eventType || 'checkout.session.completed',
+          paymentIntentId,
+          duplicate: true,
+          error: 'Puppy already reserved',
+        };
+      }
+    }
 
     // Create reservation using Phase 2 service
     const result = await ReservationCreationService.createReservation({
