@@ -170,7 +170,7 @@ export class IdempotencyManager {
         IdempotencyKeyGenerator.forWebhook(
           params.provider,
           params.eventId,
-          params.reservationId ? { reservationId: params.reservationId.toString() } : undefined
+          params.reservationId ? { reservationId: params.reservationId } : undefined
         );
 
       // Check if event already exists
@@ -250,13 +250,13 @@ export class IdempotencyManager {
    */
   async markAsProcessed(
     eventId: number,
-    reservationId?: number
+    reservationId?: string
   ): Promise<boolean> {
     try {
       const updates: {
         processed: boolean;
         processed_at: string;
-        reservation_id?: number;
+        reservation_id?: string;
       } = {
         processed: true,
         processed_at: new Date().toISOString(),

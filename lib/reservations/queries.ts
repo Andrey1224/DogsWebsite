@@ -544,7 +544,7 @@ export class WebhookEventQueries {
    */
   static async markAsProcessed(
     id: number,
-    reservationId?: number
+    reservationId?: string
   ): Promise<boolean> {
     try {
       const updates: Partial<WebhookEvent> = {

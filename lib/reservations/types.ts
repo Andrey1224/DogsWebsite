@@ -50,7 +50,7 @@ export interface WebhookEvent {
   processed_at: string | null;
   processing_error: string | null;
   idempotency_key: string | null;
-  reservation_id: number | null;
+  reservation_id: string | null;
   payload: unknown;
   created_at: string;
   updated_at: string;
@@ -143,7 +143,7 @@ export interface CreateWebhookEventParams {
   /** Idempotency key for duplicate prevention */
   idempotencyKey?: string;
   /** Related reservation ID */
-  reservationId?: number;
+  reservationId?: string;
 }
 
 /**

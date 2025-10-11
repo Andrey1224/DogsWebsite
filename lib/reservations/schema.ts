@@ -93,7 +93,7 @@ export const createWebhookEventParamsSchema = z.object({
   eventType: z.string().min(1, 'Event type is required'),
   payload: z.unknown(),
   idempotencyKey: z.string().optional(),
-  reservationId: z.number().int().positive().optional(),
+  reservationId: uuidSchema.optional(),
 });
 
 /**
@@ -128,7 +128,7 @@ export const webhookEventRecordSchema = z.object({
   processed_at: z.coerce.date().nullable(),
   processing_error: z.string().nullable(),
   idempotency_key: z.string().nullable(),
-  reservation_id: z.number().int().positive().nullable(),
+  reservation_id: uuidSchema.nullable(),
   payload: z.unknown(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
