@@ -60,6 +60,14 @@
 
 #### Site Configuration
 - [ ] `NEXT_PUBLIC_SITE_URL=https://exoticbulldoglevel.com`
+- [ ] `NEXT_PUBLIC_CONTACT_PHONE`
+- [ ] `NEXT_PUBLIC_CONTACT_EMAIL`
+- [ ] `NEXT_PUBLIC_WHATSAPP`
+- [ ] `NEXT_PUBLIC_TELEGRAM_USERNAME`
+- [ ] `NEXT_PUBLIC_CONTACT_ADDRESS`
+- [ ] `NEXT_PUBLIC_CONTACT_LATITUDE`
+- [ ] `NEXT_PUBLIC_CONTACT_LONGITUDE`
+- [ ] `NEXT_PUBLIC_CONTACT_HOURS`
 
 ### 4. Webhook Configuration
 
@@ -258,12 +266,19 @@ vercel --prod
 ## Monitoring Setup
 
 ### 1. Set Up Recurring Health Checks
-- [ ] Configure uptime monitoring for `/api/health/webhooks`
-- [ ] Set alert threshold: > 1 minute of 503 responses
-- [ ] Recommended tools:
+- [x] ✅ **UptimeRobot monitor configured (ACTIVE)**
+  - **Endpoint:** `https://dogs-website-green.vercel.app/api/health/webhooks`
+  - **Service:** UptimeRobot (Free plan)
+  - **Check interval:** Every 60 minutes
+  - **Monitor type:** HTTPS (verifies 200 OK + `"healthy": true`)
+  - **Alerting:** Email notifications enabled
+  - **Status:** 100% uptime since setup, ~700ms avg response time
+  - **Dashboard:** Access via UptimeRobot account
+
+- [ ] Optional: Add additional monitoring services
   - Vercel Monitor (built-in)
-  - UptimeRobot (free tier)
   - Pingdom
+  - StatusCake
 
 ### 2. Stripe Dashboard Monitoring
 - [ ] Enable daily summary emails

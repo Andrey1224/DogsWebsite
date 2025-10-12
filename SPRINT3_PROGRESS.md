@@ -1038,6 +1038,16 @@ Implemented **defense-in-depth** strategy combining:
 - Alert history via email/Slack
 - Error rate tracking
 
+**External Monitoring (UptimeRobot):**
+- ✅ Production health-check monitor configured
+- Service: UptimeRobot (Free plan)
+- Endpoint: `https://dogs-website-green.vercel.app/api/health/webhooks`
+- Check interval: Every 60 minutes
+- Monitor type: HTTPS (verifies 200 OK + `"healthy": true`)
+- Alerting: Email notifications
+- Current uptime: 100% since setup
+- Average response time: ~700 ms
+
 **Next Steps:**
 - ✅ COMPLETED: Phase 6 Monitoring & Alerting
 - Ready for Phase 7: Testing & Documentation

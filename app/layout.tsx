@@ -1,13 +1,15 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { ContactBar } from "@/components/contact-bar";
 import { ConsentBanner } from "@/components/consent-banner";
 import { CrispChat } from "@/components/crisp-chat";
+import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { validateDevelopmentEnvironment, validateProductionEnvironment } from "@/lib/env-validation";
+import { getDefaultMetadata } from "@/lib/seo/metadata";
+import { getLocalBusinessSchema, getOrganizationSchema } from "@/lib/seo/structured-data";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,11 +22,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Exotic Bulldog Level",
-  description:
-    "Sprint workspace for the Exotic Bulldog Level landing experience built with Next.js 15.",
-};
+export const metadata = getDefaultMetadata();
 
 // Environment validation
 if (process.env.NODE_ENV === "development") {
@@ -56,12 +54,17 @@ export default function RootLayout({
     })();
   `;
 
+  const organizationSchema = getOrganizationSchema();
+  const localBusinessSchema = getLocalBusinessSchema();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <JsonLd id="organization-schema" data={organizationSchema} />
+        <JsonLd id="localbusiness-schema" data={localBusinessSchema} />
         <ThemeProvider>
           <AnalyticsProvider gaMeasurementId={gaMeasurementId} metaPixelId={metaPixelId}>
             <div className="flex min-h-screen flex-col">

@@ -1,41 +1,56 @@
-export const metadata = {
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { JsonLd } from "@/components/json-ld";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { getMerchantReturnPolicySchema } from "@/lib/seo/structured-data";
+
+export const metadata = buildMetadata({
   title: "Policies | Exotic Bulldog Level",
   description:
-    "Deposit, health guarantee, transportation, and refund policies for Exotic Bulldog Level puppies.",
-};
+    "Review Exotic Bulldog Level’s deposit, health guarantee, transportation, and return policies before reserving a French or English bulldog.",
+  path: "/policies",
+});
 
 const sections = [
   {
-    heading: "Deposits",
-    body: `A $300 non-refundable deposit reserves your chosen puppy for 7 days while we complete health
-checks and contract paperwork. If timelines shift due to vet recommendations, we can transfer the deposit to another puppy or upcoming litter.`,
+    heading: "Deposit policy",
+    body: `A $300 deposit reserves your selected puppy and is applied to the final balance. Because we pause all other inquiries, deposits are non-refundable. If schedules change, we can transfer the deposit to another available or upcoming puppy by mutual agreement.`,
+  },
+  {
+    heading: "Refunds & exchanges",
+    body: `Once a puppy is reserved, refunds are not provided unless a licensed veterinarian documents a health concern prior to pickup. In that case we will offer a replacement puppy from the next available litter or return the deposit.`,
   },
   {
     heading: "Health guarantee",
-    body: `Every puppy goes home dewormed, vaccinated per age, microchipped, and accompanied by a vet
-health certificate. We guarantee against life-threatening congenital conditions for 12 months with
-coverage validated by a licensed veterinarian's findings.`,
+    body: `Every puppy receives a comprehensive exam from our licensed veterinarian, age-appropriate vaccinations, deworming, and microchip. We guarantee against life-threatening congenital conditions for 12 months and require notification within 48 hours of detection.`,
   },
   {
-    heading: "Transportation",
-    body: `Pick-up is available in Montgomery, AL. We can coordinate ground delivery within neighboring
-states or flight nanny services for cross-country placements. Delivery fees are calculated at cost and due prior to transport.`,
+    heading: "Delivery & pickup",
+    body: `Pickup takes place in Montgomery, Alabama by appointment only. Courier delivery or flight nanny transport is available across the Southeast; travel fees are quoted at cost and must be paid before departure.`,
   },
   {
-    heading: "Spay/neuter & breeding",
-    body: `All puppies are placed on companion contracts unless a specific breeding agreement is signed.
-Companion homes agree to spay/neuter by 18 months and provide proof to maintain health coverage.`,
-  },
-  {
-    heading: "Returns & rehoming",
-    body: `If circumstances change, we will always help rehome a puppy purchased from us. Deposits are non-refundable,
-but we accept returns with written notice and collaborate on finding an appropriate placement to protect the dog.`,
+    heading: "Privacy & payments",
+    body: `We process payments exclusively through Stripe and PayPal—no wire transfers or cash apps. Customer contact data is used only for reservation updates, contracts, and veterinary records and is never sold or shared with third parties.`,
   },
 ];
 
 export default function PoliciesPage() {
+  const returnPolicySchema = getMerchantReturnPolicySchema({
+    name: "Exotic Bulldog Level Deposit & Puppy Return Policy",
+    days: 0,
+    fees: "https://schema.org/NonRefundable",
+    category: "https://schema.org/MerchantReturnNotPermitted",
+    method: "https://schema.org/ReturnInStore",
+  });
+
   return (
     <div className="mx-auto max-w-4xl space-y-10 px-6 py-12">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Policies", href: "/policies" },
+        ]}
+      />
+      <JsonLd id="return-policy" data={returnPolicySchema} />
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Policies</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">

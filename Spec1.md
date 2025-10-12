@@ -27,8 +27,8 @@
 - Родители/родословные: фото/профили производителей, основные показатели здоровья.
 - Каналы связи: кнопки звонка, SMS, WhatsApp, Telegram, Instagram DM, Facebook, email-форма.
 - Онлайновый чат на сайте (виджет) + липкая панель быстрых контактов.
-- FAQ (доставка по штатам, бронирование, оплата, здоровье/прививки, возврат депозита).
-- Карта/локация (город в Алабаме) + зоны доставки и ориентировочная стоимость.
+- FAQ (доставка по штатам, бронирование, оплата, здоровье/прививки, возврат депозита; финальный текст предоставляет владелец перед релизом).
+- Карта/локация (город в Алабаме) + зоны доставки и ориентировочная стоимость (используются координаты `NEXT_PUBLIC_CONTACT_LATITUDE` / `NEXT_PUBLIC_CONTACT_LONGITUDE`).
 - Политики: условия брони/продажи, приватность, куки-баннер.
 
 **Should have (желательно):**
@@ -324,6 +324,7 @@ User -> C : Ask questions in chat (optional)
 - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`
 - `NEXT_PUBLIC_CRISP_WEBSITE_ID`
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `META_PIXEL_ID`
+- `NEXT_PUBLIC_CONTACT_ADDRESS`, `NEXT_PUBLIC_CONTACT_LATITUDE`, `NEXT_PUBLIC_CONTACT_LONGITUDE`, `NEXT_PUBLIC_CONTACT_HOURS` (локальное SEO/карта)
 
 ## Milestones
 

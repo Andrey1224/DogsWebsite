@@ -1,11 +1,20 @@
 import { Suspense } from "react";
 
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PuppyCard } from "@/components/puppy-card";
 import { PuppyFilters } from "@/components/puppy-filters";
 import { getFilteredPuppies } from "@/lib/supabase/queries";
 import type { PuppyFilter } from "@/lib/supabase/queries";
+import { buildMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 60;
+
+export const metadata = buildMetadata({
+  title: "Available French & English Bulldog Puppies",
+  description:
+    "Browse Exotic Bulldog Level’s catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.",
+  path: "/puppies",
+});
 
 const statusValues = new Set(["available", "reserved", "sold", "upcoming"]);
 const breedValues = new Set(["french_bulldog", "english_bulldog"]);
@@ -36,6 +45,12 @@ export default async function PuppiesPage({
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 px-6 py-12">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Puppies", href: "/puppies" },
+        ]}
+      />
       <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
           Puppies

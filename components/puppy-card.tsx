@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { PuppyWithRelations } from "@/lib/supabase/types";
@@ -28,10 +29,15 @@ export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-      <div
-        className="relative h-56 w-full bg-cover bg-center"
-        style={{ backgroundImage: `url(${coverImage})` }}
-      >
+      <div className="relative h-56 w-full overflow-hidden">
+        <Image
+          src={coverImage}
+          alt={puppy.name ? `${puppy.name} portrait` : "Bulldog portrait"}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24rem"
+          priority={false}
+        />
         <span className="absolute left-4 top-4 rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-aux shadow">
           {breedLabel || "Bulldog"}
         </span>

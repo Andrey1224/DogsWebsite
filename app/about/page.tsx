@@ -1,8 +1,12 @@
-export const metadata = {
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { buildMetadata } from "@/lib/seo/metadata";
+
+export const metadata = buildMetadata({
   title: "About Exotic Bulldog Level",
   description:
-    "Learn about Exotic Bulldog Level’s health-first breeding program for French and English bulldogs in Alabama.",
-};
+    "Learn about Exotic Bulldog Level’s health-first French and English bulldog breeding program in Montgomery, Alabama.",
+  path: "/about",
+});
 
 const pillars = [
   {
@@ -25,6 +29,12 @@ const pillars = [
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-12 px-6 py-12">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "About", href: "/about" },
+        ]}
+      />
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">About</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">

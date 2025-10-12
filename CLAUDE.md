@@ -78,6 +78,10 @@ NEXT_PUBLIC_CONTACT_PHONE=
 NEXT_PUBLIC_CONTACT_EMAIL=
 NEXT_PUBLIC_WHATSAPP=
 NEXT_PUBLIC_TELEGRAM_USERNAME=
+NEXT_PUBLIC_CONTACT_ADDRESS=
+NEXT_PUBLIC_CONTACT_LATITUDE=
+NEXT_PUBLIC_CONTACT_LONGITUDE=
+NEXT_PUBLIC_CONTACT_HOURS=
 NEXT_PUBLIC_CRISP_WEBSITE_ID=
 NEXT_PUBLIC_GA_MEASUREMENT_ID=
 META_PIXEL_ID=
@@ -180,6 +184,7 @@ Track these events via `useAnalytics().trackEvent`:
 - **Email Notifications**: Owner + customer emails sent automatically on successful deposit
 - **Analytics**: Server-side `deposit_paid` events tracked via GA4 Measurement Protocol
 - **Monitoring**: `/api/health/webhooks` endpoint + email/Slack alerts for webhook failures
+- **External Monitoring**: UptimeRobot monitors production health endpoint every 60 minutes (100% uptime, ~700ms response time)
 
 ### Media Handling
 - Store in Supabase Storage buckets: `puppies`, `parents`, `litters`

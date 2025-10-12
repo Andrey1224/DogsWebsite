@@ -115,7 +115,8 @@ Organic visibility, policies, credibility.
   - `FAQPage`
 - [ ] NAP block (name, address, phone) in footer  
 - [ ] Google Maps embed (city + service area)  
-- [ ] Pages: `Policies`, `FAQ`, `Reviews`  
+- [ ] Pages: `Policies`, `FAQ`, `Reviews`
+  - [ ] FAQ copy finalized with owner review (draft content in place; adjust before release)
 - [ ] Policies: deposits, refunds, health, delivery  
 - [ ] Reviews: 4–6 testimonials (text + photo/video)  
 - [ ] Accessibility: alt texts, focus visible, contrast ≥ 4.5:1  

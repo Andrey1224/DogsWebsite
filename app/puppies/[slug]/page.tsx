@@ -1,9 +1,12 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { JsonLd } from "@/components/json-ld";
 import { PuppyGallery } from "@/components/puppy-gallery";
 import { PuppyCard } from "@/components/puppy-card";
 import { getPuppiesWithRelations, getPuppyBySlug } from "@/lib/supabase/queries";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { getProductSchema } from "@/lib/seo/structured-data";
 import { ReserveButton } from "./reserve-button";
 
 export const revalidate = 60;
@@ -21,14 +24,17 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+}) {
   const { slug } = await params;
   const puppy = await getPuppyBySlug(slug);
 
   if (!puppy) {
-    return {
+    return buildMetadata({
       title: "Puppy not found | Exotic Bulldog Level",
-    };
+      description: "The requested bulldog could not be located. Explore available puppies instead.",
+      path: `/puppies/${slug}`,
+      noIndex: true,
+    });
   }
 
   const breed = puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed;
@@ -39,11 +45,14 @@ export async function generateMetadata({
     `Learn more about ${puppy.name ?? "this bulldog"}, one of our carefully raised ${
       breedLabel ?? "bulldog"
     } puppies in Alabama.`;
+  const heroImage = puppy.photo_urls?.[0];
 
-  return {
+  return buildMetadata({
     title,
     description,
-  };
+    path: `/puppies/${puppy.slug ?? slug}`,
+    image: heroImage,
+  });
 }
 
 export default async function PuppyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -53,6 +62,8 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   if (!puppy) {
     notFound();
   }
+
+  const productSchema = getProductSchema(puppy);
 
   const allPuppies = await getPuppiesWithRelations();
   const related = allPuppies
@@ -81,6 +92,14 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Puppies", href: "/puppies" },
+          { label: puppy.name ?? "Puppy", href: `/puppies/${slug}` },
+        ]}
+      />
+      <JsonLd id={`product-${puppy.id}`} data={productSchema} />
       <div className="grid gap-10 lg:grid-cols-[1.1fr,1fr]">
         <PuppyGallery
           photos={puppy.photo_urls ?? []}

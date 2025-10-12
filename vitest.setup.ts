@@ -2,6 +2,10 @@ import { vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { createSupabaseFixture } from "./tests/fixtures/supabase-client-fixture";
 
+if (!process.env.NEXT_PUBLIC_SITE_URL) {
+  process.env.NEXT_PUBLIC_SITE_URL = "http://localhost:3000";
+}
+
 vi.mock("server-only", () => ({}));
 
 vi.mock("next/cache", () => {

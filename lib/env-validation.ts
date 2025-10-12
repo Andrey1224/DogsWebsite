@@ -47,6 +47,22 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
       pattern: /^[a-f0-9-]{36}$/,
       description: "Crisp chat website ID"
     },
+    NEXT_PUBLIC_CONTACT_LATITUDE: {
+      pattern: /^-?\d+(\.\d+)?$/,
+      description: "Business latitude in decimal degrees"
+    },
+    NEXT_PUBLIC_CONTACT_LONGITUDE: {
+      pattern: /^-?\d+(\.\d+)?$/,
+      description: "Business longitude in decimal degrees"
+    },
+    NEXT_PUBLIC_CONTACT_HOURS: {
+      pattern: undefined,
+      description: "JSON array of business hours"
+    },
+    NEXT_PUBLIC_CONTACT_ADDRESS: {
+      pattern: undefined,
+      description: "Full mailing address (Street, City, ST ZIP, Country)"
+    },
     // Payment processing (Stripe)
     STRIPE_SECRET_KEY: {
       pattern: /^sk_(test|live)_[a-zA-Z0-9]+$/,

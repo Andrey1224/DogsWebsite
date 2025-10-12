@@ -1,4 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
+
+import { buildMetadata } from "@/lib/seo/metadata";
+
+export const metadata = buildMetadata({
+  title: "Exotic Bulldog Breeder in Alabama",
+  description:
+    "Discover French and English bulldog puppies raised with health-first standards, transparent pedigrees, and concierge ownership support.",
+  path: "/",
+  image: "https://images.exoticbulldog.dev/hero/english-bulldog.jpg",
+});
 
 const highlights = [
   {
@@ -49,8 +60,15 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        <div className="relative mt-4 h-72 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-[url('https://images.exoticbulldog.dev/hero/english-bulldog.jpg')] bg-cover bg-center shadow-xl sm:mt-0">
-          <span className="sr-only">French and English bulldogs relaxing on a sofa</span>
+        <div className="relative mt-4 h-72 w-full max-w-md overflow-hidden rounded-3xl border border-border shadow-xl sm:mt-0">
+          <Image
+            src="https://images.exoticbulldog.dev/hero/english-bulldog.jpg"
+            alt="French and English bulldogs relaxing on a sofa"
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 28rem"
+          />
         </div>
       </section>
 

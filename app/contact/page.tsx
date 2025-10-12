@@ -1,16 +1,25 @@
 import { ContactForm } from "@/components/contact-form";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ContactCards } from "@/components/contact-cards";
 import { CONTACT_CARDS } from "@/lib/config/contact";
+import { buildMetadata } from "@/lib/seo/metadata";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Contact Exotic Bulldog Level",
   description:
-    "Reach Exotic Bulldog Level via call, text, WhatsApp, or the inquiry form to discuss French and English bulldog puppies.",
-};
+    "Call, text, or message Exotic Bulldog Level to plan your French or English bulldog adoption, book kennel visits, or ask health questions.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-12 px-6 py-12">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Contact", href: "/contact" },
+        ]}
+      />
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Contact</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
