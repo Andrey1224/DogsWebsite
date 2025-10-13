@@ -63,13 +63,16 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <JsonLd id="organization-schema" data={organizationSchema} />
         <JsonLd id="localbusiness-schema" data={localBusinessSchema} />
         <ThemeProvider>
           <AnalyticsProvider gaMeasurementId={gaMeasurementId} metaPixelId={metaPixelId}>
             <div className="flex min-h-screen flex-col">
               <SiteHeader />
-              <main className="flex-1 bg-bg">
+              <main id="main-content" className="flex-1 bg-bg">
                 {children}
               </main>
               <SiteFooter />

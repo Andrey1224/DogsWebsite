@@ -94,6 +94,29 @@ a:hover {
   opacity: 0.9;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent-aux);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 1rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  transform: translateY(0);
+}
+
 * {
   box-sizing: border-box;
 }
