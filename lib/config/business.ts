@@ -54,13 +54,15 @@ function parseAddress(raw?: string) {
 
   const addressRegion = regionMatch?.[1] ?? DEFAULT_ADDRESS.addressRegion;
   const postalCode = regionMatch?.[2] ?? DEFAULT_ADDRESS.postalCode;
+  const normalizedCountry = addressCountry.trim().toUpperCase();
+  const addressCountryIso = normalizedCountry === "USA" ? "US" : normalizedCountry;
 
   return {
     streetAddress,
     addressLocality,
     addressRegion,
     postalCode,
-    addressCountry,
+    addressCountry: addressCountryIso,
     formatted: `${streetAddress}, ${addressLocality}, ${addressRegion} ${postalCode}`,
   };
 }

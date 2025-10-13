@@ -64,7 +64,8 @@ export function getLocalBusinessSchema() {
 
   return {
     "@context": "https://schema.org",
-    "@type": ["LocalBusiness", "PetStore"],
+    "@type": "PetStore",
+    additionalType: "https://schema.org/LocalBusiness",
     "@id": businessId,
     name: BUSINESS_PROFILE.name,
     image: BUSINESS_PROFILE.imageGallery,
