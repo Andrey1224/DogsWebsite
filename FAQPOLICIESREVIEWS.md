@@ -58,3 +58,11 @@ Privacy / Payments — Все платежи обрабатываются чер
 | **Anthony D.**     | Montgomery, AL | 2025-05-27  | ⭐⭐⭐⭐⭐   | “Top-notch breeder! You can tell they truly care for their dogs. My Frenchie *Tommy* adjusted right away and has the funniest personality.”                                                         | `/reviews/anthony-tommy.jpg`  |
 | **Rachel K.**      | Atlanta, GA    | 2025-07-22  | ⭐⭐⭐⭐⭐   | “We drove from Georgia because the quality of their Bulldogs is worth it. The health guarantee gave us confidence, and our vet said our pup was in perfect condition.”                              | `/reviews/rachel-ga.jpg`      |
 | **Cameron H.**     | Decatur, AL    | 2025-09-05  | ⭐⭐⭐⭐⭐   | “Loved how easy it was to reserve online. PayPal worked perfectly and I received confirmation emails right away. Our puppy *Milo* is already the star of the neighborhood!”                         | `/reviews/cameron-milo.jpg`   |
+
+🧪 Rich Results (2025-10-14)
+- CLI: `npx structured-data-testing-tool --presets Google`
+- ✅ `/` — Organization + PetStore схемы проходят (метка `next-size-adjust` остаётся пустой, не влияет).
+- ✅ `/faq` — Organization, PetStore, BreadcrumbList, FAQPage.
+- ✅ `/reviews` — Organization, PetStore, ItemList, LocalBusiness AggregateRating.
+- ✅ `/puppies/duke-english-bulldog` — Organization, PetStore, Product, BreadcrumbList.
+- Примечание: финальная оптимизация изображений (WebP/AVIF ≤400 KB) будет выполнена после замены заглушек на продакшн-медиа заказчика.

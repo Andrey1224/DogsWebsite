@@ -12,10 +12,10 @@
 |-------|-------|--------|--------------|-------|
 | Phase 1 | Technical SEO (meta, robots, sitemap, images, breadcrumbs) | ✅ Complete | Day 1 | Canonical/meta helper, dynamic robots/sitemap, breadcrumbs, image optimization delivered. |
 | Phase 2 | Structured Data (Organization, LocalBusiness, Product, FAQPage, MerchantReturnPolicy) | ✅ Complete | Day 2 | Generators + page integrations live (home, puppies, policies, FAQ, reviews). |
-| Phase 3 | Trust Content (Policies, FAQ, Reviews, About, NAP updates) | 🟡 In progress | Day 3 | Reviews page skeleton + NAP/Footer refresh kicked off. |
-| Phase 4 | Local Presence (Google Maps embed, GBP sync) | ⬜️ Not started | Day 3–4 | |
-| Phase 5 | Accessibility & Core Web Vitals (contrast, focus, alt, CWV tuning) | ⬜️ Not started | Day 4 | |
-| Phase 6 | Tests & Documentation (lint/test/e2e, Lighthouse, Rich Results, reports) | ⬜️ Not started | Day 4–5 | |
+| Phase 3 | Trust Content (Policies, FAQ, Reviews, About, NAP updates) | ✅ Complete | Day 3 | Content + imagery shipped across pages, footer refreshed. |
+| Phase 4 | Local Presence (Google Maps embed, GBP sync) | 🟡 In progress | Day 3–4 | Map + NAP validated on prod; need GBP confirmation & Rich Results capture. |
+| Phase 5 | Accessibility & Core Web Vitals (contrast, focus, alt, CWV tuning) | 🟡 In progress | Day 4 | Lighthouse mobile perf: home 0.88, reviews 0.75 → optimize hero/review media. |
+| Phase 6 | Tests & Documentation (lint/test/e2e, Lighthouse, Rich Results, reports) | 🟡 In progress | Day 4–5 | Lighthouse JSON stored; Playwright e2e green (CDN warnings only); docs pending. |
 
 Legend: ✅ Complete · 🟡 In progress · ⬜️ Not started
 
@@ -45,15 +45,18 @@ Legend: ✅ Complete · 🟡 In progress · ⬜️ Not started
 - 2025-10-13 — **Phase 2** — Создали `/faq` с FAQPage JSON-LD, добавили схему на страницу, расширили `app/sitemap.ts`, `npm run lint` (контент черновой, потребуется финальное согласование перед релизом).
 - 2025-10-13 — **Phase 3** — Сверстали `/reviews` с ItemList/AggregateRating JSON-LD, расширили хедер навигацией, обновили футер (NAP + карта + часы), синхронизировали env-доки, `npm run lint`.
 - 2025-10-14 — **Phase 3** — Заменили FAQ/Policies/Reviews на утверждённые тексты, добавили локальные фото отзывов, обновили MerchantReturnPolicy schema и повторно прогнали `npm run lint`.
+- 2025-10-14 — **Phase 4** — Проверили корректность координат/адреса (95 County Road 1395, Falkville AL) на проде, карта совпадает; Vercel env синхронизированы, финальные данные клиента будут обновлены перед релизом.
+- 2025-10-14 — **Phase 5/6** — Lighthouse (home 0.88 perf, reviews 0.75; accessibility/SEO 1.0), `npm run e2e` успешно (CDN images.exoticbulldog.dev недоступен локально → 500 в логах, тесты пройдены).
+- 2025-10-14 — **Phase 4/6** — Обновили бизнес-схему (`PetStore` + ISO country), Rich Results (sdtt Google preset) зелёные для `/`, `/faq`, `/reviews`, `/puppies/duke-english-bulldog`; данные добавлены в `FAQPOLICIESREVIEWS.md`.
 
 ---
 
 ## 🧭 Next Steps
 
-1. Подготовить финальный контент и медиа для `/reviews` и `/faq`, согласовать с владельцем.  
-2. Добавить Google Maps embed/GBP синк и контакт бар с новыми данными (Phase 4 kickoff).  
-3. Продолжать обновлять лог и синхронизировать результаты в `SPRINT4_REPORT.md`.
+1. Оптимизировать большие изображения (hero/reviews) ближе к финальному релизу, после замены заглушек на утверждённые фото клиента (финальная сессия перф-тестов планируется в конце спринта).  
+2. Занести результаты Rich Results + Lighthouse/e2e в `SPRINT4_REPORT.md`, приложить скриншоты.  
+3. Подтвердить синхронизацию GBP/ENV на Vercel и обновить деплой-чеклист перед сдачей спринта.
 
 ---
 
-_Last updated: 2025-10-13_
+_Last updated: 2025-10-14_
