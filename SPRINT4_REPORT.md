@@ -10,7 +10,7 @@
 - Implemented centralized SEO helpers (`lib/seo/metadata.ts`, `lib/seo/structured-data.ts`) and wired Organization/PetStore/Product/FAQPage schemas across key routes.
 - Delivered trust content updates: refreshed `/faq`, `/policies`, `/reviews`, NAP footer, and added breadcrumbs + JSON-LD.
 - Verified structured data via Google preset (Organization, PetStore, FAQPage, ItemList, Product) for `/`, `/faq`, `/reviews`, `/puppies/[slug]`.
-- Strengthened accessibility with global `focus-visible` outline, skip link, and CDN preconnect for faster hero loads.
+- Strengthened accessibility and LCP: global `focus-visible` outline, skip link, hero image pipeline (WebP/AVIF multi-size + blur/preload), all local assets ≤400 KB.
 
 ---
 

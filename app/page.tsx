@@ -1,6 +1,6 @@
 import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
-
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
@@ -30,6 +30,8 @@ const highlights = [
 ];
 
 export default function Home() {
+  const HERO_BLUR_DATA_URL =
+    "data:image/webp;base64,UklGRlQBAABXRUJQVlA4IEgBAAAQCACdASooABsAPmUqj0WkIqEarfwAQAZEtgBOnKCp3vin0kYHgND/YJATZuuDAGkuJRRwYyXqy2jw6H5CcGwiBicy17fTEcAAAP6ilW9OHLZNo2xQNS0RM4xaI/dxLyfhpPwjpfHpuczC9xEeg8rQ464DYWkL2Xx3th+VF1+Debr9jE+tWvm51DfnwboUnlYOWCnm6oNpElxn5bEoN5DbSjsItcfeh7NzZFhJFl9WY5uwFGNM0vmT0x4ztGsqy01xzHIy4GZWGAJMIsHW5MdUJxsYRy86+qgyTZC4VjvQLScmuGePccUbroCFPwDLa5HbMEf1g4BOjjNONgvP/VptLpNlEi9CVQAz/OYUhstkcOJ8ndQsV59jOGjabqM7vOgYw6GyfbrM2dTr0JIz2X+loBgD1eOyng452NFz8BptkoiqU4GZcAAA";
   return (
     <div className="relative overflow-hidden">
       <section className="mx-auto flex max-w-5xl flex-col gap-10 px-6 pb-20 pt-16 sm:flex-row sm:items-center sm:justify-between">
@@ -62,12 +64,13 @@ export default function Home() {
         </div>
         <div className="relative mt-4 h-72 w-full max-w-md overflow-hidden rounded-3xl border border-border shadow-xl sm:mt-0">
           <Image
-            src="/reviews/sarah-charlie.webp"
+            src="/hero/hero-1600.webp"
             alt="French and English bulldogs relaxing on a sofa"
             fill
             priority
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, 28rem"
+            placeholder="blur"
+            blurDataURL={HERO_BLUR_DATA_URL}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 28rem"
           />
         </div>
       </section>
