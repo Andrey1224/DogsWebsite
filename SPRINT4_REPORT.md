@@ -21,7 +21,7 @@
 | `npm run lint` | ✅ | Zero warnings |
 | `npm run test` | ✅ | 49 unit tests passing |
 | `npm run e2e` | ✅ | 23 Playwright specs passed (local CDN requests to `images.exoticbulldog.dev` return 500 but do not break tests) |
-| Lighthouse (Mobile) | Home Perf 0.88 / A11y 1.00 / SEO 1.00; Reviews Perf 0.75 / A11y 1.00 / SEO 1.00 | Placeholder imagery inflates LCP; plan final optimisation once production photos arrive |
+| Lighthouse (Mobile) | Home Perf 0.79 / A11y 0.96 / SEO 1.00; Reviews Perf 0.75 / A11y 0.96 / SEO 1.00 | Scores limited by temporary imagery and Supabase CDN fetch failures (offline in local env); final optimisation scheduled with production assets |
 | Rich Results | ✅ for `/`, `/faq`, `/reviews`, `/puppies/duke-english-bulldog` | `structured-data-testing-tool --presets Google` |
 
 Artifacts:  
@@ -32,7 +32,7 @@ Artifacts:
 
 ## Pending for Release
 
-1. Replace placeholder photos (hero, reviews, catalog) with client assets; compress to WebP/AVIF ≤400 KB (1600–1920 px).  
+1. Replace remaining placeholder photos (catalog/gallery) with client assets; hero + reviews already converted to WebP ≤400 KB. Re-run optimisation pipeline (WebP/AVIF ≤400 KB, 1600–1920 px).
 2. Re-run Lighthouse after final imagery and update this report with new metrics/screenshots.  
 3. Confirm Google Business Profile sync + Vercel ENV once production data is in place.  
 4. Attach final screenshots (Lighthouse, Rich Results, key pages) before deployment sign-off.

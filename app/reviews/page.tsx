@@ -31,7 +31,7 @@ const reviews: Review[] = [
       "We picked up our French Bulldog, Charlie, in June and he’s been the sweetest, healthiest puppy we’ve ever had. The whole process was transparent and stress-free — communication was excellent!",
     media: {
       type: "image",
-      url: "/reviews/sarah-charlie.jpg",
+      url: "/reviews/sarah-charlie.webp",
       alt: "Sarah with French Bulldog Charlie",
     },
   },
@@ -45,7 +45,7 @@ const reviews: Review[] = [
       "Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.",
     media: {
       type: "image",
-      url: "/reviews/mark-lisa-duke.jpg",
+      url: "/reviews/mark-lisa-duke.webp",
       alt: "Mark and Lisa with their English Bulldog Duke",
     },
   },
@@ -68,7 +68,7 @@ const reviews: Review[] = [
       "Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.",
     media: {
       type: "image",
-      url: "/reviews/anthony-tommy.jpg",
+      url: "/reviews/anthony-tommy.webp",
       alt: "Anthony with French Bulldog Tommy",
     },
   },
@@ -91,7 +91,7 @@ const reviews: Review[] = [
       "I loved how easy it was to reserve online. PayPal worked perfectly and the confirmation emails arrived instantly. Milo is already the star of our neighborhood!",
     media: {
       type: "image",
-      url: "/reviews/cameron-milo.jpg",
+      url: "/reviews/cameron-milo.webp",
       alt: "Cameron holding bulldog puppy Milo",
     },
   },
@@ -202,6 +202,7 @@ export default function ReviewsPage() {
                     width={640}
                     height={400}
                     className="h-64 w-full object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
                   />
                 ) : (
                   <div className="relative aspect-video">

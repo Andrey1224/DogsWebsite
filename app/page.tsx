@@ -62,12 +62,12 @@ export default function Home() {
         </div>
         <div className="relative mt-4 h-72 w-full max-w-md overflow-hidden rounded-3xl border border-border shadow-xl sm:mt-0">
           <Image
-            src="https://images.exoticbulldog.dev/hero/english-bulldog.jpg"
+            src="/reviews/sarah-charlie.webp"
             alt="French and English bulldogs relaxing on a sofa"
             fill
             priority
             className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 28rem"
+            sizes="(max-width: 640px) 100vw, 28rem"
           />
         </div>
       </section>
