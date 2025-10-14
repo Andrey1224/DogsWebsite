@@ -3,16 +3,18 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { resolveLocalImage } from "@/lib/utils/images";
+
 type PuppyGalleryProps = {
   photos: string[];
   videos?: string[] | null;
   name?: string | null;
 };
 
-const placeholder = "https://images.exoticbulldog.dev/placeholders/puppy.jpg";
+const placeholder = "/reviews/cameron-milo.webp";
 
 export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
-  const media = photos.length ? photos : [placeholder];
+  const media = (photos.length ? photos : [placeholder]).map((url) => resolveLocalImage(url, placeholder));
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (

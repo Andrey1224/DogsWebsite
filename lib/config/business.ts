@@ -130,9 +130,9 @@ export const BUSINESS_PROFILE = {
   priceRange: "$$$",
   logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://exoticbulldoglevel.com"}/favicon.ico`,
   imageGallery: [
-    "https://images.exoticbulldog.dev/hero/english-bulldog.jpg",
-    "https://images.exoticbulldog.dev/gallery/stud-french.jpg",
-    "https://images.exoticbulldog.dev/gallery/nursery.jpg",
+    "/reviews/sarah-charlie.webp",
+    "/reviews/mark-lisa-duke.webp",
+    "/reviews/cameron-milo.webp",
   ],
   coordinates: BUSINESS_COORDINATES,
   hours: readHours(),

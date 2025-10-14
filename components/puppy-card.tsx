@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { PuppyWithRelations } from "@/lib/supabase/types";
+import { resolveLocalImage } from "@/lib/utils/images";
 
 const statusStyles: Record<string, string> = {
   available:
@@ -14,7 +15,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
-  const coverImage = puppy.photo_urls?.[0] ?? "https://images.exoticbulldog.dev/placeholders/puppy.jpg";
+  const coverImage = resolveLocalImage(puppy.photo_urls?.[0], "/reviews/mark-lisa-duke.webp");
   const statusClass =
     statusStyles[puppy.status] ??
     "border border-border bg-[color:color-mix(in srgb, var(--text-muted) 18%, var(--bg))] text-muted";

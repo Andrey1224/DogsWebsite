@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { getSiteUrl } from "@/lib/utils/env";
+import { resolveLocalImage } from "@/lib/utils/images";
 
 type ImageInput =
   | string
@@ -37,7 +38,7 @@ export type SeoOptions = {
 const SITE_NAME = "Exotic Bulldog Level";
 const DEFAULT_DESCRIPTION =
   "Health-first French & English bulldog breeding in Alabama with transparent pedigrees, concierge ownership support, and secure deposit flows.";
-const DEFAULT_IMAGE = "https://images.exoticbulldog.dev/hero/english-bulldog.jpg";
+const DEFAULT_IMAGE = "/reviews/sarah-charlie.webp";
 
 function resolveImage(image?: ImageInput) {
   if (!image) {
@@ -48,10 +49,13 @@ function resolveImage(image?: ImageInput) {
   }
 
   if (typeof image === "string") {
-    return { url: image };
+    return { url: resolveLocalImage(image, DEFAULT_IMAGE) };
   }
 
-  return image;
+  return {
+    ...image,
+    url: resolveLocalImage(image.url, DEFAULT_IMAGE),
+  };
 }
 
 export function getDefaultMetadata(): Metadata {

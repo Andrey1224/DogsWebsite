@@ -2,6 +2,7 @@ import { BUSINESS_PROFILE } from "@/lib/config/business";
 import { CONTACT_DETAILS } from "@/lib/config/contact";
 import { getSiteUrl } from "@/lib/utils/env";
 import type { PuppyWithRelations } from "@/lib/supabase/types";
+import { resolveLocalImage } from "@/lib/utils/images";
 
 type FAQItem = {
   question: string;
@@ -110,7 +111,7 @@ export function getProductSchema(puppy: PuppyWithRelations) {
     .join(" ");
   const photos = (puppy.photo_urls && puppy.photo_urls.length > 0
     ? puppy.photo_urls
-    : ["https://images.exoticbulldog.dev/placeholders/puppy.jpg"]);
+    : [undefined]).map((photo) => resolveLocalImage(photo, "/reviews/mark-lisa-duke.webp"));
 
   const availabilityMap: Record<string, string> = {
     available: "https://schema.org/InStock",
