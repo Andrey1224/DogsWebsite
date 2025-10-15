@@ -21,7 +21,7 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0d1a44;
-  --bg-card: #99a4b5;
+  --bg-card: #5c687a;
   --text: #ffffff;
   --text-muted: #eee5d7;
   --accent: #ffb84d;
@@ -40,7 +40,7 @@
   :root:not([data-theme]) {
     color-scheme: dark;
     --bg: #0d1a44;
-    --bg-card: #1c1c1c;
+    --bg-card: #5c687a;
     --text: #ffffff;
     --text-muted: #d1d5db;
     --accent: #ffb84d;
