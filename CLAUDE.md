@@ -13,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run test` - Run Vitest unit and component tests
 - `npm run test:watch` - Run Vitest in watch mode
 - `npm run e2e` - Run Playwright end-to-end tests (requires `npm run dev`)
+- `npm run validate-deployment` - Validate production deployment health
 
 ### Testing Requirements
 - Use `HCAPTCHA_BYPASS_TOKEN` environment variable for automated contact form testing
@@ -35,15 +36,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 #### Data Flow
 - **Catalog Pages**: `/puppies` and `/puppies/[slug]` use ISR with 60s revalidation
+- **Content Pages**: `/faq`, `/policies`, `/reviews` use static generation with rich JSON-LD schemas
 - **Contact Flow**: Form submissions → Server Action → Supabase `inquiries` table
 - **Rate Limiting**: Supabase-backed rate limiting prevents spam
 - **Captcha**: hCaptcha verification with local testing bypass
+- **SEO Pipeline**: Dynamic `robots.txt` and `sitemap.xml` via Next.js 15 route handlers
 
 #### Component Architecture
 - **Layout Components**: `SiteHeader`, `SiteFooter`, `ContactBar` (sticky)
 - **Provider Chain**: `ThemeProvider` → `AnalyticsProvider` → page content
-- **Shared Components**: `PuppyCard`, `PuppyGallery`, `ContactForm`, `PuppyFilters`
+- **Shared Components**: `PuppyCard`, `PuppyGallery`, `ContactForm`, `PuppyFilters`, `Breadcrumbs`, `JsonLd`
 - **Analytics Integration**: All tracking events use `useAnalytics().trackEvent`
+- **SEO Components**: `JsonLd` wrapper for structured data, `Breadcrumbs` with automatic JSON-LD
 
 #### Contact & Analytics Stack
 The contact system spans multiple interconnected files:
@@ -166,6 +170,9 @@ NEXT_PUBLIC_SITE_URL=
 - `lib/supabase/types.ts` - TypeScript type definitions
 - `lib/inquiries/schema.ts` - Contact form validation
 - `lib/config/contact.ts` - Contact info centralization
+- `lib/config/business.ts` - Business info for structured data (NAP, hours, location)
+- `lib/seo/structured-data.ts` - JSON-LD schema generators (Organization, LocalBusiness, Product, FAQPage)
+- `lib/seo/metadata.ts` - Centralized metadata generation helpers
 
 ## Integration Patterns
 
@@ -190,6 +197,22 @@ Track these events via `useAnalytics().trackEvent`:
 - Store in Supabase Storage buckets: `puppies`, `parents`, `litters`
 - Use `next/image` optimization with proper sizing
 - Generate public URLs with signed access when needed
+- Target WebP/AVIF formats ≤400KB for optimal LCP
+- Preload hero images and LCP candidates
+
+### SEO & Structured Data (Sprint 4)
+- **Metadata**: Centralized helper in `lib/seo/metadata.ts` generates title, description, OG, Twitter Card tags
+- **Structured Data**: JSON-LD generators in `lib/seo/structured-data.ts` for:
+  - `Organization` - Site-wide business identity
+  - `LocalBusiness` (PetStore) - NAP, hours, geolocation, service area
+  - `Product` - Individual puppy listings with pricing and availability
+  - `FAQPage` - FAQ structured markup
+  - `MerchantReturnPolicy` - Return/refund policy with country-specific rules
+  - `BreadcrumbList` - Navigation breadcrumbs
+- **Routes**: Dynamic `app/robots.ts` and `app/sitemap.ts` for crawlability
+- **Business Config**: `lib/config/business.ts` centralizes NAP data from `NEXT_PUBLIC_CONTACT_*` env vars
+- **Validation**: All schemas validated via Google Rich Results Test and `structured-data-testing-tool`
+- **Performance**: Lighthouse targets ≥90 for SEO, Accessibility, Performance; Core Web Vitals LCP ≤2.5s, CLS ≤0.1
 
 ## Quality Assurance
 
@@ -197,7 +220,13 @@ Track these events via `useAnalytics().trackEvent`:
 - ESLint: `npm run lint` (zero warnings policy)
 - TypeScript: `npm run typecheck` (strict mode)
 - Unit tests: `npm run test`
-- E2E tests: `npm run e2e` (contact form with captcha bypass)
+- E2E tests: `npm run e2e` (catalog filtering, contact form with captcha bypass)
+
+### SEO & Performance Validation
+- Lighthouse: Target scores ≥90 for SEO, Accessibility, Performance
+- Rich Results: Validate JSON-LD with Google Rich Results Test or `npx structured-data-testing-tool --presets Google`
+- Core Web Vitals: LCP ≤2.5s, CLS ≤0.1, INP ≤200ms
+- Sitemap: Submit `sitemap.xml` to Google Search Console for indexing
 
 ### CI/CD Pipeline
 - GitHub Actions mirror local commands
@@ -221,6 +250,11 @@ Keep these files synchronized when making changes:
 - `SPRINT_PLAN.md` - Execution roadmap
 - `AGENTS.md` - Contributor practices
 - `CLAUDE.md` - Agent operating rules (this file)
+- Sprint plans (`sprint_*_plan_final.md`)
+- Sprint progress (`SPRINT*_PROGRESS.md`)
 - Sprint reports (`SPRINT*_REPORT.md`)
 
 When modifying the contact/analytics stack, update all connected files and refresh documentation to maintain contributor understanding.
+
+### Sprint-Specific Notes
+- **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. Review images are placeholders pending final client assets. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622).
