@@ -193,14 +193,34 @@ describe('StripeWebhookHandler', () => {
       });
       const event = createMockEvent('checkout.session.completed', session);
 
-      const result = await StripeWebhookHandler.processEvent(event);
+    const result = await StripeWebhookHandler.processEvent(event);
 
-      expect(result.success).toBe(true);
-      expect(result.error).toContain('Payment pending');
-      expect(idempotencyManager.createWebhookEvent).toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    expect(result.error).toContain('Payment pending');
+    expect(idempotencyManager.createWebhookEvent).toHaveBeenCalled();
+  });
+
+  it('should reject sessions with invalid amount totals', async () => {
+    const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+    const { ReservationCreationService } = await import('@/lib/reservations/create');
+
+    (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+      exists: false,
+      paymentId: mockPaymentIntentId,
+      provider: 'stripe',
     });
 
-    it('should handle race condition errors gracefully', async () => {
+    const session = createMockSession({ amount_total: 0 });
+    const event = createMockEvent('checkout.session.completed', session);
+
+    const result = await StripeWebhookHandler.processEvent(event);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Invalid checkout amount');
+    expect(ReservationCreationService.createReservation).not.toHaveBeenCalled();
+  });
+
+  it('should handle race condition errors gracefully', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
       const { ReservationCreationService } = await import('@/lib/reservations/create');
 
@@ -332,6 +352,24 @@ describe('StripeWebhookHandler', () => {
 
       expect(result.success).toBe(true);
       expect(result.error).toContain('Unhandled event type');
+    });
+  });
+
+  describe('Event guard rails', () => {
+    it('skips stale events based on creation timestamp', async () => {
+      const now = Date.now();
+      const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(now);
+
+      const session = createMockSession();
+      const event = createMockEvent('checkout.session.completed', session);
+      event.created = Math.floor(now / 1000) - (60 * 60 * 2 + 30);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('stale');
+
+      nowSpy.mockRestore();
     });
   });
 

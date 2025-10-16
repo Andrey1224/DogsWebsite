@@ -13,6 +13,8 @@ describe("Home", () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText(/akC pedigrees, OFA screenings/i)).toBeVisible();
-    expect(screen.getByRole('link', { name: /view available puppies/i })).toBeVisible();
+    const primaryCtas = screen.getAllByRole('link', { name: /view available puppies/i });
+    expect(primaryCtas).toHaveLength(2);
+    primaryCtas.forEach((cta) => expect(cta).toBeVisible());
   });
 });

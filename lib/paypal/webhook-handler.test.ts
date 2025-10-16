@@ -154,6 +154,27 @@ describe('PayPalWebhookHandler', () => {
     expect(result.error).toMatch(/metadata/i);
   });
 
+  it('fails when capture status is not COMPLETED', async () => {
+    const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+
+    (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+      exists: false,
+    });
+
+    const event = createEvent({
+      resource: {
+        id: mockCaptureId,
+        status: 'PENDING',
+        amount: { currency_code: 'USD', value: '300.00' },
+        custom_id: JSON.stringify({ puppy_id: mockPuppyId }),
+      },
+    });
+
+    const result = await PayPalWebhookHandler.processEvent(event);
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/Capture status/i);
+  });
+
   it('fails when customer email is unavailable', async () => {
     const { idempotencyManager } = await import('@/lib/reservations/idempotency');
     const { getPayPalOrder } = await import('./client');

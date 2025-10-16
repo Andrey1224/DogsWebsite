@@ -1,0 +1,138 @@
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import PuppiesPage from './page';
+
+// Mock Supabase queries
+vi.mock('@/lib/supabase/queries', () => ({
+  getFilteredPuppies: vi.fn(),
+}));
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+  }),
+  usePathname: () => '/puppies',
+}));
+
+describe('Puppies Page', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders hero heading and description', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(
+      screen.getByRole('heading', {
+        name: /French & English bulldogs available and upcoming/i,
+      })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/Browse our current litters, review temperament notes/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders breadcrumbs navigation', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.getAllByText('Puppies').length).toBeGreaterThan(0);
+  });
+
+  it('displays empty state when no puppies match filters', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(
+      screen.getByText(/No puppies match the selected filters right now/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders puppy cards when puppies are available', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    const mockPuppies = [
+      {
+        id: 'puppy-1',
+        name: 'Buddy',
+        slug: 'buddy-french-bulldog',
+        breed: { id: 'breed-1', name: 'French Bulldog', slug: 'french-bulldog' },
+        gender: 'male',
+        birth_date: '2024-01-01',
+        color_pattern: 'Blue Merle',
+        status: 'available',
+        price: 3000,
+        primary_image_url: '/test-image.jpg',
+        description: 'A lovely puppy',
+        litter_id: null,
+        created_at: '2024-01-01',
+        updated_at: '2024-01-01',
+      },
+    ];
+    vi.mocked(getFilteredPuppies).mockResolvedValue(mockPuppies as any);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(screen.getByText('Buddy')).toBeInTheDocument();
+  });
+
+  it('applies status filter from search params', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({
+      searchParams: Promise.resolve({ status: 'available' }),
+    });
+    render(component);
+
+    expect(getFilteredPuppies).toHaveBeenCalledWith({
+      status: 'available',
+      breed: 'all',
+    });
+  });
+
+  it('applies breed filter from search params', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({
+      searchParams: Promise.resolve({ breed: 'french_bulldog' }),
+    });
+    render(component);
+
+    expect(getFilteredPuppies).toHaveBeenCalledWith({
+      status: 'all',
+      breed: 'french_bulldog',
+    });
+  });
+
+  it('ignores invalid filter values', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({
+      searchParams: Promise.resolve({ status: 'invalid', breed: 'invalid' }),
+    });
+    render(component);
+
+    expect(getFilteredPuppies).toHaveBeenCalledWith({
+      status: 'all',
+      breed: 'all',
+    });
+  });
+});

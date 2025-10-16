@@ -32,6 +32,8 @@ import type {
 
 let supabaseAdminClient: ReturnType<typeof createServiceRoleClient> | null = null;
 
+const STALE_EVENT_TTL_SECONDS = 60 * 60 * 2; // 2 hours
+
 function getServiceRoleClient() {
   if (supabaseAdminClient) {
     return supabaseAdminClient;
@@ -58,7 +60,19 @@ export class StripeWebhookHandler {
    * @returns Processing result with success status and details
    */
   static async processEvent(event: Stripe.Event): Promise<WebhookProcessingResult> {
-    const { type, id: eventId } = event;
+    const { type, id: eventId, created } = event;
+
+    if (typeof created === 'number') {
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      if (nowSeconds - created > STALE_EVENT_TTL_SECONDS) {
+        console.warn('[Stripe Webhook] Discarding stale event:', eventId);
+        return {
+          success: false,
+          eventType: type,
+          error: 'Event is stale and will not be processed',
+        };
+      }
+    }
 
     console.log(`[Stripe Webhook] Processing event: ${type} (ID: ${eventId})`);
 
@@ -287,6 +301,16 @@ export class StripeWebhookHandler {
     const metadata = session.metadata;
     const paymentIntentId = session.payment_intent as string;
 
+    if (typeof session.amount_total !== 'number' || session.amount_total <= 0) {
+      console.error('[Stripe Webhook] Invalid checkout amount:', session.amount_total);
+      return {
+        success: false,
+        eventType: eventType || 'checkout.session.completed',
+        paymentIntentId,
+        error: 'Invalid checkout amount',
+      };
+    }
+
     console.log(
       `[Stripe Webhook] Creating reservation for puppy_id: ${metadata.puppy_id}, payment_intent: ${paymentIntentId}`
     );
@@ -334,7 +358,7 @@ export class StripeWebhookHandler {
         customerName:
           session.customer_details?.name || metadata.customer_name || undefined,
         customerPhone: session.customer_details?.phone || metadata.customer_phone,
-        depositAmount: (session.amount_total || 0) / 100,
+        depositAmount: session.amount_total / 100,
         paymentProvider: 'stripe',
         externalPaymentId: paymentIntentId,
         channel: (metadata.channel || 'site') as 'site' | 'whatsapp' | 'telegram' | 'instagram' | 'facebook' | 'phone',
@@ -365,7 +389,7 @@ export class StripeWebhookHandler {
       });
 
       await trackDepositPaid({
-        value: (session.amount_total || 0) / 100,
+        value: session.amount_total / 100,
         currency: session.currency?.toUpperCase() || 'USD',
         puppy_slug: metadata.puppy_slug,
         puppy_name: metadata.puppy_name,
@@ -378,7 +402,7 @@ export class StripeWebhookHandler {
         customerEmail: session.customer_details?.email || metadata.customer_email,
         puppyName: metadata.puppy_name,
         puppySlug: metadata.puppy_slug,
-        depositAmount: (session.amount_total || 0) / 100,
+        depositAmount: session.amount_total / 100,
         currency: session.currency?.toUpperCase() || 'USD',
         paymentProvider: 'stripe' as const,
         reservationId,

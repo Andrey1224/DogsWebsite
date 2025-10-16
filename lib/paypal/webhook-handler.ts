@@ -100,6 +100,16 @@ export class PayPalWebhookHandler {
       };
     }
 
+    if (capture.status && capture.status !== "COMPLETED") {
+      console.error("[PayPal Webhook] Capture status not completed", capture.status);
+      return {
+        success: false,
+        eventType: event.event_type,
+        captureId: capture.id,
+        error: `Capture status is ${capture.status}, expected COMPLETED`,
+      };
+    }
+
     const captureId = capture.id;
     const orderId = capture.supplementary_data?.related_ids?.order_id;
 

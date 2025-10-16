@@ -19,14 +19,29 @@ vi.mock('@/lib/supabase/client', () => ({
   createSupabaseClient: () => supabaseFixture,
 }));
 
-vi.mock('./queries', () => ({
-  ReservationQueries: {
+vi.mock('./queries', () => {
+  const reservationQueries = {
     create: vi.fn(),
-  },
-  WebhookEventQueries: {
+    getByPayment: vi.fn(),
+    getById: vi.fn(),
+    updateStatus: vi.fn(),
+    expireOldPending: vi.fn(),
+  };
+  const webhookEventQueries = {
     update: vi.fn(),
-  },
-}));
+    create: vi.fn(),
+    markAsProcessed: vi.fn(),
+    markAsFailed: vi.fn(),
+  };
+
+  return {
+    ReservationQueries: reservationQueries,
+    WebhookEventQueries: webhookEventQueries,
+    TransactionQueries: {
+      createReservationWithWebhook: vi.fn(),
+    },
+  };
+});
 
 vi.mock('./idempotency', () => ({
   idempotencyManager: {
@@ -50,7 +65,11 @@ describe('ReservationCreationService', () => {
     throw new Error('Supabase fixture not initialized');
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    const { ReservationQueries, WebhookEventQueries, TransactionQueries } = await import('./queries');
+    Object.values(ReservationQueries).forEach((mockFn) => mockFn.mockReset());
+    Object.values(WebhookEventQueries).forEach((mockFn) => mockFn.mockReset());
+    Object.values(TransactionQueries).forEach((mockFn) => mockFn.mockReset?.());
     supabaseFixture.reset();
   });
 
@@ -218,6 +237,75 @@ describe('ReservationCreationService', () => {
 
       expect(reservationId).toBe(existingReservation.id);
     });
+
+    it('should reuse existing reservation after initial creation', async () => {
+      const { idempotencyManager } = await import('./idempotency');
+      const { ReservationQueries } = await import('./queries');
+
+      (idempotencyManager.checkWebhookEvent as any)
+        .mockResolvedValueOnce({
+          exists: false,
+          paymentId: validParams.externalPaymentId,
+          provider: validParams.paymentProvider,
+        })
+        .mockResolvedValueOnce({
+          exists: true,
+          paymentId: validParams.externalPaymentId,
+          provider: validParams.paymentProvider,
+        });
+
+      ReservationQueries.getByPayment.mockResolvedValue({
+        id: 'reservation-dup',
+      });
+
+      const rpcHandler = registerReservationTransaction(async () => ({
+        data: { id: 'reservation-dup' },
+        error: null,
+      }));
+
+      await ReservationCreationService.createReservation(validParams);
+      const result = await ReservationCreationService.createReservation(validParams);
+
+      expect(result).toEqual({ reservationId: 'reservation-dup' });
+      expect(rpcHandler).toHaveBeenCalledTimes(1);
+      expect(ReservationQueries.getByPayment).toHaveBeenCalledWith(
+        validParams.paymentProvider,
+        validParams.externalPaymentId,
+      );
+    });
+  });
+
+  describe('Webhook events', () => {
+    it('links reservation to webhook event when provided', async () => {
+      const { idempotencyManager } = await import('./idempotency');
+      const { WebhookEventQueries } = await import('./queries');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: validParams.externalPaymentId,
+        provider: validParams.paymentProvider,
+      });
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+        webhookEvent: { id: 99 },
+      });
+
+      registerReservationTransaction(async () => ({
+        data: { reservation_id: 'reservation-webhook' },
+        error: null,
+      }));
+
+      await ReservationCreationService.createReservation(validParams, {
+        provider: validParams.paymentProvider,
+        eventId: 'evt_webhook_1',
+        eventType: 'checkout.session.completed',
+        payload: { id: 'evt_webhook_1' },
+      });
+
+      expect(WebhookEventQueries.update).toHaveBeenCalledWith(99, {
+        reservation_id: 'reservation-webhook',
+      });
+    });
   });
 
   describe('Input Validation', () => {
@@ -248,6 +336,172 @@ describe('ReservationCreationService', () => {
         code: 'VALIDATION_ERROR',
         message: expect.stringContaining('Invalid payment ID format'),
       });
+    });
+  });
+
+  describe('createWithConfirmedPayment', () => {
+    it('should mark reservation as paid when payment matches deposit', async () => {
+      const { idempotencyManager } = await import('./idempotency');
+      const { ReservationQueries } = await import('./queries');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: validParams.externalPaymentId,
+        provider: validParams.paymentProvider,
+      });
+
+      ReservationQueries.updateStatus.mockResolvedValue(null);
+
+      registerReservationTransaction(async () => ({
+        data: { reservation_id: 'paid-reservation' },
+        error: null,
+      }));
+
+      const result = await ReservationCreationService.createWithConfirmedPayment(
+        validParams,
+        validParams.depositAmount,
+      );
+
+      expect(result).toEqual({ reservationId: 'paid-reservation' });
+      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith(
+        'paid-reservation',
+        'paid',
+      );
+    });
+
+    it('should leave status unchanged when payment amount differs', async () => {
+      const { idempotencyManager } = await import('./idempotency');
+      const { ReservationQueries } = await import('./queries');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: validParams.externalPaymentId,
+        provider: validParams.paymentProvider,
+      });
+
+      registerReservationTransaction(async () => ({
+        data: { reservation_id: 'pending-reservation' },
+        error: null,
+      }));
+
+      await ReservationCreationService.createWithConfirmedPayment(
+        validParams,
+        validParams.depositAmount + 100,
+      );
+
+      expect(ReservationQueries.updateStatus).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createFromPayment', () => {
+    it('delegates to createReservation with derived params', async () => {
+      const createSpy = vi
+        .spyOn(ReservationCreationService, 'createReservation')
+        .mockResolvedValue({ reservationId: 'from-payment' });
+
+      const result = await ReservationCreationService.createFromPayment(
+        'stripe',
+        'pi_123',
+        'puppy_123',
+        'user@example.com',
+        'Jane',
+        '+12055551234',
+        750,
+      );
+
+      expect(result).toEqual({ reservationId: 'from-payment' });
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          puppyId: 'puppy_123',
+          customerEmail: 'user@example.com',
+          depositAmount: 750,
+        }),
+        undefined,
+      );
+
+      createSpy.mockRestore();
+    });
+  });
+
+  describe('Utilities', () => {
+    it('generates confirmation payloads with formatted values', () => {
+      const reservation = {
+        id: 'res_1',
+        puppy_id: 'puppy_1',
+        customer_name: 'Sam',
+        customer_email: 'sam@example.com',
+        deposit_amount: 500,
+        payment_provider: 'stripe',
+        status: 'pending',
+        expires_at: '2024-01-01T12:00:00Z',
+        created_at: '2024-01-01T09:00:00Z',
+        amount: 500,
+        customer_phone: null,
+        channel: 'site',
+        external_payment_id: 'pi_123',
+        webhook_event_id: null,
+        notes: null,
+        updated_at: '2024-01-01T09:00:00Z',
+      } as const;
+
+      const payload = ReservationCreationService.generateConfirmationData(reservation, {
+        name: 'Duke',
+        breed_id: 'french-bulldog',
+        price: 3000,
+        gender: 'male',
+        birth_date: '2023-09-15',
+      });
+
+      expect(payload).toMatchObject({
+        reservationId: 'res_1',
+        puppyName: 'Duke',
+        depositAmount: '$500.00',
+        puppyDetails: expect.objectContaining({
+          price: '$3,000.00',
+        }),
+      });
+    });
+
+    it('expires pending reservations when past due', async () => {
+      const { ReservationQueries } = await import('./queries');
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 25 * 60 * 60 * 1000);
+
+      ReservationQueries.getById.mockResolvedValue({
+        id: 'res_expire',
+        status: 'pending',
+        expires_at: yesterday.toISOString(),
+      });
+      ReservationQueries.updateStatus.mockResolvedValue({ id: 'res_expire', status: 'expired' });
+
+      const result = await ReservationCreationService.processExpiration('res_expire');
+
+      expect(result).toBe(true);
+      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('res_expire', 'expired');
+    });
+
+    it('returns false when reservation is still valid', async () => {
+      const { ReservationQueries } = await import('./queries');
+      const future = new Date();
+      future.setHours(future.getHours() + 1);
+
+      ReservationQueries.getById.mockResolvedValue({
+        id: 'res_pending',
+        status: 'pending',
+        expires_at: future.toISOString(),
+      });
+
+      const shouldExpire = await ReservationCreationService.processExpiration('res_pending');
+      expect(shouldExpire).toBe(false);
+    });
+
+  it('bulk expires pending reservations via query helper', async () => {
+      const { ReservationQueries } = await import('./queries');
+      ReservationQueries.expireOldPending.mockResolvedValue(3);
+
+      const total = await ReservationCreationService.bulkExpirePending();
+      expect(total).toBe(3);
+      expect(ReservationQueries.expireOldPending).toHaveBeenCalled();
     });
   });
 });

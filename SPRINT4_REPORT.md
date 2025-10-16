@@ -421,8 +421,13 @@ NEXT_PUBLIC_CONTACT_HOURS="Mo-Su 09:00-18:00"
 ### C. Dependencies Added
 None (used existing Next.js 15 capabilities)
 
+### D. Testing Coverage Update (2025-02-17)
+- Added Vitest suites for contact intake (`app/contact/actions.ts`, `lib/inquiries/rate-limit.ts`), reservations (`lib/reservations/create.ts`/`idempotency.ts`), analytics (`lib/analytics/server-events.ts`), and env/config utilities.
+- Installed `@vitest/coverage-v8` and enabled coverage collection in CI; latest run reports 26.76% lines / 26.76% statements / 62.58% functions / 23.44% branches overall (`coverage/PuppyWebsite/index.html`).
+- Directory coverage shifts: `app/contact` at 74.57% lines, `lib/inquiries` 98.13%, `lib/analytics` 92%, `lib/captcha` 94%, and `lib/reservations` 55.62% lines after webhook/idempotency additions; guardrails enforce global ≥25% and reservations ≥35% lines to lock in gains.
+
 ---
 
 **Report Status:** ✅ Complete (pending final production screenshots)
-**Last Updated:** 2025-10-14
+**Last Updated:** 2025-02-17
 **Next Review:** Post-production deployment (after final imagery optimization)
