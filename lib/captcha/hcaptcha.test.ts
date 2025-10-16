@@ -23,15 +23,24 @@ describe('verifyHCaptcha', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('rejects missing secret with helpful message', async () => {
+  it('skips verification when secret missing in development', async () => {
     delete process.env.HCAPTCHA_SECRET_KEY;
     vi.stubEnv('NODE_ENV', 'development');
 
     const result = await verifyHCaptcha('token');
 
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('rejects missing secret in production', async () => {
+    delete process.env.HCAPTCHA_SECRET_KEY;
+    vi.stubEnv('NODE_ENV', 'production');
+
+    const result = await verifyHCaptcha('token');
+
     expect(result.ok).toBe(false);
     expect(result).toMatchObject({
-      message: expect.stringContaining('HCAPTCHA_SECRET_KEY'),
+      message: expect.stringContaining('Captcha misconfigured'),
     });
   });
 

@@ -107,30 +107,44 @@ export async function submitContactInquiry(
   const userAgent = headerList.get("user-agent") || undefined;
   const host = headerList.get("host") || undefined;
 
-  const supabase = createServiceRoleClient();
-  const { error } = await supabase.from("inquiries").insert({
-    source: "form",
-    name: submission.name,
-    email: submission.email,
-    phone: submission.phone ?? null,
-    message: submission.message,
-    puppy_id: submission.puppyId ?? null,
-    utm: {
-      host,
-      referer,
-      user_agent: userAgent,
-      context_path: submission.contextPath ?? null,
-      puppy_slug: submission.puppySlug ?? null,
-    },
-    client_ip: clientIp ?? null,
-  });
+  try {
+    const supabase = createServiceRoleClient();
+    const { error } = await supabase.from("inquiries").insert({
+      source: "form",
+      name: submission.name,
+      email: submission.email,
+      phone: submission.phone ?? null,
+      message: submission.message,
+      puppy_id: submission.puppyId ?? null,
+      utm: {
+        host,
+        referer,
+        user_agent: userAgent,
+        context_path: submission.contextPath ?? null,
+        puppy_slug: submission.puppySlug ?? null,
+      },
+      client_ip: clientIp ?? null,
+    });
 
-  if (error) {
-    console.error("Failed to persist inquiry", error);
-    return {
-      status: "error",
-      message: "We couldn't save your inquiry. Please try again shortly.",
-    };
+    if (error) {
+      console.error("Failed to persist inquiry", error);
+      return {
+        status: "error",
+        message: "We couldn't save your inquiry. Please try again shortly.",
+      };
+    }
+  } catch (clientError) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("Supabase service role client misconfigured.", clientError);
+      return {
+        status: "error",
+        message: "We couldn't save your inquiry. Please try again shortly.",
+      };
+    }
+    console.warn(
+      "Supabase service role client unavailable; skipping inquiry persistence in non-production environment.",
+      clientError,
+    );
   }
 
   // Send email notifications (async, don't block the response)

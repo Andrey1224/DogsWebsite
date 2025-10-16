@@ -27,11 +27,14 @@ export async function verifyHCaptcha(token: string, remoteIp?: string | null): P
   const secret = process.env.HCAPTCHA_SECRET_KEY;
 
   if (!secret) {
-    const message =
-      process.env.NODE_ENV === "production"
-        ? "Captcha misconfigured. Contact the site owner."
-        : "Set HCAPTCHA_SECRET_KEY to enable captcha validation.";
-    return { ok: false, message };
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("HCaptcha secret missing; skipping verification in non-production environment.");
+      return { ok: true };
+    }
+    return {
+      ok: false,
+      message: "Captcha misconfigured. Contact the site owner.",
+    };
   }
 
   const params = new URLSearchParams();

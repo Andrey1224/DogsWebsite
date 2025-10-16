@@ -163,12 +163,19 @@ test.describe("Analytics & Consent Management", () => {
     }
 
     // Check cookies
+    // Wait for cookie to be persisted before asserting attributes
+    await expect
+      .poll(async () => {
+        const cookies = await context.cookies();
+        return cookies.find((cookie) => cookie.name === "exoticbulldoglevel_consent") ?? null;
+      })
+      .not.toBeNull();
+
     const cookies = await context.cookies();
     const consentCookie = cookies.find(
       (cookie) => cookie.name === "exoticbulldoglevel_consent"
     );
 
-    expect(consentCookie).toBeDefined();
     expect(consentCookie?.value).toBe("granted");
     expect(consentCookie?.sameSite).toBe("Lax");
     expect(consentCookie?.path).toBe("/");
