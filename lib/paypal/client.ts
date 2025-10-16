@@ -136,20 +136,42 @@ export interface CreatePayPalOrderOptions {
   cancelUrl?: string;
 }
 
+function buildCustomId(metadata: PayPalOrderMetadata, amount: number): string {
+  const compactMetadata: Record<string, string | number> = {
+    id: metadata.puppy_id,
+    slug: metadata.puppy_slug,
+    name: metadata.puppy_name,
+    channel: metadata.channel ?? "",
+    email: metadata.customer_email ?? "",
+    customer: metadata.customer_name ?? "",
+    phone: metadata.customer_phone ?? "",
+    amt: metadata.deposit_amount ?? amount,
+  };
+
+  // Remove empty values to keep the payload minimal
+  for (const key of Object.keys(compactMetadata)) {
+    const value = compactMetadata[key];
+    if (value === "" || value === undefined) {
+      delete compactMetadata[key];
+    }
+  }
+
+  const metadataString = JSON.stringify(compactMetadata);
+
+  if (metadataString.length > 127) {
+    throw new Error("PayPal custom_id exceeds 127 character limit");
+  }
+
+  return metadataString;
+}
+
 export async function createPayPalOrder(
   options: CreatePayPalOrderOptions,
 ): Promise<PayPalCreateOrderResponse> {
   const { amount, description, metadata, requestId, returnUrl, cancelUrl } = options;
 
   const amountValue = amount.toFixed(2);
-  const metadataString = JSON.stringify({
-    ...metadata,
-    deposit_amount: metadata.deposit_amount ?? amount,
-  });
-
-  if (metadataString.length > 127) {
-    throw new Error("PayPal custom_id exceeds 127 character limit");
-  }
+  const metadataString = buildCustomId(metadata, amount);
 
   const body = {
     intent: "CAPTURE",
