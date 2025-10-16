@@ -41,7 +41,8 @@ describe("Component Accessibility Tests", () => {
   describe("ContactForm", () => {
     it("should not have accessibility violations", async () => {
       const { container } = render(<ContactForm />);
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have accessible form with heading", async () => {
@@ -53,12 +54,14 @@ describe("Component Accessibility Tests", () => {
           }}
         />,
       );
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have accessible form without heading", async () => {
       const { container } = render(<ContactForm />);
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should maintain accessibility with context", async () => {
@@ -70,14 +73,16 @@ describe("Component Accessibility Tests", () => {
           }}
         />,
       );
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
 
   describe("SiteHeader", () => {
     it("should not have accessibility violations", async () => {
       const { container } = render(<SiteHeader />);
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have accessible navigation", async () => {
@@ -128,7 +133,8 @@ describe("Component Accessibility Tests", () => {
   describe("ContactBar", () => {
     it("should not have accessibility violations", async () => {
       const { container } = render(<ContactBar />);
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have accessible contact buttons", async () => {

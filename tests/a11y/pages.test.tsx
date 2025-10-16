@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { axe, expectNoA11yViolations } from "../helpers/axe";
+import { axe } from "../helpers/axe";
 
 // Import pages
 import HomePage from "@/app/page";
@@ -81,7 +81,8 @@ describe("Page Accessibility Tests", () => {
   describe("About Page", () => {
     it("should not have accessibility violations", async () => {
       const { container } = render(await AboutPage());
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have proper heading structure", async () => {
@@ -148,7 +149,8 @@ describe("Page Accessibility Tests", () => {
   describe("FAQ Page", () => {
     it("should not have accessibility violations", async () => {
       const { container } = render(await FAQPage());
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have proper heading hierarchy for questions", async () => {
@@ -170,7 +172,8 @@ describe("Page Accessibility Tests", () => {
   describe("Policies Page", () => {
     it("should not have accessibility violations", async () => {
       const { container } = render(await PoliciesPage());
-      await expectNoA11yViolations(container);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
 
     it("should have proper document structure", async () => {

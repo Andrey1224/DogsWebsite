@@ -13,11 +13,11 @@ vi.mock('@/lib/supabase/client', () => {
 });
 
 function createSupabaseStub() {
-  const tables = new Map<string, any[]>();
+  const tables = new Map<string, Record<string, unknown>[]>();
   const register = new Map<string, vi.Mock>();
 
   const makeQuery = (table: string) => ({
-    insert: vi.fn((values: any) => {
+    insert: vi.fn((values: Record<string, unknown> | Record<string, unknown>[]) => {
       const next = Array.isArray(values) ? values : [values];
       const nextWithIds = next.map((item, idx) => ({
         ...item,
@@ -30,10 +30,10 @@ function createSupabaseStub() {
         })),
       };
     }),
-    select: vi.fn((columns?: string) => {
+    select: vi.fn(() => {
       const state = tables.get(table) || [];
-      const builder: any = {
-        eq: vi.fn((field: string, value: any) => {
+      const builder: Record<string, unknown> = {
+        eq: vi.fn((field: string, value: unknown) => {
           const filtered = state.filter((row) => row[field] === value);
           return {
             eq: builder.eq,
@@ -86,9 +86,9 @@ function createSupabaseStub() {
       };
       return builder;
     }),
-    update: vi.fn((values: any) => {
+    update: vi.fn((values: Record<string, unknown>) => {
       return {
-        eq: vi.fn((field: string, value: any) => {
+        eq: vi.fn((field: string, value: unknown) => {
           const current = tables.get(table) || [];
           const index = current.findIndex((row) => row[field] === value);
           let updated = null;
@@ -107,7 +107,7 @@ function createSupabaseStub() {
       };
     }),
     delete: vi.fn(() => ({
-      eq: vi.fn((field: string, value: any) => ({
+      eq: vi.fn(() => ({
         lt: vi.fn(() => ({ error: null })),
         error: null,
       })),

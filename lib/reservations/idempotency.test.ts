@@ -71,7 +71,7 @@ describe('Idempotency utilities', () => {
 
   it('marks webhook as processed and attaches reservation id', async () => {
     const eq = vi.fn().mockResolvedValue({ error: null });
-    (idempotencyManager as unknown as { supabase: any }).supabase = {
+    (idempotencyManager as unknown as { supabase: { from: vi.Mock } }).supabase = {
       from: vi.fn(() => ({
         update: vi.fn(() => ({
           eq,
@@ -86,7 +86,7 @@ describe('Idempotency utilities', () => {
 
   it('marks webhook as failed when update returns error', async () => {
     const eq = vi.fn().mockResolvedValue({ error: { message: 'failed' } });
-    (idempotencyManager as unknown as { supabase: any }).supabase = {
+    (idempotencyManager as unknown as { supabase: { from: vi.Mock } }).supabase = {
       from: vi.fn(() => ({
         update: vi.fn(() => ({
           eq,
@@ -100,7 +100,7 @@ describe('Idempotency utilities', () => {
 
   it('marks webhook as failed and records error message', async () => {
     const eq = vi.fn().mockResolvedValue({ error: null });
-    (idempotencyManager as unknown as { supabase: any }).supabase = {
+    (idempotencyManager as unknown as { supabase: { from: vi.Mock } }).supabase = {
       from: vi.fn(() => ({
         update: vi.fn(() => ({
           eq,
@@ -126,7 +126,7 @@ describe('Idempotency utilities', () => {
         })),
       })),
     };
-    (idempotencyManager as unknown as { supabase: any }).supabase = lockSupabase;
+    (idempotencyManager as unknown as { supabase: { from: vi.Mock } }).supabase = lockSupabase;
 
     const result = await idempotencyManager.lockForProcessing(7);
     expect(result).toBe(true);
@@ -135,7 +135,7 @@ describe('Idempotency utilities', () => {
 
   it('cleans up old events via delete + lt', async () => {
     const lt = vi.fn(() => ({ error: null }));
-    (idempotencyManager as unknown as { supabase: any }).supabase = {
+    (idempotencyManager as unknown as { supabase: { from: vi.Mock } }).supabase = {
       from: vi.fn(() => ({
         delete: vi.fn(() => ({
           eq: vi.fn(() => ({
@@ -152,7 +152,7 @@ describe('Idempotency utilities', () => {
 
   it('returns pending events limited by query', async () => {
     const events = [{ id: 1, provider: 'stripe', event_id: 'evt_1', processed: false }];
-    (idempotencyManager as unknown as { supabase: any }).supabase = {
+    (idempotencyManager as unknown as { supabase: { from: vi.Mock } }).supabase = {
       from: vi.fn(() => ({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({

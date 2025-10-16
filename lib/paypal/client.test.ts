@@ -4,7 +4,7 @@ const BASE_ENV = { ...process.env };
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
+global.fetch = mockFetch as unknown as typeof fetch;
 
 describe('PayPal Client', () => {
   beforeEach(() => {

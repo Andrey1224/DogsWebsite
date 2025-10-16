@@ -83,7 +83,7 @@ describe('Puppies Page', () => {
         updated_at: '2024-01-01',
       },
     ];
-    vi.mocked(getFilteredPuppies).mockResolvedValue(mockPuppies as any);
+    vi.mocked(getFilteredPuppies).mockResolvedValue(mockPuppies as Awaited<ReturnType<typeof getFilteredPuppies>>);
 
     const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
     render(component);
