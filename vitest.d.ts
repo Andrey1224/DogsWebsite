@@ -1,13 +1,15 @@
 /**
- * Type declarations for extending Vitest with jest-axe and jest-dom matchers
+ * Type declarations for extending Vitest with jest-axe matchers
+ *
+ * Note: jest-dom types are loaded automatically via tsconfig.json types array
  */
 
 import 'vitest';
 import type { JestAxeMatchers } from 'jest-axe/dist/matchers';
-import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
 
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  interface Assertion<T = any> extends JestAxeMatchers, TestingLibraryMatchers<T, void> {}
-  interface AsymmetricMatchersContaining extends JestAxeMatchers, TestingLibraryMatchers<unknown, void> {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface Assertion extends JestAxeMatchers {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface AsymmetricMatchersContaining extends JestAxeMatchers {}
 }
