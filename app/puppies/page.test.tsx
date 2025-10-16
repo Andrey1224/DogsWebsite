@@ -68,22 +68,27 @@ describe('Puppies Page', () => {
     const mockPuppies = [
       {
         id: 'puppy-1',
+        litter_id: null,
         name: 'Buddy',
         slug: 'buddy-french-bulldog',
-        breed: { id: 'breed-1', name: 'French Bulldog', slug: 'french-bulldog' },
-        gender: 'male',
+        sex: 'male' as const,
+        color: 'Blue Merle',
         birth_date: '2024-01-01',
-        color_pattern: 'Blue Merle',
-        status: 'available',
-        price: 3000,
-        primary_image_url: '/test-image.jpg',
+        price_usd: 3000,
+        status: 'available' as const,
+        weight_oz: 32,
         description: 'A lovely puppy',
-        litter_id: null,
+        photo_urls: ['/test-image.jpg'],
+        video_urls: null,
+        paypal_enabled: true,
+        stripe_payment_link: null,
         created_at: '2024-01-01',
         updated_at: '2024-01-01',
+        litter: null,
+        parents: null,
       },
     ];
-    vi.mocked(getFilteredPuppies).mockResolvedValue(mockPuppies as Awaited<ReturnType<typeof getFilteredPuppies>>);
+    vi.mocked(getFilteredPuppies).mockResolvedValue(mockPuppies);
 
     const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
     render(component);

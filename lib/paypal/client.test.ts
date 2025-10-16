@@ -242,6 +242,8 @@ describe('PayPal Client', () => {
         description: 'Puppy Deposit',
         metadata: {
           puppy_id: 'puppy_123',
+          puppy_slug: 'test-puppy',
+          puppy_name: 'Test Puppy',
           customer_email: 'test@example.com',
           customer_name: 'Test User',
         },
@@ -281,6 +283,8 @@ describe('PayPal Client', () => {
           description: 'Test',
           metadata: {
             puppy_id: longString,
+            puppy_slug: 'test-puppy',
+            puppy_name: 'Test Puppy',
             customer_email: 'test@example.com',
             customer_name: 'Test User',
           },
@@ -314,6 +318,8 @@ describe('PayPal Client', () => {
           description: 'Test',
           metadata: {
             puppy_id: 'puppy_123',
+            puppy_slug: 'test-puppy',
+            puppy_name: 'Test Puppy',
             customer_email: 'test@example.com',
             customer_name: 'Test User',
           },

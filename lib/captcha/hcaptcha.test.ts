@@ -17,7 +17,7 @@ describe('verifyHCaptcha', () => {
 
   it('allows bypass token outside production', async () => {
     process.env.HCAPTCHA_BYPASS_TOKEN = 'bypass-token';
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
     const result = await verifyHCaptcha('bypass-token');
     expect(result).toEqual({ ok: true });
     expect(global.fetch).not.toHaveBeenCalled();
@@ -25,7 +25,7 @@ describe('verifyHCaptcha', () => {
 
   it('rejects missing secret with helpful message', async () => {
     delete process.env.HCAPTCHA_SECRET_KEY;
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
 
     const result = await verifyHCaptcha('token');
 

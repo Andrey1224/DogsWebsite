@@ -24,7 +24,7 @@ describe('env utilities', () => {
   });
 
   it('returns inferred site URL in development', () => {
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
     delete process.env.NEXT_PUBLIC_SITE_URL;
     expect(getSiteUrl()).toBe('http://localhost:3000');
   });

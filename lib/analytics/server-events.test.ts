@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const BASE_ENV = { ...process.env };
 
-const mockEvent = {
+import type { DepositPaidEventParams } from './types';
+
+const mockEvent: DepositPaidEventParams = {
   value: 500,
   currency: 'USD',
   puppy_slug: 'duke-the-bulldog',
@@ -27,7 +29,7 @@ describe('trackDepositPaid', () => {
   it('skips tracking when GA configuration is missing', async () => {
     delete process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
     delete process.env.GA4_API_SECRET;
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
 
     const { trackDepositPaid } = await import('./server-events');
 
@@ -36,7 +38,7 @@ describe('trackDepositPaid', () => {
   });
 
   it('sends payload when configuration is present', async () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
     process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = 'G-123456';
     process.env.GA4_API_SECRET = 'super-secret';
 
@@ -60,7 +62,7 @@ describe('trackDepositPaid', () => {
   });
 
   it('logs an error when GA responds with non-ok status', async () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
     process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = 'G-123456';
     process.env.GA4_API_SECRET = 'super-secret';
 

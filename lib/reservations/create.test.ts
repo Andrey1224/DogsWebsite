@@ -8,7 +8,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ReservationCreationError, ReservationCreationService } from './create';
-import type { CreateReservationParams } from './types';
+import type { CreateReservationParams, Reservation } from './types';
 import type { SupabaseFixture } from '../../tests/fixtures/supabase-client-fixture';
 
 const supabaseFixture =
@@ -254,9 +254,9 @@ describe('ReservationCreationService', () => {
           provider: validParams.paymentProvider,
         });
 
-      ReservationQueries.getByPayment.mockResolvedValue({
+      (ReservationQueries.getByPayment as ReturnType<typeof vi.fn>).mockResolvedValue({
         id: 'reservation-dup',
-      });
+      } as Reservation);
 
       const rpcHandler = registerReservationTransaction(async () => ({
         data: { id: 'reservation-dup' },
@@ -350,7 +350,7 @@ describe('ReservationCreationService', () => {
         provider: validParams.paymentProvider,
       });
 
-      ReservationQueries.updateStatus.mockResolvedValue(null);
+      (ReservationQueries.updateStatus as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
       registerReservationTransaction(async () => ({
         data: { reservation_id: 'paid-reservation' },
@@ -467,12 +467,12 @@ describe('ReservationCreationService', () => {
       const now = new Date();
       const yesterday = new Date(now.getTime() - 25 * 60 * 60 * 1000);
 
-      ReservationQueries.getById.mockResolvedValue({
+      (ReservationQueries.getById as ReturnType<typeof vi.fn>).mockResolvedValue({
         id: 'res_expire',
         status: 'pending',
         expires_at: yesterday.toISOString(),
-      });
-      ReservationQueries.updateStatus.mockResolvedValue({ id: 'res_expire', status: 'expired' });
+      } as Reservation);
+      (ReservationQueries.updateStatus as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'res_expire', status: 'expired' } as Reservation);
 
       const result = await ReservationCreationService.processExpiration('res_expire');
 
@@ -485,11 +485,11 @@ describe('ReservationCreationService', () => {
       const future = new Date();
       future.setHours(future.getHours() + 1);
 
-      ReservationQueries.getById.mockResolvedValue({
+      (ReservationQueries.getById as ReturnType<typeof vi.fn>).mockResolvedValue({
         id: 'res_pending',
         status: 'pending',
         expires_at: future.toISOString(),
-      });
+      } as Reservation);
 
       const shouldExpire = await ReservationCreationService.processExpiration('res_pending');
       expect(shouldExpire).toBe(false);
@@ -497,7 +497,7 @@ describe('ReservationCreationService', () => {
 
   it('bulk expires pending reservations via query helper', async () => {
       const { ReservationQueries } = await import('./queries');
-      ReservationQueries.expireOldPending.mockResolvedValue(3);
+      (ReservationQueries.expireOldPending as ReturnType<typeof vi.fn>).mockResolvedValue(3);
 
       const total = await ReservationCreationService.bulkExpirePending();
       expect(total).toBe(3);

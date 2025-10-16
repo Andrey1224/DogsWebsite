@@ -14,7 +14,7 @@ vi.mock('@/lib/supabase/client', () => {
 
 function createSupabaseStub() {
   const tables = new Map<string, Record<string, unknown>[]>();
-  const register = new Map<string, vi.Mock>();
+  const register = new Map<string, import('vitest').Mock>();
 
   const makeQuery = (table: string) => ({
     insert: vi.fn((values: Record<string, unknown> | Record<string, unknown>[]) => {
@@ -50,7 +50,7 @@ function createSupabaseStub() {
           };
         }),
         in: vi.fn((field: string, values: string[]) => {
-          const filtered = state.filter((row) => values.includes(row[field]));
+          const filtered = state.filter((row) => values.includes(row[field] as string));
           return {
             order: vi.fn(() => ({
               data: filtered,
@@ -154,7 +154,7 @@ beforeEach(async () => {
   vi.resetModules();
   supabaseStub = createSupabaseStub();
   const supabaseModule = await import('@/lib/supabase/client');
-  vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client);
+  vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
 });
 
   afterEach(() => {
@@ -280,7 +280,7 @@ beforeEach(async () => {
   Object.assign(process.env, BASE_ENV);
   supabaseStub = createSupabaseStub();
   const supabaseModule = await import('@/lib/supabase/client');
-  vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client);
+  vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
 });
 
   it('returns false when puppy is reserved', async () => {
@@ -348,7 +348,7 @@ describe('WebhookEventQueries', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client);
+    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
   });
 
   it('creates and retrieves webhook event by id', async () => {
@@ -363,13 +363,14 @@ describe('WebhookEventQueries', () => {
       processing_started_at: null,
       processed_at: null,
       processing_error: null,
+      idempotency_key: null,
       reservation_id: null,
     });
 
     expect(event).toMatchObject({ event_id: 'evt_123', provider: 'stripe' });
 
     const webhookTable = supabaseStub.tables.get('webhook_events') ?? [];
-    const webhookId = webhookTable[0]?.id ?? 1;
+    const webhookId = (webhookTable[0]?.id as number) ?? 1;
     webhookTable[0] = { ...webhookTable[0], id: webhookId };
 
     const fetched = await WebhookEventQueries.getById(webhookId);
@@ -507,7 +508,7 @@ describe('ReservationQueries - Additional Coverage', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client);
+    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
   });
 
   it('retrieves reservations with puppy details', async () => {
@@ -530,10 +531,10 @@ describe('ReservationQueries - Additional Coverage', () => {
   it('returns empty array when reservation summary RPC returns no data', async () => {
     const { ReservationQueries } = await import('./queries');
 
-    supabaseStub.register.set('get_reservation_summary', async () => ({
+    supabaseStub.register.set('get_reservation_summary', vi.fn(async () => ({
       data: [],
       error: null,
-    }));
+    })));
 
     const summary = await ReservationQueries.getSummary('nonexistent');
     expect(summary).toEqual({
