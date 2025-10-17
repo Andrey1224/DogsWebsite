@@ -113,6 +113,11 @@ export async function createCheckoutSession(
         puppy_name: params.puppyName,
         channel: 'site',
       },
+      payment_intent_data: {
+        // Statement descriptor appears on customer's bank statement
+        // Max 22 characters for clarity
+        statement_descriptor: 'EXOTIC BULLDOG LEVEL',
+      },
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
       // Expire session after 24 hours (default)

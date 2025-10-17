@@ -23,6 +23,7 @@ import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
 } from '@/lib/emails/deposit-notifications';
+import { sendAsyncPaymentFailedEmail } from '@/lib/emails/async-payment-failed';
 import { createServiceRoleClient } from '@/lib/supabase/client';
 import type {
   WebhookProcessingResult,
@@ -212,7 +213,8 @@ export class StripeWebhookHandler {
    * Triggered when async payment methods fail after the customer
    * has completed checkout.
    *
-   * TODO: Implement email notification to customer
+   * Sends email notification to customer explaining what happened
+   * and encouraging them to retry with a different payment method.
    */
   private static async handleAsyncPaymentFailed(
     event: Stripe.Event,
@@ -233,9 +235,18 @@ export class StripeWebhookHandler {
       payload: event as unknown as Record<string, unknown>,
     });
 
-    // TODO: Send email to customer asking them to retry their order
-    // const metadata = session.metadata as StripeCheckoutMetadata;
-    // await sendAsyncPaymentFailedEmail(metadata.customer_email, metadata.puppy_slug);
+    // Send email to customer with helpful information
+    const metadata = session.metadata as StripeCheckoutMetadata;
+    if (metadata.customer_email) {
+      void sendAsyncPaymentFailedEmail({
+        customerName: metadata.customer_name,
+        customerEmail: metadata.customer_email,
+        puppyName: metadata.puppy_name,
+        puppySlug: metadata.puppy_slug,
+      }).catch((error) => {
+        console.error('[Stripe Webhook] Failed to send async payment failed email:', error);
+      });
+    }
 
     return {
       success: true,
