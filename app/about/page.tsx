@@ -1,11 +1,12 @@
 import Image from "next/image";
-import { Baby, Heart, Home, ShieldCheck, Stethoscope } from "lucide-react";
+import { Baby, Heart, Home, Quote, ShieldCheck, Stethoscope } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { JsonLd } from "@/components/json-ld";
 import { getOrganizationSchema } from "@/lib/seo/structured-data";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { AnalyticsCtaLink } from "./analytics-cta-link";
+import { GalleryCarousel } from "./gallery-carousel";
 
 export const dynamic = "force-static";
 
@@ -18,6 +19,21 @@ export const metadata = buildMetadata({
 
 const HERO_BLUR =
   "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAAAwAgCdASoKAAoAAUAmJagCdLoBJgALM53dgAD+/pf5I63onJz47/8RV+j1S/6yv98j46qSw7yuHAAA";
+
+const galleryImages = [
+  {
+    src: "/about/family-bulldogs.webp",
+    alt: "Exotic Bulldog Legacy family with French and English Bulldog puppies in Alabama",
+  },
+  {
+    src: "/about/puppy-play.webp",
+    alt: "French Bulldog puppies playing at an Alabama breeder nursery",
+  },
+  {
+    src: "/about/nursery.webp",
+    alt: "English Bulldog kennel nursery in Montgomery Alabama",
+  },
+];
 
 const highlights = [
   {
@@ -49,6 +65,27 @@ const stats = [
   { label: "Lifetime support", value: "100%" },
 ];
 
+const milestones = [
+  {
+    year: "1980s",
+    title: "Roman joins the family",
+    description:
+      "Our first French Bulldog, Roman, arrived in Ukraine and sparked a lifelong passion for the breed.",
+  },
+  {
+    year: "2000s",
+    title: "Show ring experience",
+    description:
+      "Weekends on the road deepened our network with top breeders and veterinarians across the Southeast.",
+  },
+  {
+    year: "2020s",
+    title: "Alabama family kennel",
+    description:
+      "Montgomery became home to Exotic Bulldog Legacy—pairing science-backed breeding with warm Southern hospitality.",
+  },
+];
+
 export default function AboutPage() {
   return (
     <main id="main-content" className="bg-bg">
@@ -75,8 +112,11 @@ export default function AboutPage() {
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
-            <blockquote className="border-l-2 border-border pl-4 text-sm italic text-muted md:text-base">
-              “Every puppy deserves a healthy start and a loving home.”
+            <blockquote className="flex items-start gap-3 rounded-3xl border border-border bg-card/60 p-5 text-base text-muted shadow-sm md:text-lg">
+              <Quote className="mt-1 h-6 w-6 text-accent" aria-hidden="true" />
+              <span className="font-medium text-text">
+                “Every puppy deserves a healthy start and a loving home.”
+              </span>
             </blockquote>
             <div className="flex flex-wrap items-center gap-6">
               <AnalyticsCtaLink
@@ -97,19 +137,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-md">
-            <Image
-              src="/about/family-bulldogs.webp"
-              alt="Exotic Bulldog Legacy family with English and French Bulldogs"
-              width={900}
-              height={650}
-              priority
-              placeholder="blur"
-              blurDataURL={HERO_BLUR}
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="h-full w-full object-cover"
-            />
-          </div>
+          <GalleryCarousel className="md:justify-self-end" images={galleryImages} />
         </section>
 
         {/* Highlights */}
@@ -122,12 +150,27 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+          <h2 className="text-2xl font-semibold text-text">My journey with bulldogs</h2>
+          <ol className="grid gap-6 md:grid-cols-3">
+            {milestones.map((milestone) => (
+              <li key={milestone.year} className="space-y-2">
+                <span className="text-sm font-semibold uppercase tracking-[0.25em] text-accent-aux">
+                  {milestone.year}
+                </span>
+                <h3 className="text-lg font-semibold text-text">{milestone.title}</h3>
+                <p className="text-sm text-muted">{milestone.description}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         {/* Media + Copy */}
         <section className="mt-14 grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:items-center">
           <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
             <Image
               src="/about/nursery.webp"
-              alt="Nursery space prepared for bulldog litters"
+              alt="French Bulldog nursery space prepared for litters in Alabama"
               width={900}
               height={650}
               placeholder="blur"
@@ -151,7 +194,7 @@ export default function AboutPage() {
           <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
             <Image
               src="/about/vet-check.webp"
-              alt="Veterinary partner performing a bulldog health check"
+              alt="English Bulldog veterinary health check at Montgomery Alabama kennel"
               width={900}
               height={650}
               placeholder="blur"
@@ -206,7 +249,7 @@ type HighlightCardProps = {
 
 function HighlightCard({ icon: Icon, title, text }: HighlightCardProps) {
   return (
-    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-transform duration-300 hover:scale-[1.03]">
       <div className="flex items-center gap-2 text-text">
         <Icon className="h-5 w-5" aria-hidden="true" />
         <h2 className="text-lg font-semibold">{title}</h2>

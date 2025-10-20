@@ -6,7 +6,10 @@ import { expectNoA11yViolations } from "@/tests/helpers/axe";
 
 vi.mock("next/link", () => ({
   __esModule: true,
-  default: ({ children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => (
+  default: ({
+    children,
+    ...props
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => (
     <a {...props}>{children}</a>
   ),
 }));
@@ -51,6 +54,15 @@ describe("About Page", () => {
     expect(screen.getByRole("heading", { level: 2, name: /Health-first philosophy/i })).toBeDefined();
     expect(screen.getByRole("heading", { level: 2, name: /Enrichment-driven raising/i })).toBeDefined();
     expect(screen.getByRole("heading", { level: 2, name: /Lifetime breeder support/i })).toBeDefined();
+  });
+
+  it("renders journey timeline milestones", () => {
+    renderAboutPage();
+
+    expect(screen.getByRole("heading", { level: 2, name: /My journey with bulldogs/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Roman joins the family/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Show ring experience/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Alabama family kennel/i })).toBeInTheDocument();
   });
 
   it("renders facility and veterinary cards with CTA", () => {
