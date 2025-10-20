@@ -97,6 +97,7 @@ Improved SEO, accessibility, and CTA flow for production readiness.
   - Business hours display
   - Social media links
 - Header navigation extended with FAQ/Policies/Reviews links
+- `/about` — split-hero refresh with imagery, icon highlights, analytics CTA, and refreshed copy
 - All content validated against `Spec1.md` requirements
 
 **Content Notes:**

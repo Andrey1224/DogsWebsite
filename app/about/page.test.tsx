@@ -1,57 +1,73 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import AboutPage from './page';
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
+import AboutPage from "./page";
+import { expectNoA11yViolations } from "@/tests/helpers/axe";
 
-describe('About Page', () => {
-  it('renders hero heading', () => {
-    render(<AboutPage />);
+vi.mock("next/link", () => ({
+  __esModule: true,
+  default: ({ children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => (
+    <a {...props}>{children}</a>
+  ),
+}));
+
+vi.mock("@/components/analytics-provider", () => {
+  const mockTrack = vi.fn();
+  const Provider = ({ children }: { children: ReactNode }) => <>{children}</>;
+  const useAnalytics = () => ({
+    consent: "granted" as const,
+    grantConsent: vi.fn(),
+    denyConsent: vi.fn(),
+    trackEvent: mockTrack,
+  });
+  return { AnalyticsProvider: Provider, useAnalytics };
+});
+
+function renderAboutPage() {
+  return render(<AboutPage />);
+}
+
+describe("About Page", () => {
+  it("renders hero heading and CTA", () => {
+    renderAboutPage();
 
     expect(
-      screen.getByRole('heading', {
+      screen.getByRole("heading", {
+        level: 1,
         name: /A boutique breeding program built on trust, transparency, and care/i,
-      })
+      }),
     ).toBeInTheDocument();
-  });
 
-  it('renders all three pillars', () => {
-    render(<AboutPage />);
-
-    expect(screen.getByText(/Health-first philosophy/i)).toBeInTheDocument();
-    expect(screen.getByText(/Enrichment-driven raising/i)).toBeInTheDocument();
-    expect(screen.getByText(/Lifetime breeder support/i)).toBeInTheDocument();
-  });
-
-  it('displays facility information', () => {
-    render(<AboutPage />);
-
-    expect(screen.getByText(/Our facility/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Puppies are raised in-home with dedicated nursery/i)
-    ).toBeInTheDocument();
+      screen.getByRole("link", {
+        name: /Meet Our Puppies/i,
+      }),
+    ).toHaveAttribute("href", "/puppies");
   });
 
-  it('displays veterinary partners information', () => {
-    render(<AboutPage />);
+  it("displays program highlights", () => {
+    renderAboutPage();
 
-    expect(screen.getByText(/Veterinary partners/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Health-first philosophy/i })).toBeDefined();
+    expect(screen.getByRole("heading", { level: 2, name: /Enrichment-driven raising/i })).toBeDefined();
+    expect(screen.getByRole("heading", { level: 2, name: /Lifetime breeder support/i })).toBeDefined();
+  });
+
+  it("renders facility and veterinary cards with CTA", () => {
+    renderAboutPage();
+
+    expect(screen.getByRole("heading", { level: 3, name: /Our facility/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Veterinary partners/i })).toBeInTheDocument();
     expect(
-      screen.getByText(/board-certified reproductive veterinarians/i)
-    ).toBeInTheDocument();
+      screen.getByRole("link", {
+        name: /See available puppies/i,
+      }),
+    ).toHaveAttribute("href", "/puppies");
   });
 
-  it('includes CTA for kennel visit', () => {
-    render(<AboutPage />);
-
-    expect(screen.getByText(/Schedule a kennel visit/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/appointment-only visits in Montgomery, AL/i)
-    ).toBeInTheDocument();
-  });
-
-  it('renders breadcrumbs navigation', () => {
-    render(<AboutPage />);
-
-    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
-    expect(screen.getAllByText('About').length).toBeGreaterThan(0);
+  it("passes accessibility checks", async () => {
+    const { container } = renderAboutPage();
+    await expectNoA11yViolations(container);
+    expect(container).toBeTruthy();
   });
 });

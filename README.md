@@ -47,6 +47,11 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - Seed demo content by executing `supabase/seeds/initial_seed.sql` in the Supabase SQL editor (adds parents, litters, puppies, sample reservations/inquiries).
 - Catalog routes (`/puppies`, `/puppies/[slug]`) revalidate every 60s; adjust `revalidate` in route files if content freshness requirements change.
 
+## Media Guidelines
+- Store hero and gallery assets under `public/` (e.g., `public/about/*`).
+- Optimize imagery to WebP and AVIF between 1600–1920px on the longest edge and keep each file ≤400 KB.
+- Strip EXIF metadata before committing; use descriptive `alt` text and supply blur placeholders for Next.js `<Image>` components.
+
 ## Email Notifications (Sprint 2 - Security Hardened)
 - Contact form triggers email notifications via Resend API (owner gets inquiry details, customer gets confirmation).
 - **Security**: All email templates implement HTML escaping to prevent XSS attacks from malicious user input.

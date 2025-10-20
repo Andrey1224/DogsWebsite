@@ -1,129 +1,235 @@
+import Image from "next/image";
+import { Baby, Heart, Home, ShieldCheck, Stethoscope } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { JsonLd } from "@/components/json-ld";
+import { getOrganizationSchema } from "@/lib/seo/structured-data";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { AnalyticsCtaLink } from "./analytics-cta-link";
+
+export const dynamic = "force-static";
 
 export const metadata = buildMetadata({
-  title: "About Exotic Bulldog Level",
+  title: "About — Exotic Bulldog Legacy",
   description:
-    "Learn about Exotic Bulldog Level’s health-first French and English bulldog breeding program in Montgomery, Alabama.",
+    "Discover Exotic Bulldog Legacy’s family-run French and English Bulldog breeding program in Alabama and the journey that inspired it.",
   path: "/about",
 });
 
-const pillars = [
+const HERO_BLUR =
+  "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAAAwAgCdASoKAAoAAUAmJagCdLoBJgALM53dgAD+/pf5I63onJz47/8RV+j1S/6yv98j46qSw7yuHAAA";
+
+const highlights = [
   {
+    icon: ShieldCheck,
     title: "Health-first philosophy",
-    description:
-      "All sires and dams are DNA tested, OFA screened, and paired to reduce hereditary risks while promoting healthy confirmation.",
+    text: "Parents are DNA-tested and OFA-screened so every pairing reduces hereditary risks while building sound temperaments.",
   },
   {
+    icon: Baby,
     title: "Enrichment-driven raising",
-    description:
-      "Puppies experience Early Neurological Stimulation, socialization with children, and crate conditioning before they go home.",
+    text: "Early Neurological Stimulation, gentle kid exposure, sound desensitization, and crate conditioning come standard.",
   },
   {
+    icon: Heart,
     title: "Lifetime breeder support",
-    description:
-      "Families receive onboarding guides, nutrition plans, and direct access to our team for health and training questions.",
+    text: "We stay in touch long after pickup with nutrition plans, training tips, and quick answers—whenever you need us.",
   },
+];
+
+const storyParagraphs = [
+  "We are a small family breeder in Alabama, and our story starts in the 1980s when a little French Bulldog named Roman stole our hearts. What began as a personal passion quickly grew into a program grounded in ethics, health, and lifelong devotion to the breed.",
+  "Decades of showing dogs, learning from mentors, and refining our craft taught us that bulldogs thrive when science meets compassion. Parents are carefully matched, and every puppy is raised in-home with structure, play, and gentle socialization so they transition confidently into their forever families.",
+  "Each bulldog leaves with a veterinary exam, vaccination record, and a promise: we will always be a call away for nutrition, training, or a quick photo update. Bulldogs are our family, and helping them bring joy to yours is our greatest reward.",
+];
+
+const stats = [
+  { label: "Years with bulldogs", value: "35+" },
+  { label: "Healthy placements", value: "400+" },
+  { label: "Lifetime support", value: "100%" },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-4xl space-y-12 px-6 py-12">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "About", href: "/about" },
-        ]}
-      />
-      <header className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">About</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-text">
-          A boutique breeding program built on trust, transparency, and care
-        </h1>
-        <p className="text-sm text-muted">
-          Exotic Bulldog Level is a family-run breeder in Alabama focused on producing well-tempered
-          French and English bulldogs. Our program blends veterinary best practices with genuine love
-          for the breed, ensuring every puppy is ready to thrive in their forever home.
-        </p>
-      </header>
+    <main id="main-content" className="bg-bg">
+      <JsonLd data={getOrganizationSchema()} />
+      <div className="mx-auto w-full max-w-6xl px-6 pb-16 pt-10 md:px-12">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "About", href: "/about" },
+          ]}
+        />
 
-      <section className="space-y-4 rounded-3xl border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-text">My journey into the world of bulldogs</h2>
-        <div className="space-y-3 text-sm text-muted">
-          <p>
-            My love story with bulldogs began in the 1980s in Ukraine when my parents entrusted me with
-            my first French Bulldog puppy. His name was Roman—wide-eyed, big-eared, and instantly the
-            center of my world. From the moment he arrived, life felt different in the best possible way.
-          </p>
-          <p>
-            Since then, French and English bulldogs have been woven into every season of my life. I cannot
-            remember a time without them, and I often catch myself understanding their moods and needs
-            faster than people’s. Their loyalty, emotional depth, and expressive personalities speak a
-            language I have spent decades learning.
-          </p>
-          <p>
-            Dog shows quickly became more than weekend outings—they were classrooms and community rolled
-            into one. I invested countless hours learning from fellow breeders, refining husbandry
-            practices, and building friendships rooted in a shared devotion to the breed. What began as an
-            absorbing hobby evolved into a lifelong dedication to raising healthy, joyful, and beautiful
-            bulldogs.
-          </p>
-          <p>
-            Today I specialize in both French and English Bulldogs. I could talk about them for hours—their
-            charm, quirks, soulful eyes, and playful spirits. I keep thousands of photos and videos and
-            remember each dog by name because they are not simply pets; they are family. Breeding is not
-            just my vocation—it is part of who I am, made possible by the unwavering support of God and my
-            family.
-          </p>
-          <p>
-            My goal is simple and profound: to raise healthy, happy, and stunning bulldogs that fill homes
-            with the same joy Roman brought into mine. Every puppy that leaves our home carries that legacy
-            of love forward.
-          </p>
-        </div>
-      </section>
+        {/* Hero */}
+        <section className="mt-8 grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:items-center">
+          <div className="space-y-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
+              Our story
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-text md:text-4xl">
+              A boutique breeding program built on trust, transparency, and care
+            </h1>
+            <div className="space-y-4 text-sm text-muted md:text-base">
+              {storyParagraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+            <blockquote className="border-l-2 border-border pl-4 text-sm italic text-muted md:text-base">
+              “Every puppy deserves a healthy start and a loving home.”
+            </blockquote>
+            <div className="flex flex-wrap items-center gap-6">
+              <AnalyticsCtaLink
+                href="/puppies"
+                prefetch={false}
+                className="inline-flex items-center rounded-2xl bg-accent-gradient px-6 py-3 text-sm font-semibold text-text shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                Meet Our Puppies →
+              </AnalyticsCtaLink>
+              <dl className="grid grid-cols-3 gap-4 text-left text-sm text-muted">
+                {stats.map((stat) => (
+                  <div key={stat.label}>
+                    <dt className="font-medium text-text">{stat.value}</dt>
+                    <dd>{stat.label}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
 
-      <section className="grid gap-6 sm:grid-cols-3">
-        {pillars.map((pillar) => (
-          <article
-            key={pillar.title}
-            className="rounded-3xl border border-border bg-card p-6 shadow-sm"
-          >
-            <h2 className="text-lg font-semibold text-text">
-              {pillar.title}
+          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-md">
+            <Image
+              src="/about/family-bulldogs.webp"
+              alt="Exotic Bulldog Legacy family with English and French Bulldogs"
+              width={900}
+              height={650}
+              priority
+              placeholder="blur"
+              blurDataURL={HERO_BLUR}
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="h-full w-full object-cover"
+            />
+          </div>
+        </section>
+
+        {/* Highlights */}
+        <section className="mt-14">
+          <h2 className="sr-only">Program foundations</h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {highlights.map((item) => (
+              <HighlightCard key={item.title} {...item} />
+            ))}
+          </div>
+        </section>
+
+        {/* Media + Copy */}
+        <section className="mt-14 grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:items-center">
+          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+            <Image
+              src="/about/nursery.webp"
+              alt="Nursery space prepared for bulldog litters"
+              width={900}
+              height={650}
+              placeholder="blur"
+              blurDataURL={HERO_BLUR}
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="h-full w-full object-cover"
+            />
+          </figure>
+          <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
+            <h2 className="text-2xl font-semibold text-text">Where puppies grow &amp; thrive</h2>
+            <p className="text-sm text-muted md:text-base">
+              Puppies are raised in dedicated nursery and play spaces with HEPA filtration, daily
+              sanitation, and climate control tuned for brachycephalic comfort. Supervised outdoor play
+              builds confidence while early leash work prepares them for real-world routines.
+            </p>
+          </div>
+        </section>
+
+        {/* Facility & Veterinary */}
+        <section className="mt-10 grid gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center">
+          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+            <Image
+              src="/about/vet-check.webp"
+              alt="Veterinary partner performing a bulldog health check"
+              width={900}
+              height={650}
+              placeholder="blur"
+              blurDataURL={HERO_BLUR}
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <InfoCard
+              icon={Home}
+              title="Our facility"
+              text="In-home nursery, play yards, and whelping suites with round-the-clock supervision, plus tailored enrichment for every developmental milestone."
+            />
+            <InfoCard
+              icon={Stethoscope}
+              title="Veterinary partners"
+              text="Board-certified reproductive veterinarians in Montgomery and Birmingham manage progesterone timing, C-sections when needed, and newborn wellness exams."
+            />
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="mt-16">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+            <h2 className="text-2xl font-semibold text-text">
+              Schedule a visit or a live video walkthrough
             </h2>
-            <p className="mt-3 text-sm text-muted">{pillar.description}</p>
-          </article>
-        ))}
-      </section>
+            <p className="mt-3 text-sm text-muted md:text-base">
+              We welcome families by appointment in Montgomery, AL and host virtual meet-and-greets for
+              out-of-state adopters. Reach out—we are happy to introduce you to the puppies.
+            </p>
+            <AnalyticsCtaLink
+              href="/puppies"
+              prefetch={false}
+              className="mt-6 inline-flex items-center rounded-2xl border border-transparent bg-accent-gradient px-5 py-3 text-sm font-semibold text-text shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            >
+              See available puppies
+            </AnalyticsCtaLink>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
 
-      <section className="grid gap-6 rounded-3xl border border-border bg-card p-6 sm:grid-cols-2">
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold text-text">Our facility</h2>
-          <p className="text-sm text-muted">
-            Puppies are raised in-home with dedicated nursery and play spaces. We maintain
-            HEPA-filtration, daily sanitation routines, and climate control tailored to brachycephalic
-            breeds. Each litter has supervised outdoor time and early leash introduction.
-          </p>
-        </div>
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold text-text">Veterinary partners</h2>
-          <p className="text-sm text-muted">
-            We collaborate with board-certified reproductive veterinarians in Montgomery and Birmingham.
-            They handle progesterone timing, cesarean sections when necessary, and newborn checkups, so
-            every bulldog starts life with a health advantage.
-          </p>
-        </div>
-      </section>
+type HighlightCardProps = {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  title: string;
+  text: string;
+};
 
-      <section className="rounded-3xl border border-accent/40 bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] p-6 text-sm text-accent-aux">
-        <p className="font-semibold text-accent-aux">Schedule a kennel visit</p>
-        <p className="mt-2">
-          We host private, appointment-only visits in Montgomery, AL and offer live video walkthroughs
-          for out-of-state families. Reach out through the contact bar or the form to book a time that
-          works for you.
-        </p>
-      </section>
-    </div>
+function HighlightCard({ icon: Icon, title, text }: HighlightCardProps) {
+  return (
+    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex items-center gap-2 text-text">
+        <Icon className="h-5 w-5" aria-hidden="true" />
+        <h2 className="text-lg font-semibold">{title}</h2>
+      </div>
+      <p className="mt-3 text-sm text-muted">{text}</p>
+    </article>
+  );
+}
+
+type InfoCardProps = {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  title: string;
+  text: string;
+};
+
+function InfoCard({ icon: Icon, title, text }: InfoCardProps) {
+  return (
+    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex items-center gap-2 text-text">
+        <Icon className="h-5 w-5" aria-hidden="true" />
+        <h3 className="text-lg font-semibold">{title}</h3>
+      </div>
+      <p className="mt-3 text-sm text-muted">{text}</p>
+    </article>
   );
 }
