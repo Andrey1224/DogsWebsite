@@ -17,21 +17,29 @@ export const metadata = buildMetadata({
   path: "/about",
 });
 
-const HERO_BLUR =
-  "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAAAwAgCdASoKAAoAAUAmJagCdLoBJgALM53dgAD+/pf5I63onJz47/8RV+j1S/6yv98j46qSw7yuHAAA";
+const NURSERY_BLUR =
+  "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQAgCdASoQABAAA4BaJQBOgCHfNUNt3b+AAP7niTyaxqqP7GlhJWrQ3MAcRzDQH2dJnjFMuREZprYzLmDcHzD/i2adQ3zcXGW80ZoIRTOEiii9ZqjZ3/RAAAA=";
+const VET_BLUR =
+  "data:image/webp;base64,UklGRjAAAABXRUJQVlA4ICQAAABQAQCdASoQABAAD8BaJQBOgCgAAP7vsd/vEb+Fbe/ZlFPlcAA=";
 
 const galleryImages = [
   {
     src: "/about/family-bulldogs.webp",
     alt: "Exotic Bulldog Legacy family with French and English Bulldog puppies in Alabama",
+    blurDataURL:
+      "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAABwAgCdASoQABAAA4BaJYwCdAaeQ3/WSf8PzX2AAP7mpSNPhA+Tgu2igCdau2BWnxlPABFDGp88RR6Ky3HclrwpqtCwMyhTy2iB1M+h1VBGkWZNiz4PaWGOLV8Anu1HSNE3iroNePZuf29LeNkSaNGuJsgl1MZPkDo704AA",
   },
   {
     src: "/about/puppy-play.webp",
     alt: "French Bulldog puppies playing at an Alabama breeder nursery",
+    blurDataURL:
+      "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADQAQCdASoQABAAA4BaJbACdAEJSxFcAADxvgTzzlkcQWpE53W3MW+Dbu2llKOhAnaPyatgke1phORJ3cc9SQ7+AIZpwRgL7idApv1X+nE1yTJ8/oSkJ99sQL4jvAAA",
   },
   {
     src: "/about/nursery.webp",
     alt: "English Bulldog kennel nursery in Montgomery Alabama",
+    blurDataURL:
+      "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQAgCdASoQABAAA4BaJQBOgCHfNUNt3b+AAP7niTyaxqqP7GlhJWrQ3MAcRzDQH2dJnjFMuREZprYzLmDcHzD/i2adQ3zcXGW80ZoIRTOEiii9ZqjZ3/RAAAA=",
   },
 ];
 
@@ -174,7 +182,7 @@ export default function AboutPage() {
               width={900}
               height={650}
               placeholder="blur"
-              blurDataURL={HERO_BLUR}
+              blurDataURL={NURSERY_BLUR}
               sizes="(min-width: 1024px) 45vw, 100vw"
               className="h-full w-full object-cover"
             />
@@ -198,7 +206,7 @@ export default function AboutPage() {
               width={900}
               height={650}
               placeholder="blur"
-              blurDataURL={HERO_BLUR}
+              blurDataURL={VET_BLUR}
               sizes="(min-width: 1024px) 45vw, 100vw"
               className="h-full w-full object-cover"
             />

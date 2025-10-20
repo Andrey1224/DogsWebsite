@@ -10,6 +10,7 @@ function cx(...classes: Array<string | undefined | null | false>) {
 type CarouselImage = {
   src: string;
   alt: string;
+  blurDataURL?: string;
 };
 
 type GalleryCarouselProps = {
@@ -45,7 +46,10 @@ export function GalleryCarousel({ images, className }: GalleryCarouselProps) {
           height={650}
           priority={index === 0}
           placeholder="blur"
-          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AArgBSURVI2EAAAAASUVORK5CYII="
+          blurDataURL={
+            current.blurDataURL ??
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AArgBSURVI2EAAAAASUVORK5CYII="
+          }
           sizes="(min-width: 1024px) 45vw, 100vw"
           className="h-full w-full object-cover transition-transform duration-500"
         />
