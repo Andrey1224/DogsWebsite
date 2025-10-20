@@ -22,7 +22,7 @@ test.describe("Analytics & Consent Management", () => {
 
     // Check that consent was persisted in localStorage
     const consent = await page.evaluate(() => {
-      return window.localStorage.getItem("exoticbulldoglevel-consent");
+      return window.localStorage.getItem("exoticbulldoglegacy-consent");
     });
 
     expect(consent).toBe("granted");
@@ -167,13 +167,13 @@ test.describe("Analytics & Consent Management", () => {
     await expect
       .poll(async () => {
         const cookies = await context.cookies();
-        return cookies.find((cookie) => cookie.name === "exoticbulldoglevel_consent") ?? null;
+        return cookies.find((cookie) => cookie.name === "exoticbulldoglegacy_consent") ?? null;
       })
       .not.toBeNull();
 
     const cookies = await context.cookies();
     const consentCookie = cookies.find(
-      (cookie) => cookie.name === "exoticbulldoglevel_consent"
+      (cookie) => cookie.name === "exoticbulldoglegacy_consent"
     );
 
     expect(consentCookie?.value).toBe("granted");
@@ -190,7 +190,7 @@ test.describe("Analytics & Consent Management", () => {
 
     // Verify localStorage is set correctly
     const storageKey = await page.evaluate(() => {
-      return window.localStorage.getItem("exoticbulldoglevel-consent");
+      return window.localStorage.getItem("exoticbulldoglegacy-consent");
     });
 
     expect(storageKey).toBe("granted");
@@ -199,7 +199,7 @@ test.describe("Analytics & Consent Management", () => {
     await page.reload();
 
     const persistedConsent = await page.evaluate(() => {
-      return window.localStorage.getItem("exoticbulldoglevel-consent");
+      return window.localStorage.getItem("exoticbulldoglegacy-consent");
     });
 
     expect(persistedConsent).toBe("granted");

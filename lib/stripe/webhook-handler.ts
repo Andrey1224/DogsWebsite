@@ -237,10 +237,14 @@ export class StripeWebhookHandler {
 
     // Send email to customer with helpful information
     const metadata = session.metadata as StripeCheckoutMetadata;
-    if (metadata.customer_email) {
+    const customerEmail = session.customer_details?.email || metadata.customer_email;
+    const customerName =
+      session.customer_details?.name || metadata.customer_name || undefined;
+
+    if (customerEmail) {
       void sendAsyncPaymentFailedEmail({
-        customerName: metadata.customer_name,
-        customerEmail: metadata.customer_email,
+        customerName,
+        customerEmail,
         puppyName: metadata.puppy_name,
         puppySlug: metadata.puppy_slug,
       }).catch((error) => {

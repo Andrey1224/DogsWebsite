@@ -46,7 +46,7 @@
 
 #### Email (Resend)
 - [ ] `RESEND_API_KEY`
-- [ ] `RESEND_FROM_EMAIL=noreply@exoticbulldoglevel.com`
+- [ ] `RESEND_FROM_EMAIL=noreply@exoticbulldoglegacy.com`
 - [ ] `OWNER_EMAIL`
 
 #### Analytics (Optional)
@@ -59,7 +59,7 @@
 - [ ] `SLACK_WEBHOOK_URL` (optional)
 
 #### Site Configuration
-- [ ] `NEXT_PUBLIC_SITE_URL=https://exoticbulldoglevel.com`
+- [ ] `NEXT_PUBLIC_SITE_URL=https://exoticbulldoglegacy.com`
 - [ ] `NEXT_PUBLIC_CONTACT_PHONE`
 - [ ] `NEXT_PUBLIC_CONTACT_EMAIL`
 - [ ] `NEXT_PUBLIC_WHATSAPP`
@@ -74,7 +74,7 @@
 #### Stripe Dashboard
 - [ ] Navigate to **Developers > Webhooks**
 - [ ] Click **Add endpoint**
-- [ ] URL: `https://exoticbulldoglevel.com/api/stripe/webhook`
+- [ ] URL: `https://exoticbulldoglegacy.com/api/stripe/webhook`
 - [ ] Events to listen for:
   - [x] `checkout.session.completed`
   - [x] `checkout.session.async_payment_succeeded`
@@ -88,7 +88,7 @@
 - [ ] Select your production app
 - [ ] Go to **Webhooks** section
 - [ ] Click **Add Webhook**
-- [ ] URL: `https://exoticbulldoglevel.com/api/paypal/webhook`
+- [ ] URL: `https://exoticbulldoglegacy.com/api/paypal/webhook`
 - [ ] Events to listen for:
   - [x] `CHECKOUT.ORDER.APPROVED`
   - [x] `PAYMENT.CAPTURE.COMPLETED`
@@ -115,7 +115,7 @@ vercel --prod
 ```
 
 ### 2. Verify Deployment
-- [ ] Site loads: https://exoticbulldoglevel.com
+- [ ] Site loads: https://exoticbulldoglegacy.com
 - [ ] All pages render correctly
 - [ ] No console errors in browser
 - [ ] Check Vercel deployment logs for errors

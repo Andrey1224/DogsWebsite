@@ -251,7 +251,7 @@ User -> C : Ask questions in chat (optional)
 
 ### 0) Домены и деплой
 
-1. Зарегистрировать домен (например, exoticbulldoglevel.com) у регистратора (Namecheap/Google Domains/Cloudflare Registrar).
+1. Зарегистрировать домен (например, exoticbulldoglegacy.com) у регистратора (Namecheap/Google Domains/Cloudflare Registrar).
 2. Создать проект на **Vercel** → импортировать GitHub-репозиторий `exotic-bulldog-level-site`.
 3. Привязать домен к проекту (DNS через A/ALIAS/CNAME согласно Vercel). Включить HTTPS (Let’s Encrypt автоматом).
 

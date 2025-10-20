@@ -178,7 +178,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
   `;
 
   await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "alerts@exoticbulldoglevel.com",
+      from: process.env.RESEND_FROM_EMAIL || "alerts@exoticbulldoglegacy.com",
     to: ALERT_CONFIG.ALERT_EMAILS.filter((email): email is string => !!email),
     subject,
     html,

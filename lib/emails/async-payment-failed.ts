@@ -55,7 +55,7 @@ function generateAsyncPaymentFailedEmail(data: AsyncPaymentFailedData): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const safePuppyName = escapeHtml(data.puppyName);
   const puppyUrl = `${siteUrl}/puppies/${data.puppySlug}`;
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@exoticbulldoglevel.com';
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@exoticbulldoglegacy.com';
   const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || '';
 
   return `
@@ -187,7 +187,7 @@ export async function sendAsyncPaymentFailedEmail(data: AsyncPaymentFailedData) 
 
   try {
     const { data: emailData, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@exoticbulldoglevel.com',
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@exoticbulldoglegacy.com',
       to: [data.customerEmail],
       subject: `⚠️ Payment Issue with ${data.puppyName} - We Can Help!`,
       html: generateAsyncPaymentFailedEmail(data),

@@ -476,7 +476,7 @@ NEXT_PUBLIC_TELEGRAM_USERNAME: ${{ secrets.NEXT_PUBLIC_TELEGRAM_USERNAME }}
 
 # Email Notifications (Resend)
 RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-RESEND_FROM_EMAIL: noreply@exoticbulldoglevel.com
+RESEND_FROM_EMAIL: noreply@exoticbulldoglegacy.com
 OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
 ```
 

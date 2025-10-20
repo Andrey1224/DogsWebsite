@@ -162,7 +162,7 @@ function generateCustomerDepositEmail(data: DepositData): string {
   const safePuppyName = escapeHtml(data.puppyName);
   const puppyUrl = `${siteUrl}/puppies/${data.puppySlug}`;
   const providerLabel = data.paymentProvider === 'stripe' ? 'Stripe' : 'PayPal';
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@exoticbulldoglevel.com';
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@exoticbulldoglegacy.com';
   const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || '';
 
   return `
@@ -277,7 +277,7 @@ export async function sendOwnerDepositNotification(data: DepositData) {
 
   try {
     const { data: emailData, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "noreply@exoticbulldoglevel.com",
+      from: process.env.RESEND_FROM_EMAIL || "noreply@exoticbulldoglegacy.com",
       to: [ownerEmail],
       subject: `💰 New Deposit: $${data.depositAmount} for ${data.puppyName}`,
       replyTo: data.customerEmail,
@@ -308,7 +308,7 @@ export async function sendCustomerDepositConfirmation(data: DepositData) {
 
   try {
     const { data: emailData, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "noreply@exoticbulldoglevel.com",
+      from: process.env.RESEND_FROM_EMAIL || "noreply@exoticbulldoglegacy.com",
       to: [data.customerEmail],
       subject: `🎉 Deposit Confirmed - ${data.puppyName} is Reserved for You!`,
       html: generateCustomerDepositEmail(data),

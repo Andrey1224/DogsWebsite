@@ -25,6 +25,10 @@ vi.mock('@/lib/reservations/idempotency', () => ({
   },
 }));
 
+vi.mock('@/lib/emails/async-payment-failed', () => ({
+  sendAsyncPaymentFailedEmail: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 vi.mock('@/lib/reservations/create', () => {
   class ReservationCreationError extends Error {
     code: string;
@@ -67,6 +71,7 @@ describe('StripeWebhookHandler', () => {
     metadata: {
       puppy_id: mockPuppyId,
       puppy_slug: 'test-puppy',
+      puppy_name: 'Test Puppy',
       customer_email: 'test@example.com',
       channel: 'site',
     },
@@ -318,6 +323,45 @@ describe('StripeWebhookHandler', () => {
           provider: 'stripe',
           eventId: mockEventId,
           eventType: 'checkout.session.async_payment_failed',
+        })
+      );
+    });
+
+    it('sends async failure email using customer details when metadata email missing', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { sendAsyncPaymentFailedEmail } = await import('@/lib/emails/async-payment-failed');
+
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+      });
+
+      const session = createMockSession({
+        metadata: {
+          puppy_id: mockPuppyId,
+          puppy_slug: 'test-puppy',
+          puppy_name: 'Test Puppy',
+          customer_email: '',
+          channel: 'site',
+        },
+        customer_details: {
+          email: 'customer-from-session@example.com',
+          name: 'Customer Session',
+          phone: '+12025550000',
+          address: null,
+          tax_exempt: 'none',
+          tax_ids: [],
+        },
+      });
+
+      const event = createMockEvent('checkout.session.async_payment_failed', session);
+
+      await StripeWebhookHandler.processEvent(event);
+
+      expect(sendAsyncPaymentFailedEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          customerEmail: 'customer-from-session@example.com',
+          customerName: 'Customer Session',
+          puppyName: 'Test Puppy',
         })
       );
     });

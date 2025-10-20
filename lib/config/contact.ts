@@ -58,7 +58,7 @@ const DEFAULTS = {
     e164: "+12055551234",
   },
   email: {
-    address: "hello@exoticbulldoglevel.com",
+    address: "hello@exoticbulldoglegacy.com",
   },
   whatsapp: {
     link: "https://wa.me/12055551234",

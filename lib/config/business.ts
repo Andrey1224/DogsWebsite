@@ -123,12 +123,12 @@ export const BUSINESS_PROFILE = {
   description:
     "Responsible French & English bulldog breeding program in Montgomery, Alabama with concierge placement support.",
   slogan: "Trusted French & English bulldogs raised with southern warmth.",
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@exoticbulldoglevel.com",
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@exoticbulldoglegacy.com",
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "+12055551234",
   address,
   areaServed: ["Alabama", "Georgia", "Florida", "Tennessee"],
   priceRange: "$$$",
-  logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://exoticbulldoglevel.com"}/favicon.ico`,
+  logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://exoticbulldoglegacy.com"}/favicon.ico`,
   imageGallery: [
     "/reviews/sarah-charlie.webp",
     "/reviews/mark-lisa-duke.webp",

@@ -3,8 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
 
-const STORAGE_KEY = "exoticbulldoglevel-consent";
-const COOKIE_KEY = "exoticbulldoglevel_consent";
+const STORAGE_KEY = "exoticbulldoglegacy-consent";
+const COOKIE_KEY = "exoticbulldoglegacy_consent";
 
 type ConsentState = "unknown" | "granted" | "denied";
 

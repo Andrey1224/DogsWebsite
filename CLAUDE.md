@@ -92,7 +92,7 @@ META_PIXEL_ID=
 
 # Email Notifications (Resend)
 RESEND_API_KEY=
-RESEND_FROM_EMAIL=noreply@exoticbulldoglevel.com
+RESEND_FROM_EMAIL=noreply@exoticbulldoglegacy.com
 OWNER_EMAIL=
 
 # Captcha
