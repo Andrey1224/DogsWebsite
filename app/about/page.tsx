@@ -47,6 +47,42 @@ export default function AboutPage() {
         </p>
       </header>
 
+      <section className="space-y-4 rounded-3xl border border-border bg-card p-6">
+        <h2 className="text-xl font-semibold text-text">My journey into the world of bulldogs</h2>
+        <div className="space-y-3 text-sm text-muted">
+          <p>
+            My love story with bulldogs began in the 1980s in Ukraine when my parents entrusted me with
+            my first French Bulldog puppy. His name was Roman—wide-eyed, big-eared, and instantly the
+            center of my world. From the moment he arrived, life felt different in the best possible way.
+          </p>
+          <p>
+            Since then, French and English bulldogs have been woven into every season of my life. I cannot
+            remember a time without them, and I often catch myself understanding their moods and needs
+            faster than people’s. Their loyalty, emotional depth, and expressive personalities speak a
+            language I have spent decades learning.
+          </p>
+          <p>
+            Dog shows quickly became more than weekend outings—they were classrooms and community rolled
+            into one. I invested countless hours learning from fellow breeders, refining husbandry
+            practices, and building friendships rooted in a shared devotion to the breed. What began as an
+            absorbing hobby evolved into a lifelong dedication to raising healthy, joyful, and beautiful
+            bulldogs.
+          </p>
+          <p>
+            Today I specialize in both French and English Bulldogs. I could talk about them for hours—their
+            charm, quirks, soulful eyes, and playful spirits. I keep thousands of photos and videos and
+            remember each dog by name because they are not simply pets; they are family. Breeding is not
+            just my vocation—it is part of who I am, made possible by the unwavering support of God and my
+            family.
+          </p>
+          <p>
+            My goal is simple and profound: to raise healthy, happy, and stunning bulldogs that fill homes
+            with the same joy Roman brought into mine. Every puppy that leaves our home carries that legacy
+            of love forward.
+          </p>
+        </div>
+      </section>
+
       <section className="grid gap-6 sm:grid-cols-3">
         {pillars.map((pillar) => (
           <article

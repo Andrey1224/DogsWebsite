@@ -42,6 +42,16 @@ Sprint 3 successfully delivered a complete payment processing system with Stripe
 
 ---
 
+## Planning Snapshot
+
+- **Scope Revisions:** Post-audit updates introduced per-puppy Stripe links or checkout sessions, PayPal idempotency headers, webhook deduplication tables, and GA4 e-commerce tracking to reach a 10-day contingency estimate.
+- **Primary Objectives:** Enable $300 deposits via Stripe and PayPal, automate puppy reservation state changes, enforce multi-layer idempotency, emit `deposit_paid` analytics, and preserve ≥80% coverage across payment logic.
+- **Success Criteria:** Zero duplicate charges, <5s payment latency, 100% webhook verification, full test suite green, and no open security findings.
+- **Architecture Overview:** Customer → payment UI → provider checkout → webhook handlers → idempotency manager → atomic Supabase transaction, followed by email + analytics fan-out.
+- **Key Deliverables:** Checkout initiation UI, reservation services, database migrations, Stripe/PayPal webhook handlers, analytics + email automation, and monitoring playbooks.
+
+---
+
 ## Phase Breakdown
 
 ### Phase 1: Infrastructure Setup (0.3 days)
@@ -195,6 +205,24 @@ Implemented **defense-in-depth** strategy:
 - `lib/monitoring/webhook-alerts.ts`
 
 **Test Coverage:** 5 tests for health endpoint
+
+---
+
+## Progress Timeline & Velocity
+
+| Phase | Status | Planned | Actual | Delta |
+|-------|--------|---------|--------|-------|
+| Infrastructure Setup | ✅ Complete | 1–1.5 days | 0.3 days | –1.2 days |
+| Database Migrations | ✅ Enhanced | 1.0 day | 0.5 day | –0.5 day |
+| Stripe Integration | ✅ Complete | 2.0 days | 0.4 day | –1.6 days |
+| PayPal Integration | ✅ Complete | 2.0 days | 0.6 day | –1.4 days |
+| Analytics & Emails | ✅ Complete | 1.0 day | 0.3 day | –0.7 day |
+| Webhook Monitoring | ✅ Complete | 1.0 day | 0.2 day | –0.8 day |
+| Testing & Documentation | ✅ Complete | 1.5 days | 0.3 day | –1.2 days |
+
+- **Total Estimated:** 10 working days  
+- **Total Actual:** 2.6 days (74% ahead of schedule)  
+- **Key Drivers:** Prior migrations unlocked faster integration work, shared client mocks reduced setup time, and proactive test scaffolding allowed phases to run in parallel.
 
 ---
 
@@ -528,7 +556,7 @@ webhook_events.reservation_id UUID  -- ✅ Matches!
 **Verification Tools:**
 - `scripts/verify-constraints.mjs` - Checks all columns and functions exist
 - `scripts/check-migrations.mjs` - Tests database connectivity
-- `MIGRATION_REFERENCE.md` - Complete migration documentation
+- `MIGRATIONS.md` - Consolidated migration documentation and rollout guide
 
 ### Code Updates
 

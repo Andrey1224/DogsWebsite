@@ -103,6 +103,17 @@ Process deposits via Stripe + PayPal, mark puppies reserved.
 
 ---
 
+## Branding & Theme Reference
+
+- **Design Tokens:**  
+  `--bg #F9FAFB`, `--bg-card #FFFFFF`, `--text #111111`, `--text-muted #555555`, `--accent #FFB84D`, `--accent-2-start #FF4D79`, `--accent-2-end #FF7FA5`, `--accent-aux #0D1A44`, `--footer-bg #E5E7EB` (light) and `--bg #0D1A44`, `--bg-card #1C1C1C`, `--text #FFFFFF`, `--text-muted #D1D5DB`, `--accent #FFB84D`, `--accent-2-start #FF4D79`, `--accent-2-end #FF7FA5`, `--accent-aux #FFD166`, `--footer-bg #0A0F24` (dark). Shared tokens: `--border`, `--hover`, `--btn-bg`, `--btn-text`, `--link`.
+- **CSS Implementation:** Variables declared in `:root` (light) and `[data-theme="dark"]`; Tailwind maps utilities like `bg-bg`, `bg-card`, `text-text`, `text-muted`, and `bg-accent-gradient`.
+- **Theme Provider:** `components/theme-provider.tsx` synchronises `data-theme` on `document.documentElement`, persists preference (`light`, `dark`, `system`), and exposes `useTheme()`.
+- **Usage Guidance:** Prefer `bg-[color:var(--btn-bg)]` / `text-[color:var(--btn-text)]` for primary CTAs and `.bg-accent-gradient` for hero CTAs. Extend tokens centrally before introducing new palette values.
+- **Accessibility Targets:** Maintain WCAG AA contrast on light/dark surfaces; verify hero, buttons, cards, badges, and alerts after palette updates.
+
+---
+
 ## Sprint 4 – SEO, Trust & Local Presence (1 week)
 
 **Goals:**  
@@ -116,7 +127,7 @@ Organic visibility, policies, credibility.
 - [ ] NAP block (name, address, phone) in footer  
 - [ ] Google Maps embed (city + service area)  
 - [ ] Pages: `Policies`, `FAQ`, `Reviews`
-  - [ ] FAQ copy finalized with owner review (draft content in place; adjust before release)
+- [ ] FAQ copy finalized with owner review (draft content in place; adjust before release)
 - [ ] Policies: deposits, refunds, health, delivery  
 - [ ] Reviews: 4–6 testimonials (text + photo/video)  
 - [ ] Accessibility: alt texts, focus visible, contrast ≥ 4.5:1  

@@ -110,7 +110,7 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 - `app/reviews/page.tsx`
 - `components/site-footer.tsx`
 - `components/site-header.tsx`
-- `FAQPOLICIESREVIEWS.md` (content documentation)
+- Content reference captured in Appendix A (this report)
 
 ---
 
@@ -210,7 +210,7 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 **Artifacts Generated:**
 - `lighthouse-home.json`
 - `lighthouse-reviews.json`
-- `FAQPOLICIESREVIEWS.md` (content + validation log)
+- Content & validation log (Appendix A)
 - This report (`SPRINT4_REPORT.md`)
 
 **Documentation Updates:**
@@ -305,7 +305,7 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 - **Reviews (`/reviews`)**: Organization ✅, ItemList ✅, AggregateRating ✅ (4.9/5 from 6 reviews)
 - **Puppy Detail (`/puppies/duke-english-bulldog`)**: Organization ✅, Product ✅, BreadcrumbList ✅
 
-Full validation logs stored in `FAQPOLICIESREVIEWS.md`.
+Full validation logs summarised in Appendix A of this report.
 
 ### Lighthouse Audits
 **Environment:** Local dev server (`npm run dev`)
@@ -354,6 +354,50 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 - Local CDN requests to `images.exoticbulldog.dev` return HTTP 500
 - Tests designed to tolerate network failures
 - Resolved in production environment
+
+---
+
+## 📚 Content Reference Appendices
+
+### Appendix A — FAQ / Policies / Reviews Source
+
+**FAQ Highlights (published at `/faq`):**
+
+| Question | Answer |
+|----------|--------|
+| How do I reserve a puppy? | On the puppy page choose **Reserve with Stripe** or **PayPal** and submit the \$300 deposit. The puppy is instantly marked “Reserved”. |
+| Is the deposit refundable? | Deposits are non-refundable but transferable to another puppy with prior approval. |
+| How do I pick up my puppy? | Arrange an in-person pickup or use our ground transport partner—coordinated individually. |
+| What documents do puppies receive? | Veterinary exam, vaccination record, and a starter packet accompany every puppy. |
+| Can I visit before reserving? | Yes, visits are available by appointment via the contact form. |
+| How do I know the site is legitimate? | All payments run through Stripe and PayPal; we never request direct wire transfers. |
+
+**Policies Overview (published at `/policies`):**
+- **Deposit Policy:** \$300, non-refundable, applied toward final purchase price.
+- **Refunds & Exchanges:** Only for documented health issues confirmed by a licensed veterinarian.
+- **Health Guarantee:** One-year coverage against congenital defects; puppies leave with vet clearance.
+- **Delivery Policy:** Local pickup or arranged ground transport with written agreement.
+- **Privacy & Payments:** Customer data handled per Stripe/PayPal standards; no raw card data stored.
+
+**Reviews Dataset (published at `/reviews`):**
+
+| Customer | Location | Date | Rating | Highlight | Media |
+|----------|----------|------|--------|-----------|--------|
+| Sarah W. | Huntsville, AL | 2025-06-18 | ⭐⭐⭐⭐⭐ | “Charlie has been the sweetest, healthiest puppy—we loved the transparent process.” | `/reviews/sarah-charlie.jpg` |
+| Mark & Lisa P. | Birmingham, AL | 2025-07-03 | ⭐⭐⭐⭐⭐ | “Deposit and pickup were super easy and professional for our English Bulldog Duke.” | `/reviews/mark-lisa-duke.jpg` |
+| Jessica M. | Nashville, TN | 2025-08-02 | ⭐⭐⭐⭐⭐ | “Videos and updates kept us confident until Bella arrived healthy and happy.” | `/reviews/jessica-bella.mp4` |
+| Anthony D. | Montgomery, AL | 2025-05-27 | ⭐⭐⭐⭐⭐ | “You can tell they care—Tommy settled immediately with the family.” | `/reviews/anthony-tommy.jpg` |
+| Rachel K. | Atlanta, GA | 2025-07-22 | ⭐⭐⭐⭐⭐ | “Worth the drive from Georgia; vet praised our pup’s condition.” | `/reviews/rachel-ga.jpg` |
+| Cameron H. | Decatur, AL | 2025-09-05 | ⭐⭐⭐⭐⭐ | “PayPal checkout was seamless, and Milo is already the star of the neighborhood.” | `/reviews/cameron-milo.jpg` |
+
+**Structured Data Validation:** `npx structured-data-testing-tool --presets Google` passes for Organization, LocalBusiness, FAQPage, ItemList, AggregateRating, and Product schemas; Lighthouse reports stored alongside this document.
+
+### Appendix B — Homepage Preview Modules
+
+- **Quick Answers block:** three top FAQ items with CTA “See all FAQs →”.
+- **Review teaser:** two testimonial snippets linking to `/reviews`.
+- **Map & Contacts:** retain single footer instance; ensure alt text and lazy loading remain enabled.
+- **Why it matters:** improves dwell time, surfaces trust signals early, and maintains internal linking to FAQ/Reviews pages.
 
 ---
 
