@@ -61,7 +61,7 @@ function computeStripeSignature(secret: string, body: string) {
 
 async function sendWebhook() {
   try {
-    const signature = computeStripeSignature(WEBHOOK_SECRET, payload);
+    const signature = computeStripeSignature(WEBHOOK_SECRET!, payload);
     console.log("Sending webhook to", WEBHOOK_URL);
 
     const controller = new AbortController();

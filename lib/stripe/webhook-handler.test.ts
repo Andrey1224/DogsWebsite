@@ -350,6 +350,8 @@ describe('StripeWebhookHandler', () => {
           address: null,
           tax_exempt: 'none',
           tax_ids: [],
+          business_name: null,
+          individual_name: null,
         },
       });
 
