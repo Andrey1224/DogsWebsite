@@ -107,7 +107,7 @@ export default function AboutPage() {
         />
 
         {/* Hero */}
-        <section className="mt-8 grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:items-center">
+        <section className="mt-8 grid gap-10 md:grid-cols-2 lg:grid-cols-[1.15fr_0.85fr] items-start md:items-center">
           <div className="space-y-6">
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
               Our story
@@ -145,7 +145,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <GalleryCarousel className="md:justify-self-end" images={galleryImages} />
+          <GalleryCarousel className="mx-auto w-full md:justify-self-end" images={galleryImages} />
         </section>
 
         {/* Highlights */}
@@ -174,53 +174,85 @@ export default function AboutPage() {
         </section>
 
         {/* Media + Copy */}
-        <section className="mt-14 grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:items-center">
-          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <section className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-[1.1fr_0.9fr] md:items-stretch">
+          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3]">
             <Image
               src="/about/nursery.webp"
               alt="French Bulldog nursery space prepared for litters in Alabama"
               width={900}
-              height={650}
+              height={1350}
               placeholder="blur"
               blurDataURL={NURSERY_BLUR}
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="h-full w-full object-cover"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="h-full w-full object-cover object-center"
+              loading="lazy"
             />
           </figure>
-          <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
-            <h2 className="text-2xl font-semibold text-text">Where puppies grow &amp; thrive</h2>
-            <p className="text-sm text-muted md:text-base">
-              Puppies are raised in dedicated nursery and play spaces with HEPA filtration, daily
-              sanitation, and climate control tuned for brachycephalic comfort. Supervised outdoor play
-              builds confidence while early leash work prepares them for real-world routines.
-            </p>
+          <div className="flex flex-col gap-6 justify-between">
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-text mb-2">Where puppies grow &amp; thrive</h3>
+              <p className="text-sm text-muted">
+                Puppies are raised in dedicated nursery and play spaces with HEPA filtration, daily
+                sanitation, and climate control tuned for brachycephalic comfort.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-text mb-2">Supervised outdoor play</h3>
+              <p className="text-sm text-muted">
+                Supervised outdoor play builds confidence while early leash work prepares them for real-world routines.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-text mb-2">Round-the-clock care</h3>
+              <p className="text-sm text-muted">
+                24/7 monitoring and support ensuring every puppy receives individual attention and care tailored to their needs.
+              </p>
+            </div>
           </div>
         </section>
 
         {/* Facility & Veterinary */}
-        <section className="mt-10 grid gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center">
-          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <section className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-[0.9fr_1.1fr] md:items-stretch">
+          <div className="flex flex-col gap-6 justify-between md:order-1">
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2 text-text mb-2">
+                <Home className="h-5 w-5" aria-hidden="true" />
+                <h3 className="text-lg font-semibold">Our facility</h3>
+              </div>
+              <p className="text-sm text-muted">
+                In-home nursery, play yards, and whelping suites with round-the-clock supervision, plus tailored enrichment for every developmental milestone.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2 text-text mb-2">
+                <Stethoscope className="h-5 w-5" aria-hidden="true" />
+                <h3 className="text-lg font-semibold">Veterinary partners</h3>
+              </div>
+              <p className="text-sm text-muted">
+                Board-certified reproductive veterinarians in Montgomery and Birmingham manage progesterone timing, C-sections when needed, and newborn wellness exams.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2 text-text mb-2">
+                <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+                <h3 className="text-lg font-semibold">Health protocols</h3>
+              </div>
+              <p className="text-sm text-muted">
+                Comprehensive health screening and vaccination protocols ensure every puppy meets the highest standards before joining their new family.
+              </p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3] md:order-2">
             <Image
               src="/about/vet-check.webp"
               alt="English Bulldog veterinary health check at Montgomery Alabama kennel"
               width={900}
-              height={650}
+              height={1350}
               placeholder="blur"
               blurDataURL={VET_BLUR}
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            <InfoCard
-              icon={Home}
-              title="Our facility"
-              text="In-home nursery, play yards, and whelping suites with round-the-clock supervision, plus tailored enrichment for every developmental milestone."
-            />
-            <InfoCard
-              icon={Stethoscope}
-              title="Veterinary partners"
-              text="Board-certified reproductive veterinarians in Montgomery and Birmingham manage progesterone timing, C-sections when needed, and newborn wellness exams."
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="h-full w-full object-cover object-center"
+              loading="lazy"
             />
           </div>
         </section>
@@ -267,20 +299,3 @@ function HighlightCard({ icon: Icon, title, text }: HighlightCardProps) {
   );
 }
 
-type InfoCardProps = {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-  title: string;
-  text: string;
-};
-
-function InfoCard({ icon: Icon, title, text }: InfoCardProps) {
-  return (
-    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-      <div className="flex items-center gap-2 text-text">
-        <Icon className="h-5 w-5" aria-hidden="true" />
-        <h3 className="text-lg font-semibold">{title}</h3>
-      </div>
-      <p className="mt-3 text-sm text-muted">{text}</p>
-    </article>
-  );
-}

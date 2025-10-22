@@ -8,10 +8,9 @@ vi.mock("next/link", () => ({
   __esModule: true,
   default: ({
     children,
+    prefetch: _prefetch,
     ...props
-  }: AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => (
-    <a {...props}>{children}</a>
-  ),
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => <a {...props}>{children}</a>,
 }));
 
 vi.mock("@/components/analytics-provider", () => {
