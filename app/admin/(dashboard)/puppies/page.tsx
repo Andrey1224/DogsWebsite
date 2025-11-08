@@ -34,7 +34,7 @@ export default async function AdminPuppiesPage() {
             <span>Birth date</span>
             <span className="text-right">Actions</span>
           </div>
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-border" data-testid="admin-puppy-list">
             {puppies.map((puppy) => (
               <PuppyRow key={puppy.id} puppy={puppy} statusOptions={statusOptions} />
             ))}

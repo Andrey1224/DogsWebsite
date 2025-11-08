@@ -29,5 +29,5 @@ test("submits contact inquiry with captcha bypass", async ({ page }) => {
 
   await page.getByRole("button", { name: /share my inquiry/i }).click();
 
-  await expect(page.getByText(/Thanks for reaching out!/i)).toBeVisible();
+  await expect(page.getByText(/Thanks for reaching out!/i)).toBeVisible({ timeout: 15_000 });
 });

@@ -68,7 +68,12 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       </div>
 
       {isOpen ? (
-        <form ref={formRef} action={formAction} className="mt-6 grid gap-4 md:grid-cols-2">
+        <form
+          ref={formRef}
+          action={formAction}
+          aria-label="Create puppy form"
+          className="mt-6 grid gap-4 md:grid-cols-2"
+        >
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium text-text">
               Name
