@@ -98,7 +98,7 @@ export default function AboutPage() {
   return (
     <main id="main-content" className="bg-bg">
       <JsonLd data={getOrganizationSchema()} />
-      <div className="mx-auto w-full max-w-6xl px-6 pb-16 pt-10 md:px-12">
+      <div className="mx-auto w-full max-w-7xl px-6 pb-16 pt-10 xl:px-8">
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
@@ -107,8 +107,8 @@ export default function AboutPage() {
         />
 
         {/* Hero */}
-        <section className="mt-8 grid gap-10 md:grid-cols-2 lg:grid-cols-[1.15fr_0.85fr] items-start md:items-center">
-          <div className="space-y-6">
+        <section className="mt-8 grid gap-6 md:grid-cols-12 items-start md:items-center">
+          <div className="space-y-6 md:col-span-12 lg:col-span-6">
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
               Our story
             </p>
@@ -120,10 +120,10 @@ export default function AboutPage() {
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
-            <blockquote className="flex items-start gap-3 rounded-3xl border border-border bg-card/60 p-5 text-base text-muted shadow-sm md:text-lg">
+            <blockquote className="flex items-start gap-3 rounded-3xl border border-border bg-card/60 p-6 text-base text-muted shadow-sm md:text-lg">
               <Quote className="mt-1 h-6 w-6 text-accent" aria-hidden="true" />
               <span className="font-medium text-text">
-                “Every puppy deserves a healthy start and a loving home.”
+                &ldquo;Every puppy deserves a healthy start and a loving home.&rdquo;
               </span>
             </blockquote>
             <div className="flex flex-wrap items-center gap-6">
@@ -145,11 +145,13 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <GalleryCarousel className="mx-auto w-full md:justify-self-end" images={galleryImages} />
+          <div className="md:col-span-12 lg:col-span-6">
+            <GalleryCarousel className="mx-auto w-full" images={galleryImages} />
+          </div>
         </section>
 
         {/* Highlights */}
-        <section className="mt-14">
+        <section className="mt-16">
           <h2 className="sr-only">Program foundations</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {highlights.map((item) => (
@@ -158,7 +160,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-2xl font-semibold text-text">My journey with bulldogs</h2>
           <ol className="grid gap-6 md:grid-cols-3">
             {milestones.map((milestone) => (
@@ -174,8 +176,8 @@ export default function AboutPage() {
         </section>
 
         {/* Media + Copy */}
-        <section className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-[1.1fr_0.9fr] md:items-stretch">
-          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3]">
+        <section className="mt-16 grid gap-6 md:grid-cols-12">
+          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3] md:col-span-12 lg:col-span-6">
             <Image
               src="/about/nursery.webp"
               alt="French Bulldog nursery space prepared for litters in Alabama"
@@ -188,21 +190,21 @@ export default function AboutPage() {
               loading="lazy"
             />
           </figure>
-          <div className="flex flex-col gap-6 justify-between">
-            <div className="rounded-3xl border border-border bg-card p-6">
+          <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-6">
+            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
               <h3 className="text-lg font-semibold text-text mb-2">Where puppies grow &amp; thrive</h3>
               <p className="text-sm text-muted">
                 Puppies are raised in dedicated nursery and play spaces with HEPA filtration, daily
                 sanitation, and climate control tuned for brachycephalic comfort.
               </p>
             </div>
-            <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
               <h3 className="text-lg font-semibold text-text mb-2">Supervised outdoor play</h3>
               <p className="text-sm text-muted">
                 Supervised outdoor play builds confidence while early leash work prepares them for real-world routines.
               </p>
             </div>
-            <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
               <h3 className="text-lg font-semibold text-text mb-2">Round-the-clock care</h3>
               <p className="text-sm text-muted">
                 24/7 monitoring and support ensuring every puppy receives individual attention and care tailored to their needs.
@@ -212,9 +214,9 @@ export default function AboutPage() {
         </section>
 
         {/* Facility & Veterinary */}
-        <section className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-[0.9fr_1.1fr] md:items-stretch">
-          <div className="flex flex-col gap-6 justify-between md:order-1">
-            <div className="rounded-3xl border border-border bg-card p-6">
+        <section className="mt-16 grid gap-6 md:grid-cols-12">
+          <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-6 lg:order-1">
+            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
               <div className="flex items-center gap-2 text-text mb-2">
                 <Home className="h-5 w-5" aria-hidden="true" />
                 <h3 className="text-lg font-semibold">Our facility</h3>
@@ -223,7 +225,7 @@ export default function AboutPage() {
                 In-home nursery, play yards, and whelping suites with round-the-clock supervision, plus tailored enrichment for every developmental milestone.
               </p>
             </div>
-            <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
               <div className="flex items-center gap-2 text-text mb-2">
                 <Stethoscope className="h-5 w-5" aria-hidden="true" />
                 <h3 className="text-lg font-semibold">Veterinary partners</h3>
@@ -232,7 +234,7 @@ export default function AboutPage() {
                 Board-certified reproductive veterinarians in Montgomery and Birmingham manage progesterone timing, C-sections when needed, and newborn wellness exams.
               </p>
             </div>
-            <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
               <div className="flex items-center gap-2 text-text mb-2">
                 <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                 <h3 className="text-lg font-semibold">Health protocols</h3>
@@ -242,7 +244,7 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
-          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3] md:order-2">
+          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3] md:col-span-12 lg:col-span-6 lg:order-2">
             <Image
               src="/about/vet-check.webp"
               alt="English Bulldog veterinary health check at Montgomery Alabama kennel"
@@ -254,12 +256,12 @@ export default function AboutPage() {
               className="h-full w-full object-cover object-center"
               loading="lazy"
             />
-          </div>
+          </figure>
         </section>
 
         {/* CTA */}
         <section className="mt-16">
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <h2 className="text-2xl font-semibold text-text">
               Schedule a visit or a live video walkthrough
             </h2>
@@ -270,7 +272,7 @@ export default function AboutPage() {
             <AnalyticsCtaLink
               href="/puppies"
               prefetch={false}
-              className="mt-6 inline-flex items-center rounded-2xl border border-transparent bg-accent-gradient px-5 py-3 text-sm font-semibold text-text shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              className="mt-6 inline-flex items-center rounded-2xl border border-transparent bg-accent-gradient px-6 py-3 text-sm font-semibold text-text shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               See available puppies
             </AnalyticsCtaLink>
