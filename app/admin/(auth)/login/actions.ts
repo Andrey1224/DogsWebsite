@@ -3,19 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { setAdminSession } from "@/lib/admin/session";
-
-export type LoginState = {
-  status: "idle" | "error";
-  errors?: {
-    login?: string[];
-    password?: string[];
-    form?: string[];
-  };
-};
-
-export const initialLoginState: LoginState = {
-  status: "idle",
-};
+import type { LoginState } from "./state";
 
 const loginSchema = z.object({
   login: z.string().min(1, "Login is required"),
@@ -23,6 +11,7 @@ const loginSchema = z.object({
 });
 
 export async function authenticate(_: LoginState, formData: FormData): Promise<LoginState> {
+  "use server";
   const submission = {
     login: formData.get("login"),
     password: formData.get("password"),
