@@ -67,7 +67,7 @@ export const createPuppySchema = z.object({
   priceUsd: priceUsdSchema,
   birthDate: birthDateSchema,
   litterId: litterIdSchema,
-  slug: slugSchema,
+  slug: slugSchema.optional(),
 });
 
 export const updatePuppyStatusSchema = z.object({

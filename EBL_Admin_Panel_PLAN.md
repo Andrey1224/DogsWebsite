@@ -12,7 +12,7 @@
 | P1 | Auth Foundations | `.env` secrets, `/admin/login`, secure cookie, middleware + layout guard, sign-out path | Dev | ✅ Done |
 | P2 | Data Access Layer | Server-only Supabase client helpers, Zod schemas, shared enum/constants | Dev | ✅ Done |
 | P3 | Puppies Index UI | `/admin/puppies` route, table skeleton, responsive layout, shadcn inputs/selects | Dev | ✅ Done |
-| P4 | Mutations | Server Actions for status, price, create, delete; toast wiring; optimistic UX; cache revalidation[^1] | Dev | 🔲 Todo |
+| P4 | Mutations | Server Actions for status, price, create, delete; toast wiring; optimistic UX; cache revalidation[^1] | Dev | ✅ Done |
 | P5 | DX & QA | Validation states, error UX, mobile pass on Galaxy S25 Ultra, regression checklist (`lint`, `test`, `e2e`), docs updates (`SPRINTx_REPORT`, `.env.example`) | Dev | 🔲 Todo |
 
 ## 3. Detailed Work Breakdown
@@ -65,6 +65,7 @@
 
 | Date | Phase | Status Update | Next Step |
 | --- | --- | --- | --- |
+| 2024-11-25 | P4 Mutations | ✅ Wired server actions for status/price/create/delete, added toasts + inline controls, and verified the UI via Playwright MCP preview. | Begin **P5 DX & QA** (admin tests + docs). |
 | 2024-11-24 | P3 Puppies Index UI | ✅ Built responsive table UI with disabled inline controls + actions placeholders, powered by `fetchAdminPuppies()`. Previewed via Playwright MCP. | Start **P4 Mutations** (wire Server Actions + toasts). |
 | 2024-11-24 | P2 Data Layer | ✅ Added admin Supabase helper, puppy schemas (Zod), slug utilities, and CRUD query wrappers to unblock upcoming UI/actions. | Begin **P3 Puppies Index UI** (table layout + data fetch). |
 | 2024-11-24 | P1 Auth Foundations | ✅ Added env vars, cookie-backed session helpers, login form/action, middleware + guarded layout, and placeholder puppies route. | Start **P2 Data Access Layer** (service-role client + schemas). |

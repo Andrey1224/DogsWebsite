@@ -114,3 +114,18 @@ export async function isPuppySlugTaken(slug: string, options: { excludeId?: stri
 
   return (response.count ?? 0) > 0;
 }
+
+export async function getAdminPuppyById(id: string): Promise<Pick<AdminPuppyRecord, "id" | "name" | "slug"> | null> {
+  const supabase = getAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from("puppies")
+    .select("id,name,slug")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as Pick<AdminPuppyRecord, "id" | "name" | "slug">) ?? null;
+}

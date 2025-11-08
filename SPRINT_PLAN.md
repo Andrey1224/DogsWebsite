@@ -155,6 +155,12 @@ Finalize performance, reliability, and compliance.
 - [ ] Privacy/Cookie banner + Consent Mode sync  
 - [ ] Configure DNS + HTTPS for custom domain  
 - [ ] Add minimal admin ops (SQL scripts for bulk updates/imports)  
+- [ ] `/admin` console for puppies management  
+  - [x] P1 Auth foundations (env vars, login form, session cookie, middleware)  
+  - [x] P2 Data layer (service-role helper, Zod schemas, slug utilities, queries)  
+  - [x] P3 UI table (responsive list, inline controls placeholders)  
+  - [x] P4 Mutations (Server Actions for status/price/create/delete + toasts)  
+  - [ ] P5 QA (Playwright admin smoke tests, docs updates)  
 - [ ] Email notifications (Resend/Postmark):
   - to owner: new inquiry / deposit paid  
   - to buyer: confirmation + contact info
