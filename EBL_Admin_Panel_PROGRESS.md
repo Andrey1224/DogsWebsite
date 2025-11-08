@@ -2,6 +2,7 @@
 
 | Date | Phase | Status | Notes |
 | --- | --- | --- | --- |
+| 2025-11-08 | Bugfix — 'use server' Export | ✅ Complete | Fixed Next.js error by separating types/constants from 'use server' actions file into dedicated types.ts. |
 | 2025-11-08 | Bugfix — Puppy Creation | ✅ Complete | Fixed critical server-side exception during puppy creation by enforcing required slug type and adding comprehensive error handling. |
 | 2025-11-08 | P6 — Security & A11y Polish | 📋 Planned | Brute-force protection, accessibility improvements, and comprehensive E2E tests. **Deferred to post-launch.** |
 | 2024-11-25 | P5 — DX & QA | ✅ Complete | Added admin Playwright smoke test, exercised lint/type/test gates, and updated planning docs so the console is ready for release polish. |
@@ -9,6 +10,52 @@
 | 2024-11-24 | P3 — Puppies Index UI | ✅ Complete | Added data-driven `/admin/puppies` table with responsive layout, disabled inline controls, and action placeholders; previewed in browser via Playwright MCP session. |
 | 2024-11-24 | P2 — Data Layer | ✅ Complete | Added admin Supabase helper, puppy CRUD Zod schemas, slug utilities, and server-only query wrappers to unblock UI + Server Actions. |
 | 2024-11-24 | P1 — Auth Foundations | ✅ Complete | Delivered env template updates, signed session cookies, login form/action, middleware guard, and dashboard shell with sign-out. |
+
+## Bugfix — 'use server' Export Violation (2025-11-08) ✅
+
+### Problem
+After deploying puppy creation fix, Next.js threw error when attempting to create puppy:
+```
+Error: A "use server" file can only export async functions, found object.
+Digest: 1164739666
+```
+
+### Root Cause
+`app/admin/(dashboard)/puppies/actions.ts` had `'use server'` directive but exported non-async values:
+- **Line 55**: `export type CreatePuppyState` (TypeScript type)
+- **Line 61**: `export const initialCreatePuppyState` (object constant)
+
+Next.js 15 strictly enforces that `'use server'` files can **only** export async functions. Types and constants violate this rule.
+
+### Solution
+**Files Modified:**
+1. **app/admin/(dashboard)/puppies/types.ts** (NEW)
+   - Created dedicated types file without `'use server'` directive
+   - Moved `CreatePuppyState` type definition
+   - Moved `initialCreatePuppyState` constant
+
+2. **app/admin/(dashboard)/puppies/actions.ts**
+   - Removed lines 55-63 (type and const exports)
+   - Added import: `import type { CreatePuppyState } from "./types"`
+   - File now only exports async functions (valid `'use server'` file)
+
+3. **app/admin/(dashboard)/puppies/create-puppy-panel.tsx**
+   - Updated imports to use new `types.ts` file
+   - Separated concerns: actions from types
+
+### Testing
+- ✅ TypeScript compilation passes
+- ✅ ESLint validation passes (max-warnings=0)
+- ✅ Production build succeeds
+- ✅ No `'use server'` export violations
+
+### Commit
+`256403b` - fix(admin): separate types from 'use server' actions file
+
+### Learning
+Next.js `'use server'` best practice: Keep server action files pure (async functions only). Extract shared types/constants to separate files without the directive.
+
+---
 
 ## Bugfix — Puppy Creation (2025-11-08) ✅
 
