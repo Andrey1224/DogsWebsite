@@ -5,7 +5,6 @@ import { getAdminSupabaseClient } from "@/lib/admin/supabase";
 import type { Puppy } from "@/lib/supabase/types";
 import {
   CreatePuppyInput,
-  createPuppySchema,
   deletePuppySchema,
   priceUsdSchema,
   updatePuppyPriceSchema,
@@ -20,7 +19,10 @@ export type AdminPuppyRecord = Pick<
   "id" | "name" | "slug" | "status" | "price_usd" | "birth_date" | "litter_id" | "created_at" | "updated_at"
 >;
 
-function mapCreatePayload(input: CreatePuppyInput) {
+// Type for insertion with required slug
+type CreatePuppyPayload = Omit<CreatePuppyInput, 'slug'> & { slug: string };
+
+function mapCreatePayload(input: CreatePuppyPayload) {
   return {
     name: input.name,
     slug: input.slug,
@@ -45,12 +47,11 @@ export async function fetchAdminPuppies(): Promise<AdminPuppyRecord[]> {
   return (data ?? []) as AdminPuppyRecord[];
 }
 
-export async function insertAdminPuppy(input: CreatePuppyInput): Promise<AdminPuppyRecord> {
-  const payload = createPuppySchema.parse(input);
+export async function insertAdminPuppy(input: CreatePuppyPayload): Promise<AdminPuppyRecord> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
     .from("puppies")
-    .insert(mapCreatePayload(payload))
+    .insert(mapCreatePayload(input))
     .select(ADMIN_PUPPY_FIELDS)
     .single();
 

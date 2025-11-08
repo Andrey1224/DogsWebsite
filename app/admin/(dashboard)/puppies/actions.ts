@@ -63,50 +63,61 @@ export const initialCreatePuppyState: CreatePuppyState = {
 };
 
 export async function createPuppyAction(_: CreatePuppyState, formData: FormData): Promise<CreatePuppyState> {
-  await requireAdminSession();
+  try {
+    await requireAdminSession();
 
-  const submission = {
-    name: formData.get("name"),
-    status: formData.get("status") ?? "available",
-    priceUsd: formData.get("priceUsd"),
-    birthDate: formData.get("birthDate"),
-    litterId: formData.get("litterId"),
-    slug: formData.get("slug"),
-  };
+    const submission = {
+      name: formData.get("name"),
+      status: formData.get("status") ?? "available",
+      priceUsd: formData.get("priceUsd"),
+      birthDate: formData.get("birthDate"),
+      litterId: formData.get("litterId"),
+      slug: formData.get("slug"),
+    };
 
-  const parsed = createPuppySchema.safeParse(submission);
-  if (!parsed.success) {
-    const { fieldErrors, formErrors } = parsed.error.flatten();
+    const parsed = createPuppySchema.safeParse(submission);
+    if (!parsed.success) {
+      const { fieldErrors, formErrors } = parsed.error.flatten();
+      return {
+        status: "error",
+        fieldErrors,
+        formError: formErrors?.[0],
+      };
+    }
+
+    const payload = parsed.data;
+    let slug = payload.slug && payload.slug.trim().length > 0
+      ? payload.slug.trim()
+      : slugifyName(payload.name);
+
+    if (!slug || slug.trim().length === 0) {
+      return {
+        status: "error",
+        formError: "Unable to generate a valid slug. Please use a name with letters or numbers.",
+      };
+    }
+
+    if (await isPuppySlugTaken(slug)) {
+      slug = await generateUniqueSlug(payload.name, (candidate) => isPuppySlugTaken(candidate));
+    }
+
+    await insertAdminPuppy({
+      ...payload,
+      slug,
+    });
+
+    revalidateCatalog(slug);
+
+    return {
+      status: "success",
+    };
+  } catch (error) {
+    console.error("Create puppy action error:", error);
     return {
       status: "error",
-      fieldErrors,
-      formError: formErrors?.[0],
+      formError: error instanceof Error ? error.message : "Failed to create puppy. Please try again.",
     };
   }
-
-  const payload = parsed.data;
-  let slug = payload.slug && payload.slug.length > 0 ? payload.slug : slugifyName(payload.name);
-  if (!slug) {
-    return {
-      status: "error",
-      formError: "Unable to generate slug from the provided name.",
-    };
-  }
-
-  if (await isPuppySlugTaken(slug)) {
-    slug = await generateUniqueSlug(payload.name, (candidate) => isPuppySlugTaken(candidate));
-  }
-
-  await insertAdminPuppy({
-    ...payload,
-    slug,
-  });
-
-  revalidateCatalog(slug);
-
-  return {
-    status: "success",
-  };
 }
 
 export async function deletePuppyAction(input: { id: string; confirmName: string }) {
