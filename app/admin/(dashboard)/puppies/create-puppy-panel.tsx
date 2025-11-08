@@ -19,6 +19,7 @@ interface CreatePuppyPanelProps {
 export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const processedSuccessRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -28,7 +29,8 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const [state, formAction, pending] = useActionState<CreatePuppyState, FormData>(createPuppyAction, initialCreatePuppyState);
 
   useEffect(() => {
-    if (state.status === "success") {
+    if (state.status === "success" && !processedSuccessRef.current) {
+      processedSuccessRef.current = true;
       toast.success("Puppy created");
       formRef.current?.reset();
       setName("");
@@ -39,6 +41,11 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       router.refresh();
     } else if (state.status === "error" && state.formError) {
       toast.error(state.formError);
+    }
+
+    // Reset flag when starting new submission
+    if (state.status === "idle") {
+      processedSuccessRef.current = false;
     }
   }, [state, router, statusOptions]);
 
