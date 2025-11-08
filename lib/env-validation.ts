@@ -31,6 +31,22 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
   };
 
   const recommended = {
+    ADMIN_LOGIN: {
+      pattern: undefined,
+      description: "Admin console login identifier"
+    },
+    ADMIN_PASSWORD: {
+      pattern: undefined,
+      description: "Admin console password"
+    },
+    ADMIN_SESSION_SECRET: {
+      pattern: /^.{16,}$/,
+      description: "Secret string (16+ chars) used to sign admin session cookies"
+    },
+    ADMIN_SESSION_TTL_HOURS: {
+      pattern: /^(?:[1-9]\d*)$/,
+      description: "Admin session lifetime in hours (integer)"
+    },
     RESEND_API_KEY: {
       pattern: /^re_[a-zA-Z0-9_]+$/,
       description: "Resend API key for email notifications"
