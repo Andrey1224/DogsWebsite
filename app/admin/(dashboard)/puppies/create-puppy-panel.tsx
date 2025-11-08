@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { slugifyName } from "@/lib/admin/puppies/slug";
-import { createPuppyAction, initialCreatePuppyState } from "./actions";
-import type { CreatePuppyState } from "./actions";
+import { createPuppyAction } from "./actions";
+import { initialCreatePuppyState, type CreatePuppyState } from "./types";
 
 type StatusOption = {
   value: string;

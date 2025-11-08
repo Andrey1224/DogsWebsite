@@ -18,6 +18,7 @@ import {
   updatePuppyStatusSchema,
 } from "@/lib/admin/puppies/schema";
 import { generateUniqueSlug, slugifyName } from "@/lib/admin/puppies/slug";
+import type { CreatePuppyState } from "./types";
 
 function revalidateCatalog(slug?: string | null) {
   revalidatePath("/admin/puppies");
@@ -51,16 +52,6 @@ export async function updatePuppyPriceAction(input: { id: string; priceUsd: stri
   revalidateCatalog(input.slug);
   return { success: true };
 }
-
-export type CreatePuppyState = {
-  status: "idle" | "success" | "error";
-  fieldErrors?: Record<string, string[]>;
-  formError?: string;
-};
-
-export const initialCreatePuppyState: CreatePuppyState = {
-  status: "idle",
-};
 
 export async function createPuppyAction(_: CreatePuppyState, formData: FormData): Promise<CreatePuppyState> {
   try {
