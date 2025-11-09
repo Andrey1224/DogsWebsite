@@ -2,6 +2,8 @@
 
 | Date | Phase | Status | Notes |
 | --- | --- | --- | --- |
+| 2025-01-09 | Bugfix — 1MB File Upload Limit | ✅ Complete | Eliminated Server Action payload limit by implementing client-side direct uploads to Supabase Storage using signed URLs. |
+| 2025-11-09 | Feature — Parent Metadata | ✅ Complete | Simplified parent selection workflow with direct text input and photo uploads (no parent records required). |
 | 2025-11-08 | Bugfix — Infinite Loop | ✅ Complete | Fixed infinite loop causing hundreds of requests and multiple toasts after successful puppy creation. |
 | 2025-11-08 | Bugfix — 'use server' Export | ✅ Complete | Fixed Next.js error by separating types/constants from 'use server' actions file into dedicated types.ts. |
 | 2025-11-08 | Bugfix — Puppy Creation | ✅ Complete | Fixed critical server-side exception during puppy creation by enforcing required slug type and adding comprehensive error handling. |
@@ -155,6 +157,174 @@ Creating a puppy through `/admin/puppies` resulted in "Application error: a serv
 
 ### Commit
 `b52d082` - fix(admin): resolve puppy creation server-side exception
+
+---
+
+## Bugfix — 1MB File Upload Limit (2025-01-09) ✅
+
+### Problem
+When uploading parent photos through `/admin/puppies` form:
+- Error: "Body exceeded 1MB limit" (413 Payload Too Large)
+- Vercel logs showed: `Error: Body exceeded 1MB limit. To configure the body size limit for Server Actions, see...`
+- Multiple photos (even small ones) exceeded Next.js default 1MB Server Action payload limit
+- Files were being serialized and sent through Server Actions in FormData
+
+### Root Cause
+**File:** `app/admin/(dashboard)/puppies/actions.ts` (lines 110-118)
+
+Original flow sent binary files through Server Actions:
+```typescript
+const sirePhotos = formData.getAll("sirePhotos") as File[];
+if (sirePhotos.length > 0 && sirePhotos[0].size > 0) {
+  sirePhotoUrls = await uploadParentPhotos(sirePhotos, "sire", tempId);
+}
+```
+
+**Problem Flow:**
+```
+Client → Server Action (FormData with Files)
+         ↓
+    [Serialization]
+         ↓
+    HTTP Request Body (1-5MB with photos)
+         ↓
+   Next.js → ❌ REJECTS if > 1MB
+```
+
+### Solution
+Implemented client-side direct uploads to Supabase Storage using signed URLs:
+
+**New Flow:**
+```
+1. User selects files → stored in React state
+2. Click "Create puppy" → handleSubmit()
+3. Client requests signed upload URL from server
+4. Client uploads file directly to Supabase Storage
+5. Client receives public URL
+6. Form submits only URLs (< 1KB) to Server Action
+7. Server saves URLs to database
+```
+
+**Files Created:**
+1. **app/admin/(dashboard)/puppies/upload-actions.ts** (NEW)
+   - `getSignedUploadUrl(filePath)` - Generates signed URL (60s validity)
+   - `getPublicUrl(path)` - Gets public URL for uploaded file
+   - Requires admin authentication
+
+2. **lib/admin/hooks/use-media-upload.ts** (NEW)
+   - `useMediaUpload()` hook for client-side upload management
+   - `uploadFiles(files, basePath)` - Upload multiple files
+   - Progress tracking with `UploadProgress` objects
+   - States: pending → uploading → completed/error
+
+**Files Modified:**
+1. **components/admin/parent-photo-upload.tsx**
+   - Added props: `onFilesSelected`, `uploadedUrls`, `isUploading`, `uploadProgress`
+   - Files stored in component state (not sent to server)
+   - Hidden `<input type="hidden">` for each uploaded URL
+   - Progress bar and loading spinner during upload
+   - Disabled file selection during upload
+
+2. **app/admin/(dashboard)/puppies/create-puppy-panel.tsx**
+   - Added `useMediaUpload()` hook
+   - Added state: `sireFiles`, `damFiles`, `sirePhotoUrls`, `damPhotoUrls`
+   - Custom `handleSubmit()` that uploads files before form submission
+   - Toast notifications: "Uploading sire photos..." → "Saving..."
+   - Button text updates based on upload/save state
+
+3. **app/admin/(dashboard)/puppies/actions.ts**
+   - Removed file upload logic
+   - Extract URL strings from FormData instead:
+     ```typescript
+     const sirePhotoUrls = formData.getAll("sirePhotoUrls")
+       .filter((url): url is string => typeof url === "string" && url.length > 0);
+     ```
+   - Removed import of `uploadParentPhotos` from old `upload.ts`
+   - Payload size reduced from 1-5MB to < 1KB
+
+### Benefits
+- ✅ No more 1MB limit errors
+- ✅ Supports large files (up to 200MB for future video uploads)
+- ✅ Upload progress tracking with visual feedback
+- ✅ Better error handling and user experience
+- ✅ Faster uploads (direct to Supabase Storage CDN)
+- ✅ Cleaner Server Action code (only handles metadata)
+- ✅ Client-side validation/compression now possible
+
+### Testing
+- ✅ TypeScript compilation passes
+- ✅ ESLint validation passes (max-warnings=0)
+- ✅ Production build succeeds
+- ✅ Admin page bundle: +1.12 kB (5.59 kB total)
+- ✅ Fully backward compatible
+
+### Commits
+- `4efb792` - fix: Implement client-side direct upload to fix 1MB Server Action limit
+- Documentation: `CLIENT_SIDE_UPLOAD_IMPLEMENTATION.md` created
+
+### Learning
+Next.js Server Actions have a 1MB default payload limit. For file uploads, use client-side direct uploads to storage services (S3, Supabase Storage, etc.) with signed URLs, and only send URLs/metadata through Server Actions.
+
+---
+
+## Feature — Parent Metadata (2025-11-09) ✅
+
+### Problem
+Previous workflow required:
+1. Creating parent records in `parents` table
+2. Creating litter records linking parents
+3. Selecting litter in puppy form
+
+This was cumbersome because:
+- Client breeds different parents each time
+- Not all parents are recurring
+- Too many steps for simple puppy creation
+
+### Solution
+Added direct parent metadata fields to `puppies` table:
+- `sire_name`, `dam_name` (TEXT) - Direct parent names
+- `sire_photo_urls`, `dam_photo_urls` (TEXT[]) - Up to 3 photos per parent
+
+**New Workflow:**
+1. Enter puppy details
+2. Type parent names directly (no dropdown)
+3. Upload parent photos (up to 3 each)
+4. Submit form
+
+### Implementation
+**Database Migration:**
+- `20250812T000000Z_add_parent_metadata_to_puppies.sql`
+- Added 4 columns with comments and defaults
+
+**Files Created:**
+- `components/admin/parent-photo-upload.tsx` - File upload component
+- `lib/admin/puppies/upload.ts` - Server-side upload utility (now deprecated)
+
+**Files Modified:**
+- `lib/supabase/types.ts` - Added metadata fields to `Puppy` type
+- `lib/admin/puppies/schema.ts` - Added `parentNameSchema` validation
+- `lib/admin/puppies/queries.ts` - Map metadata fields in insert
+- `app/admin/(dashboard)/puppies/create-puppy-panel.tsx` - Text inputs + photo upload
+- `app/admin/(dashboard)/puppies/page.tsx` - Removed sires/dams fetching
+- `app/puppies/[slug]/page.tsx` - Prioritize metadata over parent records
+
+**Data Priority:**
+1. Direct metadata (sire_name, sire_photo_urls) - Highest priority
+2. Parent records (sire_id → parents table)
+3. Litter records (litter_id → parents via litter)
+
+### Testing
+- ✅ TypeScript compilation passes
+- ✅ ESLint validation passes
+- ✅ Production build succeeds
+- ✅ Backward compatible with existing data
+- ✅ Test mocks updated
+
+### Commit
+`5d44bda` - feat: Implement simplified parent selection with metadata and photo upload
+
+### Learning
+Flexible data modeling: Support both normalized (parent records) and denormalized (metadata) approaches to accommodate different user workflows.
 
 ---
 
