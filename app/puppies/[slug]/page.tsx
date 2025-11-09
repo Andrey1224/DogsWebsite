@@ -77,8 +77,9 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
     })
     .slice(0, 3);
 
-  const sireName = puppy.parents?.sire?.name;
-  const damName = puppy.parents?.dam?.name;
+  // Prioritize direct metadata fields over parent records
+  const sireName = puppy.sire_name ?? puppy.parents?.sire?.name;
+  const damName = puppy.dam_name ?? puppy.parents?.dam?.name;
   const breedLabel = formatBreed(puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? "";
   const sexLabel = puppy.sex ? puppy.sex.charAt(0).toUpperCase() + puppy.sex.slice(1) : "—";
   const statusLabel = puppy.status

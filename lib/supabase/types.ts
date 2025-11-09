@@ -34,6 +34,10 @@ export type Puppy = {
   litter_id: string | null;
   sire_id: string | null;
   dam_id: string | null;
+  sire_name: string | null;
+  dam_name: string | null;
+  sire_photo_urls: string[] | null;
+  dam_photo_urls: string[] | null;
   name: string | null;
   slug: string | null;
   sex: "male" | "female" | null;

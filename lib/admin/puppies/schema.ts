@@ -61,6 +61,14 @@ const parentIdSchema = z.preprocess((value) => {
   return stringValue.length === 0 ? undefined : stringValue;
 }, z.string().uuid("Invalid parent identifier").optional());
 
+const parentNameSchema = z.preprocess((value) => {
+  if (value === null || typeof value === "undefined") {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.string().max(120, "Parent name must be 120 characters or fewer").optional());
+
 const sexSchema = z.preprocess((value) => {
   if (value === null || typeof value === "undefined") {
     return undefined;
@@ -105,6 +113,8 @@ export const createPuppySchema = z.object({
   slug: slugSchema.optional(),
   sireId: parentIdSchema,
   damId: parentIdSchema,
+  sireName: parentNameSchema,
+  damName: parentNameSchema,
   sex: sexSchema,
   color: colorSchema,
   weightOz: weightOzSchema,

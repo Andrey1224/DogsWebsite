@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { slugifyName } from "@/lib/admin/puppies/slug";
+import { ParentPhotoUpload } from "@/components/admin/parent-photo-upload";
 import { createPuppyAction } from "./actions";
 import { initialCreatePuppyState, type CreatePuppyState } from "./types";
 
@@ -12,18 +13,11 @@ type StatusOption = {
   label: string;
 };
 
-type ParentOption = {
-  value: string;
-  label: string;
-};
-
 interface CreatePuppyPanelProps {
   statusOptions: StatusOption[];
-  sireOptions: ParentOption[];
-  damOptions: ParentOption[];
 }
 
-export function CreatePuppyPanel({ statusOptions, sireOptions, damOptions }: CreatePuppyPanelProps) {
+export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const processedSuccessRef = useRef(false);
@@ -224,43 +218,39 @@ export function CreatePuppyPanel({ statusOptions, sireOptions, damOptions }: Cre
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="sireId" className="text-sm font-medium text-text">
-              Sire / Father (optional)
+            <label htmlFor="sireName" className="text-sm font-medium text-text">
+              Sire / Father Name (optional)
             </label>
-            <select
-              id="sireId"
-              name="sireId"
+            <input
+              id="sireName"
+              name="sireName"
+              placeholder="e.g., Pierre, Sir Winston"
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              <option value="">No sire specified</option>
-              {sireOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {fieldError("sireId") ? <p className="text-xs text-red-500">{fieldError("sireId")}</p> : null}
+            />
+            {fieldError("sireName") ? <p className="text-xs text-red-500">{fieldError("sireName")}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="damId" className="text-sm font-medium text-text">
-              Dam / Mother (optional)
+            <label htmlFor="damName" className="text-sm font-medium text-text">
+              Dam / Mother Name (optional)
             </label>
-            <select
-              id="damId"
-              name="damId"
+            <input
+              id="damName"
+              name="damName"
+              placeholder="e.g., Colette, Lady Clementine"
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              <option value="">No dam specified</option>
-              {damOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {fieldError("damId") ? <p className="text-xs text-red-500">{fieldError("damId")}</p> : null}
+            />
+            {fieldError("damName") ? <p className="text-xs text-red-500">{fieldError("damName")}</p> : null}
+          </div>
+
+          <div className="col-span-full md:col-span-1">
+            <ParentPhotoUpload parentType="sire" disabled={pending} />
+          </div>
+
+          <div className="col-span-full md:col-span-1">
+            <ParentPhotoUpload parentType="dam" disabled={pending} />
           </div>
 
           <div className="col-span-full space-y-2">
