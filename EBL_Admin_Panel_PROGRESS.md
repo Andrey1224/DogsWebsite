@@ -258,6 +258,44 @@ Implemented client-side direct uploads to Supabase Storage using signed URLs:
 - ✅ Admin page bundle: +1.12 kB (5.59 kB total)
 - ✅ Fully backward compatible
 
+### Production Testing (2025-11-09)
+**Test Case**: Created puppy "Electronics" via `/admin/puppies` with parent photos
+
+**Test Data**:
+- Name: `Electronics`
+- Status: `available`
+- Price: `$4,200.00`
+- Birth Date: `1999-02-19`
+- Sex: `male`
+- Color: `Blue`
+- Weight: `24 oz`
+- Sire Name: `Monya` (1 photo uploaded)
+- Dam Name: `Motya` (1 photo uploaded)
+
+**Database Verification**:
+```sql
+SELECT id, name, slug, sire_name, dam_name, sire_photo_urls, dam_photo_urls
+FROM puppies WHERE name = 'Electronics';
+```
+
+**Results** ✅:
+- Puppy ID: `80efe1be-990a-4c6d-ba15-234d455bfc8b`
+- Slug: `electronics` (auto-generated)
+- All fields populated correctly
+- Parent names saved: `Monya`, `Motya`
+- Sire photo URL: `https://vsjsrbmcxryuodlqscnl.supabase.co/storage/v1/object/public/puppies/d3734dd1-eecd-4447-b86d-697a1636fbd5/sire/1762731054049-0.png`
+- Dam photo URL: `https://vsjsrbmcxryuodlqscnl.supabase.co/storage/v1/object/public/puppies/d3734dd1-eecd-4447-b86d-697a1636fbd5/dam/1762731057950-0.png`
+- Files successfully uploaded to Supabase Storage
+- No "Body exceeded 1MB limit" errors
+- Server Action payload: < 1KB (only URLs)
+- Client-side direct upload flow working perfectly
+
+**Key Observations**:
+- Upload UX: User sees "Uploading sire photos..." → "Uploading dam photos..." → "Saving..." → "Puppy created" toasts
+- Files stored in Storage bucket with UUID-based paths for security
+- Zero errors in Vercel logs
+- Form submission smooth with no payload limit issues
+
 ### Commits
 - `4efb792` - fix: Implement client-side direct upload to fix 1MB Server Action limit
 - Documentation: `CLIENT_SIDE_UPLOAD_IMPLEMENTATION.md` created
