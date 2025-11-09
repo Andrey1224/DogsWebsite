@@ -73,6 +73,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formElement = e.currentTarget;
 
     try {
       // Generate a temporary ID for storage paths
@@ -98,7 +99,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       }
 
       // Remove any file inputs before submitting to server action
-      const rawFormData = new FormData(e.currentTarget);
+      const rawFormData = new FormData(formElement);
       const filteredFormData = new FormData();
 
       rawFormData.forEach((value, key) => {
