@@ -254,6 +254,8 @@ Keep these files synchronized when making changes:
 - Sprint progress (`SPRINT*_PROGRESS.md`)
 - Sprint reports (`SPRINT*_REPORT.md`)
 
+<!-- bukabuka -->
+
 When modifying the contact/analytics stack, update all connected files and refresh documentation to maintain contributor understanding.
 
 ### Sprint-Specific Notes
