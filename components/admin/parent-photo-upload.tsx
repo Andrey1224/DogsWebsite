@@ -92,7 +92,7 @@ export function ParentPhotoUpload({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={inputName} className="block text-sm font-medium">
+      <label htmlFor={`${inputName}-file`} className="block text-sm font-medium">
         {label} (up to 3)
       </label>
 
@@ -106,16 +106,6 @@ export function ParentPhotoUpload({
         onChange={handleFileChange}
         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-accent-gradient file:text-white hover:file:opacity-90 disabled:opacity-50"
       />
-
-      {/* Hidden inputs to submit uploaded URLs in FormData */}
-      {uploadedUrls.map((url, index) => (
-        <input
-          key={index}
-          type="hidden"
-          name={inputName}
-          value={url}
-        />
-      ))}
 
       {/* Upload progress bar */}
       {showUploadProgress && (

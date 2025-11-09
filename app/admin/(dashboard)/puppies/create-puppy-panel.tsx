@@ -78,10 +78,14 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       // Generate a temporary ID for storage paths
       const tempId = crypto.randomUUID();
 
+      let nextSirePhotoUrls = sirePhotoUrls;
+      let nextDamPhotoUrls = damPhotoUrls;
+
       // Upload sire photos if any
       if (sireFiles.length > 0) {
         toast.info("Uploading sire photos...");
         const urls = await uploadFiles(sireFiles, `${tempId}/sire`);
+        nextSirePhotoUrls = urls;
         setSirePhotoUrls(urls);
       }
 
@@ -89,15 +93,32 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       if (damFiles.length > 0) {
         toast.info("Uploading dam photos...");
         const urls = await uploadFiles(damFiles, `${tempId}/dam`);
+        nextDamPhotoUrls = urls;
         setDamPhotoUrls(urls);
       }
 
-      // Wait for next tick to ensure state updates
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Remove any file inputs before submitting to server action
+      const rawFormData = new FormData(e.currentTarget);
+      const filteredFormData = new FormData();
 
-      // Submit the form with uploaded URLs
-      const formData = new FormData(e.currentTarget);
-      formAction(formData);
+      rawFormData.forEach((value, key) => {
+        if (value instanceof File) {
+          return;
+        }
+        filteredFormData.append(key, value);
+      });
+
+      filteredFormData.delete("sirePhotoUrls");
+      nextSirePhotoUrls.forEach((url) => {
+        filteredFormData.append("sirePhotoUrls", url);
+      });
+
+      filteredFormData.delete("damPhotoUrls");
+      nextDamPhotoUrls.forEach((url) => {
+        filteredFormData.append("damPhotoUrls", url);
+      });
+
+      formAction(filteredFormData);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       toast.error(errorMessage);
