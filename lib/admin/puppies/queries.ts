@@ -30,6 +30,10 @@ function mapCreatePayload(input: CreatePuppyPayload) {
     price_usd: input.priceUsd ?? null,
     birth_date: input.birthDate ?? null,
     litter_id: input.litterId ?? null,
+    sex: input.sex ?? null,
+    color: input.color ?? null,
+    weight_oz: input.weightOz ?? null,
+    description: input.description ?? null,
   };
 }
 

@@ -61,6 +61,42 @@ const litterIdSchema = z.preprocess((value) => {
   return stringValue.length === 0 ? undefined : stringValue;
 }, z.string().uuid("Invalid litter identifier").optional());
 
+const sexSchema = z.preprocess((value) => {
+  if (value === null || typeof value === "undefined") {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.enum(["male", "female"]).optional());
+
+const colorSchema = z.preprocess((value) => {
+  if (value === null || typeof value === "undefined") {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.string().max(50, "Color must be 50 characters or fewer").optional());
+
+const weightOzSchema = z.preprocess((value) => {
+  if (value === null || typeof value === "undefined") {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  if (stringValue.length === 0) {
+    return undefined;
+  }
+  const numeric = Number(stringValue);
+  return Number.isNaN(numeric) ? Number.NaN : numeric;
+}, z.number().int("Weight must be a whole number").positive("Weight must be positive").optional());
+
+const descriptionSchema = z.preprocess((value) => {
+  if (value === null || typeof value === "undefined") {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.string().max(1000, "Description must be 1000 characters or fewer").optional());
+
 export const createPuppySchema = z.object({
   name: nameSchema,
   status: adminPuppyStatusSchema.default("available"),
@@ -68,6 +104,10 @@ export const createPuppySchema = z.object({
   birthDate: birthDateSchema,
   litterId: litterIdSchema,
   slug: slugSchema.optional(),
+  sex: sexSchema,
+  color: colorSchema,
+  weightOz: weightOzSchema,
+  description: descriptionSchema,
 });
 
 export const updatePuppyStatusSchema = z.object({

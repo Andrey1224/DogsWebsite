@@ -64,6 +64,10 @@ export async function createPuppyAction(_: CreatePuppyState, formData: FormData)
       birthDate: formData.get("birthDate"),
       litterId: formData.get("litterId"),
       slug: formData.get("slug"),
+      sex: formData.get("sex"),
+      color: formData.get("color"),
+      weightOz: formData.get("weightOz"),
+      description: formData.get("description"),
     };
 
     const parsed = createPuppySchema.safeParse(submission);
