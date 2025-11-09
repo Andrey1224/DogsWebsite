@@ -6,6 +6,8 @@ import type { PuppyWithRelations } from "./types";
 const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
   id: "id-1",
   litter_id: "litter-1",
+  sire_id: null,
+  dam_id: null,
   name: "Duke",
   slug: "duke",
   sex: "male",

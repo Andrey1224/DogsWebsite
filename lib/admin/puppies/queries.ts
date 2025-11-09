@@ -29,7 +29,8 @@ function mapCreatePayload(input: CreatePuppyPayload) {
     status: input.status,
     price_usd: input.priceUsd ?? null,
     birth_date: input.birthDate ?? null,
-    litter_id: input.litterId ?? null,
+    sire_id: input.sireId ?? null,
+    dam_id: input.damId ?? null,
     sex: input.sex ?? null,
     color: input.color ?? null,
     weight_oz: input.weightOz ?? null,
@@ -173,4 +174,41 @@ export async function fetchAdminLittersWithParents(): Promise<AdminLitterWithPar
     sire: litter.sire?.[0] ?? null,
     dam: litter.dam?.[0] ?? null,
   }));
+}
+
+export type AdminParent = {
+  id: string;
+  name: string;
+  breed: "french_bulldog" | "english_bulldog" | null;
+  photo_urls: string[] | null;
+};
+
+export async function fetchAdminSires(): Promise<AdminParent[]> {
+  const supabase = getAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from("parents")
+    .select("id,name,breed,photo_urls")
+    .eq("sex", "male")
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as AdminParent[];
+}
+
+export async function fetchAdminDams(): Promise<AdminParent[]> {
+  const supabase = getAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from("parents")
+    .select("id,name,breed,photo_urls")
+    .eq("sex", "female")
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as AdminParent[];
 }

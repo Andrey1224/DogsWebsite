@@ -85,8 +85,20 @@ export const getPuppiesWithRelations = cache(async () => {
 
   return puppies.map<PuppyWithRelations>((puppy) => {
     const litter = puppy.litter_id ? litterById.get(puppy.litter_id) ?? null : null;
-    const sire = litter?.sire_id ? parentById.get(litter.sire_id) ?? null : null;
-    const dam = litter?.dam_id ? parentById.get(litter.dam_id) ?? null : null;
+
+    // Get parents directly from puppy's sire_id/dam_id (new approach)
+    // Falls back to litter parents if direct IDs are not set (backward compatibility)
+    const sire = puppy.sire_id
+      ? parentById.get(puppy.sire_id) ?? null
+      : litter?.sire_id
+        ? parentById.get(litter.sire_id) ?? null
+        : null;
+
+    const dam = puppy.dam_id
+      ? parentById.get(puppy.dam_id) ?? null
+      : litter?.dam_id
+        ? parentById.get(litter.dam_id) ?? null
+        : null;
 
     return {
       ...puppy,
@@ -119,12 +131,21 @@ export const getPuppyBySlug = cache(async (slug: string) => {
   const litter = data.litter_id ? litters.find((l) => l.id === data.litter_id) ?? null : null;
 
   const parentsList = await getParents();
-  const parents = litter
-    ? {
-        sire: litter.sire_id ? parentsList.find((p) => p.id === litter.sire_id) ?? null : null,
-        dam: litter.dam_id ? parentsList.find((p) => p.id === litter.dam_id) ?? null : null,
-      }
-    : null;
+
+  // Get parents directly from puppy's sire_id/dam_id (new approach)
+  // Falls back to litter parents if direct IDs are not set (backward compatibility)
+  const parents = {
+    sire: data.sire_id
+      ? parentsList.find((p) => p.id === data.sire_id) ?? null
+      : litter?.sire_id
+        ? parentsList.find((p) => p.id === litter.sire_id) ?? null
+        : null,
+    dam: data.dam_id
+      ? parentsList.find((p) => p.id === data.dam_id) ?? null
+      : litter?.dam_id
+        ? parentsList.find((p) => p.id === litter.dam_id) ?? null
+        : null,
+  };
 
   return {
     ...(data as Puppy),

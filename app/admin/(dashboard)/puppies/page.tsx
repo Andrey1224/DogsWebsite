@@ -1,5 +1,5 @@
 import { adminPuppyStatusSchema } from "@/lib/admin/puppies/schema";
-import { fetchAdminPuppies, fetchAdminLittersWithParents } from "@/lib/admin/puppies/queries";
+import { fetchAdminPuppies, fetchAdminSires, fetchAdminDams } from "@/lib/admin/puppies/queries";
 import { CreatePuppyPanel } from "./create-puppy-panel";
 import { PuppyRow } from "./puppy-row";
 
@@ -10,13 +10,17 @@ const statusOptions = adminPuppyStatusSchema.options.map((value) => ({
 
 export default async function AdminPuppiesPage() {
   const puppies = await fetchAdminPuppies();
-  const litters = await fetchAdminLittersWithParents();
+  const sires = await fetchAdminSires();
+  const dams = await fetchAdminDams();
 
-  const litterOptions = litters.map((litter) => ({
-    value: litter.id,
-    label: litter.name
-      ? `${litter.name}${litter.sire?.name && litter.dam?.name ? ` (${litter.sire.name} × ${litter.dam.name})` : ""}`
-      : litter.id,
+  const sireOptions = sires.map((sire) => ({
+    value: sire.id,
+    label: `${sire.name}${sire.breed ? ` (${sire.breed === "english_bulldog" ? "English" : "French"} Bulldog)` : ""}`,
+  }));
+
+  const damOptions = dams.map((dam) => ({
+    value: dam.id,
+    label: `${dam.name}${dam.breed ? ` (${dam.breed === "english_bulldog" ? "English" : "French"} Bulldog)` : ""}`,
   }));
 
   return (
@@ -26,7 +30,7 @@ export default async function AdminPuppiesPage() {
         <p className="text-sm text-muted">Review statuses, pricing, and quick links to public listings.</p>
       </div>
 
-      <CreatePuppyPanel statusOptions={statusOptions} litterOptions={litterOptions} />
+      <CreatePuppyPanel statusOptions={statusOptions} sireOptions={sireOptions} damOptions={damOptions} />
 
       {puppies.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-bg/40 p-8 text-center">

@@ -53,13 +53,13 @@ const birthDateSchema = z.preprocess((value) => {
   }, "Birth date cannot be in the future")
   .optional());
 
-const litterIdSchema = z.preprocess((value) => {
+const parentIdSchema = z.preprocess((value) => {
   if (value === null || typeof value === "undefined") {
     return undefined;
   }
   const stringValue = String(value).trim();
   return stringValue.length === 0 ? undefined : stringValue;
-}, z.string().uuid("Invalid litter identifier").optional());
+}, z.string().uuid("Invalid parent identifier").optional());
 
 const sexSchema = z.preprocess((value) => {
   if (value === null || typeof value === "undefined") {
@@ -102,8 +102,9 @@ export const createPuppySchema = z.object({
   status: adminPuppyStatusSchema.default("available"),
   priceUsd: priceUsdSchema,
   birthDate: birthDateSchema,
-  litterId: litterIdSchema,
   slug: slugSchema.optional(),
+  sireId: parentIdSchema,
+  damId: parentIdSchema,
   sex: sexSchema,
   color: colorSchema,
   weightOz: weightOzSchema,

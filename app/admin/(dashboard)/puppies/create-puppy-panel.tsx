@@ -12,17 +12,18 @@ type StatusOption = {
   label: string;
 };
 
-type LitterOption = {
+type ParentOption = {
   value: string;
   label: string;
 };
 
 interface CreatePuppyPanelProps {
   statusOptions: StatusOption[];
-  litterOptions: LitterOption[];
+  sireOptions: ParentOption[];
+  damOptions: ParentOption[];
 }
 
-export function CreatePuppyPanel({ statusOptions, litterOptions }: CreatePuppyPanelProps) {
+export function CreatePuppyPanel({ statusOptions, sireOptions, damOptions }: CreatePuppyPanelProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const processedSuccessRef = useRef(false);
@@ -223,23 +224,43 @@ export function CreatePuppyPanel({ statusOptions, litterOptions }: CreatePuppyPa
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="litterId" className="text-sm font-medium text-text">
-              Litter (optional)
+            <label htmlFor="sireId" className="text-sm font-medium text-text">
+              Sire / Father (optional)
             </label>
             <select
-              id="litterId"
-              name="litterId"
+              id="sireId"
+              name="sireId"
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <option value="">No litter (private breeding)</option>
-              {litterOptions.map((option) => (
+              <option value="">No sire specified</option>
+              {sireOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
-            {fieldError("litterId") ? <p className="text-xs text-red-500">{fieldError("litterId")}</p> : null}
+            {fieldError("sireId") ? <p className="text-xs text-red-500">{fieldError("sireId")}</p> : null}
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="damId" className="text-sm font-medium text-text">
+              Dam / Mother (optional)
+            </label>
+            <select
+              id="damId"
+              name="damId"
+              disabled={pending}
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <option value="">No dam specified</option>
+              {damOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {fieldError("damId") ? <p className="text-xs text-red-500">{fieldError("damId")}</p> : null}
           </div>
 
           <div className="col-span-full space-y-2">

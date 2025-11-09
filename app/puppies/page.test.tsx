@@ -84,6 +84,8 @@ describe('Puppies Page', () => {
         stripe_payment_link: null,
         created_at: '2024-01-01',
         updated_at: '2024-01-01',
+        sire_id: null,
+        dam_id: null,
         litter: null,
         parents: null,
       },

@@ -32,6 +32,8 @@ export type PuppyStatus = "available" | "reserved" | "sold" | "upcoming";
 export type Puppy = {
   id: string;
   litter_id: string | null;
+  sire_id: string | null;
+  dam_id: string | null;
   name: string | null;
   slug: string | null;
   sex: "male" | "female" | null;
