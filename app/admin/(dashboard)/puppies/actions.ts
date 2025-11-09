@@ -18,7 +18,6 @@ import {
   updatePuppyStatusSchema,
 } from "@/lib/admin/puppies/schema";
 import { generateUniqueSlug, slugifyName } from "@/lib/admin/puppies/slug";
-import { uploadParentPhotos } from "@/lib/admin/puppies/upload";
 import type { CreatePuppyState } from "./types";
 
 function revalidateCatalog(slug?: string | null) {
@@ -100,28 +99,17 @@ export async function createPuppyAction(_: CreatePuppyState, formData: FormData)
       slug = await generateUniqueSlug(payload.name, (candidate) => isPuppySlugTaken(candidate));
     }
 
-    // Generate a temporary ID for photo uploads (will use actual ID after insert)
-    const tempId = crypto.randomUUID();
-
-    // Handle file uploads
-    let sirePhotoUrls: string[] | undefined;
-    let damPhotoUrls: string[] | undefined;
-
-    const sirePhotos = formData.getAll("sirePhotos") as File[];
-    if (sirePhotos.length > 0 && sirePhotos[0].size > 0) {
-      sirePhotoUrls = await uploadParentPhotos(sirePhotos, "sire", tempId);
-    }
-
-    const damPhotos = formData.getAll("damPhotos") as File[];
-    if (damPhotos.length > 0 && damPhotos[0].size > 0) {
-      damPhotoUrls = await uploadParentPhotos(damPhotos, "dam", tempId);
-    }
+    // Extract photo URLs from FormData (already uploaded by client)
+    const sirePhotoUrls = formData.getAll("sirePhotoUrls")
+      .filter((url): url is string => typeof url === "string" && url.length > 0);
+    const damPhotoUrls = formData.getAll("damPhotoUrls")
+      .filter((url): url is string => typeof url === "string" && url.length > 0);
 
     await insertAdminPuppy({
       ...payload,
       slug,
-      sirePhotoUrls,
-      damPhotoUrls,
+      sirePhotoUrls: sirePhotoUrls.length > 0 ? sirePhotoUrls : undefined,
+      damPhotoUrls: damPhotoUrls.length > 0 ? damPhotoUrls : undefined,
     });
 
     revalidateCatalog(slug);

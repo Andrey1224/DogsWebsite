@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { slugifyName } from "@/lib/admin/puppies/slug";
 import { ParentPhotoUpload } from "@/components/admin/parent-photo-upload";
+import { useMediaUpload } from "@/lib/admin/hooks/use-media-upload";
 import { createPuppyAction } from "./actions";
 import { initialCreatePuppyState, type CreatePuppyState } from "./types";
 
@@ -27,6 +28,13 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [status, setStatus] = useState(statusOptions[0]?.value ?? "available");
 
+  // File upload state
+  const { uploadFiles, isUploading } = useMediaUpload();
+  const [sireFiles, setSireFiles] = useState<File[]>([]);
+  const [damFiles, setDamFiles] = useState<File[]>([]);
+  const [sirePhotoUrls, setSirePhotoUrls] = useState<string[]>([]);
+  const [damPhotoUrls, setDamPhotoUrls] = useState<string[]>([]);
+
   const [state, formAction, pending] = useActionState<CreatePuppyState, FormData>(createPuppyAction, initialCreatePuppyState);
 
   useEffect(() => {
@@ -38,6 +46,10 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       setSlug("");
       setSlugManuallyEdited(false);
       setStatus(statusOptions[0]?.value ?? "available");
+      setSireFiles([]);
+      setDamFiles([]);
+      setSirePhotoUrls([]);
+      setDamPhotoUrls([]);
       setIsOpen(false);
       router.refresh();
     } else if (state.status === "error" && state.formError) {
@@ -59,6 +71,39 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
 
   const fieldError = (field: string) => state.fieldErrors?.[field]?.[0];
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      // Generate a temporary ID for storage paths
+      const tempId = crypto.randomUUID();
+
+      // Upload sire photos if any
+      if (sireFiles.length > 0) {
+        toast.info("Uploading sire photos...");
+        const urls = await uploadFiles(sireFiles, `${tempId}/sire`);
+        setSirePhotoUrls(urls);
+      }
+
+      // Upload dam photos if any
+      if (damFiles.length > 0) {
+        toast.info("Uploading dam photos...");
+        const urls = await uploadFiles(damFiles, `${tempId}/dam`);
+        setDamPhotoUrls(urls);
+      }
+
+      // Wait for next tick to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Submit the form with uploaded URLs
+      const formData = new FormData(e.currentTarget);
+      formAction(formData);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      toast.error(errorMessage);
+    }
+  };
+
   return (
     <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -78,7 +123,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       {isOpen ? (
         <form
           ref={formRef}
-          action={formAction}
+          onSubmit={handleSubmit}
           aria-label="Create puppy form"
           className="mt-6 grid gap-4 md:grid-cols-2"
         >
@@ -246,11 +291,23 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
           </div>
 
           <div className="col-span-full md:col-span-1">
-            <ParentPhotoUpload parentType="sire" disabled={pending} />
+            <ParentPhotoUpload
+              parentType="sire"
+              disabled={pending || isUploading}
+              onFilesSelected={setSireFiles}
+              uploadedUrls={sirePhotoUrls}
+              isUploading={isUploading}
+            />
           </div>
 
           <div className="col-span-full md:col-span-1">
-            <ParentPhotoUpload parentType="dam" disabled={pending} />
+            <ParentPhotoUpload
+              parentType="dam"
+              disabled={pending || isUploading}
+              onFilesSelected={setDamFiles}
+              uploadedUrls={damPhotoUrls}
+              isUploading={isUploading}
+            />
           </div>
 
           <div className="col-span-full space-y-2">
@@ -277,10 +334,10 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
           <div className="col-span-full flex flex-wrap gap-3">
             <button
               type="submit"
-              disabled={pending}
+              disabled={pending || isUploading}
               className="rounded-lg bg-[color:var(--btn-bg,#0D1A44)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text,#FFFFFF)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pending ? "Saving..." : "Create puppy"}
+              {isUploading ? "Uploading photos..." : pending ? "Saving..." : "Create puppy"}
             </button>
             <button
               type="button"
