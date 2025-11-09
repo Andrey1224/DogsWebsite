@@ -12,11 +12,17 @@ type StatusOption = {
   label: string;
 };
 
+type LitterOption = {
+  value: string;
+  label: string;
+};
+
 interface CreatePuppyPanelProps {
   statusOptions: StatusOption[];
+  litterOptions: LitterOption[];
 }
 
-export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
+export function CreatePuppyPanel({ statusOptions, litterOptions }: CreatePuppyPanelProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const processedSuccessRef = useRef(false);
@@ -218,15 +224,21 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
 
           <div className="space-y-2">
             <label htmlFor="litterId" className="text-sm font-medium text-text">
-              Litter ID (optional)
+              Litter (optional)
             </label>
-            <input
+            <select
               id="litterId"
               name="litterId"
-              placeholder="UUID"
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            />
+            >
+              <option value="">No litter (private breeding)</option>
+              {litterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             {fieldError("litterId") ? <p className="text-xs text-red-500">{fieldError("litterId")}</p> : null}
           </div>
 

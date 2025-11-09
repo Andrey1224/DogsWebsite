@@ -134,3 +134,43 @@ export async function getAdminPuppyById(id: string): Promise<Pick<AdminPuppyReco
 
   return (data as Pick<AdminPuppyRecord, "id" | "name" | "slug">) ?? null;
 }
+
+type RawAdminLitterWithParents = {
+  id: string;
+  name: string | null;
+  sire: { name: string }[] | null;
+  dam: { name: string }[] | null;
+};
+
+export type AdminLitterWithParents = {
+  id: string;
+  name: string | null;
+  sire: { name: string } | null;
+  dam: { name: string } | null;
+};
+
+export async function fetchAdminLittersWithParents(): Promise<AdminLitterWithParents[]> {
+  const supabase = getAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from("litters")
+    .select(`
+      id,
+      name,
+      sire:parents!litters_sire_id_fkey(name),
+      dam:parents!litters_dam_id_fkey(name)
+    `)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const rawData = (data ?? []) as RawAdminLitterWithParents[];
+
+  return rawData.map((litter) => ({
+    id: litter.id,
+    name: litter.name,
+    sire: litter.sire?.[0] ?? null,
+    dam: litter.dam?.[0] ?? null,
+  }));
+}

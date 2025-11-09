@@ -1,5 +1,5 @@
 import { adminPuppyStatusSchema } from "@/lib/admin/puppies/schema";
-import { fetchAdminPuppies } from "@/lib/admin/puppies/queries";
+import { fetchAdminPuppies, fetchAdminLittersWithParents } from "@/lib/admin/puppies/queries";
 import { CreatePuppyPanel } from "./create-puppy-panel";
 import { PuppyRow } from "./puppy-row";
 
@@ -10,6 +10,14 @@ const statusOptions = adminPuppyStatusSchema.options.map((value) => ({
 
 export default async function AdminPuppiesPage() {
   const puppies = await fetchAdminPuppies();
+  const litters = await fetchAdminLittersWithParents();
+
+  const litterOptions = litters.map((litter) => ({
+    value: litter.id,
+    label: litter.name
+      ? `${litter.name}${litter.sire?.name && litter.dam?.name ? ` (${litter.sire.name} × ${litter.dam.name})` : ""}`
+      : litter.id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -18,7 +26,7 @@ export default async function AdminPuppiesPage() {
         <p className="text-sm text-muted">Review statuses, pricing, and quick links to public listings.</p>
       </div>
 
-      <CreatePuppyPanel statusOptions={statusOptions} />
+      <CreatePuppyPanel statusOptions={statusOptions} litterOptions={litterOptions} />
 
       {puppies.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-bg/40 p-8 text-center">
