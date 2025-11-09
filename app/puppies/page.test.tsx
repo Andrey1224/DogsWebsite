@@ -71,6 +71,7 @@ describe('Puppies Page', () => {
         litter_id: null,
         name: 'Buddy',
         slug: 'buddy-french-bulldog',
+        breed: 'french_bulldog' as const,
         sex: 'male' as const,
         color: 'Blue Merle',
         birth_date: '2024-01-01',

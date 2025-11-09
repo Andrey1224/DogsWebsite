@@ -14,6 +14,7 @@ const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
   dam_photo_urls: null,
   name: "Duke",
   slug: "duke",
+  breed: "french_bulldog",
   sex: "male",
   color: "Brindle",
   birth_date: "2024-10-12",

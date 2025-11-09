@@ -29,6 +29,7 @@ function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]
     status: input.status,
     price_usd: input.priceUsd ?? null,
     birth_date: input.birthDate ?? null,
+    breed: input.breed ?? null,
     sire_id: input.sireId ?? null,
     dam_id: input.damId ?? null,
     sire_name: input.sireName ?? null,

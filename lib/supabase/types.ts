@@ -40,6 +40,7 @@ export type Puppy = {
   dam_photo_urls: string[] | null;
   name: string | null;
   slug: string | null;
+  breed: "french_bulldog" | "english_bulldog" | null;
   sex: "male" | "female" | null;
   color: string | null;
   birth_date: string | null;

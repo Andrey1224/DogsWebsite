@@ -206,6 +206,23 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
           </div>
 
           <div className="space-y-2">
+            <label htmlFor="breed" className="text-sm font-medium text-text">
+              Breed
+            </label>
+            <select
+              id="breed"
+              name="breed"
+              disabled={pending}
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <option value="">Select breed</option>
+              <option value="french_bulldog">French Bulldog</option>
+              <option value="english_bulldog">English Bulldog</option>
+            </select>
+            {fieldError("breed") ? <p className="text-xs text-red-500">{fieldError("breed")}</p> : null}
+          </div>
+
+          <div className="space-y-2">
             <label htmlFor="sex" className="text-sm font-medium text-text">
               Sex
             </label>

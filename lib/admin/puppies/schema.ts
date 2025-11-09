@@ -105,12 +105,21 @@ const descriptionSchema = z.preprocess((value) => {
   return stringValue.length === 0 ? undefined : stringValue;
 }, z.string().max(1000, "Description must be 1000 characters or fewer").optional());
 
+const breedSchema = z.preprocess((value) => {
+  if (value === null || typeof value === "undefined") {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.enum(["french_bulldog", "english_bulldog"]).optional());
+
 export const createPuppySchema = z.object({
   name: nameSchema,
   status: adminPuppyStatusSchema.default("available"),
   priceUsd: priceUsdSchema,
   birthDate: birthDateSchema,
   slug: slugSchema.optional(),
+  breed: breedSchema,
   sireId: parentIdSchema,
   damId: parentIdSchema,
   sireName: parentNameSchema,

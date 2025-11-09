@@ -63,6 +63,7 @@ export async function createPuppyAction(_: CreatePuppyState, formData: FormData)
       priceUsd: formData.get("priceUsd"),
       birthDate: formData.get("birthDate"),
       slug: formData.get("slug"),
+      breed: formData.get("breed"),
       sireId: formData.get("sireId"),
       damId: formData.get("damId"),
       sireName: formData.get("sireName"),
