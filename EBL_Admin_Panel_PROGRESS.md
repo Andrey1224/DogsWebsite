@@ -2,6 +2,7 @@
 
 | Date | Phase | Status | Notes |
 | --- | --- | --- | --- |
+| 2025-11-09 | Feature — Breed Selection | ✅ Complete | Added breed field to puppies table with dropdown selection in admin form (French Bulldog / English Bulldog). |
 | 2025-01-09 | Bugfix — 1MB File Upload Limit | ✅ Complete | Eliminated Server Action payload limit by implementing client-side direct uploads to Supabase Storage using signed URLs. |
 | 2025-11-09 | Feature — Parent Metadata | ✅ Complete | Simplified parent selection workflow with direct text input and photo uploads (no parent records required). |
 | 2025-11-08 | Bugfix — Infinite Loop | ✅ Complete | Fixed infinite loop causing hundreds of requests and multiple toasts after successful puppy creation. |
@@ -363,6 +364,99 @@ Added direct parent metadata fields to `puppies` table:
 
 ### Learning
 Flexible data modeling: Support both normalized (parent records) and denormalized (metadata) approaches to accommodate different user workflows.
+
+---
+
+## Feature — Breed Selection (2025-11-09) ✅
+
+### Problem
+When creating a puppy in the admin panel:
+- No way to specify the breed (French Bulldog vs English Bulldog)
+- Breed could theoretically be inferred from parent records via `litter_id → parents.breed`
+- But with Parent Metadata approach (direct text input), no parent records exist
+- Puppies like "Electronics" had no breed information
+
+### Solution
+Added direct `breed` field to `puppies` table:
+- Single dropdown selection in admin form
+- Values: `french_bulldog` or `english_bulldog`
+- Optional field (nullable) for backward compatibility
+- Indexed for filtering performance on `/puppies` page
+
+**Rationale:**
+Both parents must be the same breed (cannot mix French + English), so a single breed field per puppy is the simplest and most logical approach.
+
+### Implementation
+
+**Database Migration:**
+- `supabase/migrations/20250109T180000Z_add_breed_to_puppies.sql`
+- Added `breed text CHECK (breed = ANY (ARRAY['french_bulldog', 'english_bulldog']))`
+- Created index: `idx_puppies_breed ON puppies(breed) WHERE breed IS NOT NULL`
+- Applied to production database via `mcp__supabase__apply_migration`
+
+**Files Modified:**
+
+1. **lib/supabase/types.ts**
+   - Added `breed: "french_bulldog" | "english_bulldog" | null` to `Puppy` type
+
+2. **lib/admin/puppies/schema.ts**
+   - Created `breedSchema` with preprocessing and enum validation
+   - Added `breed: breedSchema` to `createPuppySchema`
+
+3. **app/admin/(dashboard)/puppies/create-puppy-panel.tsx**
+   - Added breed dropdown between Status and Sex fields:
+     ```tsx
+     <select id="breed" name="breed">
+       <option value="">Select breed</option>
+       <option value="french_bulldog">French Bulldog</option>
+       <option value="english_bulldog">English Bulldog</option>
+     </select>
+     ```
+
+4. **app/admin/(dashboard)/puppies/actions.ts**
+   - Added `breed: formData.get("breed")` to submission object
+   - Extracted and validated via `createPuppySchema.safeParse()`
+
+5. **lib/admin/puppies/queries.ts**
+   - Added `breed: input.breed ?? null` to `mapCreatePayload()`
+   - Breed saved to database during `insertAdminPuppy()`
+
+6. **Test Mocks Updated:**
+   - `lib/supabase/queries.test.ts` - Added `breed: "french_bulldog"` to `basePuppy`
+   - `app/puppies/page.test.tsx` - Added `breed: 'french_bulldog' as const` to mock puppy
+
+### Database Update
+Updated existing puppy "Electronics" with breed:
+```sql
+UPDATE puppies SET breed = 'french_bulldog' WHERE name = 'Electronics';
+```
+**Result:** Electronics now has `breed: "french_bulldog"`
+
+### Testing
+- ✅ TypeScript compilation passes
+- ✅ ESLint validation passes (max-warnings=0)
+- ✅ Production build succeeds
+- ✅ All test mocks updated
+- ✅ Backward compatible (nullable field)
+
+### Commit
+`b30d846` - feat: Add breed field to puppies table and admin form
+
+### Benefits
+1. ✅ **Simple**: Single dropdown field in form
+2. ✅ **Filterable**: Can filter `/puppies?breed=french_bulldog`
+3. ✅ **Indexed**: Fast queries with database index
+4. ✅ **Required for UX**: Essential for breed-specific filtering
+5. ✅ **Backward Compatible**: Existing puppies can remain null
+
+### Future Use Cases
+- Filter puppies by breed on public `/puppies` page
+- SEO: Breed-specific landing pages (`/puppies/french-bulldogs`)
+- Analytics: Track breed popularity and pricing
+- Marketing: Breed-specific email campaigns
+
+### Learning
+When modeling data, prefer direct fields over complex joins when: (1) the relationship is simple (single value), (2) no normalization needed (breed won't change per puppy), and (3) filtering performance matters (indexed column beats JOIN).
 
 ---
 
