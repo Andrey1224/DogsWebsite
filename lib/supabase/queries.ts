@@ -56,9 +56,11 @@ export function applyPuppyFilters(
     const matchesStatus =
       !filter.status || filter.status === "all" || puppy.status === filter.status;
 
+    // Priority: Use direct puppy.breed field (new approach)
+    // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
     const sireBreed = puppy.parents?.sire?.breed;
     const damBreed = puppy.parents?.dam?.breed;
-    const resolvedBreed = sireBreed ?? damBreed ?? undefined;
+    const resolvedBreed = puppy.breed ?? sireBreed ?? damBreed ?? undefined;
     const matchesBreed =
       !filter.breed || filter.breed === "all" || resolvedBreed === filter.breed;
 
