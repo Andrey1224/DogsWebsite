@@ -37,7 +37,9 @@ export async function generateMetadata({
     });
   }
 
-  const breed = puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed;
+  // Priority: Use direct puppy.breed field (new approach)
+  // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
+  const breed = puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed;
   const breedLabel = formatBreed(breed);
   const title = `${puppy.name ?? "Bulldog"} | Exotic Bulldog Legacy`;
   const description =
@@ -70,9 +72,10 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
     .filter((candidate) => candidate.id !== puppy.id)
     .filter((candidate) => {
       const sameLitter = puppy.litter_id && candidate.litter_id === puppy.litter_id;
-      const sameBreed =
-        (puppy.parents?.sire?.breed && candidate.parents?.sire?.breed === puppy.parents?.sire?.breed) ||
-        (puppy.parents?.dam?.breed && candidate.parents?.dam?.breed === puppy.parents?.dam?.breed);
+      // Priority: Use direct breed field, fallback to parent breed
+      const puppyBreed = puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed;
+      const candidateBreed = candidate.breed ?? candidate.parents?.sire?.breed ?? candidate.parents?.dam?.breed;
+      const sameBreed = puppyBreed && candidateBreed && puppyBreed === candidateBreed;
       return Boolean(sameLitter || sameBreed);
     })
     .slice(0, 3);
@@ -80,7 +83,9 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   // Prioritize direct metadata fields over parent records
   const sireName = puppy.sire_name ?? puppy.parents?.sire?.name;
   const damName = puppy.dam_name ?? puppy.parents?.dam?.name;
-  const breedLabel = formatBreed(puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? "";
+  // Priority: Use direct puppy.breed field (new approach)
+  // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
+  const breedLabel = formatBreed(puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? "";
   const sexLabel = puppy.sex ? puppy.sex.charAt(0).toUpperCase() + puppy.sex.slice(1) : "—";
   const statusLabel = puppy.status
     ? puppy.status.charAt(0).toUpperCase() + puppy.status.slice(1)

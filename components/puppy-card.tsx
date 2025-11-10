@@ -20,7 +20,9 @@ export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
     statusStyles[puppy.status] ??
     "border border-border bg-[color:color-mix(in srgb, var(--text-muted) 18%, var(--bg))] text-muted";
 
-  const breedRaw = puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed ?? "";
+  // Priority: Use direct puppy.breed field (new approach)
+  // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
+  const breedRaw = puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed ?? "";
   const breedLabel = breedRaw
     ? breedRaw
         .split("_")
