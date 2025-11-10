@@ -13,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run test` - Run Vitest unit and component tests
 - `npm run test:watch` - Run Vitest in watch mode
 - `npm run e2e` - Run Playwright end-to-end tests (requires `npm run dev`)
+- `npm run verify` - Run all quality checks (lint + typecheck + test + e2e)
 - `npm run validate-deployment` - Validate production deployment health
 
 ### Testing Requirements
@@ -59,6 +60,30 @@ The contact system spans multiple interconnected files:
 - Analytics: `components/analytics-provider.tsx` (consent-gated GA4/Meta Pixel)
 - Chat: `components/crisp-chat.tsx` (emits events for `ContactBar`)
 
+#### Admin Panel Architecture
+- **Authentication**: Session-based auth with signed cookies (`lib/admin/session.ts`)
+- **Middleware Protection**: `/admin/*` routes guarded by `middleware.ts`
+- **Login**: `/admin/login` with credential validation
+- **Dashboard**: `/admin/puppies` with CRUD operations
+- **File Uploads**: Client-side direct uploads to Supabase Storage via signed URLs (bypasses 1MB Server Action limit)
+- **Parent Metadata**: Supports direct text input + photo uploads (no parent records required)
+- **Breed Field**: Direct `breed` field on puppies table (french_bulldog | english_bulldog) with priority over parent breed
+
+**Key Files**:
+- `lib/admin/session.ts` - Session cookie encoding/decoding
+- `lib/admin/supabase.ts` - Admin Supabase client (service role)
+- `lib/admin/puppies/queries.ts` - Admin puppy CRUD operations
+- `lib/admin/puppies/schema.ts` - Zod validation schemas
+- `lib/admin/puppies/slug.ts` - Slug generation with collision detection
+- `app/admin/(dashboard)/puppies/actions.ts` - Server Actions for puppy mutations
+- `app/admin/(dashboard)/puppies/upload-actions.ts` - Signed URL generation for file uploads
+- `lib/admin/hooks/use-media-upload.ts` - Client-side upload hook with progress tracking
+
+**Important Implementation Notes**:
+- **File Uploads**: Files are uploaded client-side directly to Supabase Storage using signed URLs (60s validity). Server Actions only receive URLs (< 1KB payload) to avoid the 1MB Server Action limit.
+- **Breed Priority**: Always use `puppy.breed` field first, fallback to `puppy.parents.sire.breed` or `puppy.parents.dam.breed` for backward compatibility. This applies to filtering (`lib/supabase/queries.ts`), display (`components/puppy-card.tsx`), and detail pages (`app/puppies/[slug]/page.tsx`).
+- **Parent Metadata**: Puppies can have direct `sire_name`, `dam_name`, `sire_photo_urls[]`, `dam_photo_urls[]` fields without requiring parent records in `parents` table.
+
 ### Environment Configuration
 
 #### Required Environment Variables
@@ -67,6 +92,12 @@ The contact system spans multiple interconnected files:
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE=
+
+# Admin Panel
+ADMIN_LOGIN=
+ADMIN_PASSWORD=
+ADMIN_SESSION_SECRET=
+ADMIN_SESSION_TTL_HOURS=
 
 # Payments
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
@@ -104,6 +135,7 @@ HCAPTCHA_BYPASS_TOKEN=
 
 # Analytics (Server-Side)
 GA4_API_SECRET=
+META_CONVERSION_API_TOKEN=
 
 # Webhook Monitoring & Alerting
 ALERT_EMAILS=
@@ -135,20 +167,24 @@ NEXT_PUBLIC_SITE_URL=
 ## Database Schema
 
 ### Core Tables
-- `breeds`: French Bulldog, English Bulldog
-- `parents`: Sire/dam information with health clearances
+- `parents`: Sire/dam information with health clearances, breed field
 - `litters`: Mating dates, due dates, birth dates
-- `puppies`: Individual puppies with status, pricing, media
+- `puppies`: Individual puppies with status, pricing, media, **direct breed field**, parent metadata fields
 - `reservations`: Deposit tracking (Stripe/PayPal)
 - `inquiries`: Contact form submissions and lead tracking
+- `webhook_events`: Audit trail for payment webhooks
 
 ### Key Relationships
-- `puppies` → `litters` → `parents` (sire/dam)
+- `puppies` → `litters` → `parents` (sire/dam) - **Optional for backward compatibility**
+- `puppies` can have direct parent metadata (sire_name, dam_name, photo URLs) without parent records
+- `puppies` have direct `breed` field (priority over parent breed)
 - `reservations` → `puppies` (deposit tracking)
 - `inquiries` → `puppies` (lead source attribution)
 
 ### Migration & Seeding
 - Initial schema: `supabase/migrations/20241007T000000Z_initial_schema.sql`
+- Parent metadata: `supabase/migrations/20250812T000000Z_add_parent_metadata_to_puppies.sql`
+- Breed field: `supabase/migrations/20250109T180000Z_add_breed_to_puppies.sql`
 - Sample data: `supabase/seeds/initial_seed.sql`
 - Client IP tracking: `supabase/migrations/20250216T120000Z_add_client_ip_to_inquiries.sql`
 
@@ -158,10 +194,13 @@ NEXT_PUBLIC_SITE_URL=
 - `app/` - Next.js App Router pages
 - `app/(section)/[slug]/` - Page-specific logic co-location
 - `app/contact/actions.ts` - Server actions for contact form
+- `app/admin/(dashboard)/` - Admin panel routes (protected by middleware)
+- `app/api/` - API routes (webhooks, health checks)
 
 ### Component Organization
 - `components/` - Shared React components
 - `lib/` - Utilities, Supabase clients, business logic
+- `lib/admin/` - Admin-specific utilities and queries
 - `tests/` - Unit tests and E2E specs
 - `supabase/` - Database migrations and seeds
 
@@ -191,12 +230,13 @@ Track these events via `useAnalytics().trackEvent`:
 - **Email Notifications**: Owner + customer emails sent automatically on successful deposit
 - **Analytics**: Server-side `deposit_paid` events tracked via GA4 Measurement Protocol
 - **Monitoring**: `/api/health/webhooks` endpoint + email/Slack alerts for webhook failures
-- **External Monitoring**: UptimeRobot monitors production health endpoint every 60 minutes (100% uptime, ~700ms response time)
 
 ### Media Handling
 - Store in Supabase Storage buckets: `puppies`, `parents`, `litters`
+- **Admin Uploads**: Client-side direct uploads using signed URLs (bypasses Server Action 1MB limit)
+  - Flow: Request signed URL → Upload via fetch(PUT) → Get public URL → Submit URL to Server Action
+  - Implemented in `lib/admin/hooks/use-media-upload.ts` and `app/admin/(dashboard)/puppies/upload-actions.ts`
 - Use `next/image` optimization with proper sizing
-- Generate public URLs with signed access when needed
 - Target WebP/AVIF formats ≤400KB for optimal LCP
 - Preload hero images and LCP candidates
 
@@ -221,6 +261,7 @@ Track these events via `useAnalytics().trackEvent`:
 - TypeScript: `npm run typecheck` (strict mode)
 - Unit tests: `npm run test`
 - E2E tests: `npm run e2e` (catalog filtering, contact form with captcha bypass)
+- All checks: `npm run verify`
 
 ### SEO & Performance Validation
 - Lighthouse: Target scores ≥90 for SEO, Accessibility, Performance
@@ -250,13 +291,13 @@ Keep these files synchronized when making changes:
 - `SPRINT_PLAN.md` - Execution roadmap
 - `AGENTS.md` - Contributor practices
 - `CLAUDE.md` - Agent operating rules (this file)
+- `EBL_Admin_Panel_PROGRESS.md` - Admin panel implementation log
 - Sprint plans (`sprint_*_plan_final.md`)
 - Sprint progress (`SPRINT*_PROGRESS.md`)
 - Sprint reports (`SPRINT*_REPORT.md`)
 
-<!-- bukabuka -->
-
-When modifying the contact/analytics stack, update all connected files and refresh documentation to maintain contributor understanding.
+When modifying the contact/analytics stack or admin panel, update all connected files and refresh documentation to maintain contributor understanding.
 
 ### Sprint-Specific Notes
-- **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. Review images are placeholders pending final client assets. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622).
+- **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622).
+- **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `EBL_Admin_Panel_PROGRESS.md` for detailed implementation history.
