@@ -35,7 +35,7 @@ export type SeoOptions = {
   noIndex?: boolean;
 };
 
-const SITE_NAME = "Exotic Bulldog Level";
+const SITE_NAME = "Exotic Bulldog Legacy";
 const DEFAULT_DESCRIPTION =
   "Health-first French & English bulldog breeding in Alabama with transparent pedigrees, concierge ownership support, and secure deposit flows.";
 const DEFAULT_IMAGE = "/reviews/sarah-charlie.webp";
@@ -44,7 +44,7 @@ function resolveImage(image?: ImageInput) {
   if (!image) {
     return {
       url: DEFAULT_IMAGE,
-      alt: "French and English bulldogs from Exotic Bulldog Level",
+      alt: "French and English bulldogs from Exotic Bulldog Legacy",
     };
   }
 

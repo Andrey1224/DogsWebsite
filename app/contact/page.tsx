@@ -5,9 +5,9 @@ import { CONTACT_CARDS } from "@/lib/config/contact";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
-  title: "Contact Exotic Bulldog Level",
+  title: "Contact Exotic Bulldog Legacy",
   description:
-    "Call, text, or message Exotic Bulldog Level to plan your French or English bulldog adoption, book kennel visits, or ask health questions.",
+    "Call, text, or message Exotic Bulldog Legacy to plan your French or English bulldog adoption, book kennel visits, or ask health questions.",
   path: "/contact",
 });
 

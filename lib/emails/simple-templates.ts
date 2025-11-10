@@ -54,7 +54,7 @@ export function generateOwnerNotificationEmail(inquiry: InquiryData): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Inquiry - Exotic Bulldog Level</title>
+    <title>New Inquiry - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -130,7 +130,7 @@ export function generateOwnerNotificationEmail(inquiry: InquiryData): string {
         </div>
 
         <div class="footer">
-            <p>This inquiry was submitted through the Exotic Bulldog Level website.<br>
+            <p>This inquiry was submitted through the Exotic Bulldog Legacy website.<br>
             Please respond within one business day.</p>
         </div>
     </div>
@@ -153,7 +153,7 @@ export function generateCustomerConfirmationEmail(name: string): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thank You - Exotic Bulldog Level</title>
+    <title>Thank You - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -179,7 +179,7 @@ export function generateCustomerConfirmationEmail(name: string): string {
         <div class="header">
             <div style="font-size: 48px; margin-bottom: 20px;">🐾</div>
             <h1>Thank You for Your Interest!</h1>
-            <p>Your inquiry has been received by Exotic Bulldog Level</p>
+            <p>Your inquiry has been received by Exotic Bulldog Legacy</p>
         </div>
 
         <div class="section">
@@ -218,7 +218,7 @@ export function generateCustomerConfirmationEmail(name: string): string {
 
         <div class="section">
             <div class="info-box" style="background: #fff3cd; border: 1px solid #ffeaa7;">
-                <h3>🏠 About Exotic Bulldog Level</h3>
+                <h3>🏠 About Exotic Bulldog Legacy</h3>
                 <p>We specialize in breeding high-quality French and English Bulldogs with health guarantees, proper socialization, and loving care. All our puppies come with health records and lifetime support.</p>
             </div>
         </div>
@@ -229,7 +229,7 @@ export function generateCustomerConfirmationEmail(name: string): string {
 
         <div class="footer">
             <p>Questions? Feel free to reach out through any of the contact methods above.</p>
-            <p style="margin-top: 10px; font-size: 12px;">© 2025 Exotic Bulldog Level. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 12px;">© 2025 Exotic Bulldog Legacy. All rights reserved.</p>
         </div>
     </div>
 </body>

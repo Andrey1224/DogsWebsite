@@ -169,7 +169,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
         </div>
 
         <div class="footer">
-            <p><strong>Exotic Bulldog Level - Automated Webhook Monitoring</strong></p>
+            <p><strong>Exotic Bulldog Legacy - Automated Webhook Monitoring</strong></p>
             <p>This is an automated alert from your payment webhook monitoring system.</p>
         </div>
     </div>

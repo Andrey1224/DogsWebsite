@@ -56,7 +56,7 @@ const reviews: Review[] = [
     visitDate: "2025-08-02",
     rating: 5,
     quote:
-      "I was nervous about buying online, but Exotic Bulldog Level made everything smooth. We received videos and updates right up until delivery day. Bella arrived happy, healthy, and ready to cuddle.",
+      "I was nervous about buying online, but Exotic Bulldog Legacy made everything smooth. We received videos and updates right up until delivery day. Bella arrived happy, healthy, and ready to cuddle.",
   },
   {
     id: "anthony-d",
@@ -98,9 +98,9 @@ const reviews: Review[] = [
 ];
 
 export const metadata = buildMetadata({
-  title: "Reviews | Exotic Bulldog Level",
+  title: "Reviews | Exotic Bulldog Legacy",
   description:
-    "Read authentic reviews from Exotic Bulldog Level families across Alabama, Georgia, and Tennessee.",
+    "Read authentic reviews from Exotic Bulldog Legacy families across Alabama, Georgia, and Tennessee.",
   path: "/reviews",
 });
 
@@ -162,7 +162,7 @@ export default function ReviewsPage() {
       <header className="space-y-3 text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Reviews</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
-          Families who chose Exotic Bulldog Level
+          Families who chose Exotic Bulldog Legacy
         </h1>
         <p className="mx-auto max-w-2xl text-sm text-muted">
           From first kennel visits to flight nanny hand-offs, our team stays involved at every step of the adoption

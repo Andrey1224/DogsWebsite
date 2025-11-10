@@ -58,7 +58,7 @@
 
 ## Method
 
-**Бренд/язык:** Exotic Bulldog Level, язык интерфейса — English (US).
+**Бренд/язык:** Exotic Bulldog Legacy, язык интерфейса — English (US).
 
 ### Технологический стек (MVP)
 
@@ -303,7 +303,7 @@ User -> C : Ask questions in chat (optional)
 - JSON-LD (`Organization`, `LocalBusiness`/`PetStore`, `Product` для щенков, `FAQPage`).
 - Заголовки и тексты на английском (US), целевые ключи: "French Bulldog puppies in Alabama", "English Bulldog breeder Alabama", и т. п.
 - Страница Google Business Profile (как только будет домен и адрес общения/зоны доставки).
-- Блок NAP в футере: **Exotic Bulldog Level**, адрес **[указать город, AL]**, телефон в формате **+1XXXXXXXXXX**.
+- Блок NAP в футере: **Exotic Bulldog Legacy**, адрес **[указать город, AL]**, телефон в формате **+1XXXXXXXXXX**.
 
 ### 7) Аналитика и пиксели
 

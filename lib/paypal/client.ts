@@ -188,7 +188,7 @@ export async function createPayPalOrder(
     application_context: {
       user_action: "PAY_NOW",
       shipping_preference: "NO_SHIPPING",
-      brand_name: "Exotic Bulldog Level",
+      brand_name: "Exotic Bulldog Legacy",
       return_url: returnUrl,
       cancel_url: cancelUrl,
     },

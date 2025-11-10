@@ -16,7 +16,7 @@ export function AboutPreview() {
               A family-run program built on trust and care
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-muted">
-              Exotic Bulldog Level is a boutique breeder in Alabama focused on producing
+              Exotic Bulldog Legacy is a boutique breeder in Alabama focused on producing
               well-tempered French and English bulldogs. Our program blends veterinary best
               practices with genuine love for the breed, ensuring every puppy is health-screened,
               socialized, and ready to thrive in their forever home.

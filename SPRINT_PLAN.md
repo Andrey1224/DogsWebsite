@@ -1,4 +1,4 @@
-# 🐾 Exotic Bulldog Level — Sprint Plan (Next.js + Supabase + Crisp + Stripe/PayPal)
+# 🐾 Exotic Bulldog Legacy — Sprint Plan (Next.js + Supabase + Crisp + Stripe/PayPal)
 
 > 1-week sprints · Team size: 1–2 devs  
 > Focus: MVP landing with catalog, chat, and deposit flow
@@ -201,4 +201,4 @@ Finalize performance, reliability, and compliance.
 
 ---
 
-_© 2025 Exotic Bulldog Level — MVP Sprint Plan_
+_© 2025 Exotic Bulldog Legacy — MVP Sprint Plan_

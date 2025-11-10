@@ -58,7 +58,7 @@ describe("Email Notifications", () => {
       expect(mockSend).toHaveBeenCalledWith({
         from: "test@example.com",
         to: ["owner@example.com"],
-        subject: "🐾 New Inquiry: John Doe - Exotic Bulldog Level",
+        subject: "🐾 New Inquiry: John Doe - Exotic Bulldog Legacy",
         replyTo: "john@example.com",
         html: expect.any(String),
       });
@@ -78,7 +78,7 @@ describe("Email Notifications", () => {
       expect(mockSend).toHaveBeenCalledWith({
         from: "test@example.com",
         to: ["owner@example.com"],
-        subject: "🐾 New Inquiry: Jane Doe - Exotic Bulldog Level",
+        subject: "🐾 New Inquiry: Jane Doe - Exotic Bulldog Legacy",
         replyTo: "jane@example.com",
         html: expect.any(String),
       });
@@ -112,7 +112,7 @@ describe("Email Notifications", () => {
       expect(mockSend).toHaveBeenCalledWith({
         from: "test@example.com",
         to: ["john@example.com"],
-        subject: "Your Exotic Bulldog Level Inquiry - We'll Be in Touch Soon! 🐾",
+        subject: "Your Exotic Bulldog Legacy Inquiry - We'll Be in Touch Soon! 🐾",
         html: expect.any(String),
       });
     });
@@ -132,7 +132,7 @@ describe("Email Notifications", () => {
       expect(mockSend).toHaveBeenCalledWith({
         from: "onboarding@resend.dev",
         to: ["jane@example.com"],
-        subject: "Your Exotic Bulldog Level Inquiry - We'll Be in Touch Soon! 🐾",
+        subject: "Your Exotic Bulldog Legacy Inquiry - We'll Be in Touch Soon! 🐾",
         html: expect.any(String),
       });
     });

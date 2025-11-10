@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { getPuppyBySlug } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
-  title: 'Reservation Confirmed | Exotic Bulldog Level',
+  title: 'Reservation Confirmed | Exotic Bulldog Legacy',
   description: 'Your puppy reservation has been confirmed. Thank you!',
 };
 

@@ -8,7 +8,7 @@ describe('Reviews Page', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: /Families who chose Exotic Bulldog Level/i,
+        name: /Families who chose Exotic Bulldog Legacy/i,
       })
     ).toBeInTheDocument();
   });

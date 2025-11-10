@@ -118,8 +118,8 @@ const BUSINESS_COORDINATES: Coordinates = {
 const address = parseAddress(process.env.NEXT_PUBLIC_CONTACT_ADDRESS);
 
 export const BUSINESS_PROFILE = {
-  name: "Exotic Bulldog Level",
-  legalName: "Exotic Bulldog Level Kennels LLC",
+  name: "Exotic Bulldog Legacy",
+  legalName: "Exotic Bulldog Legacy Kennels LLC",
   description:
     "Responsible French & English bulldog breeding program in Montgomery, Alabama with concierge placement support.",
   slogan: "Trusted French & English bulldogs raised with southern warmth.",

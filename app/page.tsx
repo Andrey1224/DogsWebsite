@@ -6,7 +6,7 @@ import { FaqPreview } from "@/components/home/faq-preview";
 import { ReviewsPreview } from "@/components/home/reviews-preview";
 
 export const metadata = buildMetadata({
-  title: "Premium Bulldog Breeder in Alabama | Exotic Bulldog Level",
+  title: "Premium Bulldog Breeder in Alabama | Exotic Bulldog Legacy",
   description:
     "Discover French and English bulldog puppies raised with health-first standards, transparent pedigrees, and concierge ownership support in Montgomery, Alabama.",
   path: "/",
@@ -68,7 +68,7 @@ export default function Home() {
         <div className="relative mt-4 h-72 w-full max-w-md overflow-hidden rounded-3xl border border-border shadow-xl sm:mt-0">
           <Image
             src="/hero/hero-1600.webp"
-            alt="Healthy French and English Bulldog puppies from Exotic Bulldog Level breeder in Alabama"
+            alt="Healthy French and English Bulldog puppies from Exotic Bulldog Legacy breeder in Alabama"
             fill
             priority
             placeholder="blur"

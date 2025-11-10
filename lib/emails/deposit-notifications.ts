@@ -68,7 +68,7 @@ function generateOwnerDepositEmail(data: DepositData): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Deposit Received - Exotic Bulldog Level</title>
+    <title>New Deposit Received - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -144,7 +144,7 @@ function generateOwnerDepositEmail(data: DepositData): string {
         </div>
 
         <div class="footer">
-            <p>This is an automated notification from Exotic Bulldog Level</p>
+            <p>This is an automated notification from Exotic Bulldog Legacy</p>
             <p>Transaction Date: ${new Date().toLocaleString()}</p>
         </div>
     </div>
@@ -171,7 +171,7 @@ function generateCustomerDepositEmail(data: DepositData): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit Confirmation - Exotic Bulldog Level</title>
+    <title>Deposit Confirmation - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -251,7 +251,7 @@ function generateCustomerDepositEmail(data: DepositData): string {
         </div>
 
         <div class="footer">
-            <p><strong>Thank you for choosing Exotic Bulldog Level!</strong></p>
+            <p><strong>Thank you for choosing Exotic Bulldog Legacy!</strong></p>
             <p>We're excited to help you welcome your new family member 🐾</p>
         </div>
     </div>

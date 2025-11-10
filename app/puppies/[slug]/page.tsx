@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   if (!puppy) {
     return buildMetadata({
-      title: "Puppy not found | Exotic Bulldog Level",
+      title: "Puppy not found | Exotic Bulldog Legacy",
       description: "The requested bulldog could not be located. Explore available puppies instead.",
       path: `/puppies/${slug}`,
       noIndex: true,
@@ -39,7 +39,7 @@ export async function generateMetadata({
 
   const breed = puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed;
   const breedLabel = formatBreed(breed);
-  const title = `${puppy.name ?? "Bulldog"} | Exotic Bulldog Level`;
+  const title = `${puppy.name ?? "Bulldog"} | Exotic Bulldog Legacy`;
   const description =
     puppy.description ??
     `Learn more about ${puppy.name ?? "this bulldog"}, one of our carefully raised ${

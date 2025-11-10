@@ -28,7 +28,7 @@ export async function sendCustomerConfirmation({
     const { data, error } = await getResendClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
       to: [email],
-      subject: "Your Exotic Bulldog Level Inquiry - We'll Be in Touch Soon! 🐾",
+      subject: "Your Exotic Bulldog Legacy Inquiry - We'll Be in Touch Soon! 🐾",
       html: generateCustomerConfirmationEmail(name),
     });
 

@@ -12,7 +12,7 @@ export const revalidate = 60;
 export const metadata = buildMetadata({
   title: "Available French & English Bulldog Puppies",
   description:
-    "Browse Exotic Bulldog Level’s catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.",
+    "Browse Exotic Bulldog Legacy’s catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.",
   path: "/puppies",
 });
 

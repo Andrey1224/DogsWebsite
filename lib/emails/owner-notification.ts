@@ -36,7 +36,7 @@ export async function sendOwnerNotification({
     const { data, error } = await getResendClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
       to: [process.env.OWNER_EMAIL || "nepod77@gmail.com"],
-      subject: `🐾 New Inquiry: ${inquiry.name} - Exotic Bulldog Level`,
+      subject: `🐾 New Inquiry: ${inquiry.name} - Exotic Bulldog Legacy`,
       replyTo: inquiry.email,
       html: generateOwnerNotificationEmail({
         name: inquiry.name,

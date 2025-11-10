@@ -23,7 +23,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[1.1fr,0.9fr]">
         <div className="space-y-8">
           <div>
-            <p className="font-serif text-lg font-semibold tracking-tight text-text">Exotic Bulldog Level</p>
+            <p className="font-serif text-lg font-semibold tracking-tight text-text">Exotic Bulldog Legacy</p>
             <p className="mt-3 max-w-md text-sm text-muted">
               Responsible French & English bulldog breeding in Alabama with health-first practices, transparent
               pedigrees, and concierge support before and after placement.
@@ -104,7 +104,7 @@ export function SiteFooter() {
           <div className="overflow-hidden rounded-3xl border border-border shadow-sm">
             <iframe
               src={mapSrc}
-              title="Exotic Bulldog Level location"
+              title="Exotic Bulldog Legacy location"
               loading="lazy"
               allowFullScreen
               className="h-64 w-full border-0"
@@ -117,7 +117,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="mx-auto mt-10 max-w-6xl px-6 text-xs text-muted">
-        © {new Date().getFullYear()} Exotic Bulldog Level. All rights reserved.
+        © {new Date().getFullYear()} Exotic Bulldog Legacy. All rights reserved.
       </div>
     </footer>
   );

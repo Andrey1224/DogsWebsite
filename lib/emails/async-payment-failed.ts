@@ -64,7 +64,7 @@ function generateAsyncPaymentFailedEmail(data: AsyncPaymentFailedData): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Issue - Exotic Bulldog Level</title>
+    <title>Payment Issue - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -162,7 +162,7 @@ function generateAsyncPaymentFailedEmail(data: AsyncPaymentFailedData): string {
         </div>
 
         <div class="footer">
-            <p><strong>Exotic Bulldog Level</strong></p>
+            <p><strong>Exotic Bulldog Legacy</strong></p>
             <p>We're excited to help you welcome your new family member 🐾</p>
             <p style="color: #999; font-size: 11px; margin-top: 10px;">
                 This is an automated notification from your puppy reservation system.

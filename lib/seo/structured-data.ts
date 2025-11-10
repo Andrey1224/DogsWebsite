@@ -143,7 +143,7 @@ export function getProductSchema(puppy: PuppyWithRelations) {
     name: puppy.name ?? `${breedLabel} Puppy`,
     description:
       puppy.description ??
-      `Health-tested ${breedLabel.toLowerCase()} puppy from Exotic Bulldog Level in Montgomery, Alabama.`,
+      `Health-tested ${breedLabel.toLowerCase()} puppy from Exotic Bulldog Legacy in Montgomery, Alabama.`,
     sku: puppy.id,
     brand: {
       "@type": "Brand",

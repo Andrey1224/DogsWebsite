@@ -39,9 +39,9 @@ const faqItems = [
 ];
 
 export const metadata = buildMetadata({
-  title: "Frequently Asked Questions | Exotic Bulldog Level",
+  title: "Frequently Asked Questions | Exotic Bulldog Legacy",
   description:
-    "Find answers about reserving, raising, and transporting French and English bulldog puppies from Exotic Bulldog Level.",
+    "Find answers about reserving, raising, and transporting French and English bulldog puppies from Exotic Bulldog Legacy.",
   path: "/faq",
 });
 
@@ -65,7 +65,7 @@ export default function FaqPage() {
         </h1>
         <p className="text-sm text-muted">
           Explore the breeding standards, reservation process, and go-home preparation steps that
-          guide every Exotic Bulldog Level placement. Reach out if you need details beyond these
+          guide every Exotic Bulldog Legacy placement. Reach out if you need details beyond these
           highlights.
         </p>
       </header>

@@ -1,6 +1,6 @@
-# Exotic Bulldog Level — Sprint Workspace
+# Exotic Bulldog Legacy — Sprint Workspace
 
-Sprint workspace for Exotic Bulldog Level. Sprint 1 delivered the Supabase-driven catalog and supporting content routes; Sprint 3/4 now ship the dual-provider ($300) deposit flow via Stripe Checkout and PayPal Smart Buttons.
+Sprint workspace for Exotic Bulldog Legacy. Sprint 1 delivered the Supabase-driven catalog and supporting content routes; Sprint 3/4 now ship the dual-provider ($300) deposit flow via Stripe Checkout and PayPal Smart Buttons.
 
 ## Prerequisites
 - Node.js 20+ (repo tested with v24)

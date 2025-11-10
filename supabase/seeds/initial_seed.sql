@@ -1,4 +1,4 @@
--- Seed data for Exotic Bulldog Level demo environment
+-- Seed data for Exotic Bulldog Legacy demo environment
 -- Parents
 insert into parents (id, name, slug, breed, sex, birth_date, weight_lbs, color, description, health_clearances, photo_urls)
 values

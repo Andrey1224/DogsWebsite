@@ -26,7 +26,7 @@ export function SiteHeader() {
       <div className="mx-auto max-w-5xl px-6 py-4">
         <div className="flex items-center justify-between gap-4 sm:gap-6">
           <Link href="/" className="font-serif text-xl font-semibold tracking-tight">
-            Exotic Bulldog Level
+            Exotic Bulldog Legacy
           </Link>
           <div className="hidden items-center gap-6 sm:flex">
             <nav>
