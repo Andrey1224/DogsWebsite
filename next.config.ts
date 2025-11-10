@@ -23,6 +23,17 @@ const securityHeaders = [
   },
 ];
 
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseRemotePattern = supabaseUrl
+  ? [
+      {
+        protocol: "https",
+        hostname: new URL(supabaseUrl).hostname,
+        pathname: "/storage/v1/object/**",
+      },
+    ]
+  : [];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
@@ -31,6 +42,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.exoticbulldog.dev",
       },
+      ...supabaseRemotePattern,
     ],
   },
 
