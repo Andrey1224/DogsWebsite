@@ -299,7 +299,7 @@ FROM puppies WHERE name = 'Electronics';
 
 ### Commits
 - `4efb792` - fix: Implement client-side direct upload to fix 1MB Server Action limit
-- Documentation: `CLIENT_SIDE_UPLOAD_IMPLEMENTATION.md` created
+- Documentation: `docs/admin/adr-client-side-uploads.md` created
 
 ### Learning
 Next.js Server Actions have a 1MB default payload limit. For file uploads, use client-side direct uploads to storage services (S3, Supabase Storage, etc.) with signed URLs, and only send URLs/metadata through Server Actions.

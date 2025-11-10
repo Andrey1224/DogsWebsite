@@ -1,23 +1,23 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Next.js routes live under `app/`, with shared UI in `components/` and reusable logic in `lib/`. Contact intake flows through `components/contact-form.tsx` → `app/contact/actions.ts`, while validation, captcha, and rate limiting sit in `lib/inquiries/` and `lib/captcha/`. Keep Supabase SQL migrations inside `supabase/migrations/`, static assets in `public/`, and Playwright specs in `tests/e2e/`. Planning docs (`Spec1.md`, `SPRINT_PLAN.md`, `SPRINTx_REPORT.md`) stay at the repo root alongside this guide.
+Next.js routes live under `app/`, server actions stay alongside their routes (e.g., `app/contact/actions.ts`), and shared UI belongs in `components/`. Domain helpers sit in `lib/` (`lib/inquiries/` for validation/rate limits, `lib/captcha/` for hCaptcha, `lib/config/contact.ts` for contact data). Keep Supabase migrations in `supabase/migrations/`, assets in `public/`, and Playwright specs in `tests/e2e/`. Core root docs are limited to `README.md`, `CLAUDE.md`, `AGENTS.md`, `Spec1.md`, `SPRINT_PLAN.md`, and `MIGRATIONS.md`, while the detailed library now lives in `docs/` (see `docs/README.md` for the index, ADRs in `docs/admin/`, payment notes in `docs/payments/`, sprint history in `docs/history/sprints/`, and archived artifacts in `docs/archive/`).
 
 ## Build, Test, and Development Commands
-- `npm run dev` — start the sandboxed Next.js dev server.
-- `npm run lint` — ESLint + Tailwind plugin; warnings block CI.
-- `npm run test` — Vitest and React Testing Library suites.
-- `npm run e2e` — Playwright catalog + contact scenarios; set `HCAPTCHA_BYPASS_TOKEN`.
-- `npm run build` — production build mirroring Vercel.
+- `npm run dev` — Launch the sandboxed Next.js dev server with local creds.
+- `npm run lint` — ESLint + Tailwind plugin; warnings fail CI.
+- `npm run test` — Vitest + React Testing Library unit/component suites.
+- `npm run e2e` — Playwright catalog/contact flows (set `HCAPTCHA_BYPASS_TOKEN`).
+- `npm run build` — Production build matching Vercel.
 
 ## Coding Style & Naming Conventions
-Use TypeScript `strict`, Prettier defaults (2 spaces, ≤100 columns), and Tailwind utilities mapped to the theme tokens in `app/globals.css`. Components use PascalCase (`PuppyCard.tsx`), hooks use `useCamelCase`, Supabase helpers stick to `camelCase.ts`, and SQL files remain `snake_case.sql`. Extend theme colors centrally before adding custom CSS, and colocate page-specific code within `app/(section)/[slug]/` folders.
+Use TypeScript `strict` and Prettier defaults (2 spaces, ≤100 columns). Components follow PascalCase (`PuppyCard.tsx`), hooks use `useCamelCase`, utilities default to `camelCase.ts`, and SQL stays `snake_case.sql`. Prefer Tailwind tokens defined in `app/globals.css` (`bg-bg`, `.bg-accent-gradient`) and extend the palette there before introducing custom CSS. Colocate feature-specific logic inside `app/(section)/[slug]/` folders to preserve module boundaries.
 
 ## Testing Guidelines
-Unit and component specs use `.test.ts(x)` next to the source, while cross-page flows belong in `tests/e2e/*.spec.ts`. Mock GA4/Meta Pixel when asserting analytics hooks. Target ≥80% coverage on shared utilities, and block merges on failing lint, unit, or e2e runs. Record new fixtures under `test-utils/` to avoid duplication.
+Place colocated specs beside source with a `.test.ts`/`.test.tsx` suffix; end-to-end flows stay in `tests/e2e/*.spec.ts`. Mock GA4/Meta Pixel in analytics tests and keep shared fixtures in `test-utils/`. Target ≥80% coverage on shared libraries, and treat failing lint/unit/e2e checks as blockers before review.
 
 ## Commit & Pull Request Guidelines
-Follow Conventional Commits (`feat(app): add sticky contact bar`). Each pull request needs a summary, linked ticket, screenshots or terminal output when UI changes, and a checklist of `lint`, `test`, and `e2e` runs. Require at least one reviewer plus green CI before merging, and document notable scope decisions in the current `SPRINTx_REPORT.md`.
+Adopt Conventional Commits (`feat(app): add sticky contact bar`). Every PR should include a scope summary, linked ticket, screenshots or terminal output for UI/back-end changes, and confirmation that `lint`, `test`, and `e2e` ran. Require at least one reviewer, green CI, and log notable scope shifts in the active `SPRINTx_REPORT.md`.
 
 ## Security & Configuration Tips
-Keep secrets in `.env.local`, mirror required keys to `.env.example`, and sync with Vercel/GitHub secrets. Only use `HCAPTCHA_BYPASS_TOKEN` and service-role Supabase keys locally. Large media should land in Supabase storage; do not commit binaries beyond lightweight marketing assets. When contact info changes, update `NEXT_PUBLIC_CONTACT_*` so the bar, cards, Crisp, and analytics stay consistent.
+Store secrets in `.env.local`, update `.env.example` when new variables are introduced, and sync with Vercel/GitHub secrets. Only use service-role Supabase keys and `HCAPTCHA_BYPASS_TOKEN` locally. Keep large media in Supabase buckets, not Git. When contact info changes, refresh all `NEXT_PUBLIC_CONTACT_*` variables so the contact bar, Crisp, and analytics stay consistent.

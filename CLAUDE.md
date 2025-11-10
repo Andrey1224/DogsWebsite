@@ -291,13 +291,14 @@ Keep these files synchronized when making changes:
 - `SPRINT_PLAN.md` - Execution roadmap
 - `AGENTS.md` - Contributor practices
 - `CLAUDE.md` - Agent operating rules (this file)
-- `EBL_Admin_Panel_PROGRESS.md` - Admin panel implementation log
-- Sprint plans (`sprint_*_plan_final.md`)
-- Sprint progress (`SPRINT*_PROGRESS.md`)
-- Sprint reports (`SPRINT*_REPORT.md`)
+- `docs/admin/admin-panel-changelog.md` - Admin panel implementation log
+- `docs/history/sprints/` - Sprint retrospectives
+- `docs/archive/` - Historical artifacts
+
+**Full documentation map:** See [`docs/README.md`](docs/README.md) for complete navigation.
 
 When modifying the contact/analytics stack or admin panel, update all connected files and refresh documentation to maintain contributor understanding.
 
 ### Sprint-Specific Notes
 - **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622).
-- **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `EBL_Admin_Panel_PROGRESS.md` for detailed implementation history.
+- **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `docs/admin/admin-panel-changelog.md` for detailed implementation history.
