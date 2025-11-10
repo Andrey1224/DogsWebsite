@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
 const securityHeaders = [
   {
@@ -24,7 +25,7 @@ const securityHeaders = [
 ];
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseRemotePattern = supabaseUrl
+const supabaseRemotePattern: RemotePattern[] = supabaseUrl
   ? [
       {
         protocol: "https",
