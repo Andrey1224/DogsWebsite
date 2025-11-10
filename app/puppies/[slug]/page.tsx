@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { JsonLd } from "@/components/json-ld";
 import { PuppyGallery } from "@/components/puppy-gallery";
+import { ParentPhotoCarousel } from "@/components/parent-photo-carousel";
 import { PuppyCard } from "@/components/puppy-card";
 import { getPuppiesWithRelations, getPuppyBySlug } from "@/lib/supabase/queries";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -83,6 +84,14 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   // Prioritize direct metadata fields over parent records
   const sireName = puppy.sire_name ?? puppy.parents?.sire?.name;
   const damName = puppy.dam_name ?? puppy.parents?.dam?.name;
+  const sirePhotos =
+    puppy.sire_photo_urls && puppy.sire_photo_urls.length > 0
+      ? puppy.sire_photo_urls
+      : puppy.parents?.sire?.photo_urls ?? [];
+  const damPhotos =
+    puppy.dam_photo_urls && puppy.dam_photo_urls.length > 0
+      ? puppy.dam_photo_urls
+      : puppy.parents?.dam?.photo_urls ?? [];
   // Priority: Use direct puppy.breed field (new approach)
   // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
   const breedLabel = formatBreed(puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? "";
@@ -164,7 +173,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             depositAmount={depositAmount}
             paypalClientId={paypalClientId}
           />
-          <div className="rounded-3xl border border-border bg-card p-6">
+          <div className="rounded-3xl border border-border bg-card p-6 space-y-6">
             <p className="text-sm font-semibold text-muted">Lineage</p>
             <ul className="mt-3 space-y-2 text-sm text-muted">
               <li>
@@ -177,6 +186,10 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
                 <span className="font-semibold text-text">Litter:</span> {puppy.litter?.name ?? "Private"}
               </li>
             </ul>
+            <div className="grid gap-4 md:grid-cols-2">
+              <ParentPhotoCarousel title="Sire" parentName={sireName} photos={sirePhotos} />
+              <ParentPhotoCarousel title="Dam" parentName={damName} photos={damPhotos} />
+            </div>
           </div>
         </div>
       </div>
