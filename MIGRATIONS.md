@@ -3,7 +3,17 @@
 ## Status Snapshot
 
 - **Last Applied Batch:** 2025-10-10 (commit `44954a8`)
+- **New Blocking Migration:** `20250218T120000Z_add_is_archived_flag.sql` (adds `puppies.is_archived` so the app no longer queries a missing column)
 - **Core Outcome:** `reservations` and `webhook_events` tables hardened with idempotency constraints, helper functions, and transaction guarantees.
+
+---
+
+## Applied Change Log (2025-02-18)
+
+### Updated Table — `puppies`
+- Added `is_archived boolean NOT NULL DEFAULT false` so application queries and rate-limit helpers can filter active puppies without hitting missing-column errors.
+- Backfilled existing rows to `false` and enforced the default for future inserts.
+- Documented the new column to clarify it powers soft deletes.
 
 ---
 
@@ -40,8 +50,9 @@
 ## Applying or Reapplying Migrations
 
 Pending migrations (if verification fails):
-1. `20251010T021104Z_reservation_constraints.sql`
-2. `20251015T000000Z_create_reservation_transaction_function.sql`
+1. `20250218T120000Z_add_is_archived_flag.sql`
+2. `20251010T021104Z_reservation_constraints.sql`
+3. `20251015T000000Z_create_reservation_transaction_function.sql`
 
 ### Option A — Supabase Dashboard (recommended)
 1. Open the project at [app.supabase.com](https://app.supabase.com).
