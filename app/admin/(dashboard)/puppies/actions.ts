@@ -9,6 +9,9 @@ import {
   isPuppySlugTaken,
   updateAdminPuppyPrice,
   updateAdminPuppyStatus,
+  hasActiveReservations,
+  archivePuppy,
+  restorePuppy,
 } from "@/lib/admin/puppies/queries";
 import {
   createPuppySchema,
@@ -16,6 +19,8 @@ import {
   priceUsdSchema,
   updatePuppyPriceSchema,
   updatePuppyStatusSchema,
+  archivePuppySchema,
+  restorePuppySchema,
 } from "@/lib/admin/puppies/schema";
 import { generateUniqueSlug, slugifyName } from "@/lib/admin/puppies/slug";
 import type { CreatePuppyState } from "./types";
@@ -41,7 +46,10 @@ export async function updatePuppyStatusAction(input: { id: string; status: strin
   const parsed = updatePuppyStatusSchema.parse({ id: input.id, status: input.status });
   await updateAdminPuppyStatus(parsed);
   revalidateCatalog(input.slug);
-  return { success: true };
+
+  // If status changed to 'sold', database trigger will auto-archive
+  const archived = parsed.status === "sold";
+  return { success: true, archived };
 }
 
 export async function updatePuppyPriceAction(input: { id: string; priceUsd: string; slug?: string | null }) {
@@ -149,6 +157,35 @@ export async function deletePuppyAction(input: { id: string; confirmName: string
 
   await deleteAdminPuppy(payload);
   revalidateCatalog(record.slug);
+
+  return { success: true };
+}
+
+export async function archivePuppyAction(input: { id: string; slug?: string | null }) {
+  await requireAdminSession();
+  const payload = archivePuppySchema.parse({ id: input.id });
+
+  // Check for active reservations
+  const hasReservations = await hasActiveReservations(payload.id);
+  if (hasReservations) {
+    return {
+      success: false,
+      error: "Cannot archive puppy with active reservations (pending/paid). Cancel reservations first."
+    };
+  }
+
+  await archivePuppy(payload.id);
+  revalidateCatalog(input.slug);
+
+  return { success: true };
+}
+
+export async function restorePuppyAction(input: { id: string; slug?: string | null }) {
+  await requireAdminSession();
+  const payload = restorePuppySchema.parse({ id: input.id });
+
+  await restorePuppy(payload.id);
+  revalidateCatalog(input.slug);
 
   return { success: true };
 }

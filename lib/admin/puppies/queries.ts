@@ -9,14 +9,16 @@ import {
   priceUsdSchema,
   updatePuppyPriceSchema,
   updatePuppyStatusSchema,
+  archivePuppySchema,
+  restorePuppySchema,
 } from "./schema";
 
 const ADMIN_PUPPY_FIELDS =
-  "id,name,slug,status,price_usd,birth_date,litter_id,created_at,updated_at";
+  "id,name,slug,status,price_usd,birth_date,litter_id,is_archived,created_at,updated_at";
 
 export type AdminPuppyRecord = Pick<
   Puppy,
-  "id" | "name" | "slug" | "status" | "price_usd" | "birth_date" | "litter_id" | "created_at" | "updated_at"
+  "id" | "name" | "slug" | "status" | "price_usd" | "birth_date" | "litter_id" | "is_archived" | "created_at" | "updated_at"
 >;
 
 // Type for insertion with required slug
@@ -43,11 +45,16 @@ function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]
   };
 }
 
-export async function fetchAdminPuppies(): Promise<AdminPuppyRecord[]> {
+export async function fetchAdminPuppies(
+  options: { archived?: boolean } = {}
+): Promise<AdminPuppyRecord[]> {
   const supabase = getAdminSupabaseClient();
+  const archived = options.archived ?? false;
+
   const { data, error } = await supabase
     .from("puppies")
     .select(ADMIN_PUPPY_FIELDS)
+    .eq("is_archived", archived)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -216,4 +223,62 @@ export async function fetchAdminDams(): Promise<AdminParent[]> {
   }
 
   return (data ?? []) as AdminParent[];
+}
+
+/**
+ * Check if puppy has active (pending or paid) reservations
+ */
+export async function hasActiveReservations(puppyId: string): Promise<boolean> {
+  const supabase = getAdminSupabaseClient();
+  const { count, error } = await supabase
+    .from("reservations")
+    .select("*", { count: "exact", head: true })
+    .eq("puppy_id", puppyId)
+    .in("status", ["pending", "paid"]);
+
+  if (error) {
+    throw error;
+  }
+
+  return (count ?? 0) > 0;
+}
+
+/**
+ * Archive a puppy (soft delete)
+ */
+export async function archivePuppy(id: string): Promise<void> {
+  const payload = archivePuppySchema.parse({ id });
+  const supabase = getAdminSupabaseClient();
+
+  const { error } = await supabase
+    .from("puppies")
+    .update({
+      is_archived: true,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", payload.id);
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Restore an archived puppy
+ */
+export async function restorePuppy(id: string): Promise<void> {
+  const payload = restorePuppySchema.parse({ id });
+  const supabase = getAdminSupabaseClient();
+
+  const { error } = await supabase
+    .from("puppies")
+    .update({
+      is_archived: false,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", payload.id);
+
+  if (error) {
+    throw error;
+  }
 }

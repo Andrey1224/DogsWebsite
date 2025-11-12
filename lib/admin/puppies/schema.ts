@@ -144,6 +144,16 @@ export const deletePuppySchema = z.object({
   id: adminPuppyIdSchema,
 });
 
+export const archivePuppySchema = z.object({
+  id: adminPuppyIdSchema,
+});
+
+export const restorePuppySchema = z.object({
+  id: adminPuppyIdSchema,
+});
+
 export type CreatePuppyInput = z.infer<typeof createPuppySchema>;
 export type UpdatePuppyStatusInput = z.infer<typeof updatePuppyStatusSchema>;
 export type UpdatePuppyPriceInput = z.infer<typeof updatePuppyPriceSchema>;
+export type ArchivePuppyInput = z.infer<typeof archivePuppySchema>;
+export type RestorePuppyInput = z.infer<typeof restorePuppySchema>;

@@ -23,6 +23,7 @@ export const getPuppies = cache(async () => {
   const { data, error } = await getSupabaseClient()
     .from("puppies")
     .select("*")
+    .eq("is_archived", false)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -119,7 +120,12 @@ export const getFilteredPuppies = cache(async (filter: PuppyFilter = {}) => {
 });
 
 export const getPuppyBySlug = cache(async (slug: string) => {
-  const { data, error } = await getSupabaseClient().from("puppies").select("*").eq("slug", slug).maybeSingle();
+  const { data, error } = await getSupabaseClient()
+    .from("puppies")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_archived", false)
+    .maybeSingle();
 
   if (error) {
     throw error;

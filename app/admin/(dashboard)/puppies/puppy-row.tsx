@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { AdminPuppyRecord } from "@/lib/admin/puppies/queries";
-import { deletePuppyAction, updatePuppyPriceAction, updatePuppyStatusAction } from "./actions";
+import { deletePuppyAction, updatePuppyPriceAction, updatePuppyStatusAction, archivePuppyAction, restorePuppyAction } from "./actions";
 
 type StatusOption = {
   value: string;
@@ -15,17 +15,21 @@ type StatusOption = {
 interface PuppyRowProps {
   puppy: AdminPuppyRecord;
   statusOptions: StatusOption[];
+  archived: boolean;
 }
 
-export function PuppyRow({ puppy, statusOptions }: PuppyRowProps) {
+export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
   const router = useRouter();
   const [statusPending, startStatusTransition] = useTransition();
   const [pricePending, startPriceTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
+  const [archivePending, startArchiveTransition] = useTransition();
+  const [restorePending, startRestoreTransition] = useTransition();
 
   const [priceValue, setPriceValue] = useState(() => (typeof puppy.price_usd === "number" ? String(puppy.price_usd) : ""));
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmName, setConfirmName] = useState("");
+  const [confirmArchive, setConfirmArchive] = useState(false);
 
   const originalPrice = useMemo(() => (typeof puppy.price_usd === "number" ? String(puppy.price_usd) : ""), [puppy.price_usd]);
   const isPriceDirty = priceValue !== originalPrice;
@@ -35,13 +39,17 @@ export function PuppyRow({ puppy, statusOptions }: PuppyRowProps) {
     normalizedName.length > 0 &&
     confirmName.trim().toLowerCase() === normalizedName.toLowerCase();
 
-  const sharedDisabled = statusPending || pricePending || deletePending;
+  const sharedDisabled = statusPending || pricePending || deletePending || archivePending || restorePending;
 
   function handleStatusChange(value: string) {
     startStatusTransition(async () => {
       try {
-        await updatePuppyStatusAction({ id: puppy.id, status: value, slug: puppy.slug });
-        toast.success(`Status updated to ${value}`);
+        const result = await updatePuppyStatusAction({ id: puppy.id, status: value, slug: puppy.slug });
+        if (result.archived) {
+          toast.success(`Status updated to ${value} (puppy archived automatically)`);
+        } else {
+          toast.success(`Status updated to ${value}`);
+        }
         router.refresh();
       } catch (error) {
         toast.error("Failed to update status");
@@ -85,6 +93,41 @@ export function PuppyRow({ puppy, statusOptions }: PuppyRowProps) {
         router.refresh();
       } catch (error) {
         toast.error("Failed to delete puppy");
+        console.error(error);
+      }
+    });
+  }
+
+  function handleArchive() {
+    startArchiveTransition(async () => {
+      try {
+        const result = await archivePuppyAction({ id: puppy.id, slug: puppy.slug });
+        if (!result.success) {
+          toast.error(result.error ?? "Failed to archive puppy");
+          return;
+        }
+        toast.success("Puppy archived successfully");
+        setConfirmArchive(false);
+        router.refresh();
+      } catch (error) {
+        toast.error("Failed to archive puppy");
+        console.error(error);
+      }
+    });
+  }
+
+  function handleRestore() {
+    startRestoreTransition(async () => {
+      try {
+        const result = await restorePuppyAction({ id: puppy.id, slug: puppy.slug });
+        if (!result.success) {
+          toast.error("Failed to restore puppy");
+          return;
+        }
+        toast.success("Puppy restored successfully");
+        router.refresh();
+      } catch (error) {
+        toast.error("Failed to restore puppy");
         console.error(error);
       }
     });
@@ -174,54 +217,107 @@ export function PuppyRow({ puppy, statusOptions }: PuppyRowProps) {
       </div>
 
       <div className="flex flex-col items-start gap-2 md:items-end">
-        <Link
-          href={`/puppies/${puppy.slug}`}
-          prefetch={false}
-          className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:bg-hover"
-          target="_blank"
-        >
-          Open public page
-        </Link>
-        {!confirmOpen ? (
-          <button
-            type="button"
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:border-red-200 hover:text-red-500"
-            onClick={() => setConfirmOpen(true)}
-            disabled={sharedDisabled}
+        {!archived && (
+          <Link
+            href={`/puppies/${puppy.slug}`}
+            prefetch={false}
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:bg-hover"
+            target="_blank"
           >
-            Delete
-          </button>
+            Open public page
+          </Link>
+        )}
+
+        {archived ? (
+          // Archived puppy actions
+          <>
+            <button
+              type="button"
+              onClick={handleRestore}
+              disabled={restorePending || sharedDisabled}
+              className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {restorePending ? "Restoring..." : "Restore"}
+            </button>
+            {!confirmOpen ? (
+              <button
+                type="button"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:border-red-200 hover:text-red-500"
+                onClick={() => setConfirmOpen(true)}
+                disabled={sharedDisabled}
+              >
+                Delete Permanently
+              </button>
+            ) : (
+              <div className="w-full space-y-2 rounded-lg border border-border bg-bg p-3 text-xs">
+                <p className="font-medium text-red-500">Type &ldquo;{normalizedName || "name"}&rdquo; to confirm permanent deletion.</p>
+                <input
+                  value={confirmName}
+                  onChange={(event) => setConfirmName(event.target.value)}
+                  disabled={deletePending}
+                  className="w-full rounded-lg border border-border bg-card px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={!confirmMatches || deletePending}
+                    className="rounded-lg bg-red-500 px-3 py-1 text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletePending ? "Deleting..." : "Confirm delete"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmName("");
+                      setConfirmOpen(false);
+                    }}
+                    className="rounded-lg border border-border px-3 py-1 text-muted transition hover:bg-hover"
+                    disabled={deletePending}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="w-full space-y-2 rounded-lg border border-border bg-bg p-3 text-xs">
-            <p className="font-medium text-red-500">Type “{normalizedName || "name"}” to confirm deletion.</p>
-            <input
-              value={confirmName}
-              onChange={(event) => setConfirmName(event.target.value)}
-              disabled={deletePending}
-              className="w-full rounded-lg border border-border bg-card px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-            />
-            <div className="flex flex-wrap gap-2">
+          // Active puppy actions
+          <>
+            {!confirmArchive ? (
               <button
                 type="button"
-                onClick={handleDelete}
-                disabled={!confirmMatches || deletePending}
-                className="rounded-lg bg-red-500 px-3 py-1 text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setConfirmArchive(true)}
+                disabled={sharedDisabled}
+                className="rounded-lg border border-orange-500 px-3 py-1.5 text-xs font-medium text-orange-600 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {deletePending ? "Deleting..." : "Confirm delete"}
+                Archive
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setConfirmName("");
-                  setConfirmOpen(false);
-                }}
-                className="rounded-lg border border-border px-3 py-1 text-muted transition hover:bg-hover"
-                disabled={deletePending}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+            ) : (
+              <div className="w-full space-y-2 rounded-lg border-2 border-orange-500 bg-orange-50 p-3 text-xs">
+                <p className="font-medium text-orange-900">Archive this puppy?</p>
+                <p className="text-xs text-orange-700">It will be hidden from public catalog but preserved for historical records.</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleArchive}
+                    disabled={archivePending}
+                    className="rounded-lg bg-orange-500 px-3 py-1 text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {archivePending ? "Archiving..." : "Confirm"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmArchive(false)}
+                    className="rounded-lg border border-orange-300 px-3 py-1 text-orange-700 transition hover:bg-orange-100"
+                    disabled={archivePending}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </li>

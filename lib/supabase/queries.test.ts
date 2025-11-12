@@ -26,6 +26,7 @@ const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
   video_urls: [] as string[],
   paypal_enabled: true,
   stripe_payment_link: null,
+  is_archived: false,
   created_at: "",
   updated_at: "",
 };

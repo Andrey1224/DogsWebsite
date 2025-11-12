@@ -52,6 +52,7 @@ export type Puppy = {
   video_urls: string[] | null;
   paypal_enabled: boolean | null;
   stripe_payment_link: string | null;
+  is_archived: boolean | null;
   created_at: string | null;
   updated_at: string | null;
 };
