@@ -185,6 +185,7 @@ NEXT_PUBLIC_SITE_URL=
 - Initial schema: `supabase/migrations/20241007T000000Z_initial_schema.sql`
 - Parent metadata: `supabase/migrations/20250812T000000Z_add_parent_metadata_to_puppies.sql`
 - Breed field: `supabase/migrations/20250109T180000Z_add_breed_to_puppies.sql`
+- Soft delete: `supabase/migrations/20251111T223757Z_add_soft_delete_to_puppies.sql`
 - Sample data: `supabase/seeds/initial_seed.sql`
 - Client IP tracking: `supabase/migrations/20250216T120000Z_add_client_ip_to_inquiries.sql`
 

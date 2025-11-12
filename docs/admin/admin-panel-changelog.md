@@ -2,6 +2,7 @@
 
 | Date | Phase | Status | Notes |
 | --- | --- | --- | --- |
+| 2025-11-11 | Feature — Soft Delete (Archivation) | ✅ Complete | Added soft delete functionality with Active/Archived tabs, auto-archive on sold status, and reservation protection. |
 | 2025-11-09 | Feature — Breed Selection | ✅ Complete | Added breed field to puppies table with dropdown selection in admin form (French Bulldog / English Bulldog). |
 | 2025-01-09 | Bugfix — 1MB File Upload Limit | ✅ Complete | Eliminated Server Action payload limit by implementing client-side direct uploads to Supabase Storage using signed URLs. |
 | 2025-11-09 | Feature — Parent Metadata | ✅ Complete | Simplified parent selection workflow with direct text input and photo uploads (no parent records required). |
@@ -513,3 +514,207 @@ These items improve developer confidence and user experience but are not blockin
   2. Next.js 'use server' export rule violation
   3. React useEffect infinite loop on success
 - **Quality assessment**: Overall grade **A- (92/100)** - All MVP requirements met, security best practices implemented, critical bugs resolved, only minor enhancements deferred to Phase 2.
+
+---
+
+## Feature — Soft Delete (Archivation) (2025-11-11) ✅
+
+### Problem
+Hard deletion of puppies caused:
+- **FK constraint violations**: Inquiries and reservations reference puppies by ID
+- **Data loss**: Historical records (leads, payments) lost when puppy deleted
+- **No audit trail**: No way to recover accidentally deleted puppies
+- **Customer confusion**: Customers with reservations couldn't see puppy details
+
+### Solution
+Implemented soft delete (archivation) pattern:
+- Puppies marked as `is_archived = true` instead of being deleted
+- Archived puppies hidden from public catalog but preserved in database
+- Admin can restore archived puppies or permanently delete if needed
+- Auto-archive when status changes to "sold"
+
+### Implementation
+
+#### Database Changes
+**Migration**: `supabase/migrations/20251111T223757Z_add_soft_delete_to_puppies.sql`
+
+1. **Added Column**:
+   ```sql
+   ALTER TABLE puppies
+     ADD COLUMN is_archived boolean NOT NULL DEFAULT false;
+   ```
+
+2. **Created Indexes**:
+   ```sql
+   CREATE INDEX idx_puppies_is_archived ON puppies(is_archived);
+   CREATE INDEX idx_puppies_active_created 
+     ON puppies(is_archived, created_at DESC) 
+     WHERE is_archived = false;
+   ```
+
+3. **Auto-Archive Trigger**:
+   ```sql
+   CREATE OR REPLACE FUNCTION auto_archive_sold_puppies()
+   RETURNS TRIGGER AS $$
+   BEGIN
+     IF NEW.status = 'sold' AND (OLD.status IS NULL OR OLD.status != 'sold') THEN
+       NEW.is_archived = true;
+     END IF;
+     RETURN NEW;
+   END;
+   $$ LANGUAGE plpgsql;
+
+   CREATE TRIGGER trigger_auto_archive_sold
+     BEFORE UPDATE ON puppies
+     FOR EACH ROW
+     EXECUTE FUNCTION auto_archive_sold_puppies();
+   ```
+
+#### Backend Changes
+
+**Files Modified**:
+- `lib/supabase/types.ts` - Added `is_archived: boolean | null` to Puppy type
+- `lib/admin/puppies/schema.ts` - Added `archivePuppySchema` and `restorePuppySchema`
+- `lib/admin/puppies/queries.ts`:
+  - Modified `fetchAdminPuppies()` to accept `{ archived?: boolean }` option
+  - Added `hasActiveReservations(puppyId)` - checks for pending/paid reservations
+  - Added `archivePuppy(id)` - sets `is_archived = true`
+  - Added `restorePuppy(id)` - sets `is_archived = false`
+
+- `lib/supabase/queries.ts`:
+  - Updated `getPuppies()` to filter `.eq('is_archived', false)`
+  - Updated `getPuppyBySlug()` to filter `.eq('is_archived', false)`
+
+**Server Actions** (`app/admin/(dashboard)/puppies/actions.ts`):
+- `archivePuppyAction()`:
+  - Validates no active reservations exist
+  - Returns error if reservations found: "Cannot archive puppy with active reservations"
+  - Archives puppy and revalidates catalog
+  
+- `restorePuppyAction()`:
+  - Restores archived puppy
+  - Revalidates catalog
+
+- Modified `updatePuppyStatusAction()`:
+  - Returns `{ success: true, archived: true }` when status becomes "sold"
+  - Allows UI to show "auto-archived" notification
+
+#### Frontend Changes
+
+**Admin Page** (`app/admin/(dashboard)/puppies/page.tsx`):
+- Changed from Server Component rendering to URL-based tab state
+- Added `searchParams: Promise<{ view?: string }>` prop
+- Implemented Active/Archived tabs using `<Link>` with proper ARIA labels
+- Hide "Add puppy" button on Archived tab
+- Empty state messages vary by tab:
+  - Active: "No puppies yet"
+  - Archived: "No archived puppies"
+
+**Puppy Row** (`app/admin/(dashboard)/puppies/puppy-row.tsx`):
+- Added `archived: boolean` prop to determine UI state
+- Added state management:
+  - `archivePending` / `restorePending` transitions
+  - `confirmArchive` state for confirmation dialog
+
+**Active Puppy Actions**:
+- "Archive" button (orange border) with confirmation dialog
+- Confirmation shows:
+  - Warning: "It will be hidden from public catalog but preserved for historical records"
+  - Confirm/Cancel buttons
+  - Disabled if active reservations exist (error toast shown)
+
+**Archived Puppy Actions**:
+- "Restore" button - returns puppy to Active tab
+- "Delete Permanently" - same name confirmation as before
+- No "Open public page" link (archived puppies return 404)
+
+**Status Change UX**:
+- When status changed to "sold", toast shows:
+  - "Status updated to sold (puppy archived automatically)"
+- Puppy disappears from Active tab
+- Appears in Archived tab
+
+### Files Changed (11 total)
+- ✨ **NEW**: `supabase/migrations/20251111T223757Z_add_soft_delete_to_puppies.sql`
+- ✨ **NEW**: `SOFT_DELETE_DEPLOYMENT.md` (deployment instructions)
+- 📝 **Modified**: `lib/supabase/types.ts`
+- 📝 **Modified**: `lib/admin/puppies/schema.ts`
+- 📝 **Modified**: `lib/admin/puppies/queries.ts`
+- 📝 **Modified**: `lib/supabase/queries.ts`
+- 📝 **Modified**: `app/admin/(dashboard)/puppies/actions.ts`
+- 📝 **Modified**: `app/admin/(dashboard)/puppies/page.tsx`
+- 📝 **Modified**: `app/admin/(dashboard)/puppies/puppy-row.tsx`
+- 🧪 **Modified**: `lib/supabase/queries.test.ts`
+- 🧪 **Modified**: `app/puppies/page.test.tsx`
+
+### User Flow
+
+#### Archive Flow
+1. Admin clicks "Archive" on active puppy
+2. System checks for active reservations
+   - If found: Error toast "Cannot archive puppy with active reservations (pending/paid)"
+   - If clear: Show confirmation dialog
+3. Admin confirms
+4. Puppy archived, success toast, list refreshed
+5. Puppy moves to Archived tab
+
+#### Restore Flow
+1. Admin switches to Archived tab
+2. Admin clicks "Restore" on archived puppy
+3. Puppy restored, success toast, list refreshed
+4. Puppy moves back to Active tab
+
+#### Auto-Archive Flow
+1. Admin changes puppy status to "sold"
+2. Database trigger auto-sets `is_archived = true`
+3. Success toast: "Status updated to sold (puppy archived automatically)"
+4. Puppy immediately moves to Archived tab
+
+### Security & Validation
+- ✅ **Reservation Protection**: Cannot archive if `reservations.status IN ('pending', 'paid')`
+- ✅ **Public Catalog Protection**: All public queries filter `is_archived = false`
+- ✅ **Detail Page Protection**: Archived puppy URLs return 404
+- ✅ **Admin-Only**: Archive/Restore require admin session
+- ✅ **Type Safety**: Zod schemas validate all inputs
+
+### Testing
+- ✅ TypeScript compilation passes
+- ✅ ESLint passes (0 warnings)
+- ✅ Unit tests updated with `is_archived` field in mocks
+- ⚠️ **Build requires migration**: Must apply DB migration before `npm run build`
+
+### Deployment Requirements
+**CRITICAL**: Database migration must be applied before deploying code.
+
+See `SOFT_DELETE_DEPLOYMENT.md` for:
+- Step-by-step deployment instructions
+- SQL verification queries
+- Post-deployment test checklist
+- Rollback plan
+
+### Commits
+- `277ef8a` - feat: implement soft delete (archivation) for puppies
+
+### Benefits
+1. **Data Preservation**: Inquiries and reservations remain intact
+2. **Audit Trail**: Can review archived puppies history
+3. **Recovery**: Restore accidentally archived puppies
+4. **Clean Catalog**: Public site shows only active puppies
+5. **Analytics**: Can analyze archived puppies for trends
+
+### Future Enhancements (Not Implemented)
+- [ ] Add `archived_at` timestamp
+- [ ] Add `archived_by` user tracking
+- [ ] Bulk archive/restore actions
+- [ ] Archive statistics in dashboard
+- [ ] Export archived puppies report
+
+### Known Limitations
+1. **Slug Collision**: Archived puppies still occupy their slugs (unique constraint). Must restore or delete to reuse slug.
+2. **No Bulk Actions**: Must archive puppies one at a time
+3. **No Audit Log**: System doesn't track who/when archived
+
+### Performance Impact
+- **Positive**: Indexes on `is_archived` improve query performance
+- **Neutral**: Additional column adds ~1 byte per row (negligible)
+- **No Downtime**: Migration is non-blocking (adds nullable column then sets default)
