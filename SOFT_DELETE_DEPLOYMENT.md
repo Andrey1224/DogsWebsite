@@ -14,14 +14,21 @@ This deployment adds soft delete (archivation) functionality for puppies. Archiv
 
 ## Deployment Steps
 
-### 1. Apply Database Migration
+### 1. Apply Database Migrations
+
+**Important**: This feature requires TWO migrations to be applied in order:
+
+1. `20250218T120000Z_add_is_archived_flag.sql` - Adds the `is_archived` column
+2. `20251111T223757Z_add_soft_delete_to_puppies.sql` - Adds indexes and auto-archive trigger
 
 **Option A: Via Supabase Dashboard (Recommended)**
 
 1. Go to https://supabase.com/dashboard/project/YOUR_PROJECT/sql/new
-2. Copy and paste the contents of `supabase/migrations/20251111T223757Z_add_soft_delete_to_puppies.sql`
+2. **First**, copy and paste the contents of `supabase/migrations/20250218T120000Z_add_is_archived_flag.sql`
 3. Click "Run" to execute the migration
-4. Verify the migration succeeded
+4. **Then**, copy and paste the contents of `supabase/migrations/20251111T223757Z_add_soft_delete_to_puppies.sql`
+5. Click "Run" to execute the second migration
+6. Verify both migrations succeeded
 
 **Option B: Via Supabase CLI**
 
@@ -32,7 +39,7 @@ This deployment adds soft delete (archivation) functionality for puppies. Archiv
 # Link to your project (if not already linked)
 supabase link --project-ref YOUR_PROJECT_REF
 
-# Push the migration
+# Push both migrations (they will run in timestamp order)
 supabase db push
 ```
 
