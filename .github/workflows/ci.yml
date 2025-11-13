@@ -27,6 +27,10 @@ jobs:
       NEXT_PUBLIC_CRISP_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_CRISP_WEBSITE_ID }}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
       META_PIXEL_ID: ${{ secrets.META_PIXEL_ID }}
+      # Admin console creds (used by admin E2E)
+      ADMIN_LOGIN: owner@example.com
+      ADMIN_PASSWORD: supersecure
+      ADMIN_SESSION_SECRET: ci-admin-session-secret
       # Contact Information (required for env validation)
       NEXT_PUBLIC_CONTACT_PHONE: ${{ secrets.NEXT_PUBLIC_CONTACT_PHONE }}
       NEXT_PUBLIC_CONTACT_EMAIL: ${{ secrets.NEXT_PUBLIC_CONTACT_EMAIL }}
