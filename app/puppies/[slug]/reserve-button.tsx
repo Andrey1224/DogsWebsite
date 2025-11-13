@@ -14,16 +14,18 @@ import { createCheckoutSession } from './actions';
 
 interface ReserveButtonProps {
   puppySlug: string;
-  isAvailable: boolean;
   status: string;
+  canReserve: boolean;
+  reservationBlocked: boolean;
   depositAmount: number;
   paypalClientId: string | null;
 }
 
 export function ReserveButton({
   puppySlug,
-  isAvailable,
   status,
+  canReserve,
+  reservationBlocked,
   depositAmount,
   paypalClientId,
 }: ReserveButtonProps) {
@@ -72,8 +74,23 @@ export function ReserveButton({
     window.location.href = `/puppies/${puppySlug}/reserved?paypal=success`;
   }, [puppySlug]);
 
-  // Don't render if puppy is not available
-  if (!isAvailable) {
+  if (!canReserve) {
+    if (reservationBlocked) {
+      return (
+        <div className="space-y-3 rounded-3xl border border-border bg-card p-6">
+          <p className="text-sm font-semibold text-accent">Reservation in progress</p>
+          <p className="text-sm text-muted">
+            Someone is currently completing a deposit for this puppy. Please check back in about 15 minutes
+            or{" "}
+            <a href="/contact" className="font-semibold text-accent hover:underline">
+              contact us
+            </a>{" "}
+            if you&apos;d like to be notified when it becomes available again.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-3 rounded-3xl border border-border bg-card p-6">
         <p className="text-sm font-semibold text-muted">Status Update</p>
@@ -82,10 +99,10 @@ export function ReserveButton({
           not available for reservation.
         </p>
         <p className="text-sm text-muted">
-          Please check back later or{' '}
+          Please check back later or{" "}
           <a href="/contact" className="font-semibold text-accent hover:underline">
             contact us
-          </a>{' '}
+          </a>{" "}
           for more information.
         </p>
       </div>

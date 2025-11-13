@@ -182,6 +182,12 @@ For server-side conversion tracking:
 - Use sandbox buyer account from [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/accounts)
 - Credentials are auto-generated (usually `sb-xxxxx@personal.example.com`)
 
+### Scheduled Jobs
+
+- The endpoint `POST /api/cron/expire-reservations` runs the Supabase helper `expire_pending_reservations()` to cancel stale holds and flip puppies back to `available`.
+- Protect the route with a `CRON_SECRET` environment variable and configure your scheduler (e.g., Vercel Cron) to send `Authorization: Bearer <CRON_SECRET>`.
+- Recommended cadence: every 1–5 minutes to keep the 15-minute TTL tight.
+
 ### Webhook Security
 
 Both Stripe and PayPal webhooks implement signature verification to prevent unauthorized requests:
@@ -217,6 +223,72 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 - **Slack Alerts**: Rich formatting with error blocks and action buttons
 - **Throttling**: 15-minute cooldown per event type to prevent spam
 - **Non-blocking**: Alert delivery doesn't delay webhook responses
+
+### Reservation Expiry (Sprint 3 Phase 7)
+
+#### Overview
+Pending reservations automatically expire after 15 minutes, preventing indefinite holds on puppies during payment flows.
+
+#### Database Functions
+- **`create_reservation_transaction()`**: Creates reservations with automatic 15-minute expiry
+- **`expire_pending_reservations()`**: Cancels expired pending reservations and releases puppies
+- **`check_puppy_availability()`**: Validates availability respecting active (non-expired) reservations
+
+#### Cron Job Setup
+Configure a scheduled job to call the expiry endpoint every 5 minutes:
+
+**Vercel Cron** (recommended for Vercel deployments):
+1. Add `vercel.json` to project root:
+   ```json
+   {
+     "crons": [
+       {
+         "path": "/api/cron/expire-reservations",
+         "schedule": "*/5 * * * *"
+       }
+     ]
+   }
+   ```
+2. Set `CRON_SECRET` in Vercel environment variables (use a strong random string)
+3. Deploy to Vercel - cron jobs automatically run on production
+
+**Alternative: External Cron Service** (cron-job.org, EasyCron, etc.):
+1. Create a new cron job with target URL: `https://yourdomain.com/api/cron/expire-reservations`
+2. Set schedule: `*/5 * * * *` (every 5 minutes)
+3. Add HTTP header: `Authorization: Bearer YOUR_CRON_SECRET`
+4. Set request method: `POST`
+
+#### Environment Variables
+```bash
+# Required: Strong random string for cron authentication
+CRON_SECRET=your-strong-random-secret-here
+```
+
+#### Testing
+Manually trigger expiry endpoint:
+```bash
+curl -X POST https://yourdomain.com/api/cron/expire-reservations \
+  -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  -H "Content-Type: application/json"
+```
+
+Expected response:
+```json
+{
+  "expired": 0,
+  "timestamp": "2025-02-21T12:00:00.000Z"
+}
+```
+
+#### Migration
+Apply the reservation expiry migration using the staged approach:
+1. Navigate to Supabase SQL Editor
+2. Execute each stage file in `supabase/migrations/` sequentially:
+   - `stage1_create_reservation_transaction.sql` - Updates function with 15-min default + GRANT fix
+   - `stage2_check_puppy_availability.sql` - Updates availability checker
+   - `stage3_recreate_trigger.sql` - Refreshes trigger
+   - `stage4_expire_pending_reservations.sql` - Updates expiry function
+3. Run `verification_queries.sql` to validate migration success
 
 ## Theming & Tokens
 - Light theme palette: `--bg #F9FAFB`, `--bg-card #FFFFFF`, `--text #111111`, `--text-muted #555555`, `--accent #FFB84D`, gradient `--accent-2-start #FF4D79 → --accent-2-end #FF7FA5`, aux navy `--accent-aux #0D1A44`, footer base `#E5E7EB`, borders `rgba(0,0,0,0.08)`, hover tint `rgba(0,0,0,0.04)`.
