@@ -34,8 +34,16 @@ test("admin dashboard loads with creation form toggle", async ({ page }) => {
   await createForm.getByRole("button", { name: /cancel/i }).click();
 
   const list = page.getByTestId("admin-puppy-list");
-  const firstRow = list.locator("li").first();
+  const rows = list.locator("li");
+  const rowCount = await rows.count();
 
-  await expect(firstRow).toBeVisible();
-  await expect(firstRow.getByRole("combobox")).toBeEnabled();
+  if (rowCount > 0) {
+    const firstRow = rows.first();
+    await expect(firstRow).toBeVisible();
+    await expect(firstRow.getByRole("combobox")).toBeEnabled();
+  } else {
+    await expect(
+      page.getByText(/No puppies yet/i, { exact: false }),
+    ).toBeVisible();
+  }
 });

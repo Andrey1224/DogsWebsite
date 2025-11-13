@@ -31,7 +31,10 @@ export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
     : "";
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+    <article
+      className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+      data-testid="puppy-card"
+    >
       <div className="relative h-56 w-full overflow-hidden">
         <Image
           src={coverImage}

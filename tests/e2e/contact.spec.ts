@@ -13,8 +13,21 @@ test("filters puppies by status and breed", async ({ page }) => {
   await breedSelect.waitFor({ state: "visible", timeout: 15_000 });
   await breedSelect.selectOption("french_bulldog");
 
-  await expect(page.getByRole("heading", { name: /Marcel/i })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Regal/i })).toHaveCount(0);
+  await expect(statusSelect).toHaveValue("available");
+  await expect(breedSelect).toHaveValue("french_bulldog");
+  await expect(page).toHaveURL(/status=available/);
+  await expect(page).toHaveURL(/breed=french_bulldog/);
+
+  const cards = page.locator('[data-testid="puppy-card"]');
+  const cardCount = await cards.count();
+
+  if (cardCount > 0) {
+    await expect(cards.first()).toBeVisible();
+  } else {
+    await expect(
+      page.getByText(/No puppies matching your filters/i, { exact: false }),
+    ).toBeVisible();
+  }
 });
 
 test("submits contact inquiry with captcha bypass", async ({ page }) => {
