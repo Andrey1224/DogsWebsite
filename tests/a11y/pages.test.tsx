@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { act, type AnchorHTMLAttributes } from "react";
+import { act, type AnchorHTMLAttributes, type ReactElement } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { axe } from "../helpers/axe";
 
@@ -44,20 +44,16 @@ vi.mock("@/lib/supabase/queries", () => ({
   getAllBreeds: vi.fn(async () => []),
 }));
 
-type PageComponent = () => Promise<JSX.Element> | JSX.Element;
+type PageComponent = () => Promise<ReactElement> | ReactElement;
 
 async function renderPage(component: PageComponent) {
-  let renderResult: ReturnType<typeof render> | null = null;
+  let renderResult: ReturnType<typeof render>;
 
   await act(async () => {
     renderResult = render(await component());
   });
 
-  if (!renderResult) {
-    throw new Error("Failed to render page component");
-  }
-
-  return renderResult;
+  return renderResult!;
 }
 
 describe("Page Accessibility Tests", () => {
@@ -84,7 +80,7 @@ describe("Page Accessibility Tests", () => {
       const headings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
 
       // Should have at least one h1
-      const h1Elements = Array.from(headings).filter((h) => h.tagName === "H1");
+      const h1Elements = Array.from(headings).filter((h: Element) => h.tagName === "H1");
       expect(h1Elements.length).toBeGreaterThan(0);
     });
 
@@ -121,7 +117,7 @@ describe("Page Accessibility Tests", () => {
       const { container } = await renderPage(AboutPage);
       const images = container.querySelectorAll("img");
 
-      images.forEach((img) => {
+      images.forEach((img: HTMLImageElement) => {
         // All images should have alt text (or be decorative with empty alt)
         expect(img).toHaveAttribute("alt");
       });
@@ -146,7 +142,7 @@ describe("Page Accessibility Tests", () => {
       const { container } = await renderPage(ContactPage);
       const inputs = container.querySelectorAll("input, textarea");
 
-      inputs.forEach((input) => {
+      inputs.forEach((input: Element) => {
         // Skip hidden inputs
         if (input.getAttribute("type") === "hidden") return;
 
@@ -163,7 +159,7 @@ describe("Page Accessibility Tests", () => {
       const { container } = await renderPage(ContactPage);
       const buttons = container.querySelectorAll("button");
 
-      buttons.forEach((button) => {
+      buttons.forEach((button: HTMLButtonElement) => {
         // All buttons should have accessible text
         expect(button.textContent?.trim().length).toBeGreaterThan(0);
       });

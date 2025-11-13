@@ -169,17 +169,16 @@ export const getFilteredPuppies = cache(async (filter: PuppyFilter = {}) => {
 
 export const getPuppyBySlug = cache(async (slug: string) => {
   const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy | null>(async ({ useArchiveColumn }) => {
-    let query = getSupabaseClient()
+    let queryBuilder = getSupabaseClient()
       .from("puppies")
       .select("*")
-      .eq("slug", slug)
-      .maybeSingle();
+      .eq("slug", slug);
 
     if (useArchiveColumn) {
-      query = query.eq("is_archived", false);
+      queryBuilder = queryBuilder.eq("is_archived", false);
     }
 
-    const response = await query;
+    const response = await queryBuilder.maybeSingle();
     return {
       data: (response.data as Puppy | null) ?? null,
       error: response.error,

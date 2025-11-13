@@ -74,7 +74,7 @@ export async function fetchAdminPuppies(
 
       const response = await query;
       return {
-        data: (response.data ?? []) as AdminPuppyRecord[],
+        data: (response.data ?? []) as unknown as AdminPuppyRecord[],
         error: response.error,
       };
     },

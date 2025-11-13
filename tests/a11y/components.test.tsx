@@ -41,17 +41,13 @@ vi.mock("@/app/contact/actions", () => ({
 }));
 
 async function renderWithAct(ui: React.ReactElement) {
-  let renderResult: ReturnType<typeof render> | null = null;
+  let renderResult: ReturnType<typeof render>;
 
   await act(async () => {
     renderResult = render(ui);
   });
 
-  if (!renderResult) {
-    throw new Error("Failed to render component");
-  }
-
-  return renderResult;
+  return renderResult!;
 }
 
 describe("Component Accessibility Tests", () => {
@@ -138,7 +134,7 @@ describe("Component Accessibility Tests", () => {
       const links = container.querySelectorAll("a");
 
       // All links should have accessible text
-      links.forEach((link) => {
+      links.forEach((link: HTMLAnchorElement) => {
         expect(link.textContent?.trim().length).toBeGreaterThan(0);
       });
     });
@@ -164,7 +160,7 @@ describe("Component Accessibility Tests", () => {
       const buttons = container.querySelectorAll("a, button");
 
       // All interactive elements should have accessible names
-      buttons.forEach((button) => {
+      buttons.forEach((button: Element) => {
         const hasText = button.textContent?.trim().length;
         const hasAriaLabel = button.getAttribute("aria-label");
         const hasTitle = button.getAttribute("title");
@@ -179,7 +175,7 @@ describe("Component Accessibility Tests", () => {
       const { container } = await renderWithAct(<ContactBar />);
       const interactiveElements = container.querySelectorAll("a, button");
 
-      interactiveElements.forEach((element) => {
+      interactiveElements.forEach((element: Element) => {
         // Should be focusable or have tabindex
         const isFocusable =
           element.tagName === "A" ||
