@@ -6,6 +6,7 @@
 
 import { Resend } from "resend";
 import type { PaymentProvider } from "@/lib/analytics/types";
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "./delivery-control";
 
 // Create a factory function for better testability
 function createResendClient() {
@@ -264,6 +265,13 @@ function generateCustomerDepositEmail(data: DepositData): string {
  * Send deposit notification to owner
  */
 export async function sendOwnerDepositNotification(data: DepositData) {
+  if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Email] Skipping owner deposit notification (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
+    return { success: true, data: { skipped: true } };
+  }
+
   if (!process.env.RESEND_API_KEY) {
     console.warn("[Email] Resend API key not configured, skipping owner deposit notification");
     return { success: false, error: "Resend API key not configured" };
@@ -301,6 +309,13 @@ export async function sendOwnerDepositNotification(data: DepositData) {
  * Send deposit confirmation to customer
  */
 export async function sendCustomerDepositConfirmation(data: DepositData) {
+  if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Email] Skipping customer deposit confirmation (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
+    return { success: true, data: { skipped: true } };
+  }
+
   if (!process.env.RESEND_API_KEY) {
     console.warn("[Email] Resend API key not configured, skipping customer deposit confirmation");
     return { success: false, error: "Resend API key not configured" };

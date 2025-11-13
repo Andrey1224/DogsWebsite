@@ -23,14 +23,21 @@ vi.mock('resend', () => {
   };
 });
 
+const baseEnv = process.env;
+
 describe('Deposit Email Notifications', () => {
   beforeEach(() => {
+    process.env = {
+      ...baseEnv,
+      RESEND_DELIVERY_MODE: 'always',
+    };
     resetResendClient();
     vi.clearAllMocks();
   });
 
   afterEach(() => {
     resetResendClient();
+    process.env = baseEnv;
   });
 
   const mockDepositData = {

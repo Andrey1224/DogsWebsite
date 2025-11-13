@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { generateOwnerNotificationEmail } from "./simple-templates";
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "./delivery-control";
 import type { Inquiry } from "@/lib/supabase/types";
 
 // Create a factory function for better testability
@@ -32,6 +33,13 @@ interface OwnerNotificationParams {
 export async function sendOwnerNotification({
   inquiry,
 }: OwnerNotificationParams) {
+  if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Email] Skipping owner notification (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
+    return { success: true, data: { skipped: true } };
+  }
+
   try {
     const { data, error } = await getResendClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",

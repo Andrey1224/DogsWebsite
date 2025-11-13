@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react";
+import { act, type AnchorHTMLAttributes } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { axe } from "../helpers/axe";
 
@@ -21,6 +22,13 @@ vi.mock("next/navigation", () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 
+vi.mock("next/link", () => ({
+  __esModule: true,
+  default: ({ children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a {...props}>{children}</a>
+  ),
+}));
+
 vi.mock("@/components/analytics-provider", () => ({
   useAnalytics: () => ({
     trackEvent: vi.fn(),
@@ -36,6 +44,22 @@ vi.mock("@/lib/supabase/queries", () => ({
   getAllBreeds: vi.fn(async () => []),
 }));
 
+type PageComponent = () => Promise<JSX.Element> | JSX.Element;
+
+async function renderPage(component: PageComponent) {
+  let renderResult: ReturnType<typeof render> | null = null;
+
+  await act(async () => {
+    renderResult = render(await component());
+  });
+
+  if (!renderResult) {
+    throw new Error("Failed to render page component");
+  }
+
+  return renderResult;
+}
+
 describe("Page Accessibility Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,7 +68,7 @@ describe("Page Accessibility Tests", () => {
 
   describe("Home Page", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(await HomePage());
+      const { container } = await renderPage(HomePage);
       const results = await axe(container, {
         rules: {
           // Home page includes reviews section with star ratings
@@ -56,7 +80,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have proper heading hierarchy", async () => {
-      const { container } = render(await HomePage());
+      const { container } = await renderPage(HomePage);
       const headings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
 
       // Should have at least one h1
@@ -65,7 +89,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have accessible hero section", async () => {
-      const { container } = render(await HomePage());
+      const { container } = await renderPage(HomePage);
       const results = await axe(container, {
         rules: {
           // Home page includes reviews section with star ratings
@@ -80,13 +104,13 @@ describe("Page Accessibility Tests", () => {
 
   describe("About Page", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(await AboutPage());
+      const { container } = await renderPage(AboutPage);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should have proper heading structure", async () => {
-      const { container } = render(await AboutPage());
+      const { container } = await renderPage(AboutPage);
       const h1 = container.querySelector("h1");
 
       expect(h1).toBeInTheDocument();
@@ -94,7 +118,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have accessible images", async () => {
-      const { container } = render(await AboutPage());
+      const { container } = await renderPage(AboutPage);
       const images = container.querySelectorAll("img");
 
       images.forEach((img) => {
@@ -106,7 +130,7 @@ describe("Page Accessibility Tests", () => {
 
   describe("Contact Page", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(await ContactPage());
+      const { container } = await renderPage(ContactPage);
       const results = await axe(container, {
         rules: {
           // Contact page has form header which creates duplicate landmark
@@ -119,7 +143,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have accessible form labels", async () => {
-      const { container } = render(await ContactPage());
+      const { container } = await renderPage(ContactPage);
       const inputs = container.querySelectorAll("input, textarea");
 
       inputs.forEach((input) => {
@@ -136,7 +160,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have accessible buttons", async () => {
-      const { container } = render(await ContactPage());
+      const { container } = await renderPage(ContactPage);
       const buttons = container.querySelectorAll("button");
 
       buttons.forEach((button) => {
@@ -148,20 +172,20 @@ describe("Page Accessibility Tests", () => {
 
   describe("FAQ Page", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(await FAQPage());
+      const { container } = await renderPage(FAQPage);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should have proper heading hierarchy for questions", async () => {
-      const { container } = render(await FAQPage());
+      const { container } = await renderPage(FAQPage);
       const results = await axe(container);
 
       expect(results).toHaveNoViolations();
     });
 
     it("should have structured content", async () => {
-      const { container } = render(await FAQPage());
+      const { container } = await renderPage(FAQPage);
 
       // FAQ page should have multiple sections
       const sections = container.querySelectorAll("section, article, div[role='region']");
@@ -171,20 +195,20 @@ describe("Page Accessibility Tests", () => {
 
   describe("Policies Page", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(await PoliciesPage());
+      const { container } = await renderPage(PoliciesPage);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should have proper document structure", async () => {
-      const { container } = render(await PoliciesPage());
+      const { container } = await renderPage(PoliciesPage);
       const h1 = container.querySelector("h1");
 
       expect(h1).toBeInTheDocument();
     });
 
     it("should have readable content hierarchy", async () => {
-      const { container } = render(await PoliciesPage());
+      const { container } = await renderPage(PoliciesPage);
       const headings = container.querySelectorAll("h1, h2, h3");
 
       // Should have multiple headings for different policy sections
@@ -194,7 +218,7 @@ describe("Page Accessibility Tests", () => {
 
   describe("Reviews Page", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(await ReviewsPage());
+      const { container } = await renderPage(ReviewsPage);
       const results = await axe(container, {
         rules: {
           // Disable known issue with star ratings (needs role="img")
@@ -206,7 +230,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have accessible review cards", async () => {
-      const { container } = render(await ReviewsPage());
+      const { container } = await renderPage(ReviewsPage);
       const results = await axe(container, {
         rules: {
           // Disable known issue with star ratings (needs role="img")
@@ -218,7 +242,7 @@ describe("Page Accessibility Tests", () => {
     });
 
     it("should have proper heading structure", async () => {
-      const { container } = render(await ReviewsPage());
+      const { container } = await renderPage(ReviewsPage);
       const h1 = container.querySelector("h1");
 
       expect(h1).toBeInTheDocument();
@@ -238,7 +262,7 @@ describe("Page Accessibility Tests", () => {
     pages.forEach(({ name, component }) => {
       describe(`${name} Page`, () => {
         it("should have proper semantic structure", async () => {
-          const { container } = render(await component());
+          const { container } = await renderPage(component);
 
           // Pages should have meaningful content structure
           const headings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
@@ -248,7 +272,7 @@ describe("Page Accessibility Tests", () => {
         it("should not have critical accessibility violations", async () => {
           // Test page content without layout wrapper
           // (main, html lang are set at layout level in production)
-          const { container } = render(await component());
+          const { container } = await renderPage(component);
           const results = await axe(container, {
             rules: {
               // Disable landmark rules for isolated page components
@@ -273,7 +297,7 @@ describe("Page Accessibility Tests", () => {
         });
 
         it("should have sufficient color contrast", async () => {
-          const { container } = render(await component());
+          const { container } = await renderPage(component);
           const results = await axe(container, {
             rules: {
               "color-contrast": { enabled: true },

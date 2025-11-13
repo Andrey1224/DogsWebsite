@@ -4,6 +4,10 @@ import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { getAdminSupabaseClient } from "@/lib/admin/supabase";
 import type { Puppy } from "@/lib/supabase/types";
 import {
+  isArchiveColumnMissingError,
+  runArchiveAwareQuery,
+} from "@/lib/supabase/archive-support";
+import {
   CreatePuppyInput,
   deletePuppySchema,
   priceUsdSchema,
@@ -13,8 +17,14 @@ import {
   restorePuppySchema,
 } from "./schema";
 
-const ADMIN_PUPPY_FIELDS =
-  "id,name,slug,status,price_usd,birth_date,litter_id,is_archived,created_at,updated_at";
+const ADMIN_PUPPY_BASE_FIELDS =
+  "id,name,slug,status,price_usd,birth_date,litter_id,created_at,updated_at";
+
+function getAdminPuppyFields(includeArchiveColumn: boolean) {
+  return includeArchiveColumn
+    ? `${ADMIN_PUPPY_BASE_FIELDS},is_archived`
+    : ADMIN_PUPPY_BASE_FIELDS;
+}
 
 export type AdminPuppyRecord = Pick<
   Puppy,
@@ -46,37 +56,82 @@ function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]
 }
 
 export async function fetchAdminPuppies(
-  options: { archived?: boolean } = {}
+  options: { archived?: boolean } = {},
 ): Promise<AdminPuppyRecord[]> {
   const supabase = getAdminSupabaseClient();
   const archived = options.archived ?? false;
 
-  const { data, error } = await supabase
-    .from("puppies")
-    .select(ADMIN_PUPPY_FIELDS)
-    .eq("is_archived", archived)
-    .order("created_at", { ascending: false });
+  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<AdminPuppyRecord[]>(
+    async ({ useArchiveColumn }) => {
+      let query = supabase
+        .from("puppies")
+        .select(getAdminPuppyFields(useArchiveColumn))
+        .order("created_at", { ascending: false });
+
+      if (useArchiveColumn) {
+        query = query.eq("is_archived", archived);
+      }
+
+      const response = await query;
+      return {
+        data: (response.data ?? []) as AdminPuppyRecord[],
+        error: response.error,
+      };
+    },
+  );
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []) as AdminPuppyRecord[];
+  const rows = (data ?? []) as AdminPuppyRecord[];
+
+  if (usedArchiveColumn) {
+    return rows;
+  }
+
+  // If the column is missing, we cannot represent archived vs active records.
+  if (archived) {
+    return [];
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    is_archived: false,
+  }));
 }
 
-export async function insertAdminPuppy(input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[] }): Promise<AdminPuppyRecord> {
+export async function insertAdminPuppy(
+  input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[] },
+): Promise<AdminPuppyRecord> {
   const supabase = getAdminSupabaseClient();
-  const { data, error } = await supabase
-    .from("puppies")
-    .insert(mapCreatePayload(input))
-    .select(ADMIN_PUPPY_FIELDS)
-    .single();
+  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<AdminPuppyRecord>(
+    async ({ useArchiveColumn }) => {
+      const response = await supabase
+        .from("puppies")
+        .insert(mapCreatePayload(input))
+        .select(getAdminPuppyFields(useArchiveColumn))
+        .single();
 
-  if (error) {
+      return {
+        data: (response.data as AdminPuppyRecord | null) ?? null,
+        error: response.error,
+      };
+    },
+  );
+
+  if (error || !data) {
     throw error;
   }
 
-  return data as AdminPuppyRecord;
+  if (usedArchiveColumn) {
+    return data as AdminPuppyRecord;
+  }
+
+  return {
+    ...(data as AdminPuppyRecord),
+    is_archived: false,
+  };
 }
 
 export async function updateAdminPuppyStatus(input: { id: string; status: AdminPuppyRecord["status"] }) {
@@ -259,6 +314,11 @@ export async function archivePuppy(id: string): Promise<void> {
     .eq("id", payload.id);
 
   if (error) {
+    if (isArchiveColumnMissingError(error)) {
+      throw new Error(
+        "Cannot archive puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.",
+      );
+    }
     throw error;
   }
 }
@@ -279,6 +339,11 @@ export async function restorePuppy(id: string): Promise<void> {
     .eq("id", payload.id);
 
   if (error) {
+    if (isArchiveColumnMissingError(error)) {
+      throw new Error(
+        "Cannot restore puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.",
+      );
+    }
     throw error;
   }
 }

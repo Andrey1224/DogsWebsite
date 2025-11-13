@@ -8,6 +8,7 @@
  */
 
 import { Resend } from 'resend';
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from './delivery-control';
 
 // Create a factory function for better testability
 function createResendClient() {
@@ -178,6 +179,13 @@ function generateAsyncPaymentFailedEmail(data: AsyncPaymentFailedData): string {
  * Send async payment failed notification to customer
  */
 export async function sendAsyncPaymentFailedEmail(data: AsyncPaymentFailedData) {
+  if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Email] Skipping async payment failed notification (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
+    return { success: true, data: { skipped: true } };
+  }
+
   if (!process.env.RESEND_API_KEY) {
     console.warn(
       '[Email] Resend API key not configured, skipping async payment failed notification'

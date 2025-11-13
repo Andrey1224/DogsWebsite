@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { createServiceRoleClient } from "./client";
+import { runArchiveAwareQuery } from "./archive-support";
 import type { Litter, Parent, Puppy, PuppyStatus, PuppyWithRelations } from "./types";
 
 let cachedClient: ReturnType<typeof createServiceRoleClient> | null = null;
@@ -19,18 +20,61 @@ export type PuppyFilter = {
   breed?: "french_bulldog" | "english_bulldog" | "all";
 };
 
+function normalizeArchiveFlag<T extends { is_archived?: boolean | null }>(
+  records: T[],
+  usedArchiveColumn: boolean,
+): T[] {
+  if (usedArchiveColumn) {
+    return records;
+  }
+
+  return records.map((record) => ({
+    ...record,
+    is_archived: record.is_archived ?? false,
+  }));
+}
+
+function normalizeArchiveFlagForRecord<T extends { is_archived?: boolean | null }>(
+  record: T | null,
+  usedArchiveColumn: boolean,
+): T | null {
+  if (!record) {
+    return null;
+  }
+
+  if (usedArchiveColumn) {
+    return record;
+  }
+
+  return {
+    ...record,
+    is_archived: record.is_archived ?? false,
+  };
+}
+
 export const getPuppies = cache(async () => {
-  const { data, error } = await getSupabaseClient()
-    .from("puppies")
-    .select("*")
-    .eq("is_archived", false)
-    .order("created_at", { ascending: false });
+  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy[]>(async ({ useArchiveColumn }) => {
+    let query = getSupabaseClient()
+      .from("puppies")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (useArchiveColumn) {
+      query = query.eq("is_archived", false);
+    }
+
+    const response = await query;
+    return {
+      data: (response.data ?? []) as Puppy[],
+      error: response.error,
+    };
+  });
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []) as Puppy[];
+  return normalizeArchiveFlag((data ?? []) as Puppy[], usedArchiveColumn);
 });
 
 export const getParents = cache(async () => {
@@ -124,43 +168,56 @@ export const getFilteredPuppies = cache(async (filter: PuppyFilter = {}) => {
 });
 
 export const getPuppyBySlug = cache(async (slug: string) => {
-  const { data, error } = await getSupabaseClient()
-    .from("puppies")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_archived", false)
-    .maybeSingle();
+  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy | null>(async ({ useArchiveColumn }) => {
+    let query = getSupabaseClient()
+      .from("puppies")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (useArchiveColumn) {
+      query = query.eq("is_archived", false);
+    }
+
+    const response = await query;
+    return {
+      data: (response.data as Puppy | null) ?? null,
+      error: response.error,
+    };
+  });
 
   if (error) {
     throw error;
   }
 
-  if (!data) {
+  const record = normalizeArchiveFlagForRecord((data as Puppy | null) ?? null, usedArchiveColumn);
+
+  if (!record) {
     return null;
   }
 
   const litters = await getLitters();
-  const litter = data.litter_id ? litters.find((l) => l.id === data.litter_id) ?? null : null;
+  const litter = record.litter_id ? litters.find((l) => l.id === record.litter_id) ?? null : null;
 
   const parentsList = await getParents();
 
   // Get parents directly from puppy's sire_id/dam_id (new approach)
   // Falls back to litter parents if direct IDs are not set (backward compatibility)
   const parents = {
-    sire: data.sire_id
-      ? parentsList.find((p) => p.id === data.sire_id) ?? null
+    sire: record.sire_id
+      ? parentsList.find((p) => p.id === record.sire_id) ?? null
       : litter?.sire_id
         ? parentsList.find((p) => p.id === litter.sire_id) ?? null
         : null,
-    dam: data.dam_id
-      ? parentsList.find((p) => p.id === data.dam_id) ?? null
+    dam: record.dam_id
+      ? parentsList.find((p) => p.id === record.dam_id) ?? null
       : litter?.dam_id
         ? parentsList.find((p) => p.id === litter.dam_id) ?? null
         : null,
   };
 
   return {
-    ...(data as Puppy),
+    ...(record as Puppy),
     litter,
     parents,
   } as PuppyWithRelations;

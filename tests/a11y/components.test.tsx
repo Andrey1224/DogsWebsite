@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react";
+import { act, type AnchorHTMLAttributes } from "react";
 import { describe, it, vi, beforeEach } from "vitest";
 import { axe, expectNoA11yViolations } from "../helpers/axe";
 
@@ -22,6 +23,13 @@ vi.mock("@/components/analytics-provider", () => ({
   }),
 }));
 
+vi.mock("next/link", () => ({
+  __esModule: true,
+  default: ({ children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a {...props}>{children}</a>
+  ),
+}));
+
 vi.mock("@hcaptcha/react-hcaptcha", () => ({
   default: () => <div data-testid="hcaptcha-widget">Mock HCaptcha</div>,
 }));
@@ -32,6 +40,20 @@ vi.mock("@/app/contact/actions", () => ({
   })),
 }));
 
+async function renderWithAct(ui: React.ReactElement) {
+  let renderResult: ReturnType<typeof render> | null = null;
+
+  await act(async () => {
+    renderResult = render(ui);
+  });
+
+  if (!renderResult) {
+    throw new Error("Failed to render component");
+  }
+
+  return renderResult;
+}
+
 describe("Component Accessibility Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -40,13 +62,13 @@ describe("Component Accessibility Tests", () => {
 
   describe("ContactForm", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(<ContactForm />);
+      const { container } = await renderWithAct(<ContactForm />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should have accessible form with heading", async () => {
-      const { container } = render(
+      const { container } = await renderWithAct(
         <ContactForm
           heading={{
             title: "Contact Us",
@@ -59,13 +81,13 @@ describe("Component Accessibility Tests", () => {
     });
 
     it("should have accessible form without heading", async () => {
-      const { container } = render(<ContactForm />);
+      const { container } = await renderWithAct(<ContactForm />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should maintain accessibility with context", async () => {
-      const { container } = render(
+      const { container } = await renderWithAct(
         <ContactForm
           context={{
             puppyId: "123",
@@ -80,13 +102,13 @@ describe("Component Accessibility Tests", () => {
 
   describe("SiteHeader", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(<SiteHeader />);
+      const { container } = await renderWithAct(<SiteHeader />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should have accessible navigation", async () => {
-      const { container } = render(<SiteHeader />);
+      const { container } = await renderWithAct(<SiteHeader />);
       const nav = container.querySelector("nav");
 
       expect(nav).toBeInTheDocument();
@@ -94,7 +116,7 @@ describe("Component Accessibility Tests", () => {
     });
 
     it("should have accessible logo/home link", async () => {
-      const { container } = render(<SiteHeader />);
+      const { container } = await renderWithAct(<SiteHeader />);
       const links = container.querySelectorAll("a");
 
       // Should have at least one link (home)
@@ -104,15 +126,15 @@ describe("Component Accessibility Tests", () => {
   });
 
   describe("SiteFooter", () => {
-    it("should have proper semantic structure", () => {
-      const { container } = render(<SiteFooter />);
+    it("should have proper semantic structure", async () => {
+      const { container } = await renderWithAct(<SiteFooter />);
       const footer = container.querySelector("footer");
 
       expect(footer).toBeInTheDocument();
     });
 
-    it("should have accessible links", () => {
-      const { container } = render(<SiteFooter />);
+    it("should have accessible links", async () => {
+      const { container } = await renderWithAct(<SiteFooter />);
       const links = container.querySelectorAll("a");
 
       // All links should have accessible text
@@ -121,8 +143,8 @@ describe("Component Accessibility Tests", () => {
       });
     });
 
-    it("should have structured content", () => {
-      const { container } = render(<SiteFooter />);
+    it("should have structured content", async () => {
+      const { container } = await renderWithAct(<SiteFooter />);
 
       // Footer should have navigation or content sections
       const sections = container.querySelectorAll("nav, div, section");
@@ -132,13 +154,13 @@ describe("Component Accessibility Tests", () => {
 
   describe("ContactBar", () => {
     it("should not have accessibility violations", async () => {
-      const { container } = render(<ContactBar />);
+      const { container } = await renderWithAct(<ContactBar />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it("should have accessible contact buttons", async () => {
-      const { container } = render(<ContactBar />);
+      const { container } = await renderWithAct(<ContactBar />);
       const buttons = container.querySelectorAll("a, button");
 
       // All interactive elements should have accessible names
@@ -154,7 +176,7 @@ describe("Component Accessibility Tests", () => {
     });
 
     it("should be keyboard accessible", async () => {
-      const { container } = render(<ContactBar />);
+      const { container } = await renderWithAct(<ContactBar />);
       const interactiveElements = container.querySelectorAll("a, button");
 
       interactiveElements.forEach((element) => {
@@ -173,7 +195,7 @@ describe("Component Accessibility Tests", () => {
 
   describe("Theme Components", () => {
     it("should have accessible theme toggle if present", async () => {
-      const { container } = render(<SiteHeader />);
+      const { container } = await renderWithAct(<SiteHeader />);
 
       // Look for theme toggle button
       const themeButton = container.querySelector("button[aria-label*='theme' i]");
@@ -202,7 +224,7 @@ describe("Component Accessibility Tests", () => {
         },
       });
 
-      const { container } = render(<ContactForm />);
+      const { container } = await renderWithAct(<ContactForm />);
 
       // Even with errors, should maintain accessibility
       const results = await axe(container, {
@@ -224,7 +246,7 @@ describe("Component Accessibility Tests", () => {
         message: "Thank you!",
       });
 
-      const { container } = render(<ContactForm />);
+      const { container } = await renderWithAct(<ContactForm />);
 
       const results = await axe(container, {
         rules: {

@@ -29,6 +29,7 @@ describe("Email Notifications", () => {
       RESEND_FROM_EMAIL: "test@example.com",
       OWNER_EMAIL: "owner@example.com",
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      RESEND_DELIVERY_MODE: "always",
     };
 
     // Reset cached clients

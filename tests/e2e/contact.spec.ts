@@ -3,9 +3,15 @@ import { randomUUID } from "node:crypto";
 
 test("filters puppies by status and breed", async ({ page }) => {
   await page.goto("/puppies");
+  await page.waitForLoadState("domcontentloaded");
 
-  await page.getByLabel(/Status/i).selectOption("available");
-  await page.getByLabel(/Breed/i).selectOption("french_bulldog");
+  const statusSelect = page.getByLabel(/Status/i);
+  await statusSelect.waitFor({ state: "visible", timeout: 15_000 });
+  await statusSelect.selectOption("available");
+
+  const breedSelect = page.getByLabel(/Breed/i);
+  await breedSelect.waitFor({ state: "visible", timeout: 15_000 });
+  await breedSelect.selectOption("french_bulldog");
 
   await expect(page.getByRole("heading", { name: /Marcel/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Regal/i })).toHaveCount(0);
@@ -13,6 +19,7 @@ test("filters puppies by status and breed", async ({ page }) => {
 
 test("submits contact inquiry with captcha bypass", async ({ page }) => {
   await page.goto("/contact");
+  await page.waitForLoadState("domcontentloaded");
 
   const accept = page.getByRole("button", { name: /accept & continue/i });
   if (await accept.isVisible()) {

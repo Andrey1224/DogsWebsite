@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { generateCustomerConfirmationEmail } from "./simple-templates";
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "./delivery-control";
 
 // Create a factory function for better testability
 function createResendClient() {
@@ -24,6 +25,13 @@ export async function sendCustomerConfirmation({
   name,
   email,
 }: CustomerConfirmationParams) {
+  if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Email] Skipping customer confirmation (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
+    return { success: true, data: { skipped: true } };
+  }
+
   try {
     const { data, error } = await getResendClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",

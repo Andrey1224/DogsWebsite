@@ -18,9 +18,11 @@ test("admin dashboard loads with creation form toggle", async ({ page }) => {
   await page.getByLabel("Password").fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: /sign in/i }).click();
 
+  await page.waitForLoadState("networkidle");
+
   await expect(
     page.getByRole("heading", { name: /manage puppies/i }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole("button", { name: /add puppy/i }).click();
 

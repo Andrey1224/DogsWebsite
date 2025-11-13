@@ -55,6 +55,10 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       description: "Owner email for notifications"
     },
+    RESEND_DELIVERY_MODE: {
+      pattern: /^(auto|always|never)$/i,
+      description: "Email delivery mode (auto=prod only, always, never)"
+    },
     NEXT_PUBLIC_GA_MEASUREMENT_ID: {
       pattern: /^G-[A-Z0-9]+$/,
       description: "Google Analytics 4 measurement ID"

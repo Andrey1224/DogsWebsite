@@ -12,6 +12,7 @@
  */
 
 import { Resend } from "resend";
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "@/lib/emails/delivery-control";
 
 // Alert configuration
 const ALERT_CONFIG = {
@@ -58,8 +59,16 @@ export async function alertWebhookError(context: WebhookErrorContext): Promise<v
   // Send notifications in parallel
   const notifications = [];
 
-  if (process.env.RESEND_API_KEY && ALERT_CONFIG.ALERT_EMAILS.length > 0) {
+  if (
+    process.env.RESEND_API_KEY &&
+    ALERT_CONFIG.ALERT_EMAILS.length > 0 &&
+    shouldSendTransactionalEmails()
+  ) {
     notifications.push(sendEmailAlert(context));
+  } else if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Webhook Alert] Skipping email alert (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
   }
 
   if (ALERT_CONFIG.SLACK_WEBHOOK_URL) {
@@ -84,6 +93,13 @@ export async function alertWebhookError(context: WebhookErrorContext): Promise<v
  * Send email alert for webhook error
  */
 async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
+  if (!shouldSendTransactionalEmails()) {
+    console.info(
+      `[Webhook Alert] Skipping email alert (delivery disabled: ${getEmailDeliveryReason()})`,
+    );
+    return;
+  }
+
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const subject = `🚨 Webhook Error: ${context.provider.toUpperCase()} - ${context.eventType}`;
