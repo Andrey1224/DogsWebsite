@@ -8,7 +8,15 @@
 - [`AGENTS.md`](../AGENTS.md) - Contributor practices and coding guidelines
 - [`Spec1.md`](../Spec1.md) - Product requirements document (PRD)
 - [`SPRINT_PLAN.md`](../SPRINT_PLAN.md) - Master execution roadmap
-- [`MIGRATIONS.md`](../MIGRATIONS.md) - Database migration tracking
+- [`GEMINI.md`](../GEMINI.md) - Google Gemini AI context and project overview
+
+---
+
+## Database (`docs/database/`)
+
+**Migration Management:**
+- [`migrations.md`](database/migrations.md) - Database migration tracking and status
+- [`migration-guide.md`](database/migration-guide.md) - Step-by-step migration procedures
 
 ---
 
@@ -27,6 +35,13 @@
 ## Payments (`docs/payments/`)
 
 - [`payments-architecture.md`](payments/payments-architecture.md) - Stripe + PayPal integration architecture
+
+---
+
+## Deployment (`docs/deployment/`)
+
+**Feature Deployment Guides:**
+- [`soft-delete-feature.md`](deployment/soft-delete-feature.md) - Soft delete (archiving) deployment instructions
 
 ---
 
@@ -57,6 +72,9 @@ Currently empty. Future home for:
 - `EBL_Admin_Panel_PLAN.md` - Original admin panel implementation plan
 - `PARENT_SELECTION_REPORT.md` - Parent dropdown → direct selection refactor
 - `PARENT_SELECTION_IMPLEMENTATION_REPORT.md` - Metadata fields implementation
+
+**Incident Reports (`docs/archive/incidents/`):**
+- [`2025-02-urgent-migration.md`](archive/incidents/2025-02-urgent-migration.md) - Emergency migration fix documentation
 
 These files are kept for historical reference but superseded by current ADRs.
 
