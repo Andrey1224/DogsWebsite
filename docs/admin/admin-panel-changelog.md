@@ -2,6 +2,7 @@
 
 | Date | Phase | Status | Notes |
 | --- | --- | --- | --- |
+| 2025-11-14 | Feature — Puppy Gallery Uploads | ✅ Complete | Puppy creation form now supports uploading up to three gallery photos with client-side Supabase storage + schema validation. |
 | 2025-11-13 | Feature — Reservation Expiry Enforcement | ✅ Complete | Added 15-minute TTL for pending reservations with automatic cleanup, UI blocking, and admin panel badges for active reservations. |
 | 2025-11-11 | Feature — Soft Delete (Archivation) | ✅ Complete | Added soft delete functionality with Active/Archived tabs, auto-archive on sold status, and reservation protection. |
 | 2025-11-09 | Feature — Breed Selection | ✅ Complete | Added breed field to puppies table with dropdown selection in admin form (French Bulldog / English Bulldog). |

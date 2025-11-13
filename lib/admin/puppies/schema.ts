@@ -113,6 +113,11 @@ const breedSchema = z.preprocess((value) => {
   return stringValue.length === 0 ? undefined : stringValue;
 }, z.enum(["french_bulldog", "english_bulldog"]).optional());
 
+const photoUrlsSchema = z
+  .array(z.string().url("Photo URL must be a valid URL"))
+  .max(3, "Select up to 3 photos")
+  .optional();
+
 export const createPuppySchema = z.object({
   name: nameSchema,
   status: adminPuppyStatusSchema.default("available"),
@@ -128,6 +133,7 @@ export const createPuppySchema = z.object({
   color: colorSchema,
   weightOz: weightOzSchema,
   description: descriptionSchema,
+  photoUrls: photoUrlsSchema,
 });
 
 export const updatePuppyStatusSchema = z.object({

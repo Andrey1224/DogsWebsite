@@ -65,6 +65,10 @@ export async function createPuppyAction(_: CreatePuppyState, formData: FormData)
   try {
     await requireAdminSession();
 
+    const photoUrls = formData
+      .getAll("photoUrls")
+      .filter((url): url is string => typeof url === "string" && url.length > 0);
+
     const submission = {
       name: formData.get("name"),
       status: formData.get("status") ?? "available",
@@ -80,6 +84,7 @@ export async function createPuppyAction(_: CreatePuppyState, formData: FormData)
       color: formData.get("color"),
       weightOz: formData.get("weightOz"),
       description: formData.get("description"),
+      photoUrls: photoUrls.length > 0 ? photoUrls : undefined,
     };
 
     const parsed = createPuppySchema.safeParse(submission);
@@ -119,6 +124,7 @@ export async function createPuppyAction(_: CreatePuppyState, formData: FormData)
       slug,
       sirePhotoUrls: sirePhotoUrls.length > 0 ? sirePhotoUrls : undefined,
       damPhotoUrls: damPhotoUrls.length > 0 ? damPhotoUrls : undefined,
+      photoUrls: payload.photoUrls && payload.photoUrls.length > 0 ? payload.photoUrls : undefined,
     });
 
     revalidateCatalog(slug);

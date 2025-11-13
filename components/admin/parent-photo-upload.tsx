@@ -4,7 +4,23 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 interface ParentPhotoUploadProps {
-  parentType: "sire" | "dam";
+  parentType?: "sire" | "dam";
+  /**
+   * Override the default label text (otherwise derived from parentType)
+   */
+  label?: string;
+  /**
+   * Override the hidden field / input id (otherwise derived from parentType)
+   */
+  inputName?: string;
+  /**
+   * Helper copy displayed beneath the uploader
+   */
+  helpText?: string;
+  /**
+   * Optional max file count (defaults to 3)
+   */
+  maxFiles?: number;
   disabled?: boolean;
   /**
    * Callback when files are selected and ready to upload
@@ -27,6 +43,10 @@ interface ParentPhotoUploadProps {
 
 export function ParentPhotoUpload({
   parentType,
+  label,
+  inputName,
+  helpText,
+  maxFiles = 3,
   disabled,
   onFilesSelected,
   uploadedUrls = [],
@@ -37,8 +57,14 @@ export function ParentPhotoUpload({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  const label = parentType === "sire" ? "Sire Photos" : "Dam Photos";
-  const inputName = parentType === "sire" ? "sirePhotoUrls" : "damPhotoUrls";
+  const fallbackLabel =
+    parentType === "dam" ? "Dam Photos" : parentType === "sire" ? "Sire Photos" : "Photos";
+  const resolvedLabel = label ?? fallbackLabel;
+  const resolvedInputName =
+    inputName ??
+    (parentType === "dam" ? "damPhotoUrls" : parentType === "sire" ? "sirePhotoUrls" : "photoUrls");
+  const resolvedHelpText =
+    helpText ?? "Accepted formats: JPG, PNG, WebP. Maximum 3 photos.";
 
   // Clean up preview URLs on unmount
   useEffect(() => {
@@ -51,7 +77,7 @@ export function ParentPhotoUpload({
     const files = Array.from(e.target.files ?? []);
 
     // Limit to 3 files
-    const limitedFiles = files.slice(0, 3);
+    const limitedFiles = files.slice(0, maxFiles);
 
     // Create preview URLs
     const newPreviews = limitedFiles.map((file) => URL.createObjectURL(file));
@@ -92,14 +118,14 @@ export function ParentPhotoUpload({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={`${inputName}-file`} className="block text-sm font-medium">
-        {label} (up to 3)
+      <label htmlFor={`${resolvedInputName}-file`} className="block text-sm font-medium">
+        {resolvedLabel} {maxFiles ? `(up to ${maxFiles})` : null}
       </label>
 
       <input
         ref={fileInputRef}
         type="file"
-        id={`${inputName}-file`}
+        id={`${resolvedInputName}-file`}
         accept="image/*"
         multiple
         disabled={disabled || isUploading}
@@ -123,7 +149,7 @@ export function ParentPhotoUpload({
             <div key={imageUrl} className="relative">
               <Image
                 src={imageUrl}
-                alt={`${label} ${index + 1}`}
+                alt={`${resolvedLabel} ${index + 1}`}
                 width={80}
                 height={80}
                 className="w-20 h-20 object-cover rounded border border-border"
@@ -151,7 +177,7 @@ export function ParentPhotoUpload({
       )}
 
       <p className="text-xs text-muted">
-        Accepted formats: JPG, PNG, WebP. Maximum 3 photos.
+        {resolvedHelpText}
       </p>
     </div>
   );

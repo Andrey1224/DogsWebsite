@@ -34,6 +34,8 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const [damFiles, setDamFiles] = useState<File[]>([]);
   const [sirePhotoUrls, setSirePhotoUrls] = useState<string[]>([]);
   const [damPhotoUrls, setDamPhotoUrls] = useState<string[]>([]);
+  const [puppyFiles, setPuppyFiles] = useState<File[]>([]);
+  const [puppyPhotoUrls, setPuppyPhotoUrls] = useState<string[]>([]);
 
   const [state, formAction, pending] = useActionState<CreatePuppyState, FormData>(createPuppyAction, initialCreatePuppyState);
 
@@ -50,6 +52,8 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       setDamFiles([]);
       setSirePhotoUrls([]);
       setDamPhotoUrls([]);
+      setPuppyFiles([]);
+      setPuppyPhotoUrls([]);
       setIsOpen(false);
       router.refresh();
     } else if (state.status === "error" && state.formError) {
@@ -81,6 +85,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
 
       let nextSirePhotoUrls = sirePhotoUrls;
       let nextDamPhotoUrls = damPhotoUrls;
+      let nextPuppyPhotoUrls = puppyPhotoUrls;
 
       // Upload sire photos if any
       if (sireFiles.length > 0) {
@@ -96,6 +101,13 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
         const urls = await uploadFiles(damFiles, `${tempId}/dam`);
         nextDamPhotoUrls = urls;
         setDamPhotoUrls(urls);
+      }
+
+      if (puppyFiles.length > 0) {
+        toast.info("Uploading puppy photos...");
+        const urls = await uploadFiles(puppyFiles, `${tempId}/gallery`);
+        nextPuppyPhotoUrls = urls;
+        setPuppyPhotoUrls(urls);
       }
 
       // Remove any file inputs before submitting to server action
@@ -117,6 +129,11 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       filteredFormData.delete("damPhotoUrls");
       nextDamPhotoUrls.forEach((url) => {
         filteredFormData.append("damPhotoUrls", url);
+      });
+
+      filteredFormData.delete("photoUrls");
+      nextPuppyPhotoUrls.forEach((url) => {
+        filteredFormData.append("photoUrls", url);
       });
 
       formAction(filteredFormData);
@@ -327,6 +344,19 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
             {fieldError("damName") ? <p className="text-xs text-red-500">{fieldError("damName")}</p> : null}
+          </div>
+
+          <div className="col-span-full">
+            <ParentPhotoUpload
+              label="Puppy gallery photos"
+              inputName="photoUrls"
+              helpText="Displayed on the public puppy gallery. Up to 3 images."
+              disabled={pending || isUploading}
+              onFilesSelected={setPuppyFiles}
+              uploadedUrls={puppyPhotoUrls}
+              isUploading={isUploading}
+            />
+            {fieldError("photoUrls") ? <p className="text-xs text-red-500">{fieldError("photoUrls")}</p> : null}
           </div>
 
           <div className="col-span-full md:col-span-1">

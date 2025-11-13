@@ -34,7 +34,7 @@ export type AdminPuppyRecord = Pick<
 // Type for insertion with required slug
 type CreatePuppyPayload = Omit<CreatePuppyInput, 'slug'> & { slug: string };
 
-function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[] }) {
+function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[]; photoUrls?: string[] }) {
   return {
     name: input.name,
     slug: input.slug,
@@ -52,6 +52,7 @@ function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]
     color: input.color ?? null,
     weight_oz: input.weightOz ?? null,
     description: input.description ?? null,
+    photo_urls: input.photoUrls ?? null,
   };
 }
 
@@ -117,7 +118,7 @@ export async function fetchAdminPuppies(
 }
 
 export async function insertAdminPuppy(
-  input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[] },
+  input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[]; photoUrls?: string[] },
 ): Promise<AdminPuppyRecord> {
   const supabase = getAdminSupabaseClient();
   const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<AdminPuppyRecord>(
