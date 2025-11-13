@@ -1,47 +1,70 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import "./types";
+
+const CONSENT_STORAGE_KEY = "exoticbulldoglegacy-consent";
+
+function consentButton(page: Page) {
+  return page.getByRole("button", { name: /accept & continue/i }).first();
+}
+
+async function getStoredConsent(page: Page) {
+  return page.evaluate(
+    (key) => window.localStorage.getItem(key),
+    CONSENT_STORAGE_KEY,
+  );
+}
+
+async function acceptConsent(page: Page) {
+  const button = consentButton(page);
+  if (!(await button.isVisible())) {
+    return;
+  }
+
+  await button.click();
+  await expect(button).toBeHidden({ timeout: 15_000 });
+  await expect
+    .poll(async () => getStoredConsent(page), {
+      timeout: 15_000,
+      message: "Consent should persist to localStorage",
+    })
+    .toBe("granted");
+}
 
 test.describe("Analytics & Consent Management", () => {
   test.beforeEach(async ({ page, context }) => {
     // Clear storage before each test
     await context.clearCookies();
     await page.goto("/");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.reload();
   });
 
   test("shows consent banner on first visit", async ({ page }) => {
-    const consentBanner = page.getByRole("button", { name: /accept & continue/i });
+    const consentBanner = consentButton(page);
     await expect(consentBanner).toBeVisible();
   });
 
   test("consent banner allows accepting analytics", async ({ page }) => {
-    const acceptButton = page.getByRole("button", { name: /accept & continue/i });
-    await acceptButton.click();
-
-    // Consent banner should disappear
-    await expect(acceptButton).not.toBeVisible();
+    await acceptConsent(page);
 
     // Check that consent was persisted in localStorage
-    const consent = await page.evaluate(() => {
-      return window.localStorage.getItem("exoticbulldoglegacy-consent");
-    });
+    const consent = await getStoredConsent(page);
 
     expect(consent).toBe("granted");
   });
 
   test("consent persists across page navigations", async ({ page }) => {
-    // Accept consent
-    const acceptButton = page.getByRole("button", { name: /accept & continue/i });
-    if (await acceptButton.isVisible()) {
-      await acceptButton.click();
-    }
+    await acceptConsent(page);
 
     // Navigate to different pages
     await page.goto("/puppies");
+    await expect(consentButton(page)).toBeHidden({ timeout: 15_000 });
     await page.goto("/contact");
+    await expect(consentButton(page)).toBeHidden({ timeout: 15_000 });
     await page.goto("/");
 
     // Consent banner should not reappear
-    await expect(acceptButton).not.toBeVisible();
+    await expect(consentButton(page)).toBeHidden({ timeout: 15_000 });
   });
 
   test("analytics scripts do not load without consent", async ({ page }) => {
@@ -156,11 +179,7 @@ test.describe("Analytics & Consent Management", () => {
   });
 
   test("consent cookie is set with correct attributes", async ({ page, context }) => {
-    // Accept consent
-    const acceptButton = page.getByRole("button", { name: /accept & continue/i });
-    if (await acceptButton.isVisible()) {
-      await acceptButton.click();
-    }
+    await acceptConsent(page);
 
     // Check cookies
     // Wait for cookie to be persisted before asserting attributes
@@ -182,25 +201,17 @@ test.describe("Analytics & Consent Management", () => {
   });
 
   test("localStorage is used as primary consent storage", async ({ page }) => {
-    // Accept consent
-    const acceptButton = page.getByRole("button", { name: /accept & continue/i });
-    if (await acceptButton.isVisible()) {
-      await acceptButton.click();
-    }
+    await acceptConsent(page);
 
     // Verify localStorage is set correctly
-    const storageKey = await page.evaluate(() => {
-      return window.localStorage.getItem("exoticbulldoglegacy-consent");
-    });
+    const storageKey = await getStoredConsent(page);
 
     expect(storageKey).toBe("granted");
 
     // Reload page and verify consent persists
     await page.reload();
 
-    const persistedConsent = await page.evaluate(() => {
-      return window.localStorage.getItem("exoticbulldoglegacy-consent");
-    });
+    const persistedConsent = await getStoredConsent(page);
 
     expect(persistedConsent).toBe("granted");
   });
@@ -215,10 +226,7 @@ test.describe("Analytics & Consent Management", () => {
     });
 
     // Accept consent to trigger analytics initialization
-    const acceptButton = page.getByRole("button", { name: /accept & continue/i });
-    if (await acceptButton.isVisible()) {
-      await acceptButton.click();
-    }
+    await acceptConsent(page);
 
     // Wait for analytics to initialize
     await page.waitForTimeout(1000);

@@ -29,8 +29,8 @@ test("admin dashboard loads with creation form toggle", async ({ page }) => {
   const createForm = page.getByRole("form", { name: /create puppy form/i });
   await expect(createForm).toBeVisible();
 
-  await createForm.getByLabel("Name").fill("Playwright Smoke Puppy");
-  await createForm.getByLabel("Slug").fill(slugify("Playwright Smoke Puppy"));
+  await createForm.locator('input[name="name"]').fill("Playwright Smoke Puppy");
+  await createForm.locator('input[name="slug"]').fill(slugify("Playwright Smoke Puppy"));
   await createForm.getByRole("button", { name: /cancel/i }).click();
 
   const list = page.getByTestId("admin-puppy-list");
