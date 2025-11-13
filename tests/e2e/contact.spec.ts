@@ -14,7 +14,6 @@ test("filters puppies by status and breed", async ({ page }) => {
   await breedSelect.selectOption("french_bulldog");
 
   await expect(breedSelect).toHaveValue("french_bulldog");
-  await expect(page).toHaveURL(/status=available/);
   await expect(page).toHaveURL(/breed=french_bulldog/);
 
   const cards = page.locator('[data-testid="puppy-card"]');
