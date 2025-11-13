@@ -53,6 +53,7 @@ Pending migrations (if verification fails):
 1. `20250218T120000Z_add_is_archived_flag.sql`
 2. `20251010T021104Z_reservation_constraints.sql`
 3. `20251015T000000Z_create_reservation_transaction_function.sql`
+4. `20250221T120000Z_reservation_expiry_enforcement.sql`
 
 ### Option A — Supabase Dashboard (recommended)
 1. Open the project at [app.supabase.com](https://app.supabase.com).

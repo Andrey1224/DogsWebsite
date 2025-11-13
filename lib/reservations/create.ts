@@ -231,7 +231,7 @@ export class ReservationCreationService {
    */
   private static calculateDefaultExpiry(): string {
     const expiry = new Date();
-    expiry.setHours(expiry.getHours() + 24);
+    expiry.setMinutes(expiry.getMinutes() + 15);
     return expiry.toISOString();
   }
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import type { AdminPuppyRecord } from "@/lib/admin/puppies/queries";
+import type { AdminPuppyRecordWithState } from "@/lib/admin/puppies/queries";
 import { deletePuppyAction, updatePuppyPriceAction, updatePuppyStatusAction, archivePuppyAction, restorePuppyAction } from "./actions";
 
 type StatusOption = {
@@ -13,7 +13,7 @@ type StatusOption = {
 };
 
 interface PuppyRowProps {
-  puppy: AdminPuppyRecord;
+  puppy: AdminPuppyRecordWithState;
   statusOptions: StatusOption[];
   archived: boolean;
 }
@@ -40,6 +40,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
     confirmName.trim().toLowerCase() === normalizedName.toLowerCase();
 
   const sharedDisabled = statusPending || pricePending || deletePending || archivePending || restorePending;
+  const archiveBlocked = Boolean(puppy.has_active_reservation);
 
   function handleStatusChange(value: string) {
     startStatusTransition(async () => {
@@ -159,6 +160,9 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
           ))}
         </select>
         <p className="text-xs text-muted md:hidden">Inline updates save instantly.</p>
+        {archiveBlocked && (
+          <p className="text-xs font-semibold text-orange-600">Reservation active</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -282,9 +286,15 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             )}
           </>
         ) : (
-          // Active puppy actions
           <>
-            {!confirmArchive ? (
+            {archiveBlocked ? (
+              <div className="w-full space-y-2 rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs">
+                <p className="font-semibold text-orange-900">Reservation active</p>
+                <p className="text-orange-700">
+                  Cancel or complete the pending reservation before archiving this puppy.
+                </p>
+              </div>
+            ) : !confirmArchive ? (
               <button
                 type="button"
                 onClick={() => setConfirmArchive(true)}

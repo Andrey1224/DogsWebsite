@@ -55,9 +55,13 @@ function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]
   };
 }
 
+export type AdminPuppyRecordWithState = AdminPuppyRecord & {
+  has_active_reservation?: boolean;
+};
+
 export async function fetchAdminPuppies(
-  options: { archived?: boolean } = {},
-): Promise<AdminPuppyRecord[]> {
+  options: { archived?: boolean; includeReservationState?: boolean } = {},
+): Promise<AdminPuppyRecordWithState[]> {
   const supabase = getAdminSupabaseClient();
   const archived = options.archived ?? false;
 
@@ -86,19 +90,30 @@ export async function fetchAdminPuppies(
 
   const rows = (data ?? []) as AdminPuppyRecord[];
 
+  let normalizedRows: AdminPuppyRecordWithState[];
   if (usedArchiveColumn) {
-    return rows;
+    normalizedRows = rows;
+  } else if (archived) {
+    normalizedRows = [];
+  } else {
+    normalizedRows = rows.map((row) => ({
+      ...row,
+      is_archived: false,
+    }));
   }
 
-  // If the column is missing, we cannot represent archived vs active records.
-  if (archived) {
-    return [];
+  if (!options.includeReservationState) {
+    return normalizedRows;
   }
 
-  return rows.map((row) => ({
-    ...row,
-    is_archived: false,
-  }));
+  const rowsWithState = await Promise.all(
+    normalizedRows.map(async (row) => ({
+      ...row,
+      has_active_reservation: await hasActiveReservations(row.id),
+    })),
+  );
+
+  return rowsWithState;
 }
 
 export async function insertAdminPuppy(
@@ -285,9 +300,9 @@ export async function fetchAdminDams(): Promise<AdminParent[]> {
  */
 export async function hasActiveReservations(puppyId: string): Promise<boolean> {
   const supabase = getAdminSupabaseClient();
-  const { count, error } = await supabase
+  const { data, error } = await supabase
     .from("reservations")
-    .select("*", { count: "exact", head: true })
+    .select("status, expires_at")
     .eq("puppy_id", puppyId)
     .in("status", ["pending", "paid"]);
 
@@ -295,7 +310,23 @@ export async function hasActiveReservations(puppyId: string): Promise<boolean> {
     throw error;
   }
 
-  return (count ?? 0) > 0;
+  if (!data) {
+    return false;
+  }
+
+  const now = Date.now();
+  return data.some((reservation) => {
+    if (reservation.status === "paid") {
+      return true;
+    }
+
+    if (!reservation.expires_at) {
+      return true;
+    }
+
+    const expiresAt = new Date(reservation.expires_at as string).getTime();
+    return Number.isFinite(expiresAt) && expiresAt > now;
+  });
 }
 
 /**

@@ -18,7 +18,7 @@ export default async function AdminPuppiesPage({ searchParams }: PageProps) {
   const view = params.view === "archived" ? "archived" : "active";
   const isArchived = view === "archived";
 
-  const puppies = await fetchAdminPuppies({ archived: isArchived });
+  const puppies = await fetchAdminPuppies({ archived: isArchived, includeReservationState: true });
 
   return (
     <div className="space-y-6">

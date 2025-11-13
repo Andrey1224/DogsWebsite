@@ -12,6 +12,7 @@
 import { stripe } from '@/lib/stripe/client';
 import { getPuppyBySlug } from '@/lib/supabase/queries';
 import type { CreateCheckoutSessionParams } from '@/lib/stripe/types';
+import { ReservationQueries } from '@/lib/reservations/queries';
 
 /**
  * Result of checkout session creation
@@ -62,6 +63,15 @@ export async function createCheckoutSession(
       return {
         success: false,
         error: `This puppy is ${puppy.status} and cannot be reserved`,
+        errorCode: 'PUPPY_NOT_AVAILABLE',
+      };
+    }
+
+    const hasActiveReservation = await ReservationQueries.hasActiveReservation(puppy.id);
+    if (hasActiveReservation) {
+      return {
+        success: false,
+        error: 'Reservation in progress - please try again in ~15 minutes',
         errorCode: 'PUPPY_NOT_AVAILABLE',
       };
     }

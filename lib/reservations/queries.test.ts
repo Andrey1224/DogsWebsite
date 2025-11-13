@@ -119,7 +119,7 @@ function createSupabaseStub() {
       return register.get(fn)!(params);
     }
     if (fn === 'expire_pending_reservations') {
-      return { data: null, error: null };
+      return { data: 2, error: null };
     }
     if (fn === 'get_reservation_summary') {
       return {
@@ -227,7 +227,7 @@ beforeEach(async () => {
   it('expires old pending reservations using RPC', async () => {
     const { ReservationQueries } = await import('./queries');
     const result = await ReservationQueries.expireOldPending();
-    expect(result).toBe(1);
+    expect(result).toBe(2);
   });
 
   it('supports lookup and deletion helpers', async () => {
@@ -268,6 +268,49 @@ beforeEach(async () => {
 
     const removed = await ReservationQueries.delete('res-lookup');
     expect(removed).toBe(true);
+  });
+
+  it('evaluates active reservations based on status and expiration', async () => {
+    const { ReservationQueries } = await import('./queries');
+    const reservationTable = supabaseStub.tables.get('reservations') ?? [];
+    const baseReservation = {
+      id: 'res-active',
+      puppy_id: 'puppy-active',
+      customer_email: 'active@example.com',
+      customer_name: 'Active User',
+      customer_phone: null,
+      channel: 'site',
+      status: 'pending',
+      deposit_amount: 300,
+      amount: 300,
+      payment_provider: 'stripe' as const,
+      external_payment_id: 'pi_active',
+      webhook_event_id: null,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      notes: null,
+    };
+
+    reservationTable.splice(0, reservationTable.length, baseReservation);
+    supabaseStub.tables.set('reservations', reservationTable);
+
+    expect(await ReservationQueries.hasActiveReservation('puppy-active')).toBe(true);
+
+    reservationTable[0] = {
+      ...baseReservation,
+      expires_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    };
+    supabaseStub.tables.set('reservations', reservationTable);
+
+    expect(await ReservationQueries.hasActiveReservation('puppy-active')).toBe(false);
+
+    reservationTable[0] = {
+      ...baseReservation,
+      status: 'paid',
+      expires_at: null,
+    };
+    supabaseStub.tables.set('reservations', reservationTable);
+
+    expect(await ReservationQueries.hasActiveReservation('puppy-active')).toBe(true);
   });
 });
 

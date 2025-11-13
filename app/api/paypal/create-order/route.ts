@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { createPayPalOrder } from "@/lib/paypal/client";
 import { getPuppyBySlug } from "@/lib/supabase/queries";
+import { ReservationQueries } from "@/lib/reservations/queries";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,14 @@ export async function POST(request: NextRequest) {
     if (puppy.status !== "available") {
       return NextResponse.json(
         { error: `This puppy is ${puppy.status} and cannot be reserved` },
+        { status: 409 },
+      );
+    }
+
+    const hasActiveReservation = await ReservationQueries.hasActiveReservation(puppy.id);
+    if (hasActiveReservation) {
+      return NextResponse.json(
+        { error: "Reservation in progress - please try again in ~15 minutes" },
         { status: 409 },
       );
     }

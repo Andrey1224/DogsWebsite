@@ -179,6 +179,42 @@ export class ReservationQueries {
   }
 
   /**
+   * Determine whether a puppy currently has an active reservation
+   * (paid reservations or pending ones that have not expired).
+   */
+  static async hasActiveReservation(puppyId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('status, expires_at')
+        .eq('puppy_id', puppyId)
+        .in('status', ['pending', 'paid'])
+        .order('created_at', { ascending: false });
+
+      if (error || !data) {
+        return false;
+      }
+
+      const now = Date.now();
+      return data.some((reservation) => {
+        if (reservation.status === 'paid') {
+          return true;
+        }
+
+        if (!reservation.expires_at) {
+          return true;
+        }
+
+        const expiresAtTime = new Date(reservation.expires_at as string).getTime();
+        return Number.isFinite(expiresAtTime) && expiresAtTime > now;
+      });
+    } catch (error) {
+      console.error('Error checking active reservation:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get reservations with puppy details
    */
   static async getWithPuppy(limit: number = 50, offset: number = 0): Promise<ReservationWithPuppy[]> {
@@ -286,7 +322,7 @@ export class ReservationQueries {
    */
   static async expireOldPending(): Promise<number> {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .rpc('expire_pending_reservations');
 
       if (error) {
@@ -294,8 +330,7 @@ export class ReservationQueries {
         return 0;
       }
 
-      // Note: Supabase doesn't return affected rows count in JS client
-      return 1;
+      return typeof data === 'number' ? data : 0;
     } catch (err) {
       console.error('Error expiring pending reservations:', err);
       return 0;

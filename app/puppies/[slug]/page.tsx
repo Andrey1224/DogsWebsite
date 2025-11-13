@@ -9,6 +9,7 @@ import { getPuppiesWithRelations, getPuppyBySlug } from "@/lib/supabase/queries"
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getProductSchema } from "@/lib/seo/structured-data";
 import { ReserveButton } from "./reserve-button";
+import { getPuppyReservationState } from "@/lib/reservations/state";
 
 export const revalidate = 60;
 
@@ -60,7 +61,8 @@ export async function generateMetadata({
 
 export default async function PuppyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const puppy = await getPuppyBySlug(slug);
+  const reservationState = await getPuppyReservationState(slug);
+  const puppy = reservationState?.puppy;
 
   if (!puppy) {
     notFound();
@@ -168,8 +170,9 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
           </div>
           <ReserveButton
             puppySlug={puppy.slug || ''}
-            isAvailable={puppy.status === 'available'}
             status={puppy.status || 'unknown'}
+            canReserve={reservationState?.canReserve ?? false}
+            reservationBlocked={reservationState?.reservationBlocked ?? false}
             depositAmount={depositAmount}
             paypalClientId={paypalClientId}
           />

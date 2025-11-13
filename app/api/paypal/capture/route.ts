@@ -3,10 +3,11 @@ import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { capturePayPalOrder } from "@/lib/paypal/client";
+import { capturePayPalOrder, getPayPalOrder } from "@/lib/paypal/client";
 import type { PayPalOrderMetadata } from "@/lib/paypal/types";
 import { ReservationCreationError, ReservationCreationService } from "@/lib/reservations/create";
 import type { ReservationChannel } from "@/lib/reservations/types";
+import { ReservationQueries } from "@/lib/reservations/queries";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,24 @@ export async function POST(request: NextRequest) {
   try {
     const json = await request.json();
     const { orderId } = requestSchema.parse(json);
+
+    const orderDetails = await getPayPalOrder(orderId);
+    const pendingMetadata = parseMetadata(orderDetails.purchase_units?.[0]?.custom_id);
+
+    if (!pendingMetadata?.puppy_id) {
+      return NextResponse.json(
+        { error: "Missing puppy metadata" },
+        { status: 400 },
+      );
+    }
+
+    const hasActiveReservation = await ReservationQueries.hasActiveReservation(pendingMetadata.puppy_id);
+    if (hasActiveReservation) {
+      return NextResponse.json(
+        { error: "Reservation in progress - please try again in ~15 minutes" },
+        { status: 409 },
+      );
+    }
 
     const captureResponse = await capturePayPalOrder({
       orderId,
@@ -55,7 +74,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const metadata = parseMetadata(capture.custom_id);
+    const metadata = parseMetadata(capture.custom_id) ?? pendingMetadata;
     if (!metadata?.puppy_id) {
       return NextResponse.json(
         { error: "Missing puppy metadata" },
