@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -12,15 +12,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-// Load .env.local manually
-const envContent = readFileSync(join(rootDir, '.env.local'), 'utf-8');
 const envVars = {};
-envContent.split('\n').forEach(line => {
-  const match = line.match(/^([^=]+)=(.*)$/);
-  if (match) {
-    envVars[match[1]] = match[2];
-  }
-});
+const envPath = join(rootDir, '.env.local');
+
+if (existsSync(envPath)) {
+  const envContent = readFileSync(envPath, 'utf-8');
+  envContent.split('\n').forEach(line => {
+    const match = line.match(/^([^=]+)=(.*)$/);
+    if (match) {
+      envVars[match[1]] = match[2];
+    }
+  });
+} else {
+  console.warn('⚠️  .env.local not found; relying on CI environment variables only.');
+}
 
 const supabaseUrl = envVars.SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseServiceRole = envVars.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_ROLE;
