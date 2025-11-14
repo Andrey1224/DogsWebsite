@@ -40,7 +40,7 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - `Spec1.md` — product scope and functional requirements.
 - `SPRINT_PLAN.md` — roadmap broken into sprints and DoD.
 - `AGENTS.md` — contributor practices, repo structure, and command reference.
-- `CLAUDE.md` — agent operating rules (Context7 usage, file ordering).
+- `CLAUDE.md` — agent operating rules (Context7 usage, file ordering)..
 
 ## Data & Seeding
 - Run the schema migration in `supabase/migrations/20241007T000000Z_initial_schema.sql`.
