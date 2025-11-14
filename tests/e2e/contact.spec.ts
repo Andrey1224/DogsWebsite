@@ -23,7 +23,7 @@ test("filters puppies by status and breed", async ({ page }) => {
     await expect(cards.first()).toBeVisible();
   } else {
     await expect(
-      page.getByText(/No puppies matching your filters/i, { exact: false }),
+      page.getByText(/No puppies match the selected filters/i, { exact: false }),
     ).toBeVisible();
   }
 });
