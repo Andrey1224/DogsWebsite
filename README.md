@@ -234,51 +234,37 @@ Pending reservations automatically expire after 15 minutes, preventing indefinit
 - **`expire_pending_reservations()`**: Cancels expired pending reservations and releases puppies
 - **`check_puppy_availability()`**: Validates availability respecting active (non-expired) reservations
 
-#### Cron Job Setup
-Configure a scheduled job to call the expiry endpoint every 5 minutes:
+#### Automated Scheduling (pg_cron)
+Reservation expiry runs automatically via **Supabase pg_cron** every 5 minutes. No external cron service or API endpoint needed.
 
-**Vercel Cron** (recommended for Vercel deployments):
-1. Add `vercel.json` to project root:
-   ```json
-   {
-     "crons": [
-       {
-         "path": "/api/cron/expire-reservations",
-         "schedule": "*/5 * * * *"
-       }
-     ]
-   }
-   ```
-2. Set `CRON_SECRET` in Vercel environment variables (use a strong random string)
-3. Deploy to Vercel - cron jobs automatically run on production
+**Setup** (already configured):
+1. pg_cron extension enabled in Supabase
+2. Scheduled job `expire-pending-reservations` runs `*/5 * * * *`
+3. Calls `expire_pending_reservations()` database function directly
 
-**Alternative: External Cron Service** (cron-job.org, EasyCron, etc.):
-1. Create a new cron job with target URL: `https://yourdomain.com/api/cron/expire-reservations`
-2. Set schedule: `*/5 * * * *` (every 5 minutes)
-3. Add HTTP header: `Authorization: Bearer YOUR_CRON_SECRET`
-4. Set request method: `POST`
-
-#### Environment Variables
-```bash
-# Required: Strong random string for cron authentication
-CRON_SECRET=your-strong-random-secret-here
+**Monitoring:**
+Check job execution history:
+```sql
+SELECT
+  jrd.start_time,
+  jrd.end_time,
+  (jrd.end_time - jrd.start_time) as duration,
+  jrd.status,
+  jrd.return_message
+FROM cron.job_run_details jrd
+JOIN cron.job j ON j.jobid = jrd.jobid
+WHERE j.jobname = 'expire-pending-reservations'
+ORDER BY jrd.start_time DESC
+LIMIT 20;
 ```
 
-#### Testing
-Manually trigger expiry endpoint:
-```bash
-curl -X POST https://yourdomain.com/api/cron/expire-reservations \
-  -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  -H "Content-Type: application/json"
+**Manual Testing:**
+Trigger expiry function directly:
+```sql
+SELECT expire_pending_reservations();
 ```
 
-Expected response:
-```json
-{
-  "expired": 0,
-  "timestamp": "2025-02-21T12:00:00.000Z"
-}
-```
+Expected return: Integer count of expired reservations
 
 #### Migration
 Apply the reservation expiry migration using the staged approach:
