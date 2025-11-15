@@ -5,8 +5,7 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ParentPhotoUpload } from '@/components/admin/parent-photo-upload';
 import { useMediaUpload } from '@/lib/admin/hooks/use-media-upload';
-import { fetchFullAdminPuppyById } from '@/lib/admin/puppies/queries';
-import { updatePuppyAction } from './actions';
+import { fetchPuppyForEditAction, updatePuppyAction } from './actions';
 import { initialUpdatePuppyState, type UpdatePuppyState } from './types';
 
 type StatusOption = {
@@ -63,12 +62,15 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
       try {
         setIsLoading(true);
         setLoadError(null);
-        const puppy = await fetchFullAdminPuppyById(puppyId);
+        const result = await fetchPuppyForEditAction(puppyId);
 
-        if (!puppy) {
-          setLoadError('Puppy not found');
+        if (!result.success || !result.puppy) {
+          setLoadError(result.error || 'Puppy not found');
+          toast.error(result.error || 'Puppy not found');
           return;
         }
+
+        const puppy = result.puppy;
 
         // Pre-populate form fields
         setName(puppy.name || '');
@@ -214,10 +216,7 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
     }
   };
 
-  const handleDeletePhoto = (
-    url: string,
-    type: 'sire' | 'dam' | 'puppy',
-  ) => {
+  const handleDeletePhoto = (url: string, type: 'sire' | 'dam' | 'puppy') => {
     if (type === 'sire') {
       setDeletedSirePhotos((prev) => new Set(prev).add(url));
     } else if (type === 'dam') {

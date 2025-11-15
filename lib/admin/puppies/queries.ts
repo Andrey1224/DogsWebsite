@@ -252,11 +252,7 @@ export async function getAdminPuppyById(
  */
 export async function fetchFullAdminPuppyById(id: string): Promise<Puppy | null> {
   const supabase = getAdminSupabaseClient();
-  const { data, error } = await supabase
-    .from('puppies')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  const { data, error } = await supabase.from('puppies').select('*').eq('id', id).maybeSingle();
 
   if (error) {
     throw error;

@@ -2,7 +2,7 @@
 
 | Date       | Phase                                    | Status      | Notes                                                                                                                                                                              |
 | ---------- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2025-11-15 | Feature — Puppy Edit Functionality       | ✅ Complete | Added full edit capability for puppies with drawer UI, photo management, and read-only slug. Completes CRUD operations for admin panel.                                           |
+| 2025-11-15 | Feature — Puppy Edit Functionality       | ✅ Complete | Added full edit capability for puppies with drawer UI, photo management, and read-only slug. Completes CRUD operations for admin panel.                                            |
 | 2025-11-14 | Infrastructure — pg_cron Migration       | ✅ Complete | Migrated from Vercel Cron (Pro-only) to Supabase pg_cron for reservation expiry. Saves $20/month, eliminates HTTP overhead, improves reliability.                                  |
 | 2025-11-14 | Test Fix — E2E Empty State               | ✅ Complete | Fixed E2E test failure by updating text pattern to match actual component ("match" vs "matching").                                                                                 |
 | 2025-11-14 | Docs — Project Reorganization            | ✅ Complete | Reorganized documentation structure: created docs/database/, docs/deployment/, archived temp files, updated navigation.                                                            |
@@ -844,11 +844,7 @@ Added full puppy data fetch and update operations:
 // Fetch complete puppy record for editing
 export async function fetchFullAdminPuppyById(id: string): Promise<Puppy | null> {
   const supabase = getAdminSupabaseClient();
-  const { data, error } = await supabase
-    .from('puppies')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  const { data, error } = await supabase.from('puppies').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
   return (data as Puppy) ?? null;
 }
@@ -889,7 +885,11 @@ export const updatePuppySchema = z.object({
   name: z.string().min(1).max(100).optional(),
   status: adminPuppyStatusSchema.optional(),
   priceUsd: priceUsdSchema.optional(),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable(),
   breed: breedSchema.optional(),
   sex: sexSchema.optional(),
   color: z.string().max(50).optional().nullable(),
@@ -970,7 +970,8 @@ export async function updatePuppyAction(
     console.error('Update puppy action error:', error);
     return {
       status: 'error',
-      formError: error instanceof Error ? error.message : 'Failed to update puppy. Please try again.',
+      formError:
+        error instanceof Error ? error.message : 'Failed to update puppy. Please try again.',
     };
   }
 }

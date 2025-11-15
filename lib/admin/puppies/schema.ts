@@ -175,7 +175,11 @@ export const updatePuppySchema = z.object({
   name: z.string().min(1).max(100).optional(),
   status: adminPuppyStatusSchema.optional(),
   priceUsd: priceUsdSchema.optional(),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable(),
   breed: breedSchema.optional(),
   sireId: z.string().uuid().optional().nullable(),
   damId: z.string().uuid().optional().nullable(),

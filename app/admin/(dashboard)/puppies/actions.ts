@@ -44,6 +44,23 @@ async function requireAdminSession() {
   return session;
 }
 
+export async function fetchPuppyForEditAction(puppyId: string) {
+  try {
+    await requireAdminSession();
+    const puppy = await fetchFullAdminPuppyById(puppyId);
+    if (!puppy) {
+      return { success: false, error: 'Puppy not found' };
+    }
+    return { success: true, puppy };
+  } catch (error) {
+    console.error('Fetch puppy for edit error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to load puppy data',
+    };
+  }
+}
+
 export async function updatePuppyStatusAction(input: {
   id: string;
   status: string;
