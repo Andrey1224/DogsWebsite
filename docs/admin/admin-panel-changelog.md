@@ -2,7 +2,7 @@
 
 | Date       | Phase                                    | Status      | Notes                                                                                                                                                                              |
 | ---------- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2025-11-15 | Bugfix — Edit Form Pre-population        | ✅ Complete | Fixed edit form not pre-filling Price, Birth Date, Breed, Sex, Color, Weight, Description, Parent Names. Converted all fields to controlled React components.                     |
+| 2025-11-15 | Bugfix — Edit Form Pre-population        | ✅ Complete | Fixed edit form not pre-filling Price, Birth Date, Breed, Sex, Color, Weight, Description, Parent Names. Converted all fields to controlled React components.                      |
 | 2025-11-15 | Feature — Puppy Edit Functionality       | ✅ Complete | Added full edit capability for puppies with drawer UI, photo management, and read-only slug. Completes CRUD operations for admin panel.                                            |
 | 2025-11-14 | Infrastructure — pg_cron Migration       | ✅ Complete | Migrated from Vercel Cron (Pro-only) to Supabase pg_cron for reservation expiry. Saves $20/month, eliminates HTTP overhead, improves reliability.                                  |
 | 2025-11-14 | Test Fix — E2E Empty State               | ✅ Complete | Fixed E2E test failure by updating text pattern to match actual component ("match" vs "matching").                                                                                 |
@@ -1325,6 +1325,7 @@ Edit puppy form was not auto-filling most fields when opened:
 Only **Name**, **Slug**, and **Status** were pre-populated correctly.
 
 **User Experience Impact:**
+
 - Admin had to re-enter all data even when editing just one field
 - Validation errors appeared on load
 - Risk of accidentally clearing existing data
@@ -1334,6 +1335,7 @@ Only **Name**, **Slug**, and **Status** were pre-populated correctly.
 The form used **two different approaches** for managing field values:
 
 **Approach 1: Controlled Components (Working ✅)**
+
 ```typescript
 // State-based (Name, Slug, Status)
 const [name, setName] = useState('');
@@ -1341,15 +1343,18 @@ const [name, setName] = useState('');
 ```
 
 **Approach 2: Direct DOM Manipulation (Broken ❌)**
+
 ```typescript
 // formRef manipulation (Price, Birth Date, Breed, etc.)
 if (formRef.current) {
-  (formRef.current.elements.namedItem('priceUsd') as HTMLInputElement).value =
-    String(puppy.price_usd);
+  (formRef.current.elements.namedItem('priceUsd') as HTMLInputElement).value = String(
+    puppy.price_usd,
+  );
 }
 ```
 
 **The Problem Flow:**
+
 ```
 1. Component mounts → isLoading=true → renders "Loading..." message
 2. useEffect runs → calls loadPuppyData()
@@ -1361,6 +1366,7 @@ if (formRef.current) {
 ```
 
 **React Rendering Timeline:**
+
 ```
 Mount → useEffect runs → DOM manipulation attempts → Re-render → Form appears empty
 ```
@@ -1387,17 +1393,18 @@ const [damName, setDamName] = useState('');
 #### 2. Updated useEffect to Use setState
 
 **Before:**
+
 ```typescript
 if (formRef.current) {
   const form = formRef.current;
   if (puppy.price_usd !== null)
-    (form.elements.namedItem('priceUsd') as HTMLInputElement).value =
-      String(puppy.price_usd);
+    (form.elements.namedItem('priceUsd') as HTMLInputElement).value = String(puppy.price_usd);
   // ... more DOM manipulation
 }
 ```
 
 **After:**
+
 ```typescript
 setPriceUsd(puppy.price_usd !== null ? String(puppy.price_usd) : '');
 setBirthDate(puppy.birth_date || '');
@@ -1413,6 +1420,7 @@ setDamName(puppy.dam_name || '');
 #### 3. Converted Inputs to Controlled Components
 
 **Before:**
+
 ```tsx
 <input
   id="priceUsd"
@@ -1423,6 +1431,7 @@ setDamName(puppy.dam_name || '');
 ```
 
 **After:**
+
 ```tsx
 <input
   id="priceUsd"
@@ -1434,6 +1443,7 @@ setDamName(puppy.dam_name || '');
 ```
 
 Applied to all fields:
+
 - `<input value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />`
 - `<select value={breed} onChange={(e) => setBreed(e.target.value)} />`
 - `<select value={sex} onChange={(e) => setSex(e.target.value)} />`
@@ -1446,6 +1456,7 @@ Applied to all fields:
 #### 4. Cleaned Up Unused State
 
 Removed state for fields not present in the form:
+
 - ❌ `stripePaymentLink` - no form field exists
 - ❌ `paypalEnabled` - no form field exists
 
@@ -1464,24 +1475,26 @@ Removed state for fields not present in the form:
 
 **Controlled vs Uncontrolled:**
 
-| Aspect | Controlled | Uncontrolled (formRef) |
-|--------|-----------|----------------------|
-| Value source | React state | DOM |
-| Updates via | setState | Direct DOM manipulation |
-| Re-renders | Automatic | Manual |
-| Timing issues | No | Yes (DOM must exist) |
-| React best practice | ✅ Yes | ❌ No |
+| Aspect              | Controlled  | Uncontrolled (formRef)  |
+| ------------------- | ----------- | ----------------------- |
+| Value source        | React state | DOM                     |
+| Updates via         | setState    | Direct DOM manipulation |
+| Re-renders          | Automatic   | Manual                  |
+| Timing issues       | No          | Yes (DOM must exist)    |
+| React best practice | ✅ Yes      | ❌ No                   |
 
 ### Files Modified
 
 **Backend:** No changes needed
 
 **Frontend:**
+
 - `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx` - Converted all fields to controlled components
 
 ### Verification
 
 **Quality Checks:**
+
 ```bash
 npm run typecheck  # ✅ No errors
 npm run lint       # ✅ No warnings
@@ -1489,6 +1502,7 @@ npm run format     # ✅ All files formatted
 ```
 
 **Functional Testing:**
+
 1. ✅ Open edit panel → All fields pre-filled with existing data
 2. ✅ No validation errors on load
 3. ✅ Can edit any field
@@ -1502,6 +1516,7 @@ npm run format     # ✅ All files formatted
 **Answer:** Yes, but this is intentional and optimal for this use case.
 
 **Current Behavior:**
+
 - Form submits ALL field values (changed or not)
 - Server Action passes all fields to `updateAdminPuppy`
 - `mapUpdatePayload` includes all provided fields
@@ -1538,12 +1553,14 @@ npm run format     # ✅ All files formatted
 ### Impact
 
 **Before:**
+
 - ❌ Admin must re-enter all data to edit one field
 - ❌ Risk of data loss (forgetting to re-enter)
 - ❌ Poor user experience
 - ❌ Validation errors on load
 
 **After:**
+
 - ✅ All fields auto-fill with existing data
 - ✅ Edit only the fields you want to change
 - ✅ No validation errors on load
