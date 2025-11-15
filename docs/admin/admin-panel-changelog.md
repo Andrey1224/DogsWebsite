@@ -2,6 +2,7 @@
 
 | Date       | Phase                                    | Status      | Notes                                                                                                                                                                              |
 | ---------- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2025-11-15 | Bugfix — Edit Form Pre-population        | ✅ Complete | Fixed edit form not pre-filling Price, Birth Date, Breed, Sex, Color, Weight, Description, Parent Names. Converted all fields to controlled React components.                     |
 | 2025-11-15 | Feature — Puppy Edit Functionality       | ✅ Complete | Added full edit capability for puppies with drawer UI, photo management, and read-only slug. Completes CRUD operations for admin panel.                                            |
 | 2025-11-14 | Infrastructure — pg_cron Migration       | ✅ Complete | Migrated from Vercel Cron (Pro-only) to Supabase pg_cron for reservation expiry. Saves $20/month, eliminates HTTP overhead, improves reliability.                                  |
 | 2025-11-14 | Test Fix — E2E Empty State               | ✅ Complete | Fixed E2E test failure by updating text pattern to match actual component ("match" vs "matching").                                                                                 |
@@ -1302,5 +1303,256 @@ npm run dev
 - **Claude Context**: `CLAUDE.md` (Admin Panel Architecture section)
 - **Schema**: `lib/admin/puppies/schema.ts`
 - **Queries**: `lib/admin/puppies/queries.ts`
+
+---
+
+## Bugfix — Edit Form Pre-population (2025-11-15) ✅
+
+### Problem
+
+Edit puppy form was not auto-filling most fields when opened:
+
+- ❌ **Price (USD)** - empty, showing validation error
+- ❌ **Birth Date** - empty, showing validation error
+- ❌ **Breed** - showing "Select breed"
+- ❌ **Sex** - showing "Select sex"
+- ❌ **Color** - empty
+- ❌ **Weight (oz)** - empty
+- ❌ **Description** - empty
+- ❌ **Sire Name** - empty
+- ❌ **Dam Name** - empty
+
+Only **Name**, **Slug**, and **Status** were pre-populated correctly.
+
+**User Experience Impact:**
+- Admin had to re-enter all data even when editing just one field
+- Validation errors appeared on load
+- Risk of accidentally clearing existing data
+
+### Root Cause
+
+The form used **two different approaches** for managing field values:
+
+**Approach 1: Controlled Components (Working ✅)**
+```typescript
+// State-based (Name, Slug, Status)
+const [name, setName] = useState('');
+<input value={name} onChange={(e) => setName(e.target.value)} />
+```
+
+**Approach 2: Direct DOM Manipulation (Broken ❌)**
+```typescript
+// formRef manipulation (Price, Birth Date, Breed, etc.)
+if (formRef.current) {
+  (formRef.current.elements.namedItem('priceUsd') as HTMLInputElement).value =
+    String(puppy.price_usd);
+}
+```
+
+**The Problem Flow:**
+```
+1. Component mounts → isLoading=true → renders "Loading..." message
+2. useEffect runs → calls loadPuppyData()
+3. loadPuppyData tries to set formRef values (lines 96-121)
+4. BUT: form elements don't exist yet (still showing loading state)
+5. setIsLoading(false) → triggers re-render
+6. Form now renders with actual input fields
+7. Input fields are empty because formRef manipulation already happened
+```
+
+**React Rendering Timeline:**
+```
+Mount → useEffect runs → DOM manipulation attempts → Re-render → Form appears empty
+```
+
+### Solution
+
+Converted **ALL form fields to controlled React components** using state:
+
+#### 1. Added State Declarations
+
+```typescript
+// Added useState for all missing fields
+const [priceUsd, setPriceUsd] = useState('');
+const [birthDate, setBirthDate] = useState('');
+const [breed, setBreed] = useState('');
+const [sex, setSex] = useState('');
+const [color, setColor] = useState('');
+const [weightOz, setWeightOz] = useState('');
+const [description, setDescription] = useState('');
+const [sireName, setSireName] = useState('');
+const [damName, setDamName] = useState('');
+```
+
+#### 2. Updated useEffect to Use setState
+
+**Before:**
+```typescript
+if (formRef.current) {
+  const form = formRef.current;
+  if (puppy.price_usd !== null)
+    (form.elements.namedItem('priceUsd') as HTMLInputElement).value =
+      String(puppy.price_usd);
+  // ... more DOM manipulation
+}
+```
+
+**After:**
+```typescript
+setPriceUsd(puppy.price_usd !== null ? String(puppy.price_usd) : '');
+setBirthDate(puppy.birth_date || '');
+setBreed(puppy.breed || '');
+setSex(puppy.sex || '');
+setColor(puppy.color || '');
+setWeightOz(puppy.weight_oz !== null ? String(puppy.weight_oz) : '');
+setDescription(puppy.description || '');
+setSireName(puppy.sire_name || '');
+setDamName(puppy.dam_name || '');
+```
+
+#### 3. Converted Inputs to Controlled Components
+
+**Before:**
+```tsx
+<input
+  id="priceUsd"
+  name="priceUsd"
+  type="number"
+  // No value or onChange - uncontrolled
+/>
+```
+
+**After:**
+```tsx
+<input
+  id="priceUsd"
+  name="priceUsd"
+  type="number"
+  value={priceUsd}
+  onChange={(e) => setPriceUsd(e.target.value)}
+/>
+```
+
+Applied to all fields:
+- `<input value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />`
+- `<select value={breed} onChange={(e) => setBreed(e.target.value)} />`
+- `<select value={sex} onChange={(e) => setSex(e.target.value)} />`
+- `<input value={color} onChange={(e) => setColor(e.target.value)} />`
+- `<input value={weightOz} onChange={(e) => setWeightOz(e.target.value)} />`
+- `<textarea value={description} onChange={(e) => setDescription(e.target.value)} />`
+- `<input value={sireName} onChange={(e) => setSireName(e.target.value)} />`
+- `<input value={damName} onChange={(e) => setDamName(e.target.value)} />`
+
+#### 4. Cleaned Up Unused State
+
+Removed state for fields not present in the form:
+- ❌ `stripePaymentLink` - no form field exists
+- ❌ `paypalEnabled` - no form field exists
+
+### Technical Details
+
+**Why Controlled Components Work:**
+
+```
+1. Component mounts → isLoading=true
+2. useEffect runs → setState calls queued
+3. setState triggers re-render
+4. Form renders with values from state ✅
+5. User edits → onChange updates state
+6. React re-renders input with new value
+```
+
+**Controlled vs Uncontrolled:**
+
+| Aspect | Controlled | Uncontrolled (formRef) |
+|--------|-----------|----------------------|
+| Value source | React state | DOM |
+| Updates via | setState | Direct DOM manipulation |
+| Re-renders | Automatic | Manual |
+| Timing issues | No | Yes (DOM must exist) |
+| React best practice | ✅ Yes | ❌ No |
+
+### Files Modified
+
+**Backend:** No changes needed
+
+**Frontend:**
+- `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx` - Converted all fields to controlled components
+
+### Verification
+
+**Quality Checks:**
+```bash
+npm run typecheck  # ✅ No errors
+npm run lint       # ✅ No warnings
+npm run format     # ✅ All files formatted
+```
+
+**Functional Testing:**
+1. ✅ Open edit panel → All fields pre-filled with existing data
+2. ✅ No validation errors on load
+3. ✅ Can edit any field
+4. ✅ Can edit only one field (others remain unchanged)
+5. ✅ Submit updates database correctly
+
+### Database Behavior (Clarified)
+
+**Question:** Do unchanged fields get rewritten to the database?
+
+**Answer:** Yes, but this is intentional and optimal for this use case.
+
+**Current Behavior:**
+- Form submits ALL field values (changed or not)
+- Server Action passes all fields to `updateAdminPuppy`
+- `mapUpdatePayload` includes all provided fields
+- Database UPDATE statement rewrites all fields
+- `updated_at` timestamp always updates
+
+**Why This Is OK:**
+
+1. **Low Frequency:**
+   - Admin edits puppy: ~1-5 times per day
+   - Not thousands of requests per second
+   - No performance impact
+
+2. **Database Performance:**
+   - PostgreSQL handles UPDATE with 15 fields in <1ms
+   - No measurable overhead
+
+3. **Code Simplicity:**
+   - ✅ Simple, maintainable code
+   - ✅ No complex diff logic
+   - ✅ No bugs from missing fields
+   - ✅ Guaranteed consistency
+
+4. **When Optimization WOULD Matter:**
+   - 🔴 Thousands of updates per second
+   - 🔴 Database performance bottleneck
+   - 🔴 Concurrent edit conflicts
+   - 🔴 Large binary data (files/images)
+
+**None of these apply to an admin panel.**
+
+**Conclusion:** Premature optimization avoided. Current approach is correct for this use case.
+
+### Impact
+
+**Before:**
+- ❌ Admin must re-enter all data to edit one field
+- ❌ Risk of data loss (forgetting to re-enter)
+- ❌ Poor user experience
+- ❌ Validation errors on load
+
+**After:**
+- ✅ All fields auto-fill with existing data
+- ✅ Edit only the fields you want to change
+- ✅ No validation errors on load
+- ✅ Smooth editing experience
+
+### Related Documentation
+
+- **Fix Commit**: `f89eeb9 fix(admin): pre-populate all fields in edit puppy form`
+- **Feature Commit**: `8a69835 feat(admin): add comprehensive puppy edit functionality`
+- **Component**: `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx`
 
 ---
