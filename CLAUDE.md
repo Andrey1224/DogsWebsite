@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Prerequisites
+
+**Node.js Version:** This project requires **Node.js 20.x LTS** or higher.
+
+```bash
+# Check your Node version
+node --version  # Should be v20.x.x or higher
+
+# If using nvm, install and use Node 20
+nvm install 20
+nvm use 20
+nvm alias default 20
+```
+
+**Why Node 20?**
+- jsdom@27.0.0 requires Node >=20
+- @vitejs/plugin-react@5.0.4 requires Node >=20.19.0
+- Matches CI/CD environment (GitHub Actions uses Node 20)
+
 ## Development Commands
 
 ### Core Development

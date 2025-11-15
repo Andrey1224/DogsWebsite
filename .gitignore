@@ -25,6 +25,7 @@ playwright-report
 # misc
 .DS_Store
 *.pem
+.vitest-localstorage*
 
 # debug
 npm-debug.log*
