@@ -53,18 +53,12 @@ export async function POST(req: NextRequest) {
 
     if (!signature) {
       console.error('[Stripe Webhook] Missing Stripe-Signature header');
-      return NextResponse.json(
-        { error: 'Missing Stripe-Signature header' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing Stripe-Signature header' }, { status: 400 });
     }
 
     if (!webhookSecret) {
       console.error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET not configured');
-      return NextResponse.json(
-        { error: 'Webhook secret not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
     }
 
     // Step 3: Verify webhook signature and construct event
@@ -79,13 +73,11 @@ export async function POST(req: NextRequest) {
       // Return 400 to tell Stripe not to retry (invalid signature)
       return NextResponse.json(
         { error: `Webhook signature verification failed: ${error.message}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    console.log(
-      `[Stripe Webhook] Verified event: ${event.type} (ID: ${event.id})`
-    );
+    console.log(`[Stripe Webhook] Verified event: ${event.type} (ID: ${event.id})`);
 
     // Step 4: Process the verified event
     const result = await StripeWebhookHandler.processEvent(event);
@@ -106,13 +98,13 @@ export async function POST(req: NextRequest) {
           duplicate: result.duplicate || false,
           reservationId: result.reservationId ?? null,
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
     // Processing failed - send alert and return 500 to trigger Stripe retry
     console.error(
-      `[Stripe Webhook] Processing failed: ${result.error} (Event: ${event.type}, ID: ${event.id})`
+      `[Stripe Webhook] Processing failed: ${result.error} (Event: ${event.type}, ID: ${event.id})`,
     );
 
     // Send alert for failed webhook (non-blocking)
@@ -134,7 +126,7 @@ export async function POST(req: NextRequest) {
         error: result.error || 'Unknown processing error',
         eventType: result.eventType,
       },
-      { status: 500 }
+      { status: 500 },
     );
   } catch (error) {
     // Unexpected error - return 500 to trigger Stripe retry
@@ -154,7 +146,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: 'Internal server error', details: errorMessage },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

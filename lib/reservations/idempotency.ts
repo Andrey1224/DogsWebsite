@@ -25,7 +25,7 @@ export class IdempotencyKeyGenerator {
   static forWebhook(
     provider: PaymentProvider,
     eventId: string,
-    metadata?: Record<string, string>
+    metadata?: Record<string, string>,
   ): string {
     const base = `${provider}:${eventId}`;
     if (!metadata || Object.keys(metadata).length === 0) {
@@ -35,7 +35,7 @@ export class IdempotencyKeyGenerator {
     // Sort keys to ensure consistent ordering
     const sortedMetadata = Object.keys(metadata)
       .sort()
-      .map(key => `${key}=${metadata[key]}`)
+      .map((key) => `${key}=${metadata[key]}`)
       .join('&');
 
     return `${base}:${sortedMetadata}`;
@@ -44,11 +44,7 @@ export class IdempotencyKeyGenerator {
   /**
    * Generate idempotency key for reservation operations
    */
-  static forReservation(
-    provider: PaymentProvider,
-    paymentId: string,
-    puppyId: string
-  ): string {
+  static forReservation(provider: PaymentProvider, paymentId: string, puppyId: string): string {
     return `${provider}:${paymentId}:${puppyId}`;
   }
 
@@ -73,7 +69,7 @@ export class IdempotencyManager {
   async checkWebhookEvent(
     provider: PaymentProvider,
     eventId: string,
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<IdempotencyCheckResult> {
     try {
       // Check by provider and event ID first
@@ -161,23 +157,22 @@ export class IdempotencyManager {
   /**
    * Create a webhook event with idempotency protection
    */
-  async createWebhookEvent(
-    params: CreateWebhookEventParams
-  ): Promise<CreateWebhookEventResult> {
+  async createWebhookEvent(params: CreateWebhookEventParams): Promise<CreateWebhookEventResult> {
     try {
       // Generate idempotency key if not provided
-      const idempotencyKey = params.idempotencyKey ||
+      const idempotencyKey =
+        params.idempotencyKey ||
         IdempotencyKeyGenerator.forWebhook(
           params.provider,
           params.eventId,
-          params.reservationId ? { reservationId: params.reservationId } : undefined
+          params.reservationId ? { reservationId: params.reservationId } : undefined,
         );
 
       // Check if event already exists
       const existing = await this.checkWebhookEvent(
         params.provider,
         params.eventId,
-        idempotencyKey
+        idempotencyKey,
       );
 
       if (existing.exists) {
@@ -248,10 +243,7 @@ export class IdempotencyManager {
   /**
    * Mark a webhook event as processed
    */
-  async markAsProcessed(
-    eventId: number,
-    reservationId?: string
-  ): Promise<boolean> {
+  async markAsProcessed(eventId: number, reservationId?: string): Promise<boolean> {
     try {
       const updates: {
         processed: boolean;
@@ -281,10 +273,7 @@ export class IdempotencyManager {
   /**
    * Mark a webhook event as failed
    */
-  async markAsFailed(
-    eventId: number,
-    error: string
-  ): Promise<boolean> {
+  async markAsFailed(eventId: number, error: string): Promise<boolean> {
     try {
       const { error: updateError } = await this.supabase
         .from('webhook_events')
@@ -359,7 +348,7 @@ export class IdempotencyManager {
         .from('webhook_events')
         .select('*')
         .eq('processed', false)
-        .or('processing_started_at.is.null,processing_started_at.lt.now() - interval \'5 minutes\'')
+        .or("processing_started_at.is.null,processing_started_at.lt.now() - interval '5 minutes'")
         .order('created_at', { ascending: true })
         .limit(limit);
 
@@ -400,7 +389,7 @@ export const idempotencyManager = new IdempotencyManager();
 export async function checkIdempotency(
   provider: PaymentProvider,
   eventId: string,
-  idempotencyKey?: string
+  idempotencyKey?: string,
 ): Promise<IdempotencyCheckResult> {
   return idempotencyManager.checkWebhookEvent(provider, eventId, idempotencyKey);
 }
@@ -409,7 +398,7 @@ export async function checkIdempotency(
  * Helper function to create webhook event with idempotency
  */
 export async function createWebhookEventWithIdempotency(
-  params: CreateWebhookEventParams
+  params: CreateWebhookEventParams,
 ): Promise<CreateWebhookEventResult> {
   return idempotencyManager.createWebhookEvent(params);
 }

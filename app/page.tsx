@@ -1,39 +1,39 @@
-import Image from "next/image";
-import Link from "next/link";
-import { buildMetadata } from "@/lib/seo/metadata";
-import { AboutPreview } from "@/components/home/about-preview";
-import { FaqPreview } from "@/components/home/faq-preview";
-import { ReviewsPreview } from "@/components/home/reviews-preview";
+import Image from 'next/image';
+import Link from 'next/link';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { AboutPreview } from '@/components/home/about-preview';
+import { FaqPreview } from '@/components/home/faq-preview';
+import { ReviewsPreview } from '@/components/home/reviews-preview';
 
 export const metadata = buildMetadata({
-  title: "Premium Bulldog Breeder in Alabama | Exotic Bulldog Legacy",
+  title: 'Premium Bulldog Breeder in Alabama | Exotic Bulldog Legacy',
   description:
-    "Discover French and English bulldog puppies raised with health-first standards, transparent pedigrees, and concierge ownership support in Montgomery, Alabama.",
-  path: "/",
-  image: "https://images.exoticbulldog.dev/hero/english-bulldog.jpg",
+    'Discover French and English bulldog puppies raised with health-first standards, transparent pedigrees, and concierge ownership support in Montgomery, Alabama.',
+  path: '/',
+  image: 'https://images.exoticbulldog.dev/hero/english-bulldog.jpg',
 });
 
 const highlights = [
   {
-    title: "Health-first standards",
+    title: 'Health-first standards',
     description:
-      "AKC pedigrees, OFA screenings, and transparent vet documentation for every sire and dam.",
+      'AKC pedigrees, OFA screenings, and transparent vet documentation for every sire and dam.',
   },
   {
-    title: "Curated matches",
+    title: 'Curated matches',
     description:
-      "Filter by breed, color, and temperament to find the bulldog that fits your family routine.",
+      'Filter by breed, color, and temperament to find the bulldog that fits your family routine.',
   },
   {
-    title: "Guided ownership",
+    title: 'Guided ownership',
     description:
-      "Personal support before and after adoption, plus secure deposits handled via Stripe & PayPal.",
+      'Personal support before and after adoption, plus secure deposits handled via Stripe & PayPal.',
   },
 ];
 
 export default function Home() {
   const HERO_BLUR_DATA_URL =
-    "data:image/webp;base64,UklGRlQBAABXRUJQVlA4IEgBAAAQCACdASooABsAPmUqj0WkIqEarfwAQAZEtgBOnKCp3vin0kYHgND/YJATZuuDAGkuJRRwYyXqy2jw6H5CcGwiBicy17fTEcAAAP6ilW9OHLZNo2xQNS0RM4xaI/dxLyfhpPwjpfHpuczC9xEeg8rQ464DYWkL2Xx3th+VF1+Debr9jE+tWvm51DfnwboUnlYOWCnm6oNpElxn5bEoN5DbSjsItcfeh7NzZFhJFl9WY5uwFGNM0vmT0x4ztGsqy01xzHIy4GZWGAJMIsHW5MdUJxsYRy86+qgyTZC4VjvQLScmuGePccUbroCFPwDLa5HbMEf1g4BOjjNONgvP/VptLpNlEi9CVQAz/OYUhstkcOJ8ndQsV59jOGjabqM7vOgYw6GyfbrM2dTr0JIz2X+loBgD1eOyng452NFz8BptkoiqU4GZcAAA";
+    'data:image/webp;base64,UklGRlQBAABXRUJQVlA4IEgBAAAQCACdASooABsAPmUqj0WkIqEarfwAQAZEtgBOnKCp3vin0kYHgND/YJATZuuDAGkuJRRwYyXqy2jw6H5CcGwiBicy17fTEcAAAP6ilW9OHLZNo2xQNS0RM4xaI/dxLyfhpPwjpfHpuczC9xEeg8rQ464DYWkL2Xx3th+VF1+Debr9jE+tWvm51DfnwboUnlYOWCnm6oNpElxn5bEoN5DbSjsItcfeh7NzZFhJFl9WY5uwFGNM0vmT0x4ztGsqy01xzHIy4GZWGAJMIsHW5MdUJxsYRy86+qgyTZC4VjvQLScmuGePccUbroCFPwDLa5HbMEf1g4BOjjNONgvP/VptLpNlEi9CVQAz/OYUhstkcOJ8ndQsV59jOGjabqM7vOgYw6GyfbrM2dTr0JIz2X+loBgD1eOyng452NFz8BptkoiqU4GZcAAA';
   return (
     <div className="relative overflow-hidden">
       {/* Hero Section */}
@@ -89,12 +89,8 @@ export default function Home() {
               key={item.title}
               className="rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[0_25px_60px_rgba(13,26,68,0.08)]"
             >
-              <h2 className="text-lg font-semibold text-text">
-                {item.title}
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                {item.description}
-              </p>
+              <h2 className="text-lg font-semibold text-text">{item.title}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted">{item.description}</p>
             </article>
           ))}
         </div>

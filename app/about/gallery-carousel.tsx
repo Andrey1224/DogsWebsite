@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo } from 'react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 function cx(...classes: Array<string | undefined | null | false>) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 type CarouselImage = {
@@ -20,10 +20,7 @@ type GalleryCarouselProps = {
 };
 
 export function GalleryCarousel({ images, className }: GalleryCarouselProps) {
-  const sanitizedImages = useMemo(
-    () => images.filter((image) => Boolean(image?.src)),
-    [images],
-  );
+  const sanitizedImages = useMemo(() => images.filter((image) => Boolean(image?.src)), [images]);
 
   const [index, setIndex] = useState(0);
   const total = sanitizedImages.length;
@@ -37,7 +34,9 @@ export function GalleryCarousel({ images, className }: GalleryCarouselProps) {
   const handleNext = () => setIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
 
   return (
-    <div className={cx("relative w-full max-w-full md:max-w-lg lg:max-w-xl xl:max-w-2xl", className)}>
+    <div
+      className={cx('relative w-full max-w-full md:max-w-lg lg:max-w-xl xl:max-w-2xl', className)}
+    >
       <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-md">
         <div className="relative w-full aspect-[2/3]">
           <Image
@@ -49,7 +48,7 @@ export function GalleryCarousel({ images, className }: GalleryCarouselProps) {
             placeholder="blur"
             blurDataURL={
               current.blurDataURL ??
-              "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AArgBSURVI2EAAAAASUVORK5CYII="
+              'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AArgBSURVI2EAAAAASUVORK5CYII='
             }
             sizes="(min-width: 1280px) 672px, (min-width: 1024px) 576px, (min-width: 768px) 512px, 100vw"
             className="h-full w-full object-cover object-center transition-transform duration-500"
@@ -83,8 +82,8 @@ export function GalleryCarousel({ images, className }: GalleryCarouselProps) {
                 type="button"
                 onClick={() => setIndex(dotIndex)}
                 className={cx(
-                  "h-2.5 w-2.5 rounded-full border border-border/70 transition",
-                  dotIndex === index ? "bg-text" : "bg-bg/70",
+                  'h-2.5 w-2.5 rounded-full border border-border/70 transition',
+                  dotIndex === index ? 'bg-text' : 'bg-bg/70',
                 )}
                 aria-label={`View image ${dotIndex + 1}`}
                 aria-current={dotIndex === index}

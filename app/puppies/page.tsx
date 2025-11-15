@@ -1,23 +1,23 @@
-import { Suspense } from "react";
+import { Suspense } from 'react';
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { PuppyCard } from "@/components/puppy-card";
-import { PuppyFilters } from "@/components/puppy-filters";
-import { getFilteredPuppies } from "@/lib/supabase/queries";
-import type { PuppyFilter } from "@/lib/supabase/queries";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { PuppyCard } from '@/components/puppy-card';
+import { PuppyFilters } from '@/components/puppy-filters';
+import { getFilteredPuppies } from '@/lib/supabase/queries';
+import type { PuppyFilter } from '@/lib/supabase/queries';
+import { buildMetadata } from '@/lib/seo/metadata';
 
 export const revalidate = 60;
 
 export const metadata = buildMetadata({
-  title: "Available French & English Bulldog Puppies",
+  title: 'Available French & English Bulldog Puppies',
   description:
-    "Browse Exotic Bulldog Legacy’s catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.",
-  path: "/puppies",
+    'Browse Exotic Bulldog Legacy’s catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.',
+  path: '/puppies',
 });
 
-const statusValues = new Set(["available", "reserved", "sold", "upcoming"]);
-const breedValues = new Set(["french_bulldog", "english_bulldog"]);
+const statusValues = new Set(['available', 'reserved', 'sold', 'upcoming']);
+const breedValues = new Set(['french_bulldog', 'english_bulldog']);
 
 type SearchParams = {
   status?: string;
@@ -34,11 +34,11 @@ export default async function PuppiesPage({
     status:
       resolvedSearchParams.status && statusValues.has(resolvedSearchParams.status)
         ? (resolvedSearchParams.status as PuppyFilter['status'])
-        : "all",
+        : 'all',
     breed:
       resolvedSearchParams.breed && breedValues.has(resolvedSearchParams.breed)
         ? (resolvedSearchParams.breed as PuppyFilter['breed'])
-        : "all",
+        : 'all',
   };
 
   const puppies = await getFilteredPuppies(filter);
@@ -47,14 +47,12 @@ export default async function PuppiesPage({
     <div className="mx-auto max-w-5xl space-y-10 px-6 py-12">
       <Breadcrumbs
         items={[
-          { label: "Home", href: "/" },
-          { label: "Puppies", href: "/puppies" },
+          { label: 'Home', href: '/' },
+          { label: 'Puppies', href: '/puppies' },
         ]}
       />
       <div className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
-          Puppies
-        </p>
+        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Puppies</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
           French & English bulldogs available and upcoming
         </h1>

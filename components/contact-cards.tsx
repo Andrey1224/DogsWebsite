@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
+import { usePathname } from 'next/navigation';
 
-import { useAnalytics } from "@/components/analytics-provider";
-import type { ContactCard } from "@/lib/config/contact";
+import { useAnalytics } from '@/components/analytics-provider';
+import type { ContactCard } from '@/lib/config/contact';
 
 type ContactCardsProps = {
   cards: ContactCard[];
@@ -25,7 +25,7 @@ export function ContactCards({ cards }: ContactCardsProps) {
             href={channel.href}
             className="mt-2 block text-lg font-semibold text-accent-aux hover:opacity-80"
             onClick={() =>
-              trackEvent("contact_click", {
+              trackEvent('contact_click', {
                 channel: channel.id,
                 href: channel.href,
                 context_path: pathname,

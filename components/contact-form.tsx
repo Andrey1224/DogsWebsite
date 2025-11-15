@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useActionState, useCallback, useEffect, useId, useRef, useState } from "react";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
-import { usePathname } from "next/navigation";
+import { useActionState, useCallback, useEffect, useId, useRef, useState } from 'react';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { usePathname } from 'next/navigation';
 
-import { submitContactInquiry } from "@/app/contact/actions";
-import type { ContactFormState } from "@/app/contact/actions";
-import { useAnalytics } from "@/components/analytics-provider";
+import { submitContactInquiry } from '@/app/contact/actions';
+import type { ContactFormState } from '@/app/contact/actions';
+import { useAnalytics } from '@/components/analytics-provider';
 
 const HC_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 const HC_BYPASS_TOKEN = process.env.NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN;
 
 const CONTACT_FORM_INITIAL_STATE: ContactFormState = {
-  status: "idle",
+  status: 'idle',
 };
 
 type ContactFormProps = {
@@ -27,7 +27,7 @@ type ContactFormProps = {
   };
 };
 
-type FieldName = "name" | "email" | "phone" | "message" | "captcha";
+type FieldName = 'name' | 'email' | 'phone' | 'message' | 'captcha';
 
 export function ContactForm({ heading, context }: ContactFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -50,16 +50,16 @@ export function ContactForm({ heading, context }: ContactFormProps) {
 
   // Persist form values on validation errors
   const [formValues, setFormValues] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
+    name: '',
+    email: '',
+    phone: '',
+    message: '',
   });
 
   useEffect(() => {
-    if (state.status === "success") {
+    if (state.status === 'success') {
       formRef.current?.reset();
-      setFormValues({ name: "", email: "", phone: "", message: "" });
+      setFormValues({ name: '', email: '', phone: '', message: '' });
       setCaptchaToken(HC_BYPASS_TOKEN ?? null);
       if (!isBypass) {
         captchaRef.current?.resetCaptcha();
@@ -68,10 +68,10 @@ export function ContactForm({ heading, context }: ContactFormProps) {
   }, [isBypass, state.status]);
 
   useEffect(() => {
-    if (state.status === "success" && !successTrackedRef.current) {
-      trackEvent("form_success", {
+    if (state.status === 'success' && !successTrackedRef.current) {
+      trackEvent('form_success', {
         context_path: pathname,
-        location: context?.puppySlug ? "puppy_detail" : "contact_page",
+        location: context?.puppySlug ? 'puppy_detail' : 'contact_page',
         puppy_slug: context?.puppySlug ?? undefined,
       });
       successTrackedRef.current = true;
@@ -85,15 +85,15 @@ export function ContactForm({ heading, context }: ContactFormProps) {
       // Capture form values before submission
       const formData = new FormData(e.currentTarget);
       setFormValues({
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        phone: formData.get("phone") as string,
-        message: formData.get("message") as string,
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        message: formData.get('message') as string,
       });
 
-      trackEvent("form_submit", {
+      trackEvent('form_submit', {
         context_path: pathname,
-        location: context?.puppySlug ? "puppy_detail" : "contact_page",
+        location: context?.puppySlug ? 'puppy_detail' : 'contact_page',
         puppy_slug: context?.puppySlug ?? undefined,
       });
     },
@@ -125,13 +125,9 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             </p>
           ) : null}
           {heading.title ? (
-            <h2 className="text-2xl font-semibold tracking-tight text-text">
-              {heading.title}
-            </h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-text">{heading.title}</h2>
           ) : null}
-          {heading.description ? (
-            <p className="text-sm text-muted">{heading.description}</p>
-          ) : null}
+          {heading.description ? <p className="text-sm text-muted">{heading.description}</p> : null}
         </header>
       ) : null}
 
@@ -148,9 +144,9 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             placeholder="Jane Doe"
             defaultValue={formValues.name}
             className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
-            aria-invalid={fieldErrors.name ? "true" : "false"}
+            aria-invalid={fieldErrors.name ? 'true' : 'false'}
           />
-          {renderError("name")}
+          {renderError('name')}
         </div>
         <div>
           <label className="block text-sm font-semibold text-text" htmlFor={emailId}>
@@ -164,10 +160,10 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             placeholder="you@example.com"
             defaultValue={formValues.email}
             className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
-            aria-invalid={fieldErrors.email ? "true" : "false"}
+            aria-invalid={fieldErrors.email ? 'true' : 'false'}
             autoComplete="email"
           />
-          {renderError("email")}
+          {renderError('email')}
         </div>
       </div>
 
@@ -182,10 +178,10 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           placeholder="+1 (205) 555-1234"
           defaultValue={formValues.phone}
           className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
-          aria-invalid={fieldErrors.phone ? "true" : "false"}
+          aria-invalid={fieldErrors.phone ? 'true' : 'false'}
           autoComplete="tel"
         />
-        {renderError("phone")}
+        {renderError('phone')}
       </div>
 
       <div>
@@ -200,13 +196,13 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           placeholder="Tell us about the puppy you're interested in, your timeline, and any must-have traits."
           defaultValue={formValues.message}
           className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-3 text-sm shadow-sm focus:border-accent focus:outline-none"
-          aria-invalid={fieldErrors.message ? "true" : "false"}
+          aria-invalid={fieldErrors.message ? 'true' : 'false'}
         />
-        {renderError("message")}
+        {renderError('message')}
       </div>
 
-      <input type="hidden" name="puppyId" value={context?.puppyId ?? ""} />
-      <input type="hidden" name="puppySlug" value={context?.puppySlug ?? ""} />
+      <input type="hidden" name="puppyId" value={context?.puppyId ?? ''} />
+      <input type="hidden" name="puppySlug" value={context?.puppySlug ?? ''} />
       <input type="hidden" name="contextPath" value={pathname} />
 
       <div className="space-y-2">
@@ -216,7 +212,8 @@ export function ContactForm({ heading, context }: ContactFormProps) {
           </p>
         ) : isBypass ? (
           <p className="rounded-2xl border border-dashed border-accent-aux/40 bg-[color:color-mix(in srgb, var(--accent-aux) 14%, var(--bg))] px-4 py-3 text-sm text-accent-aux">
-            Captcha bypass enabled for local testing. Remove `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` in production.
+            Captcha bypass enabled for local testing. Remove `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` in
+            production.
           </p>
         ) : (
           <HCaptcha
@@ -230,13 +227,13 @@ export function ContactForm({ heading, context }: ContactFormProps) {
             theme="light"
           />
         )}
-        <input type="hidden" name="h-captcha-response" value={captchaToken ?? ""} />
-        {renderError("captcha")}
+        <input type="hidden" name="h-captcha-response" value={captchaToken ?? ''} />
+        {renderError('captcha')}
       </div>
 
       <p className="text-xs text-muted">
-        We respond within one business day. By submitting, you consent to be contacted about current and
-        upcoming litters.
+        We respond within one business day. By submitting, you consent to be contacted about current
+        and upcoming litters.
       </p>
 
       <button
@@ -244,19 +241,17 @@ export function ContactForm({ heading, context }: ContactFormProps) {
         className="w-full rounded-full bg-[color:var(--btn-bg)] px-6 py-3 text-sm font-semibold text-[color:var(--btn-text)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-75"
         disabled={isPending || showCaptchaWarning || !captchaToken}
       >
-        {isPending ? "Sending…" : "Share my inquiry"}
+        {isPending ? 'Sending…' : 'Share my inquiry'}
       </button>
 
-      {state.status === "success" ? (
+      {state.status === 'success' ? (
         <p className="rounded-2xl bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] px-4 py-3 text-sm text-accent-aux">
           {state.message}
         </p>
       ) : null}
 
-      {state.status === "error" && state.message ? (
-        <p className="rounded-2xl bg-red-50/80 px-4 py-3 text-sm text-red-700">
-          {state.message}
-        </p>
+      {state.status === 'error' && state.message ? (
+        <p className="rounded-2xl bg-red-50/80 px-4 py-3 text-sm text-red-700">{state.message}</p>
       ) : null}
     </form>
   );

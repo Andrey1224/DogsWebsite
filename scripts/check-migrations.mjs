@@ -15,7 +15,7 @@ const rootDir = join(__dirname, '..');
 // Load .env.local manually
 const envContent = readFileSync(join(rootDir, '.env.local'), 'utf-8');
 const envVars = {};
-envContent.split('\n').forEach(line => {
+envContent.split('\n').forEach((line) => {
   const match = line.match(/^([^=]+)=(.*)$/);
   if (match) {
     envVars[match[1]] = match[2];

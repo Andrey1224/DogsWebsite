@@ -45,10 +45,7 @@ export const emailSchema = z.string().email('Invalid email format');
  */
 export const phoneSchema = z
   .string()
-  .regex(
-    /^\+?[\d\s\-\(\)]+$/,
-    'Invalid phone number format'
-  )
+  .regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format')
   .min(10, 'Phone number must be at least 10 characters')
   .max(20, 'Phone number cannot exceed 20 characters')
   .optional()
@@ -74,7 +71,12 @@ export const externalPaymentIdSchema = z.string().min(1, 'Payment ID is required
 export const createReservationParamsSchema = z.object({
   puppyId: uuidSchema,
   customerEmail: emailSchema,
-  customerName: z.string().trim().min(1, 'Customer name is required').max(100, 'Name too long').optional(),
+  customerName: z
+    .string()
+    .trim()
+    .min(1, 'Customer name is required')
+    .max(100, 'Name too long')
+    .optional(),
   customerPhone: phoneSchema,
   depositAmount: currencySchema,
   paymentProvider: paymentProviderSchema,
@@ -173,11 +175,13 @@ export const stripeCheckoutSessionSchema = z.object({
   customer: z.string().nullable(),
   metadata: z.record(z.string(), z.string()).optional(),
   payment_status: z.string(),
-  total_details: z.object({
-    amount_shipping: z.number(),
-    amount_discount: z.number(),
-    amount_tax: z.number(),
-  }).optional(),
+  total_details: z
+    .object({
+      amount_shipping: z.number(),
+      amount_discount: z.number(),
+      amount_tax: z.number(),
+    })
+    .optional(),
 });
 
 /**
@@ -205,11 +209,13 @@ export const paypalOrderSchema = z.object({
       surname: z.string(),
     }),
     email_address: z.string().optional(),
-    phone: z.object({
-      phone_number: z.object({
-        national_number: z.string(),
-      }),
-    }).optional(),
+    phone: z
+      .object({
+        phone_number: z.object({
+          national_number: z.string(),
+        }),
+      })
+      .optional(),
   }),
   create_time: z.string(),
   links: z.array(z.unknown()),
@@ -293,10 +299,7 @@ export const validateExpirationDate = (date?: Date): boolean => {
   return date > new Date();
 };
 
-export const validatePaymentId = (
-  paymentId: string,
-  provider: PaymentProvider
-): boolean => {
+export const validatePaymentId = (paymentId: string, provider: PaymentProvider): boolean => {
   switch (provider) {
     case 'stripe':
       // Stripe payment intent IDs start with 'pi_'
@@ -314,27 +317,23 @@ export const validatePaymentId = (
  */
 export const enhancedCreateReservationParamsSchema = createReservationParamsSchema
   .extend({
-    expiresAt: z.coerce.date().optional().refine(
-      validateExpirationDate,
-      'Expiration date must be in the future'
-    ),
+    expiresAt: z.coerce
+      .date()
+      .optional()
+      .refine(validateExpirationDate, 'Expiration date must be in the future'),
   })
-  .refine(
-    (data) => validatePaymentId(data.externalPaymentId, data.paymentProvider),
-    {
-      message: 'Invalid payment ID format for selected provider',
-      path: ['externalPaymentId'],
-    }
-  );
+  .refine((data) => validatePaymentId(data.externalPaymentId, data.paymentProvider), {
+    message: 'Invalid payment ID format for selected provider',
+    path: ['externalPaymentId'],
+  });
 
-export const enhancedWebhookEventParamsSchema = createWebhookEventParamsSchema
-  .refine(
-    (data) => {
-      if (!data.idempotencyKey) return true;
-      return data.idempotencyKey.length <= 255;
-    },
-    {
-      message: 'Idempotency key cannot exceed 255 characters',
-      path: ['idempotencyKey'],
-    }
-  );
+export const enhancedWebhookEventParamsSchema = createWebhookEventParamsSchema.refine(
+  (data) => {
+    if (!data.idempotencyKey) return true;
+    return data.idempotencyKey.length <= 255;
+  },
+  {
+    message: 'Idempotency key cannot exceed 255 characters',
+    path: ['idempotencyKey'],
+  },
+);

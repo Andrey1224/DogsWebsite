@@ -1,12 +1,12 @@
 'use server';
 
-import { getAdminSession } from "@/lib/admin/session";
-import { getAdminSupabaseClient } from "@/lib/admin/supabase";
+import { getAdminSession } from '@/lib/admin/session';
+import { getAdminSupabaseClient } from '@/lib/admin/supabase';
 
 async function requireAdminSession() {
   const session = await getAdminSession();
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
   return session;
 }
@@ -22,9 +22,7 @@ export async function getSignedUploadUrl(filePath: string) {
   const supabase = getAdminSupabaseClient();
 
   // Generate signed upload URL (valid for 60 seconds)
-  const { data, error } = await supabase.storage
-    .from('puppies')
-    .createSignedUploadUrl(filePath);
+  const { data, error } = await supabase.storage.from('puppies').createSignedUploadUrl(filePath);
 
   if (error) {
     console.error('Failed to create signed upload URL:', error);

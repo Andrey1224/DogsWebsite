@@ -20,14 +20,17 @@
 ## 2. 2025 Improvement Summary
 
 ### 2.1 Statement Descriptor
+
 - **Change:** Added `statement_descriptor: 'EXOTIC BULLDOG LEVEL'` to Stripe Checkout sessions (`app/puppies/[slug]/actions.ts`).
 - **Impact:** Reduces “unknown charge” disputes by ~30–40% and reinforces brand recognition on bank statements.
 
 ### 2.2 Async Payment Failure Response
+
 - **Change:** `checkout.session.async_payment_failed` now triggers customer outreach via `lib/emails/async-payment-failed.ts`.
 - **Highlights:** Branded HTML email, troubleshooting steps, retry links, and secure HTML escaping. Recovers ~25% of failed ACH/BNPL attempts.
 
 ### 2.3 Radar Enablement Playbook
+
 - **Change:** Formalised onboarding, custom rule set, and monitoring cadence for Stripe Radar (details below).
 - **Impact:** Blocks 70–85% of fraudulent $300 deposits, keeps chargeback rate <0.1%, and protects Stripe account health.
 
@@ -36,27 +39,32 @@
 ## 3. Stripe Radar Fraud Prevention Guide
 
 ### 3.1 Activation Checklist
+
 1. Enable Radar in the Stripe Dashboard.
 2. Review default rules (CVC, postal code, velocity checks) — keep all enabled.
 3. Configure webhook alerts to monitor blocked charge volume.
 
 ### 3.2 Recommended Custom Rules
+
 - **High-Velocity Card Usage:** Block when the same card fingerprint attempts >2 charges within 1 hour.
 - **International High-Value Review:** Challenge transactions >$250 originating from high-risk countries (Nigeria, Russia, Vietnam, Ukraine, Pakistan).
 - **Repeated Failures:** Block IP addresses that trigger >3 failed charges in 24 hours.
 
 ### 3.3 Risk Score Thresholds
+
 - 0–25: Auto-approve.
 - 26–50: Monitor or auto-approve with logging.
 - 51–75: Manual review before capture.
 - 76–100: Block.
 
 ### 3.4 Monitoring Cadence
+
 - **Daily:** Review blocked charge list to rescue legitimate customers with manual approval.
 - **Weekly:** Inspect Radar analytics for spike anomalies and adjust rules.
 - **Monthly:** Audit chargeback statistics; ensure rate remains below 0.1%.
 
 ### 3.5 Testing & Deployment
+
 - Use Stripe’s test card library and Radar’s rule testing sandbox.
 - Validate that friendly transactions still succeed after rule updates.
 - Document rule changes and owners in sprint retrospectives.
@@ -73,6 +81,7 @@
 
 ---
 
-**Contacts:**  
-- Engineering owner: Payment squad lead  
+**Contacts:**
+
+- Engineering owner: Payment squad lead
 - Security reviewer: Claude Code (October 2025 audit)

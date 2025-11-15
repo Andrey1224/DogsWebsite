@@ -1,9 +1,11 @@
 # Soft Delete (Archivation) Deployment Instructions
 
 ## Overview
+
 This deployment adds soft delete (archivation) functionality for puppies. Archived puppies are hidden from the public catalog but preserved for historical records (inquiries, reservations).
 
 ## Features Implemented
+
 - ✅ `is_archived` boolean field on puppies table
 - ✅ Database trigger for auto-archiving when status → 'sold'
 - ✅ Admin UI with Active/Archived tabs
@@ -71,6 +73,7 @@ FROM puppies;
 ```
 
 Expected output:
+
 - Column `is_archived` exists with type `boolean`, default `false`
 - Two indexes exist: `idx_puppies_is_archived` and `idx_puppies_active_created`
 - Trigger `trigger_auto_archive_sold` exists
@@ -100,6 +103,7 @@ git push origin main
 #### Test Checklist
 
 **Admin Panel Tests:**
+
 1. ✅ Go to `/admin/puppies` - should see "Active" and "Archived" tabs
 2. ✅ Click "Archived" tab - should show empty state or archived puppies
 3. ✅ On Active tab, click "Archive" on a puppy without reservations - should succeed
@@ -109,11 +113,13 @@ git push origin main
 7. ✅ Archived puppy shows "Delete Permanently" instead of "Archive"
 
 **Public Site Tests:**
+
 1. ✅ Visit `/puppies` - archived puppies should NOT appear
 2. ✅ Try to access archived puppy detail page directly - should return 404
 3. ✅ Filters should only show active puppies
 
 **Database Tests:**
+
 1. ✅ Manually UPDATE a puppy status to 'sold' in SQL - `is_archived` should auto-set to `true`
 2. ✅ Check inquiries/reservations still reference archived puppies correctly
 

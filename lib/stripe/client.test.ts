@@ -36,7 +36,7 @@ describe('Stripe Client', () => {
 
     expect(webhookSecret).toBe('');
     expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('STRIPE_WEBHOOK_SECRET is not set')
+      expect.stringContaining('STRIPE_WEBHOOK_SECRET is not set'),
     );
 
     consoleWarnSpy.mockRestore();

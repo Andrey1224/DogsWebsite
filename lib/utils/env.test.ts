@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-import {
-  getRequiredEnv,
-  getSiteUrl,
-  validatePaymentEnv,
-} from './env';
+import { getRequiredEnv, getSiteUrl, validatePaymentEnv } from './env';
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -19,8 +15,9 @@ describe('env utilities', () => {
 
   it('throws when required env variable is missing', () => {
     delete process.env.STRIPE_SECRET_KEY;
-    expect(() => getRequiredEnv('STRIPE_SECRET_KEY', 'Stripe secret'))
-      .toThrow(/Missing required environment variable/);
+    expect(() => getRequiredEnv('STRIPE_SECRET_KEY', 'Stripe secret')).toThrow(
+      /Missing required environment variable/,
+    );
   });
 
   it('returns inferred site URL in development', () => {

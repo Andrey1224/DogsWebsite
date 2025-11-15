@@ -9,11 +9,11 @@
  * Returns 200 OK if webhooks are healthy, 503 Service Unavailable if issues detected
  */
 
-import { NextResponse } from "next/server";
-import { createSupabaseClient } from "@/lib/supabase/client";
+import { NextResponse } from 'next/server';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 interface WebhookHealthStatus {
   healthy: boolean;
@@ -56,25 +56,25 @@ export async function GET() {
     const supabase = createSupabaseClient();
     const now = new Date();
     const recentCutoff = new Date(
-      now.getTime() - HEALTH_CHECK_CONFIG.RECENT_WINDOW_MINUTES * 60 * 1000
+      now.getTime() - HEALTH_CHECK_CONFIG.RECENT_WINDOW_MINUTES * 60 * 1000,
     );
 
     // Fetch recent webhook events
     const { data: allEvents, error: allEventsError } = await supabase
-      .from("webhook_events")
-      .select("*")
-      .gte("created_at", recentCutoff.toISOString())
-      .order("created_at", { ascending: false });
+      .from('webhook_events')
+      .select('*')
+      .gte('created_at', recentCutoff.toISOString())
+      .order('created_at', { ascending: false });
 
     if (allEventsError) {
-      console.error("[Health Check] Failed to fetch webhook events:", allEventsError);
+      console.error('[Health Check] Failed to fetch webhook events:', allEventsError);
       return NextResponse.json(
         {
           healthy: false,
-          error: "Failed to query webhook events",
+          error: 'Failed to query webhook events',
           timestamp: now.toISOString(),
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
@@ -82,23 +82,23 @@ export async function GET() {
 
     // Calculate provider-specific health
     const stripeHealth = calculateProviderHealth(
-      events.filter((e) => e.provider === "stripe"),
-      now
+      events.filter((e) => e.provider === 'stripe'),
+      now,
     );
     const paypalHealth = calculateProviderHealth(
-      events.filter((e) => e.provider === "paypal"),
-      now
+      events.filter((e) => e.provider === 'paypal'),
+      now,
     );
 
     // Calculate overall summary
     const { data: totalEventsData } = await supabase
-      .from("webhook_events")
-      .select("id", { count: "exact", head: true });
+      .from('webhook_events')
+      .select('id', { count: 'exact', head: true });
 
     const totalEvents = totalEventsData?.length || 0;
 
     const failedEvents = events.filter(
-      (e) => e.payload && typeof e.payload === "object" && "error" in e.payload
+      (e) => e.payload && typeof e.payload === 'object' && 'error' in e.payload,
     ).length;
 
     const lastEvent = events[0];
@@ -130,18 +130,18 @@ export async function GET() {
     return NextResponse.json(healthStatus, {
       status: isHealthy ? 200 : 503,
       headers: {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     });
   } catch (error) {
-    console.error("[Health Check] Unexpected error:", error);
+    console.error('[Health Check] Unexpected error:', error);
     return NextResponse.json(
       {
         healthy: false,
-        error: "Internal server error during health check",
+        error: 'Internal server error during health check',
         timestamp: new Date().toISOString(),
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }
@@ -154,7 +154,7 @@ function calculateProviderHealth(
     created_at: string;
     payload: unknown;
   }>,
-  now: Date
+  now: Date,
 ): WebhookProviderHealth {
   if (events.length === 0) {
     return {
@@ -168,11 +168,11 @@ function calculateProviderHealth(
   }
 
   const failedEvents = events.filter(
-    (e) => e.payload && typeof e.payload === "object" && "error" in e.payload
+    (e) => e.payload && typeof e.payload === 'object' && 'error' in e.payload,
   );
 
   const successEvents = events.filter(
-    (e) => !e.payload || typeof e.payload !== "object" || !("error" in e.payload)
+    (e) => !e.payload || typeof e.payload !== 'object' || !('error' in e.payload),
   );
 
   const errorRate = events.length > 0 ? failedEvents.length / events.length : 0;

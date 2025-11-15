@@ -1,9 +1,9 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import Home from "./page";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import Home from './page';
 
-describe("Home", () => {
-  it("renders the primary value proposition", () => {
+describe('Home', () => {
+  it('renders the primary value proposition', () => {
     render(<Home />);
 
     expect(

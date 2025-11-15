@@ -80,11 +80,11 @@ export function ReserveButton({
         <div className="space-y-3 rounded-3xl border border-border bg-card p-6">
           <p className="text-sm font-semibold text-accent">Reservation in progress</p>
           <p className="text-sm text-muted">
-            Someone is currently completing a deposit for this puppy. Please check back in about 15 minutes
-            or{" "}
+            Someone is currently completing a deposit for this puppy. Please check back in about 15
+            minutes or{' '}
             <a href="/contact" className="font-semibold text-accent hover:underline">
               contact us
-            </a>{" "}
+            </a>{' '}
             if you&apos;d like to be notified when it becomes available again.
           </p>
         </div>
@@ -95,14 +95,14 @@ export function ReserveButton({
       <div className="space-y-3 rounded-3xl border border-border bg-card p-6">
         <p className="text-sm font-semibold text-muted">Status Update</p>
         <p className="text-sm text-muted">
-          This puppy is currently <span className="font-semibold capitalize">{status}</span> and
-          not available for reservation.
+          This puppy is currently <span className="font-semibold capitalize">{status}</span> and not
+          available for reservation.
         </p>
         <p className="text-sm text-muted">
-          Please check back later or{" "}
+          Please check back later or{' '}
           <a href="/contact" className="font-semibold text-accent hover:underline">
             contact us
-          </a>{" "}
+          </a>{' '}
           for more information.
         </p>
       </div>
@@ -113,7 +113,8 @@ export function ReserveButton({
     <div className="space-y-3 rounded-3xl border border-accent/40 bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] p-6">
       <p className="text-sm font-semibold text-accent-aux">Ready to reserve?</p>
       <p className="text-sm text-accent-aux/80">
-        Secure your puppy with a ${depositLabel} deposit. Choose Stripe or PayPal for secure payment processing.
+        Secure your puppy with a ${depositLabel} deposit. Choose Stripe or PayPal for secure payment
+        processing.
       </p>
 
       {error && (

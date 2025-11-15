@@ -17,6 +17,7 @@ nvm alias default 20
 ```
 
 **Why Node 20?**
+
 - jsdom@27.0.0 requires Node >=20
 - @vitejs/plugin-react@5.0.4 requires Node >=20.19.0
 - Matches CI/CD environment (GitHub Actions uses Node 20)
@@ -24,6 +25,7 @@ nvm alias default 20
 ## Development Commands
 
 ### Core Development
+
 - `npm run dev` - Start the development server on localhost:3000
 - `npm run build` - Build the production application (mirrors Vercel deployment)
 - `npm run start` - Start the production server
@@ -36,6 +38,7 @@ nvm alias default 20
 - `npm run validate-deployment` - Validate production deployment health
 
 ### Testing Requirements
+
 - Use `HCAPTCHA_BYPASS_TOKEN` environment variable for automated contact form testing
 - E2E tests cover catalog filtering and contact form submission
 - Target ≥80% test coverage on shared logic
@@ -43,6 +46,7 @@ nvm alias default 20
 ## Project Architecture
 
 ### Technology Stack
+
 - **Frontend**: Next.js 15 (App Router) + React 19 + TypeScript
 - **Styling**: Tailwind CSS v4 with custom design tokens
 - **Database**: Supabase (PostgreSQL + Row Level Security)
@@ -55,6 +59,7 @@ nvm alias default 20
 ### Key Architectural Patterns
 
 #### Data Flow
+
 - **Catalog Pages**: `/puppies` and `/puppies/[slug]` use ISR with 60s revalidation
 - **Content Pages**: `/faq`, `/policies`, `/reviews` use static generation with rich JSON-LD schemas
 - **Contact Flow**: Form submissions → Server Action → Supabase `inquiries` table
@@ -63,6 +68,7 @@ nvm alias default 20
 - **SEO Pipeline**: Dynamic `robots.txt` and `sitemap.xml` via Next.js 15 route handlers
 
 #### Component Architecture
+
 - **Layout Components**: `SiteHeader`, `SiteFooter`, `ContactBar` (sticky)
 - **Provider Chain**: `ThemeProvider` → `AnalyticsProvider` → page content
 - **Shared Components**: `PuppyCard`, `PuppyGallery`, `ContactForm`, `PuppyFilters`, `Breadcrumbs`, `JsonLd`
@@ -70,7 +76,9 @@ nvm alias default 20
 - **SEO Components**: `JsonLd` wrapper for structured data, `Breadcrumbs` with automatic JSON-LD
 
 #### Contact & Analytics Stack
+
 The contact system spans multiple interconnected files:
+
 - UI submits via `components/contact-form.tsx` → `app/contact/actions.ts`
 - Validation: `lib/inquiries/schema.ts` (Zod schemas)
 - Rate limiting: `lib/inquiries/rate-limit.ts` (Supabase-backed)
@@ -80,6 +88,7 @@ The contact system spans multiple interconnected files:
 - Chat: `components/crisp-chat.tsx` (emits events for `ContactBar`)
 
 #### Admin Panel Architecture
+
 - **Authentication**: Session-based auth with signed cookies (`lib/admin/session.ts`)
 - **Middleware Protection**: `/admin/*` routes guarded by `middleware.ts`
 - **Login**: `/admin/login` with credential validation
@@ -89,6 +98,7 @@ The contact system spans multiple interconnected files:
 - **Breed Field**: Direct `breed` field on puppies table (french_bulldog | english_bulldog) with priority over parent breed
 
 **Key Files**:
+
 - `lib/admin/session.ts` - Session cookie encoding/decoding
 - `lib/admin/supabase.ts` - Admin Supabase client (service role)
 - `lib/admin/puppies/queries.ts` - Admin puppy CRUD operations
@@ -99,6 +109,7 @@ The contact system spans multiple interconnected files:
 - `lib/admin/hooks/use-media-upload.ts` - Client-side upload hook with progress tracking
 
 **Important Implementation Notes**:
+
 - **File Uploads**: Files are uploaded client-side directly to Supabase Storage using signed URLs (60s validity). Server Actions only receive URLs (< 1KB payload) to avoid the 1MB Server Action limit.
 - **Breed Priority**: Always use `puppy.breed` field first, fallback to `puppy.parents.sire.breed` or `puppy.parents.dam.breed` for backward compatibility. This applies to filtering (`lib/supabase/queries.ts`), display (`components/puppy-card.tsx`), and detail pages (`app/puppies/[slug]/page.tsx`).
 - **Parent Metadata**: Puppies can have direct `sire_name`, `dam_name`, `sire_photo_urls[]`, `dam_photo_urls[]` fields without requiring parent records in `parents` table.
@@ -106,6 +117,7 @@ The contact system spans multiple interconnected files:
 ### Environment Configuration
 
 #### Required Environment Variables
+
 ```bash
 # Supabase
 SUPABASE_URL=
@@ -167,10 +179,12 @@ NEXT_PUBLIC_SITE_URL=
 ## Design System & Theming
 
 ### Color Tokens (Defined in `app/globals.css`)
+
 - **Light Theme**: `#F9FAFB` (bg), `#FFFFFF` (cards), `#111111/#555555` (text), `#FFB84D` (accent), `#FF4D79→#FF7FA5` (gradient), `#0D1A44` (aux navy)
 - **Dark Theme**: `#0D1A44/#1C1C1C` (bg/cards), `#FFFFFF/#D1D5DB` (text), same accent/gradient, `#FFD166` (aux gold)
 
 ### Theme System
+
 - Theme state managed by `components/theme-provider.tsx`
 - Persisted preference: `light`, `dark`, or `system`
 - Applied via `data-theme="light" | "dark"` on `<html>`
@@ -178,6 +192,7 @@ NEXT_PUBLIC_SITE_URL=
 - Tailwind utilities: `bg-bg`, `bg-card`, `text-muted`, `border-border`, `bg-accent-gradient`
 
 ### Component Styling Guidelines
+
 - Use CSS custom properties for colors: `bg-[color:var(--btn-bg)]`
 - Accent tints use `color-mix()` helpers
 - Extend tokens centrally for new surfaces
@@ -186,6 +201,7 @@ NEXT_PUBLIC_SITE_URL=
 ## Database Schema
 
 ### Core Tables
+
 - `parents`: Sire/dam information with health clearances, breed field
 - `litters`: Mating dates, due dates, birth dates
 - `puppies`: Individual puppies with status, pricing, media, **direct breed field**, parent metadata fields
@@ -194,6 +210,7 @@ NEXT_PUBLIC_SITE_URL=
 - `webhook_events`: Audit trail for payment webhooks
 
 ### Key Relationships
+
 - `puppies` → `litters` → `parents` (sire/dam) - **Optional for backward compatibility**
 - `puppies` can have direct parent metadata (sire_name, dam_name, photo URLs) without parent records
 - `puppies` have direct `breed` field (priority over parent breed)
@@ -201,6 +218,7 @@ NEXT_PUBLIC_SITE_URL=
 - `inquiries` → `puppies` (lead source attribution)
 
 ### Migration & Seeding
+
 - Initial schema: `supabase/migrations/20241007T000000Z_initial_schema.sql`
 - Parent metadata: `supabase/migrations/20250812T000000Z_add_parent_metadata_to_puppies.sql`
 - Breed field: `supabase/migrations/20250109T180000Z_add_breed_to_puppies.sql`
@@ -211,6 +229,7 @@ NEXT_PUBLIC_SITE_URL=
 ## File Organization
 
 ### Route Structure
+
 - `app/` - Next.js App Router pages
 - `app/(section)/[slug]/` - Page-specific logic co-location
 - `app/contact/actions.ts` - Server actions for contact form
@@ -218,6 +237,7 @@ NEXT_PUBLIC_SITE_URL=
 - `app/api/` - API routes (webhooks, health checks)
 
 ### Component Organization
+
 - `components/` - Shared React components
 - `lib/` - Utilities, Supabase clients, business logic
 - `lib/admin/` - Admin-specific utilities and queries
@@ -225,6 +245,7 @@ NEXT_PUBLIC_SITE_URL=
 - `supabase/` - Database migrations and seeds
 
 ### Key Business Logic Files
+
 - `lib/supabase/queries.ts` - Database query functions
 - `lib/supabase/types.ts` - TypeScript type definitions
 - `lib/inquiries/schema.ts` - Contact form validation
@@ -236,13 +257,16 @@ NEXT_PUBLIC_SITE_URL=
 ## Integration Patterns
 
 ### Contact & Analytics Events
+
 Track these events via `useAnalytics().trackEvent`:
+
 - `contact_click` (channel: whatsapp/telegram/call/sms/email)
 - `form_submit` and `form_success`
 - `chat_open` (Crisp interactions)
 - `reserve_click` and `deposit_paid` (tracked via GA4 Measurement Protocol)
 
 ### Payment Processing (Sprint 3 - Complete)
+
 - **Stripe**: Checkout Sessions created in `app/puppies/[slug]/actions.ts`, fulfilled via `/api/stripe/webhook` → `lib/stripe/webhook-handler.ts`
 - **PayPal**: Smart Buttons call `/api/paypal/create-order` and `/api/paypal/capture`; webhooks verified at `/api/paypal/webhook`
 - **Reservation Flow**: `ReservationCreationService` handles atomic puppy reservation with race condition protection
@@ -252,6 +276,7 @@ Track these events via `useAnalytics().trackEvent`:
 - **Monitoring**: `/api/health/webhooks` endpoint + email/Slack alerts for webhook failures
 
 ### Media Handling
+
 - Store in Supabase Storage buckets: `puppies`, `parents`, `litters`
 - **Admin Uploads**: Client-side direct uploads using signed URLs (bypasses Server Action 1MB limit)
   - Flow: Request signed URL → Upload via fetch(PUT) → Get public URL → Submit URL to Server Action
@@ -261,6 +286,7 @@ Track these events via `useAnalytics().trackEvent`:
 - Preload hero images and LCP candidates
 
 ### SEO & Structured Data (Sprint 4)
+
 - **Metadata**: Centralized helper in `lib/seo/metadata.ts` generates title, description, OG, Twitter Card tags
 - **Structured Data**: JSON-LD generators in `lib/seo/structured-data.ts` for:
   - `Organization` - Site-wide business identity
@@ -277,6 +303,7 @@ Track these events via `useAnalytics().trackEvent`:
 ## Quality Assurance
 
 ### Pre-commit Checks
+
 - ESLint: `npm run lint` (zero warnings policy)
 - TypeScript: `npm run typecheck` (strict mode)
 - Unit tests: `npm run test`
@@ -284,12 +311,14 @@ Track these events via `useAnalytics().trackEvent`:
 - All checks: `npm run verify`
 
 ### SEO & Performance Validation
+
 - Lighthouse: Target scores ≥90 for SEO, Accessibility, Performance
 - Rich Results: Validate JSON-LD with Google Rich Results Test or `npx structured-data-testing-tool --presets Google`
 - Core Web Vitals: LCP ≤2.5s, CLS ≤0.1, INP ≤200ms
 - Sitemap: Submit `sitemap.xml` to Google Search Console for indexing
 
 ### CI/CD Pipeline
+
 - GitHub Actions mirror local commands
 - Deploy to Vercel on merge to main
 - Environment-specific secrets management
@@ -298,6 +327,7 @@ Track these events via `useAnalytics().trackEvent`:
 ## Context7 Usage
 
 Always use Context7 MCP tools for:
+
 - Code generation and setup tasks
 - Library/API documentation lookup
 - Configuration steps for new integrations
@@ -307,6 +337,7 @@ Process: `resolve-library-id` → `get-library-docs` → implement solution
 ## Documentation Maintenance
 
 Keep these files synchronized when making changes:
+
 - `Spec1.md` - Product requirements source
 - `SPRINT_PLAN.md` - Execution roadmap
 - `AGENTS.md` - Contributor practices
@@ -320,5 +351,6 @@ Keep these files synchronized when making changes:
 When modifying the contact/analytics stack or admin panel, update all connected files and refresh documentation to maintain contributor understanding.
 
 ### Sprint-Specific Notes
+
 - **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622).
 - **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `docs/admin/admin-panel-changelog.md` for detailed implementation history.

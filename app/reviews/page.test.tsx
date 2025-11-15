@@ -9,7 +9,7 @@ describe('Reviews Page', () => {
     expect(
       screen.getByRole('heading', {
         name: /Families who chose Exotic Bulldog Legacy/i,
-      })
+      }),
     ).toBeInTheDocument();
   });
 
@@ -17,7 +17,7 @@ describe('Reviews Page', () => {
     render(<ReviewsPage />);
 
     expect(
-      screen.getByText(/our team stays involved at every step of the adoption journey/i)
+      screen.getByText(/our team stays involved at every step of the adoption journey/i),
     ).toBeInTheDocument();
   });
 
@@ -78,11 +78,7 @@ describe('Reviews Page', () => {
   it('renders review quotes', () => {
     render(<ReviewsPage />);
 
-    expect(
-      screen.getByText(/We picked up our French Bulldog, Charlie/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Our English Bulldog Duke is doing amazing/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/We picked up our French Bulldog, Charlie/i)).toBeInTheDocument();
+    expect(screen.getByText(/Our English Bulldog Duke is doing amazing/i)).toBeInTheDocument();
   });
 });

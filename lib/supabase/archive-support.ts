@@ -1,8 +1,8 @@
-import type { PostgrestError } from "@supabase/supabase-js";
+import type { PostgrestError } from '@supabase/supabase-js';
 
-type ArchiveColumnState = "unknown" | "available" | "missing";
+type ArchiveColumnState = 'unknown' | 'available' | 'missing';
 
-let archiveColumnState: ArchiveColumnState = "unknown";
+let archiveColumnState: ArchiveColumnState = 'unknown';
 let hasWarnedAboutMissingColumn = false;
 
 function logMissingColumnWarning() {
@@ -12,20 +12,20 @@ function logMissingColumnWarning() {
 
   hasWarnedAboutMissingColumn = true;
   console.warn(
-    "[Supabase] The `puppies.is_archived` column is missing. Falling back to legacy behavior until migrations run.",
+    '[Supabase] The `puppies.is_archived` column is missing. Falling back to legacy behavior until migrations run.',
   );
 }
 
 export function shouldUseArchiveColumn(): boolean {
-  return archiveColumnState !== "missing";
+  return archiveColumnState !== 'missing';
 }
 
 export function markArchiveColumnAvailable(): void {
-  archiveColumnState = "available";
+  archiveColumnState = 'available';
 }
 
 export function markArchiveColumnMissing(): void {
-  archiveColumnState = "missing";
+  archiveColumnState = 'missing';
   logMissingColumnWarning();
 }
 
@@ -35,9 +35,9 @@ export function isArchiveColumnMissingError(error: PostgrestError | null): boole
   }
 
   const referencesArchiveField =
-    typeof error.message === "string" && error.message.includes("is_archived");
+    typeof error.message === 'string' && error.message.includes('is_archived');
 
-  return error.code === "42703" && referencesArchiveField;
+  return error.code === '42703' && referencesArchiveField;
 }
 
 type ArchiveAwareResult<T> = {

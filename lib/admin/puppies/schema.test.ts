@@ -1,21 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { createPuppySchema } from "./schema";
+import { createPuppySchema } from './schema';
 
 const basePayload = {
-  name: "Test Puppy",
-  status: "available" as const,
-  slug: "test-puppy",
+  name: 'Test Puppy',
+  status: 'available' as const,
+  slug: 'test-puppy',
 };
 
-describe("createPuppySchema photoUrls", () => {
-  it("accepts up to three valid URLs", () => {
+describe('createPuppySchema photoUrls', () => {
+  it('accepts up to three valid URLs', () => {
     const result = createPuppySchema.safeParse({
       ...basePayload,
       photoUrls: [
-        "https://example.com/one.jpg",
-        "https://example.com/two.jpg",
-        "https://example.com/three.jpg",
+        'https://example.com/one.jpg',
+        'https://example.com/two.jpg',
+        'https://example.com/three.jpg',
       ],
     });
 
@@ -25,20 +25,20 @@ describe("createPuppySchema photoUrls", () => {
     }
   });
 
-  it("rejects more than three URLs", () => {
+  it('rejects more than three URLs', () => {
     const result = createPuppySchema.safeParse({
       ...basePayload,
       photoUrls: [
-        "https://example.com/one.jpg",
-        "https://example.com/two.jpg",
-        "https://example.com/three.jpg",
-        "https://example.com/four.jpg",
+        'https://example.com/one.jpg',
+        'https://example.com/two.jpg',
+        'https://example.com/three.jpg',
+        'https://example.com/four.jpg',
       ],
     });
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe("Select up to 3 photos");
+      expect(result.error.issues[0]?.message).toBe('Select up to 3 photos');
     }
   });
 });

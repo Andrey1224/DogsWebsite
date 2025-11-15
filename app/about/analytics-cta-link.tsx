@@ -1,9 +1,9 @@
 'use client';
 
-import Link, { LinkProps } from "next/link";
-import { useCallback } from "react";
-import type { MouseEvent, ReactNode } from "react";
-import { useAnalytics } from "@/components/analytics-provider";
+import Link, { LinkProps } from 'next/link';
+import { useCallback } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
+import { useAnalytics } from '@/components/analytics-provider';
 
 type AnalyticsCtaLinkProps = LinkProps & {
   children: ReactNode;
@@ -21,7 +21,7 @@ export function AnalyticsCtaLink({
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
-      trackEvent("about_cta", { href });
+      trackEvent('about_cta', { href });
       onClick?.(event);
     },
     [href, onClick, trackEvent],

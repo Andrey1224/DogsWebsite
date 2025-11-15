@@ -10,113 +10,113 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
   const required = {
     NEXT_PUBLIC_SITE_URL: {
       pattern: /^https?:\/\/.+/,
-      description: "Site URL (http://localhost:3000 or https://domain.com)"
+      description: 'Site URL (http://localhost:3000 or https://domain.com)',
     },
     SUPABASE_URL: {
       pattern: /^https:\/\/.+\.supabase\.co$/,
-      description: "Supabase project URL"
+      description: 'Supabase project URL',
     },
     SUPABASE_ANON_KEY: {
       pattern: /^eyJ/,
-      description: "Supabase anonymous key"
+      description: 'Supabase anonymous key',
     },
     NEXT_PUBLIC_CONTACT_PHONE: {
       pattern: /^\+\d{10,15}$/,
-      description: "Contact phone in E.164 format (+12055551234)"
+      description: 'Contact phone in E.164 format (+12055551234)',
     },
     NEXT_PUBLIC_CONTACT_EMAIL: {
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      description: "Contact email address"
+      description: 'Contact email address',
     },
   };
 
   const recommended = {
     ADMIN_LOGIN: {
       pattern: undefined,
-      description: "Admin console login identifier"
+      description: 'Admin console login identifier',
     },
     ADMIN_PASSWORD: {
       pattern: undefined,
-      description: "Admin console password"
+      description: 'Admin console password',
     },
     ADMIN_SESSION_SECRET: {
       pattern: /^.{16,}$/,
-      description: "Secret string (16+ chars) used to sign admin session cookies"
+      description: 'Secret string (16+ chars) used to sign admin session cookies',
     },
     ADMIN_SESSION_TTL_HOURS: {
       pattern: /^(?:[1-9]\d*)$/,
-      description: "Admin session lifetime in hours (integer)"
+      description: 'Admin session lifetime in hours (integer)',
     },
     RESEND_API_KEY: {
       pattern: /^re_[a-zA-Z0-9_]+$/,
-      description: "Resend API key for email notifications"
+      description: 'Resend API key for email notifications',
     },
     OWNER_EMAIL: {
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      description: "Owner email for notifications"
+      description: 'Owner email for notifications',
     },
     RESEND_DELIVERY_MODE: {
       pattern: /^(auto|always|never)$/i,
-      description: "Email delivery mode (auto=prod only, always, never)"
+      description: 'Email delivery mode (auto=prod only, always, never)',
     },
     NEXT_PUBLIC_GA_MEASUREMENT_ID: {
       pattern: /^G-[A-Z0-9]+$/,
-      description: "Google Analytics 4 measurement ID"
+      description: 'Google Analytics 4 measurement ID',
     },
     NEXT_PUBLIC_CRISP_WEBSITE_ID: {
       pattern: /^[a-f0-9-]{36}$/,
-      description: "Crisp chat website ID"
+      description: 'Crisp chat website ID',
     },
     NEXT_PUBLIC_CONTACT_LATITUDE: {
       pattern: /^-?\d+(\.\d+)?$/,
-      description: "Business latitude in decimal degrees"
+      description: 'Business latitude in decimal degrees',
     },
     NEXT_PUBLIC_CONTACT_LONGITUDE: {
       pattern: /^-?\d+(\.\d+)?$/,
-      description: "Business longitude in decimal degrees"
+      description: 'Business longitude in decimal degrees',
     },
     NEXT_PUBLIC_CONTACT_HOURS: {
       pattern: undefined,
-      description: "JSON array of business hours"
+      description: 'JSON array of business hours',
     },
     NEXT_PUBLIC_CONTACT_ADDRESS: {
       pattern: undefined,
-      description: "Full mailing address (Street, City, ST ZIP, Country)"
+      description: 'Full mailing address (Street, City, ST ZIP, Country)',
     },
     // Payment processing (Stripe)
     STRIPE_SECRET_KEY: {
       pattern: /^sk_(test|live)_[a-zA-Z0-9]+$/,
-      description: "Stripe secret key (sk_test_... or sk_live_...)"
+      description: 'Stripe secret key (sk_test_... or sk_live_...)',
     },
     STRIPE_WEBHOOK_SECRET: {
       pattern: /^whsec_(test_)?[a-zA-Z0-9]+$/,
-      description: "Stripe webhook secret (whsec_...)"
+      description: 'Stripe webhook secret (whsec_...)',
     },
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: {
       pattern: /^pk_(test|live)_[a-zA-Z0-9]+$/,
-      description: "Stripe publishable key (pk_test_... or pk_live_...)"
+      description: 'Stripe publishable key (pk_test_... or pk_live_...)',
     },
     // Payment processing (PayPal)
     PAYPAL_CLIENT_ID: {
       pattern: undefined,
-      description: "PayPal client ID"
+      description: 'PayPal client ID',
     },
     PAYPAL_CLIENT_SECRET: {
       pattern: undefined,
-      description: "PayPal client secret"
+      description: 'PayPal client secret',
     },
     PAYPAL_ENV: {
       pattern: /^(sandbox|live)$/,
-      description: "PayPal environment (sandbox or live)"
+      description: 'PayPal environment (sandbox or live)',
     },
     // Server-side analytics
     GA4_API_SECRET: {
       pattern: undefined,
-      description: "GA4 API secret for Measurement Protocol"
+      description: 'GA4 API secret for Measurement Protocol',
     },
     META_CONVERSION_API_TOKEN: {
       pattern: undefined,
-      description: "Meta Conversion API access token"
+      description: 'Meta Conversion API access token',
     },
   };
 
@@ -142,7 +142,9 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
     }
 
     if (config.pattern && !config.pattern.test(value)) {
-      warnings.push(`⚠️  Invalid format for ${key}: ${config.description}. Current value: ${value}`);
+      warnings.push(
+        `⚠️  Invalid format for ${key}: ${config.description}. Current value: ${value}`,
+      );
     }
   }
 
@@ -155,25 +157,25 @@ export function validateContactLinks() {
   // Phone validation
   const phone = process.env.NEXT_PUBLIC_CONTACT_PHONE;
   if (!phone || !/^\+\d{10,15}$/.test(phone)) {
-    errors.push("Invalid phone format. Use E.164 format: +12055551234");
+    errors.push('Invalid phone format. Use E.164 format: +12055551234');
   }
 
   // Email validation
   const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.push("Invalid email format");
+    errors.push('Invalid email format');
   }
 
   // WhatsApp validation (uses same phone)
   const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP;
   if (whatsapp && !/^\d{10,15}$/.test(whatsapp)) {
-    errors.push("Invalid WhatsApp number format (use digits only)");
+    errors.push('Invalid WhatsApp number format (use digits only)');
   }
 
   // Telegram validation
   const telegram = process.env.NEXT_PUBLIC_TELEGRAM_USERNAME;
-  if (telegram && !/^[a-zA-Z0-9_]{5,32}$/.test(telegram.replace("@", ""))) {
-    errors.push("Invalid Telegram username format (5-32 chars, alphanumeric + underscore)");
+  if (telegram && !/^[a-zA-Z0-9_]{5,32}$/.test(telegram.replace('@', ''))) {
+    errors.push('Invalid Telegram username format (5-32 chars, alphanumeric + underscore)');
   }
 
   return errors;
@@ -181,35 +183,39 @@ export function validateContactLinks() {
 
 // Development-only validation
 export function validateDevelopmentEnvironment() {
-  if (process.env.NODE_ENV !== "development") return;
+  if (process.env.NODE_ENV !== 'development') return;
 
-  console.log("🔍 Validating development environment...");
+  console.log('🔍 Validating development environment...');
 
   const envValidation = validateEnvironment();
   const contactValidation = validateContactLinks();
 
   if (!envValidation.valid) {
-    console.error("\n❌ Environment validation failed:");
-    envValidation.errors.forEach(error => console.error(`  ${error}`));
+    console.error('\n❌ Environment validation failed:');
+    envValidation.errors.forEach((error) => console.error(`  ${error}`));
   }
 
   if (envValidation.warnings.length > 0) {
-    console.warn("\n⚠️  Environment validation warnings:");
-    envValidation.warnings.forEach(warning => console.warn(`  ${warning}`));
+    console.warn('\n⚠️  Environment validation warnings:');
+    envValidation.warnings.forEach((warning) => console.warn(`  ${warning}`));
   }
 
   if (contactValidation.length > 0) {
-    console.error("\n❌ Contact links validation failed:");
-    contactValidation.forEach(error => console.error(`  ${error}`));
+    console.error('\n❌ Contact links validation failed:');
+    contactValidation.forEach((error) => console.error(`  ${error}`));
   }
 
-  if (envValidation.valid && envValidation.warnings.length === 0 && contactValidation.length === 0) {
-    console.log("✅ Environment validation passed!");
+  if (
+    envValidation.valid &&
+    envValidation.warnings.length === 0 &&
+    contactValidation.length === 0
+  ) {
+    console.log('✅ Environment validation passed!');
   } else if (envValidation.valid && contactValidation.length === 0) {
-    console.log("✅ Environment validation passed (with warnings)");
+    console.log('✅ Environment validation passed (with warnings)');
   }
 
-  console.log(""); // Empty line for spacing
+  console.log(''); // Empty line for spacing
 }
 
 // Production validation
@@ -219,17 +225,17 @@ export function validateProductionEnvironment() {
   const allErrors = [...envValidation.errors, ...contactValidation];
 
   if (allErrors.length > 0) {
-    console.error("\n🚨 Production environment validation failed:");
-    allErrors.forEach(error => console.error(`  ${error}`));
-    console.error("\nPlease fix these issues before deploying to production.");
+    console.error('\n🚨 Production environment validation failed:');
+    allErrors.forEach((error) => console.error(`  ${error}`));
+    console.error('\nPlease fix these issues before deploying to production.');
     return false;
   }
 
   if (envValidation.warnings.length > 0) {
-    console.warn("\n⚠️  Production environment warnings:");
-    envValidation.warnings.forEach(warning => console.warn(`  ${warning}`));
+    console.warn('\n⚠️  Production environment warnings:');
+    envValidation.warnings.forEach((warning) => console.warn(`  ${warning}`));
   }
 
-  console.log("✅ Production environment validation passed!");
+  console.log('✅ Production environment validation passed!');
   return true;
 }

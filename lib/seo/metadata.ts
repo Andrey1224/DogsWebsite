@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
-import { getSiteUrl } from "@/lib/utils/env";
-import { resolveLocalImage } from "@/lib/utils/images";
+import { getSiteUrl } from '@/lib/utils/env';
+import { resolveLocalImage } from '@/lib/utils/images';
 
 type ImageInput =
   | string
@@ -35,20 +35,20 @@ export type SeoOptions = {
   noIndex?: boolean;
 };
 
-const SITE_NAME = "Exotic Bulldog Legacy";
+const SITE_NAME = 'Exotic Bulldog Legacy';
 const DEFAULT_DESCRIPTION =
-  "Health-first French & English bulldog breeding in Alabama with transparent pedigrees, concierge ownership support, and secure deposit flows.";
-const DEFAULT_IMAGE = "/reviews/sarah-charlie.webp";
+  'Health-first French & English bulldog breeding in Alabama with transparent pedigrees, concierge ownership support, and secure deposit flows.';
+const DEFAULT_IMAGE = '/reviews/sarah-charlie.webp';
 
 function resolveImage(image?: ImageInput) {
   if (!image) {
     return {
       url: DEFAULT_IMAGE,
-      alt: "French and English bulldogs from Exotic Bulldog Legacy",
+      alt: 'French and English bulldogs from Exotic Bulldog Legacy',
     };
   }
 
-  if (typeof image === "string") {
+  if (typeof image === 'string') {
     return { url: resolveLocalImage(image, DEFAULT_IMAGE) };
   }
 
@@ -69,8 +69,8 @@ export function getDefaultMetadata(): Metadata {
     },
     description: DEFAULT_DESCRIPTION,
     openGraph: {
-      type: "website",
-      locale: "en_US",
+      type: 'website',
+      locale: 'en_US',
       url: siteUrl,
       siteName: SITE_NAME,
       title: SITE_NAME,
@@ -78,7 +78,7 @@ export function getDefaultMetadata(): Metadata {
       images: [resolveImage()],
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title: SITE_NAME,
       description: DEFAULT_DESCRIPTION,
       images: [resolveImage().url],
@@ -104,7 +104,7 @@ export function buildMetadata({
   const siteUrl = getSiteUrl();
   const resolvedImage = resolveImage(image);
   const canonical = path
-    ? new URL(path.startsWith("/") ? path : `/${path}`, siteUrl).toString()
+    ? new URL(path.startsWith('/') ? path : `/${path}`, siteUrl).toString()
     : siteUrl;
 
   return {
@@ -114,7 +114,7 @@ export function buildMetadata({
       canonical,
     },
     openGraph: {
-      type: "website",
+      type: 'website',
       url: canonical,
       title,
       description,
@@ -122,7 +122,7 @@ export function buildMetadata({
       images: [resolvedImage],
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title,
       description,
       images: [resolvedImage.url],

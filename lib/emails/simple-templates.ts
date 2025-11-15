@@ -26,18 +26,9 @@ function escapeHtml(text: string): string {
 }
 
 export function generateOwnerNotificationEmail(inquiry: InquiryData): string {
-  const {
-    name,
-    email,
-    phone,
-    message,
-    puppy_id,
-    puppy_slug,
-    timestamp,
-    source
-  } = inquiry;
+  const { name, email, phone, message, puppy_id, puppy_slug, timestamp, source } = inquiry;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
   // Escape all user-provided data to prevent XSS
   const safeName = escapeHtml(name);
@@ -93,29 +84,41 @@ export function generateOwnerNotificationEmail(inquiry: InquiryData): string {
                 <span class="label">Email:</span>
                 <a href="mailto:${safeEmail}" style="color: #007bff;">${safeEmail}</a>
             </div>
-            ${safePhone ? `
+            ${
+              safePhone
+                ? `
             <div class="field">
                 <span class="label">Phone:</span>
                 <a href="tel:${safePhone}" style="color: #007bff;">${safePhone}</a>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
 
-        ${safePuppyId ? `
+        ${
+          safePuppyId
+            ? `
         <div class="puppy-info">
             <h3>🐕 Puppy Interest</h3>
             <div class="field">
                 <span class="label">Puppy ID:</span>
                 <span class="value">${safePuppyId}</span>
             </div>
-            ${safePuppySlug ? `
+            ${
+              safePuppySlug
+                ? `
             <div class="field">
                 <span class="label">Puppy Page:</span>
                 <a href="${siteUrl}/puppies/${safePuppySlug}" style="color: #007bff;">View Puppy Details</a>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <div class="section">
             <h2>Message</h2>
@@ -140,9 +143,9 @@ export function generateOwnerNotificationEmail(inquiry: InquiryData): string {
 }
 
 export function generateCustomerConfirmationEmail(name: string): string {
-  const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || "+17727779442";
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "nepod77@gmail.com";
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || '+17727779442';
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'nepod77@gmail.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
   // Escape user-provided name to prevent XSS
   const safeName = escapeHtml(name);

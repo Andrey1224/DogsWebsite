@@ -53,35 +53,33 @@ describe('StripeWebhookHandler', () => {
   const mockSessionId = 'cs_test_session123';
   const mockEventId = 'evt_test_event123';
 
-  const createMockSession = (overrides?: Partial<TypedCheckoutSession>): TypedCheckoutSession => ({
-    id: mockSessionId,
-    object: 'checkout.session',
-    mode: 'payment',
-    payment_status: 'paid',
-    payment_intent: mockPaymentIntentId,
-    amount_total: 30000, // $300 in cents
-    customer_details: {
-      email: 'test@example.com',
-      name: 'Test Customer',
-      phone: '+12025551234',
-      address: null,
-      tax_exempt: 'none',
-      tax_ids: [],
-    },
-    metadata: {
-      puppy_id: mockPuppyId,
-      puppy_slug: 'test-puppy',
-      puppy_name: 'Test Puppy',
-      customer_email: 'test@example.com',
-      channel: 'site',
-    },
-    ...overrides,
-  } as TypedCheckoutSession);
+  const createMockSession = (overrides?: Partial<TypedCheckoutSession>): TypedCheckoutSession =>
+    ({
+      id: mockSessionId,
+      object: 'checkout.session',
+      mode: 'payment',
+      payment_status: 'paid',
+      payment_intent: mockPaymentIntentId,
+      amount_total: 30000, // $300 in cents
+      customer_details: {
+        email: 'test@example.com',
+        name: 'Test Customer',
+        phone: '+12025551234',
+        address: null,
+        tax_exempt: 'none',
+        tax_ids: [],
+      },
+      metadata: {
+        puppy_id: mockPuppyId,
+        puppy_slug: 'test-puppy',
+        puppy_name: 'Test Puppy',
+        customer_email: 'test@example.com',
+        channel: 'site',
+      },
+      ...overrides,
+    }) as TypedCheckoutSession;
 
-  const createMockEvent = (
-    type: string,
-    session: TypedCheckoutSession
-  ): any => ({
+  const createMockEvent = (type: string, session: TypedCheckoutSession): any => ({
     id: mockEventId,
     object: 'event',
     type: type as Stripe.Event.Type,
@@ -198,34 +196,34 @@ describe('StripeWebhookHandler', () => {
       });
       const event = createMockEvent('checkout.session.completed', session);
 
-    const result = await StripeWebhookHandler.processEvent(event);
+      const result = await StripeWebhookHandler.processEvent(event);
 
-    expect(result.success).toBe(true);
-    expect(result.error).toContain('Payment pending');
-    expect(idempotencyManager.createWebhookEvent).toHaveBeenCalled();
-  });
-
-  it('should reject sessions with invalid amount totals', async () => {
-    const { idempotencyManager } = await import('@/lib/reservations/idempotency');
-    const { ReservationCreationService } = await import('@/lib/reservations/create');
-
-    (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
-      exists: false,
-      paymentId: mockPaymentIntentId,
-      provider: 'stripe',
+      expect(result.success).toBe(true);
+      expect(result.error).toContain('Payment pending');
+      expect(idempotencyManager.createWebhookEvent).toHaveBeenCalled();
     });
 
-    const session = createMockSession({ amount_total: 0 });
-    const event = createMockEvent('checkout.session.completed', session);
+    it('should reject sessions with invalid amount totals', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationCreationService } = await import('@/lib/reservations/create');
 
-    const result = await StripeWebhookHandler.processEvent(event);
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
 
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Invalid checkout amount');
-    expect(ReservationCreationService.createReservation).not.toHaveBeenCalled();
-  });
+      const session = createMockSession({ amount_total: 0 });
+      const event = createMockEvent('checkout.session.completed', session);
 
-  it('should handle race condition errors gracefully', async () => {
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid checkout amount');
+      expect(ReservationCreationService.createReservation).not.toHaveBeenCalled();
+    });
+
+    it('should handle race condition errors gracefully', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
       const { ReservationCreationService } = await import('@/lib/reservations/create');
 
@@ -238,7 +236,7 @@ describe('StripeWebhookHandler', () => {
       const { ReservationCreationError } = await import('@/lib/reservations/create');
 
       (ReservationCreationService.createReservation as any).mockRejectedValue(
-        new ReservationCreationError('Puppy no longer available', 'RACE_CONDITION_LOST')
+        new ReservationCreationError('Puppy no longer available', 'RACE_CONDITION_LOST'),
       );
 
       const session = createMockSession();
@@ -323,7 +321,7 @@ describe('StripeWebhookHandler', () => {
           provider: 'stripe',
           eventId: mockEventId,
           eventType: 'checkout.session.async_payment_failed',
-        })
+        }),
       );
     });
 
@@ -364,7 +362,7 @@ describe('StripeWebhookHandler', () => {
           customerEmail: 'customer-from-session@example.com',
           customerName: 'Customer Session',
           puppyName: 'Test Puppy',
-        })
+        }),
       );
     });
   });
@@ -433,7 +431,7 @@ describe('StripeWebhookHandler', () => {
       const { ReservationCreationError } = await import('@/lib/reservations/create');
 
       (ReservationCreationService.createReservation as any).mockRejectedValue(
-        new ReservationCreationError('Database connection failed', 'DATABASE_ERROR')
+        new ReservationCreationError('Database connection failed', 'DATABASE_ERROR'),
       );
 
       const session = createMockSession();

@@ -1,10 +1,10 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from 'next/image';
+import Link from 'next/link';
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { JsonLd } from "@/components/json-ld";
-import { buildMetadata } from "@/lib/seo/metadata";
-import { getLocalBusinessSchema } from "@/lib/seo/structured-data";
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { JsonLd } from '@/components/json-ld';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { getLocalBusinessSchema } from '@/lib/seo/structured-data';
 
 type Review = {
   id: string;
@@ -14,7 +14,7 @@ type Review = {
   rating: number;
   quote: string;
   media?: {
-    type: "image" | "video";
+    type: 'image' | 'video';
     url: string;
     alt: string;
   };
@@ -22,128 +22,129 @@ type Review = {
 
 const reviews: Review[] = [
   {
-    id: "sarah-w",
-    author: "Sarah W.",
-    location: "Huntsville, AL",
-    visitDate: "2025-06-18",
+    id: 'sarah-w',
+    author: 'Sarah W.',
+    location: 'Huntsville, AL',
+    visitDate: '2025-06-18',
     rating: 5,
     quote:
-      "We picked up our French Bulldog, Charlie, in June and he’s been the sweetest, healthiest puppy we’ve ever had. The whole process was transparent and stress-free — communication was excellent!",
+      'We picked up our French Bulldog, Charlie, in June and he’s been the sweetest, healthiest puppy we’ve ever had. The whole process was transparent and stress-free — communication was excellent!',
     media: {
-      type: "image",
-      url: "/reviews/sarah-charlie.webp",
-      alt: "Sarah with French Bulldog Charlie",
+      type: 'image',
+      url: '/reviews/sarah-charlie.webp',
+      alt: 'Sarah with French Bulldog Charlie',
     },
   },
   {
-    id: "mark-lisa-p",
-    author: "Mark & Lisa P.",
-    location: "Birmingham, AL",
-    visitDate: "2025-07-03",
+    id: 'mark-lisa-p',
+    author: 'Mark & Lisa P.',
+    location: 'Birmingham, AL',
+    visitDate: '2025-07-03',
     rating: 5,
     quote:
-      "Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.",
+      'Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.',
     media: {
-      type: "image",
-      url: "/reviews/mark-lisa-duke.webp",
-      alt: "Mark and Lisa with their English Bulldog Duke",
+      type: 'image',
+      url: '/reviews/mark-lisa-duke.webp',
+      alt: 'Mark and Lisa with their English Bulldog Duke',
     },
   },
   {
-    id: "jessica-m",
-    author: "Jessica M.",
-    location: "Nashville, TN",
-    visitDate: "2025-08-02",
+    id: 'jessica-m',
+    author: 'Jessica M.',
+    location: 'Nashville, TN',
+    visitDate: '2025-08-02',
     rating: 5,
     quote:
-      "I was nervous about buying online, but Exotic Bulldog Legacy made everything smooth. We received videos and updates right up until delivery day. Bella arrived happy, healthy, and ready to cuddle.",
+      'I was nervous about buying online, but Exotic Bulldog Legacy made everything smooth. We received videos and updates right up until delivery day. Bella arrived happy, healthy, and ready to cuddle.',
   },
   {
-    id: "anthony-d",
-    author: "Anthony D.",
-    location: "Montgomery, AL",
-    visitDate: "2025-05-27",
+    id: 'anthony-d',
+    author: 'Anthony D.',
+    location: 'Montgomery, AL',
+    visitDate: '2025-05-27',
     rating: 5,
     quote:
-      "Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.",
+      'Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.',
     media: {
-      type: "image",
-      url: "/reviews/anthony-tommy.webp",
-      alt: "Anthony with French Bulldog Tommy",
+      type: 'image',
+      url: '/reviews/anthony-tommy.webp',
+      alt: 'Anthony with French Bulldog Tommy',
     },
   },
   {
-    id: "rachel-k",
-    author: "Rachel K.",
-    location: "Atlanta, GA",
-    visitDate: "2025-07-22",
+    id: 'rachel-k',
+    author: 'Rachel K.',
+    location: 'Atlanta, GA',
+    visitDate: '2025-07-22',
     rating: 5,
     quote:
-      "We drove from Georgia because the quality of their bulldogs is worth it. The one-year health guarantee gave us confidence, and our vet said our pup was in perfect condition.",
+      'We drove from Georgia because the quality of their bulldogs is worth it. The one-year health guarantee gave us confidence, and our vet said our pup was in perfect condition.',
   },
   {
-    id: "cameron-h",
-    author: "Cameron H.",
-    location: "Decatur, AL",
-    visitDate: "2025-09-05",
+    id: 'cameron-h',
+    author: 'Cameron H.',
+    location: 'Decatur, AL',
+    visitDate: '2025-09-05',
     rating: 5,
     quote:
-      "I loved how easy it was to reserve online. PayPal worked perfectly and the confirmation emails arrived instantly. Milo is already the star of our neighborhood!",
+      'I loved how easy it was to reserve online. PayPal worked perfectly and the confirmation emails arrived instantly. Milo is already the star of our neighborhood!',
     media: {
-      type: "image",
-      url: "/reviews/cameron-milo.webp",
-      alt: "Cameron holding bulldog puppy Milo",
+      type: 'image',
+      url: '/reviews/cameron-milo.webp',
+      alt: 'Cameron holding bulldog puppy Milo',
     },
   },
 ];
 
 export const metadata = buildMetadata({
-  title: "Reviews | Exotic Bulldog Legacy",
+  title: 'Reviews | Exotic Bulldog Legacy',
   description:
-    "Read authentic reviews from Exotic Bulldog Legacy families across Alabama, Georgia, and Tennessee.",
-  path: "/reviews",
+    'Read authentic reviews from Exotic Bulldog Legacy families across Alabama, Georgia, and Tennessee.',
+  path: '/reviews',
 });
 
 export default function ReviewsPage() {
   const localBusiness = getLocalBusinessSchema();
   const businessId =
-    (localBusiness as { ["@id"]?: string })["@id"] ?? `${localBusiness.url.replace(/\/$/, "")}#localbusiness`;
+    (localBusiness as { ['@id']?: string })['@id'] ??
+    `${localBusiness.url.replace(/\/$/, '')}#localbusiness`;
 
   const reviewSchema = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
     itemListElement: reviews.map((review, index) => ({
-      "@type": "ListItem",
+      '@type': 'ListItem',
       position: index + 1,
       item: {
-        "@type": "Review",
+        '@type': 'Review',
         author: {
-          "@type": "Person",
+          '@type': 'Person',
           name: review.author,
         },
         datePublished: review.visitDate,
         reviewBody: review.quote,
         reviewRating: {
-          "@type": "Rating",
+          '@type': 'Rating',
           ratingValue: review.rating,
           bestRating: 5,
         },
         itemReviewed: {
-          "@id": businessId,
+          '@id': businessId,
         },
       },
     })),
   };
 
   const aggregateSchema = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": businessId,
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': businessId,
     name: localBusiness.name,
     url: localBusiness.url,
     aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5.0",
+      '@type': 'AggregateRating',
+      ratingValue: '5.0',
       reviewCount: reviews.length,
     },
   };
@@ -152,8 +153,8 @@ export default function ReviewsPage() {
     <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
       <Breadcrumbs
         items={[
-          { label: "Home", href: "/" },
-          { label: "Reviews", href: "/reviews" },
+          { label: 'Home', href: '/' },
+          { label: 'Reviews', href: '/reviews' },
         ]}
       />
       <JsonLd id="reviews-itemlist" data={reviewSchema} />
@@ -165,8 +166,9 @@ export default function ReviewsPage() {
           Families who chose Exotic Bulldog Legacy
         </h1>
         <p className="mx-auto max-w-2xl text-sm text-muted">
-          From first kennel visits to flight nanny hand-offs, our team stays involved at every step of the adoption
-          journey. These stories highlight the transparent, health-first experience we deliver across the Southeast.
+          From first kennel visits to flight nanny hand-offs, our team stays involved at every step
+          of the adoption journey. These stories highlight the transparent, health-first experience
+          we deliver across the Southeast.
         </p>
       </header>
 
@@ -184,18 +186,16 @@ export default function ReviewsPage() {
               <div className="flex items-center gap-1 text-sm text-accent-aux">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <span key={index} aria-hidden="true">
-                    {index < review.rating ? "★" : "☆"}
+                    {index < review.rating ? '★' : '☆'}
                   </span>
                 ))}
                 <span className="sr-only">{review.rating} out of 5 stars</span>
               </div>
             </div>
-            <p className="text-sm leading-relaxed text-muted">
-              “{review.quote}”
-            </p>
+            <p className="text-sm leading-relaxed text-muted">“{review.quote}”</p>
             {review.media ? (
               <div className="overflow-hidden rounded-2xl border border-border">
-                {review.media.type === "image" ? (
+                {review.media.type === 'image' ? (
                   <Image
                     src={review.media.url}
                     alt={review.media.alt}
@@ -218,8 +218,11 @@ export default function ReviewsPage() {
               </div>
             ) : null}
             <div className="text-xs text-muted">
-              Visited{" "}
-              {new Date(review.visitDate).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+              Visited{' '}
+              {new Date(review.visitDate).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric',
+              })}
             </div>
           </article>
         ))}
@@ -228,8 +231,8 @@ export default function ReviewsPage() {
       <section className="rounded-3xl border border-border bg-card p-6 text-sm shadow-sm">
         <p className="font-semibold text-text">Ready to plan your bulldog match?</p>
         <p className="mt-2 text-muted">
-          Share your wish list and we’ll send temperament videos, health records, and timing guidance tailored to your
-          household.
+          Share your wish list and we’ll send temperament videos, health records, and timing
+          guidance tailored to your household.
         </p>
         <div className="mt-4">
           <Link

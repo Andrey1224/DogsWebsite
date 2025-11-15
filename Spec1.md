@@ -235,7 +235,7 @@ User -> C : Ask questions in chat (optional)
 ### Трекинг конверсий (события)
 
 - `contact_click` (label: whatsapp/telegram/instagram/call/sms/email).
-- `reserve_click` (label: puppy\_slug).
+- `reserve_click` (label: puppy_slug).
 - `form_submit` (lead) и `form_success`.
 - `deposit_paid` (value: amount, label: puppy_slug, params: payment_provider).
 
@@ -264,7 +264,7 @@ User -> C : Ask questions in chat (optional)
 ### 2) База данных и файлы
 
 - Создать проект **Supabase** → включить **Postgres** и **Storage**.
-- Выполнить SQL-схемы из раздела *Method → Схема данных*.
+- Выполнить SQL-схемы из раздела _Method → Схема данных_.
 - Включить **Row Level Security** на таблицах (по умолчанию в Supabase); создать сервисную роль для серверных операций.
 - Создать бакеты: `puppies`, `parents`, `litters`. Включить подписи URL или публичный доступ с ограничениями.
 
@@ -328,62 +328,73 @@ User -> C : Ask questions in chat (optional)
 
 ## Milestones
 
-**0. Kickoff (0.5 дня)**  
+**0. Kickoff (0.5 дня)**
+
 - Создать репозиторий, проект Vercel, Supabase проект, Crisp рабочее пространство.  
-**DoD:** доступы работают, dev-деплой открыт.
+  **DoD:** доступы работают, dev-деплой открыт.
 
-**1. Каркас и стиль (2–3 дня)**  
-- Макет страниц: Home, Puppies, Puppy Details, About, Policies, Contact.  
+**1. Каркас и стиль (2–3 дня)**
+
+- Макет страниц: Home, Puppies, Puppy Details, About, Policies, Contact.
 - Tailwind/shadcn, липкая панель контактов, базовый логотип/бренд.  
-**DoD:** адаптив готов, Lighthouse ≥ 90 (Perf/SEO) на демоданных.
+  **DoD:** адаптив готов, Lighthouse ≥ 90 (Perf/SEO) на демоданных.
 
-**2. База и контент (2–3 дня)**  
-- Применить SQL-схему, включить RLS, настроить Storage бакеты.  
+**2. База и контент (2–3 дня)**
+
+- Применить SQL-схему, включить RLS, настроить Storage бакеты.
 - Наполнить 8–12 карточек, загрузить фото/видео (сжатие до ~1600px ширины).  
-**DoD:** листинг и карточки читаются из БД, фильтры работают.
+  **DoD:** листинг и карточки читаются из БД, фильтры работают.
 
-**3. Чат и каналы связи (0.5 дня)**  
+**3. Чат и каналы связи (0.5 дня)**
+
 - Подключить Crisp (приветствие, офлайн), deep links Call/SMS/WA/TG/IG/Email.  
-**DoD:** письма/сообщения из чата доходят, события кликов ловятся в GA4.
+  **DoD:** письма/сообщения из чата доходят, события кликов ловятся в GA4.
 
-**4. Оплата депозита $300 (2 дня)**  
-- Stripe Checkout Session (серверный экшн) + PayPal Smart Buttons на странице щенка.  
-- Webhooks: Stripe `/api/stripe/webhook`, PayPal `/api/paypal/webhook` + серверный `capture`.  
-- Запись `reservations` (`paid`, `payment_provider`) через `ReservationCreationService`.  
+**4. Оплата депозита $300 (2 дня)**
+
+- Stripe Checkout Session (серверный экшн) + PayPal Smart Buttons на странице щенка.
+- Webhooks: Stripe `/api/stripe/webhook`, PayPal `/api/paypal/webhook` + серверный `capture`.
+- Запись `reservations` (`paid`, `payment_provider`) через `ReservationCreationService`.
 - Alerting (Slack/email) на 5xx вебхуков — запланировано в фазе 6.
-**DoD:** успешный тест-платёж меняет статус щенка на `reserved`.
+  **DoD:** успешный тест-платёж меняет статус щенка на `reserved`.
 
-**5. SEO/локалка и доверие (1–2 дня)**  
-- JSON-LD (Organization, LocalBusiness/PetStore, Product, FAQPage), OG.  
+**5. SEO/локалка и доверие (1–2 дня)**
+
+- JSON-LD (Organization, LocalBusiness/PetStore, Product, FAQPage), OG.
 - Блок NAP (город AL, телефон +1), Policies, FAQ, Reviews (4–6).  
-**DoD:** Rich Results Test без ошибок, контент опубликован.
+  **DoD:** Rich Results Test без ошибок, контент опубликован.
 
-**6. Аналитика и конверсии (0.5–1 день)**  
-- GA4 + Meta Pixel, события: `contact_click`, `reserve_click`, `form_submit`, `deposit_paid`.  
+**6. Аналитика и конверсии (0.5–1 день)**
+
+- GA4 + Meta Pixel, события: `contact_click`, `reserve_click`, `form_submit`, `deposit_paid`.
 - `deposit_paid` переносится на фазу 5 после завершения платежного потока.  
-**DoD:** видны тестовые конверсии в отчетах.
+  **DoD:** видны тестовые конверсии в отчетах.
 
-**7. Релиз (0.5 дня)**  
+**7. Релиз (0.5 дня)**
+
 - Тесты (Playwright) главных сценариев, hCaptcha на формах, финальный прогон.  
-**DoD:** прод-деплой на *.vercel.app, готов к привязке домена.
+  **DoD:** прод-деплой на \*.vercel.app, готов к привязке домена.
 
 > Примерная длительность: ~7–10 рабочих дней в одном лице.
 
 ## Gathering Results
 
 **Цели и KPI (первые 30–60 дней):**
-- Конверсия в контакт/заявку с лендинга: **≥ 3–5%**.  
-- Доля кликов по быстрым контактам (WA/TG/Call/SMS/IG): **≥ 10%** от сессий.  
-- Депозиты (проверка цепочки): **≥ 1–2** в неделю при 300–500 визитах.  
+
+- Конверсия в контакт/заявку с лендинга: **≥ 3–5%**.
+- Доля кликов по быстрым контактам (WA/TG/Call/SMS/IG): **≥ 10%** от сессий.
+- Депозиты (проверка цепочки): **≥ 1–2** в неделю при 300–500 визитах.
 - LCP мобильный: **≤ 2.5s**, CLS **≤ 0.1**.
 
 **Как измеряем:**
-- GA4: события и конверсии по каналам (метки `channel`, `puppy_slug`, `payment_provider`).  
-- Crisp: количество диалогов/ответов/офлайновых сообщений.  
-- Stripe/PayPal: успешные депозиты, возвраты.  
+
+- GA4: события и конверсии по каналам (метки `channel`, `puppy_slug`, `payment_provider`).
+- Crisp: количество диалогов/ответов/офлайновых сообщений.
+- Stripe/PayPal: успешные депозиты, возвраты.
 - Lighthouse/Pagespeed: перформанс и SEO еженедельно.
 
 **Итерации улучшений:**
-- A/B геро-блока (фото, текст УТП, 2 CTA).  
-- Упрощение формы (минимум полей), добавление «callback» кнопки.  
+
+- A/B геро-блока (фото, текст УТП, 2 CTA).
+- Упрощение формы (минимум полей), добавление «callback» кнопки.
 - Оптимизация изображений, автогенерация WebP/AVIF.

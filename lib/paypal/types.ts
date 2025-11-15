@@ -7,7 +7,7 @@
 
 import type { ReservationCreationErrorCode } from '@/lib/reservations/types';
 
-export type PayPalEnvironment = "sandbox" | "live";
+export type PayPalEnvironment = 'sandbox' | 'live';
 
 export interface PayPalLink {
   href: string;
@@ -100,7 +100,7 @@ export interface PayPalWebhookVerificationPayload {
 }
 
 export interface PayPalWebhookVerificationResponse {
-  verification_status: "SUCCESS" | "FAILURE";
+  verification_status: 'SUCCESS' | 'FAILURE';
 }
 
 export interface PayPalOrderMetadata {

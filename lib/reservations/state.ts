@@ -7,17 +7,16 @@ export interface PuppyReservationState {
   reservationBlocked: boolean;
 }
 
-export async function getPuppyReservationState(slug: string): Promise<PuppyReservationState | null> {
+export async function getPuppyReservationState(
+  slug: string,
+): Promise<PuppyReservationState | null> {
   const puppy = await getPuppyBySlug(slug);
   if (!puppy || !puppy.id) {
     return null;
   }
 
   const hasActiveReservation = await ReservationQueries.hasActiveReservation(puppy.id);
-  const canReserve =
-    puppy.status === 'available' &&
-    !puppy.is_archived &&
-    !hasActiveReservation;
+  const canReserve = puppy.status === 'available' && !puppy.is_archived && !hasActiveReservation;
 
   return {
     puppy,

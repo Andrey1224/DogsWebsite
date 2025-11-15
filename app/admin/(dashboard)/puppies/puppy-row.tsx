@@ -1,11 +1,17 @@
 'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
-import { toast } from "sonner";
-import type { AdminPuppyRecordWithState } from "@/lib/admin/puppies/queries";
-import { deletePuppyAction, updatePuppyPriceAction, updatePuppyStatusAction, archivePuppyAction, restorePuppyAction } from "./actions";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import type { AdminPuppyRecordWithState } from '@/lib/admin/puppies/queries';
+import {
+  deletePuppyAction,
+  updatePuppyPriceAction,
+  updatePuppyStatusAction,
+  archivePuppyAction,
+  restorePuppyAction,
+} from './actions';
 
 type StatusOption = {
   value: string;
@@ -26,26 +32,35 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
   const [archivePending, startArchiveTransition] = useTransition();
   const [restorePending, startRestoreTransition] = useTransition();
 
-  const [priceValue, setPriceValue] = useState(() => (typeof puppy.price_usd === "number" ? String(puppy.price_usd) : ""));
+  const [priceValue, setPriceValue] = useState(() =>
+    typeof puppy.price_usd === 'number' ? String(puppy.price_usd) : '',
+  );
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmName, setConfirmName] = useState("");
+  const [confirmName, setConfirmName] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
 
-  const originalPrice = useMemo(() => (typeof puppy.price_usd === "number" ? String(puppy.price_usd) : ""), [puppy.price_usd]);
+  const originalPrice = useMemo(
+    () => (typeof puppy.price_usd === 'number' ? String(puppy.price_usd) : ''),
+    [puppy.price_usd],
+  );
   const isPriceDirty = priceValue !== originalPrice;
 
-  const normalizedName = (puppy.name ?? "").trim();
+  const normalizedName = (puppy.name ?? '').trim();
   const confirmMatches =
-    normalizedName.length > 0 &&
-    confirmName.trim().toLowerCase() === normalizedName.toLowerCase();
+    normalizedName.length > 0 && confirmName.trim().toLowerCase() === normalizedName.toLowerCase();
 
-  const sharedDisabled = statusPending || pricePending || deletePending || archivePending || restorePending;
+  const sharedDisabled =
+    statusPending || pricePending || deletePending || archivePending || restorePending;
   const archiveBlocked = Boolean(puppy.has_active_reservation);
 
   function handleStatusChange(value: string) {
     startStatusTransition(async () => {
       try {
-        const result = await updatePuppyStatusAction({ id: puppy.id, status: value, slug: puppy.slug });
+        const result = await updatePuppyStatusAction({
+          id: puppy.id,
+          status: value,
+          slug: puppy.slug,
+        });
         if (result.archived) {
           toast.success(`Status updated to ${value} (puppy archived automatically)`);
         } else {
@@ -53,7 +68,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
         }
         router.refresh();
       } catch (error) {
-        toast.error("Failed to update status");
+        toast.error('Failed to update status');
         console.error(error);
       }
     });
@@ -62,21 +77,25 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
   function handleSavePrice() {
     const numericValue = Number(priceValue);
     if (!priceValue || Number.isNaN(numericValue)) {
-      toast.error("Enter a valid price (USD).");
+      toast.error('Enter a valid price (USD).');
       return;
     }
     if (numericValue < 0.01) {
-      toast.error("Price must be at least $0.01.");
+      toast.error('Price must be at least $0.01.');
       return;
     }
 
     startPriceTransition(async () => {
       try {
-        await updatePuppyPriceAction({ id: puppy.id, priceUsd: String(numericValue), slug: puppy.slug });
-        toast.success("Price updated");
+        await updatePuppyPriceAction({
+          id: puppy.id,
+          priceUsd: String(numericValue),
+          slug: puppy.slug,
+        });
+        toast.success('Price updated');
         router.refresh();
       } catch (error) {
-        toast.error("Failed to update price");
+        toast.error('Failed to update price');
         console.error(error);
       }
     });
@@ -87,13 +106,13 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
       try {
         const result = await deletePuppyAction({ id: puppy.id, confirmName });
         if (!result.success) {
-          toast.error(result.error ?? "Unable to delete puppy.");
+          toast.error(result.error ?? 'Unable to delete puppy.');
           return;
         }
-        toast.success("Puppy deleted");
+        toast.success('Puppy deleted');
         router.refresh();
       } catch (error) {
-        toast.error("Failed to delete puppy");
+        toast.error('Failed to delete puppy');
         console.error(error);
       }
     });
@@ -104,14 +123,14 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
       try {
         const result = await archivePuppyAction({ id: puppy.id, slug: puppy.slug });
         if (!result.success) {
-          toast.error(result.error ?? "Failed to archive puppy");
+          toast.error(result.error ?? 'Failed to archive puppy');
           return;
         }
-        toast.success("Puppy archived successfully");
+        toast.success('Puppy archived successfully');
         setConfirmArchive(false);
         router.refresh();
       } catch (error) {
-        toast.error("Failed to archive puppy");
+        toast.error('Failed to archive puppy');
         console.error(error);
       }
     });
@@ -122,13 +141,13 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
       try {
         const result = await restorePuppyAction({ id: puppy.id, slug: puppy.slug });
         if (!result.success) {
-          toast.error("Failed to restore puppy");
+          toast.error('Failed to restore puppy');
           return;
         }
-        toast.success("Puppy restored successfully");
+        toast.success('Puppy restored successfully');
         router.refresh();
       } catch (error) {
-        toast.error("Failed to restore puppy");
+        toast.error('Failed to restore puppy');
         console.error(error);
       }
     });
@@ -137,7 +156,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
   return (
     <li className="grid grid-cols-1 gap-6 px-6 py-5 text-sm text-text md:grid-cols-[2fr,1.4fr,1.4fr,1.2fr,auto] md:items-start">
       <div className="space-y-1">
-        <p className="font-medium">{puppy.name ?? "Untitled puppy"}</p>
+        <p className="font-medium">{puppy.name ?? 'Untitled puppy'}</p>
         <p className="break-all text-xs text-muted">{puppy.slug}</p>
       </div>
 
@@ -191,7 +210,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             disabled={!isPriceDirty || pricePending || sharedDisabled}
             className="rounded-lg border border-border px-3 py-1 text-xs font-medium text-text transition hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pricePending ? "Saving..." : "Save"}
+            {pricePending ? 'Saving...' : 'Save'}
           </button>
           <button
             type="button"
@@ -208,13 +227,13 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
         <p className="text-xs text-muted md:hidden">Birth date</p>
         <p className="font-medium">
           {(() => {
-            if (!puppy.birth_date) return "—";
+            if (!puppy.birth_date) return '—';
             const date = new Date(puppy.birth_date);
-            if (Number.isNaN(date.getTime())) return "—";
-            return date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
+            if (Number.isNaN(date.getTime())) return '—';
+            return date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
             });
           })()}
         </p>
@@ -241,7 +260,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
               disabled={restorePending || sharedDisabled}
               className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {restorePending ? "Restoring..." : "Restore"}
+              {restorePending ? 'Restoring...' : 'Restore'}
             </button>
             {!confirmOpen ? (
               <button
@@ -254,7 +273,9 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
               </button>
             ) : (
               <div className="w-full space-y-2 rounded-lg border border-border bg-bg p-3 text-xs">
-                <p className="font-medium text-red-500">Type &ldquo;{normalizedName || "name"}&rdquo; to confirm permanent deletion.</p>
+                <p className="font-medium text-red-500">
+                  Type &ldquo;{normalizedName || 'name'}&rdquo; to confirm permanent deletion.
+                </p>
                 <input
                   value={confirmName}
                   onChange={(event) => setConfirmName(event.target.value)}
@@ -268,12 +289,12 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
                     disabled={!confirmMatches || deletePending}
                     className="rounded-lg bg-red-500 px-3 py-1 text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {deletePending ? "Deleting..." : "Confirm delete"}
+                    {deletePending ? 'Deleting...' : 'Confirm delete'}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setConfirmName("");
+                      setConfirmName('');
                       setConfirmOpen(false);
                     }}
                     className="rounded-lg border border-border px-3 py-1 text-muted transition hover:bg-hover"
@@ -306,7 +327,9 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             ) : (
               <div className="w-full space-y-2 rounded-lg border-2 border-orange-500 bg-orange-50 p-3 text-xs">
                 <p className="font-medium text-orange-900">Archive this puppy?</p>
-                <p className="text-xs text-orange-700">It will be hidden from public catalog but preserved for historical records.</p>
+                <p className="text-xs text-orange-700">
+                  It will be hidden from public catalog but preserved for historical records.
+                </p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -314,7 +337,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
                     disabled={archivePending}
                     className="rounded-lg bg-orange-500 px-3 py-1 text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {archivePending ? "Archiving..." : "Confirm"}
+                    {archivePending ? 'Archiving...' : 'Confirm'}
                   </button>
                   <button
                     type="button"

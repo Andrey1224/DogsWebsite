@@ -23,10 +23,7 @@ export function createSupabaseFixture(initial: { tables?: TableStore } = {}) {
   const db: TableStore = clone(initialState);
   const rpcHandlers: Record<string, RpcHandlerUntyped> = {};
 
-  const registerRpc = <TParams, TResult>(
-    name: string,
-    handler: RpcHandler<TParams, TResult>,
-  ) => {
+  const registerRpc = <TParams, TResult>(name: string, handler: RpcHandler<TParams, TResult>) => {
     rpcHandlers[name] = handler as RpcHandlerUntyped;
   };
 
@@ -69,8 +66,7 @@ export function createSupabaseFixture(initial: { tables?: TableStore } = {}) {
         return {
           data: null,
           error: {
-            message:
-              error instanceof Error ? error.message : String(error),
+            message: error instanceof Error ? error.message : String(error),
           },
         } as QueryResult;
       }
@@ -106,8 +102,7 @@ export function createSupabaseFixture(initial: { tables?: TableStore } = {}) {
       return {
         data: null,
         error: {
-          message:
-            error instanceof Error ? error.message : 'transaction_error',
+          message: error instanceof Error ? error.message : 'transaction_error',
         },
       };
     }

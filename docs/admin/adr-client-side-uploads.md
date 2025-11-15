@@ -7,6 +7,7 @@ Successfully fixed the "Body exceeded 1MB limit" error by implementing client-si
 ## Problem Solved
 
 ### Original Issue
+
 - Files were sent through Server Actions in FormData
 - Next.js has a default 1MB limit for Server Action payloads
 - Multiple photos easily exceeded this limit
@@ -14,6 +15,7 @@ Successfully fixed the "Body exceeded 1MB limit" error by implementing client-si
 - Vercel logs showed: `Error: Body exceeded 1MB limit`
 
 ### Root Cause
+
 ```
 Client → Server Action (FormData with Files)
          ↓
@@ -27,6 +29,7 @@ Client → Server Action (FormData with Files)
 ## New Architecture
 
 ### Upload Flow
+
 ```
 1. User selects files in browser
    ↓
@@ -44,6 +47,7 @@ Client → Server Action (FormData with Files)
 ```
 
 ### Benefits
+
 ✅ No more 1MB limit errors
 ✅ Supports large files (up to 200MB for videos)
 ✅ Upload progress tracking
@@ -59,17 +63,20 @@ Client → Server Action (FormData with Files)
 **File**: `app/admin/(dashboard)/puppies/upload-actions.ts` (NEW)
 
 Two new server actions:
+
 - `getSignedUploadUrl(filePath)` - Generates signed upload URL from Supabase
 - `getPublicUrl(path)` - Gets public URL for uploaded file
 
 **Key Features**:
+
 - Requires admin session authentication
 - Signed URLs valid for 60 seconds
 - Returns: `{ signedUrl, path, token }`
 
 **Example Usage**:
+
 ```typescript
-const { signedUrl, path } = await getSignedUploadUrl("puppy-123/sire/photo-0.jpg");
+const { signedUrl, path } = await getSignedUploadUrl('puppy-123/sire/photo-0.jpg');
 // Client uploads directly to signedUrl
 const publicUrl = await getPublicUrl(path);
 ```
@@ -82,26 +89,28 @@ Custom React hook for managing file uploads:
 
 ```typescript
 const {
-  uploadFiles,   // Upload multiple files
-  uploadFile,    // Upload single file
-  isUploading,   // Boolean upload state
-  progress,      // Array of UploadProgress objects
-  clearProgress  // Reset progress state
+  uploadFiles, // Upload multiple files
+  uploadFile, // Upload single file
+  isUploading, // Boolean upload state
+  progress, // Array of UploadProgress objects
+  clearProgress, // Reset progress state
 } = useMediaUpload();
 ```
 
 **Upload Process**:
+
 1. Get signed URL from server
 2. Upload file via `fetch(signedUrl, { method: 'PUT', body: file })`
 3. Get public URL from server
 4. Track progress (pending → uploading → completed/error)
 
 **Progress Tracking**:
+
 ```typescript
 type UploadProgress = {
   fileName: string;
   progress: number; // 0-100
-  status: "pending" | "uploading" | "completed" | "error";
+  status: 'pending' | 'uploading' | 'completed' | 'error';
   error?: string;
   publicUrl?: string;
 };
@@ -112,12 +121,14 @@ type UploadProgress = {
 **File**: `components/admin/parent-photo-upload.tsx` (MODIFIED)
 
 **New Props**:
+
 - `onFilesSelected?: (files: File[]) => void` - Callback when files selected
 - `uploadedUrls?: string[]` - Controlled uploaded URLs
 - `uploadProgress?: number` - Progress percentage
 - `isUploading?: boolean` - Upload state
 
 **Key Changes**:
+
 - Files stored in component state (not sent in FormData)
 - Hidden `<input type="hidden">` elements for each uploaded URL
 - Progress bar during upload
@@ -125,6 +136,7 @@ type UploadProgress = {
 - Disable file selection during upload
 
 **FormData Structure**:
+
 ```html
 <!-- Before: Files sent in FormData -->
 <input type="file" name="sirePhotos" multiple />
@@ -140,6 +152,7 @@ type UploadProgress = {
 **File**: `app/admin/(dashboard)/puppies/create-puppy-panel.tsx` (MODIFIED)
 
 **New State**:
+
 ```typescript
 const { uploadFiles, isUploading } = useMediaUpload();
 const [sireFiles, setSireFiles] = useState<File[]>([]);
@@ -149,6 +162,7 @@ const [damPhotoUrls, setDamPhotoUrls] = useState<string[]>([]);
 ```
 
 **Custom Submit Handler**:
+
 ```typescript
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
@@ -174,6 +188,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 ```
 
 **Upload Flow**:
+
 1. User selects files → `ParentPhotoUpload` calls `onFilesSelected`
 2. Files stored in `sireFiles`/`damFiles` state
 3. User clicks "Create puppy"
@@ -184,6 +199,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 8. Form submitted to Server Action
 
 **UI Updates**:
+
 - Button text: "Uploading photos..." → "Saving..." → "Create puppy"
 - Disabled state during upload and save
 - Progress tracking in ParentPhotoUpload components
@@ -193,58 +209,71 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 **File**: `app/admin/(dashboard)/puppies/actions.ts` (MODIFIED)
 
 **Before**:
+
 ```typescript
-const sirePhotos = formData.getAll("sirePhotos") as File[];
+const sirePhotos = formData.getAll('sirePhotos') as File[];
 if (sirePhotos.length > 0) {
-  sirePhotoUrls = await uploadParentPhotos(sirePhotos, "sire", tempId);
+  sirePhotoUrls = await uploadParentPhotos(sirePhotos, 'sire', tempId);
 }
 ```
 
 **After**:
+
 ```typescript
-const sirePhotoUrls = formData.getAll("sirePhotoUrls")
-  .filter((url): url is string => typeof url === "string" && url.length > 0);
+const sirePhotoUrls = formData
+  .getAll('sirePhotoUrls')
+  .filter((url): url is string => typeof url === 'string' && url.length > 0);
 ```
 
 **Key Changes**:
+
 - Removed file upload logic
 - Extract URL strings from FormData
 - No more `uploadParentPhotos()` call
 - Removed import of `lib/admin/puppies/upload.ts`
 
 **Payload Size**:
+
 - Before: 1-5MB (with files)
 - After: < 1KB (only URLs and text)
 
 ## Files Changed
 
 ### Created (2 files):
+
 1. `app/admin/(dashboard)/puppies/upload-actions.ts` - Signed URL generation
 2. `lib/admin/hooks/use-media-upload.ts` - Client-side upload hook
 
 ### Modified (3 files):
+
 1. `components/admin/parent-photo-upload.tsx` - Client-side upload UI
 2. `app/admin/(dashboard)/puppies/create-puppy-panel.tsx` - Pre-upload flow
 3. `app/admin/(dashboard)/puppies/actions.ts` - Extract URLs instead of files
 
 ### Not Modified (kept for reference):
+
 - `lib/admin/puppies/upload.ts` - Old server-side upload logic (deprecated but not deleted)
 
 ## Validation Results
 
 ### TypeScript Compilation
+
 ✅ **PASSED** - No type errors
 
 ### ESLint
+
 ✅ **PASSED** - No warnings (max-warnings=0 policy)
 
 ### Production Build
+
 ✅ **PASSED** - Successfully compiled
+
 - Admin puppies page: 5.59 kB (was 4.47 kB - +1.12 kB for upload logic)
 
 ## Storage Configuration
 
 No changes needed to Supabase Storage:
+
 - Bucket `puppies` already exists
 - Policies already allow authenticated uploads
 - Path structure remains the same: `{puppyId}/{parentType}/{timestamp}-{index}.{ext}`
@@ -268,6 +297,7 @@ No changes needed to Supabase Storage:
 ## User Experience Improvements
 
 ### Before:
+
 1. Select files
 2. Click "Create puppy"
 3. ❌ Error: "Application error" (if > 1MB)
@@ -275,6 +305,7 @@ No changes needed to Supabase Storage:
 5. Start over
 
 ### After:
+
 1. Select files
 2. See preview immediately
 3. Click "Create puppy"
@@ -287,6 +318,7 @@ No changes needed to Supabase Storage:
 ## Future Enhancements (Not Implemented)
 
 Potential improvements for future sprints:
+
 1. Parallel file uploads (currently sequential)
 2. Client-side image compression before upload
 3. File size validation before upload
@@ -301,18 +333,22 @@ Potential improvements for future sprints:
 ## Migration Notes
 
 ### For Existing Puppies
+
 - No database migration needed
 - Existing puppies with photos continue to work
 - Old upload flow completely replaced
 
 ### For Future Features
+
 This pattern can be extended to:
+
 - Puppy photos (not currently implemented in UI)
 - Puppy videos (not currently implemented in UI)
 - Litter photos
 - Any other media uploads in admin
 
 ### Example Extension:
+
 ```typescript
 // Add puppy photo upload
 const [puppyFiles, setPuppyFiles] = useState<File[]>([]);
@@ -328,6 +364,7 @@ if (puppyFiles.length > 0) {
 ## Testing Recommendations
 
 ### Manual Testing Checklist:
+
 1. ✅ Upload 1 photo < 1MB
 2. ✅ Upload 3 photos < 1MB each
 3. ⏳ Upload 3 photos > 1MB each (should now work!)
@@ -339,6 +376,7 @@ if (puppyFiles.length > 0) {
 9. ✅ Verify URLs stored correctly in database
 
 ### Error Scenarios:
+
 - Network failure during upload
 - Signed URL expiration (60s timeout)
 - Storage quota exceeded
@@ -348,6 +386,7 @@ if (puppyFiles.length > 0) {
 ## Conclusion
 
 Successfully eliminated the 1MB Server Action limit by implementing client-side direct uploads. The new architecture:
+
 - Follows Next.js App Router best practices
 - Uses Supabase Storage signed URLs correctly
 - Provides better UX with progress tracking

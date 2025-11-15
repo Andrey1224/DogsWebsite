@@ -25,6 +25,7 @@ import {
 } from '@/lib/emails/deposit-notifications';
 import { sendAsyncPaymentFailedEmail } from '@/lib/emails/async-payment-failed';
 import { createServiceRoleClient } from '@/lib/supabase/client';
+import type { Json } from '@/lib/supabase/database.types';
 import type {
   WebhookProcessingResult,
   StripeCheckoutMetadata,
@@ -32,6 +33,11 @@ import type {
 } from './types';
 
 let supabaseAdminClient: ReturnType<typeof createServiceRoleClient> | null = null;
+
+function serializeStripeEvent(event: Stripe.Event): Json {
+  // Stripe events are plain data objects; JSON round-trip strips methods/non-serializable fields.
+  return JSON.parse(JSON.stringify(event)) as Json;
+}
 
 const STALE_EVENT_TTL_SECONDS = 60 * 60 * 2; // 2 hours
 
@@ -114,7 +120,7 @@ export class StripeWebhookHandler {
    */
   private static async handleCheckoutSessionCompleted(
     event: Stripe.Event,
-    eventId: string
+    eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
 
@@ -122,7 +128,7 @@ export class StripeWebhookHandler {
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
       eventId,
-      session.payment_intent as string
+      session.payment_intent as string,
     );
 
     if (idempotencyCheck.exists) {
@@ -150,7 +156,7 @@ export class StripeWebhookHandler {
     // Check payment status - only fulfill if paid
     if (session.payment_status !== 'paid') {
       console.log(
-        `[Stripe Webhook] Session ${session.id} completed but payment_status is ${session.payment_status}. Waiting for async_payment_succeeded event.`
+        `[Stripe Webhook] Session ${session.id} completed but payment_status is ${session.payment_status}. Waiting for async_payment_succeeded event.`,
       );
 
       // Store webhook event for audit trail, but don't create reservation yet
@@ -159,7 +165,7 @@ export class StripeWebhookHandler {
         eventId,
         eventType: 'checkout.session.completed',
         idempotencyKey: `stripe:${session.payment_intent}`,
-        payload: event as unknown as Record<string, unknown>,
+        payload: serializeStripeEvent(event),
       });
 
       return {
@@ -182,7 +188,7 @@ export class StripeWebhookHandler {
    */
   private static async handleAsyncPaymentSucceeded(
     event: Stripe.Event,
-    eventId: string
+    eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
 
@@ -190,7 +196,7 @@ export class StripeWebhookHandler {
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
       eventId,
-      session.payment_intent as string
+      session.payment_intent as string,
     );
 
     if (idempotencyCheck.exists) {
@@ -204,7 +210,11 @@ export class StripeWebhookHandler {
     }
 
     // Async payment succeeded - create reservation
-    return this.createReservationFromSession(session, eventId, 'checkout.session.async_payment_succeeded');
+    return this.createReservationFromSession(
+      session,
+      eventId,
+      'checkout.session.async_payment_succeeded',
+    );
   }
 
   /**
@@ -218,12 +228,12 @@ export class StripeWebhookHandler {
    */
   private static async handleAsyncPaymentFailed(
     event: Stripe.Event,
-    eventId: string
+    eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
 
     console.warn(
-      `[Stripe Webhook] Async payment failed for session: ${session.id}, payment_intent: ${session.payment_intent}`
+      `[Stripe Webhook] Async payment failed for session: ${session.id}, payment_intent: ${session.payment_intent}`,
     );
 
     // Store webhook event for audit trail
@@ -232,14 +242,13 @@ export class StripeWebhookHandler {
       eventId,
       eventType: 'checkout.session.async_payment_failed',
       idempotencyKey: `stripe:${session.payment_intent}:failed`,
-      payload: event as unknown as Record<string, unknown>,
+      payload: serializeStripeEvent(event),
     });
 
     // Send email to customer with helpful information
     const metadata = session.metadata as StripeCheckoutMetadata;
     const customerEmail = session.customer_details?.email || metadata.customer_email;
-    const customerName =
-      session.customer_details?.name || metadata.customer_name || undefined;
+    const customerName = session.customer_details?.name || metadata.customer_name || undefined;
 
     if (customerEmail) {
       void sendAsyncPaymentFailedEmail({
@@ -270,7 +279,7 @@ export class StripeWebhookHandler {
    */
   private static async handleSessionExpired(
     event: Stripe.Event,
-    eventId: string
+    eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
 
@@ -282,7 +291,7 @@ export class StripeWebhookHandler {
       eventId,
       eventType: 'checkout.session.expired',
       idempotencyKey: `stripe:${session.id}:expired`,
-      payload: event as unknown as Record<string, unknown>,
+      payload: serializeStripeEvent(event),
     });
 
     // TODO: Track abandoned checkout in analytics
@@ -311,7 +320,7 @@ export class StripeWebhookHandler {
   private static async createReservationFromSession(
     session: TypedCheckoutSession,
     eventId: string,
-    eventType?: string
+    eventType?: string,
   ): Promise<WebhookProcessingResult> {
     const metadata = session.metadata;
     const paymentIntentId = session.payment_intent as string;
@@ -327,7 +336,7 @@ export class StripeWebhookHandler {
     }
 
     console.log(
-      `[Stripe Webhook] Creating reservation for puppy_id: ${metadata.puppy_id}, payment_intent: ${paymentIntentId}`
+      `[Stripe Webhook] Creating reservation for puppy_id: ${metadata.puppy_id}, payment_intent: ${paymentIntentId}`,
     );
 
     const supabase = getServiceRoleClient();
@@ -343,7 +352,7 @@ export class StripeWebhookHandler {
       if (existingReservationError) {
         console.error(
           '[Stripe Webhook] Failed to check existing reservations:',
-          existingReservationError.message
+          existingReservationError.message,
         );
       }
 
@@ -370,19 +379,22 @@ export class StripeWebhookHandler {
       const { reservationId } = await ReservationCreationService.createReservation({
         puppyId: metadata.puppy_id,
         customerEmail: session.customer_details?.email || metadata.customer_email,
-        customerName:
-          session.customer_details?.name || metadata.customer_name || undefined,
+        customerName: session.customer_details?.name || metadata.customer_name || undefined,
         customerPhone: session.customer_details?.phone || metadata.customer_phone,
         depositAmount: session.amount_total / 100,
         paymentProvider: 'stripe',
         externalPaymentId: paymentIntentId,
-        channel: (metadata.channel || 'site') as 'site' | 'whatsapp' | 'telegram' | 'instagram' | 'facebook' | 'phone',
+        channel: (metadata.channel || 'site') as
+          | 'site'
+          | 'whatsapp'
+          | 'telegram'
+          | 'instagram'
+          | 'facebook'
+          | 'phone',
         notes: `Stripe Checkout Session: ${session.id}`,
       });
 
-      console.log(
-        `[Stripe Webhook] Successfully created reservation ID: ${reservationId}`
-      );
+      console.log(`[Stripe Webhook] Successfully created reservation ID: ${reservationId}`);
 
       if (metadata.puppy_slug) {
         revalidatePath(`/puppies/${metadata.puppy_slug}`);

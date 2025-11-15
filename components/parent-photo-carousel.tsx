@@ -1,20 +1,23 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { ChevronLeft, ChevronRight, PawPrint } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, PawPrint } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 type ParentPhotoCarouselProps = {
-  title: "Sire" | "Dam";
+  title: 'Sire' | 'Dam';
   parentName?: string | null;
   photos?: string[] | null;
 };
 
 export function ParentPhotoCarousel({ title, parentName, photos }: ParentPhotoCarouselProps) {
-  const media = useMemo(() => (photos ?? []).filter((src): src is string => Boolean(src)), [photos]);
+  const media = useMemo(
+    () => (photos ?? []).filter((src): src is string => Boolean(src)),
+    [photos],
+  );
   const [index, setIndex] = useState(0);
   const total = media.length;
-  const displayName = parentName ?? "TBD";
+  const displayName = parentName ?? 'TBD';
 
   useEffect(() => {
     setIndex(0);
@@ -35,7 +38,7 @@ export function ParentPhotoCarousel({ title, parentName, photos }: ParentPhotoCa
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <Image
               key={current}
-              src={current ?? ""}
+              src={current ?? ''}
               alt={`${title} ${displayName} photo ${index + 1}`}
               fill
               sizes="(min-width: 1024px) 320px, (min-width: 768px) 45vw, 100vw"
@@ -67,7 +70,7 @@ export function ParentPhotoCarousel({ title, parentName, photos }: ParentPhotoCa
                     key={`${title}-${dotIndex}`}
                     type="button"
                     onClick={() => setIndex(dotIndex)}
-                    className={`h-2 w-2 rounded-full border border-border transition ${dotIndex === index ? "bg-text" : "bg-bg/60"}`}
+                    className={`h-2 w-2 rounded-full border border-border transition ${dotIndex === index ? 'bg-text' : 'bg-bg/60'}`}
                     aria-label={`View ${title.toLowerCase()} photo ${dotIndex + 1}`}
                     aria-current={dotIndex === index}
                   />

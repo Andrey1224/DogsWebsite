@@ -1,5 +1,5 @@
-const DEFAULT_PLACEHOLDER = "/reviews/cameron-milo.webp";
-const ALLOWED_REMOTE_PROTOCOLS = ["http://", "https://", "data:", "blob:"];
+const DEFAULT_PLACEHOLDER = '/reviews/cameron-milo.webp';
+const ALLOWED_REMOTE_PROTOCOLS = ['http://', 'https://', 'data:', 'blob:'];
 
 export function resolveLocalImage(
   url: string | null | undefined,
@@ -7,7 +7,7 @@ export function resolveLocalImage(
 ): string {
   if (!url) return fallback;
 
-  if (url.startsWith("/")) {
+  if (url.startsWith('/')) {
     return url;
   }
 

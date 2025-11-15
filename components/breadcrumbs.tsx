@@ -1,6 +1,6 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { getSiteUrl } from "@/lib/utils/env";
+import { getSiteUrl } from '@/lib/utils/env';
 
 export type BreadcrumbItem = {
   label: string;
@@ -11,20 +11,20 @@ function buildJsonLd(items: BreadcrumbItem[]) {
   const siteUrl = getSiteUrl();
 
   const itemListElement = items.map((item, index) => {
-    const url = item.href.startsWith("http") ? item.href : new URL(item.href, siteUrl).toString();
+    const url = item.href.startsWith('http') ? item.href : new URL(item.href, siteUrl).toString();
     return {
-      "@type": "ListItem",
+      '@type': 'ListItem',
       position: index + 1,
       item: {
-        "@id": url,
+        '@id': url,
         name: item.label,
       },
     };
   });
 
   return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
     itemListElement,
   };
 }

@@ -50,7 +50,7 @@ describe('PayPalWebhookHandler', () => {
   const mockEmail = 'buyer@example.com';
 
   const createEvent = (
-    overrides?: Partial<PayPalWebhookEvent<Record<string, unknown>>>
+    overrides?: Partial<PayPalWebhookEvent<Record<string, unknown>>>,
   ): PayPalWebhookEvent<Record<string, unknown>> => ({
     id: mockEventId,
     event_type: 'PAYMENT.CAPTURE.COMPLETED',
@@ -115,7 +115,7 @@ describe('PayPalWebhookHandler', () => {
         provider: 'paypal',
         eventId: mockEventId,
         eventType: 'PAYMENT.CAPTURE.COMPLETED',
-      })
+      }),
     );
   });
 
@@ -214,7 +214,7 @@ describe('PayPalWebhookHandler', () => {
     const { ReservationCreationError } = await import('@/lib/reservations/create');
 
     (ReservationCreationService.createReservation as any).mockRejectedValue(
-      new ReservationCreationError('Database error', 'DATABASE_ERROR')
+      new ReservationCreationError('Database error', 'DATABASE_ERROR'),
     );
 
     const event = createEvent();

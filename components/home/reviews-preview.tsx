@@ -1,41 +1,41 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from 'next/image';
+import Link from 'next/link';
 
 const featuredReviews = [
   {
-    id: "sarah-w",
-    author: "Sarah W.",
-    location: "Huntsville, AL",
+    id: 'sarah-w',
+    author: 'Sarah W.',
+    location: 'Huntsville, AL',
     rating: 5,
     quote:
       "We picked up our French Bulldog, Charlie, in June and he's been the sweetest, healthiest puppy we've ever had. The whole process was transparent and stress-free — communication was excellent!",
     media: {
-      url: "/reviews/sarah-charlie.webp",
-      alt: "French Bulldog Charlie with owner Sarah W. from Huntsville, AL",
+      url: '/reviews/sarah-charlie.webp',
+      alt: 'French Bulldog Charlie with owner Sarah W. from Huntsville, AL',
     },
   },
   {
-    id: "mark-lisa-p",
-    author: "Mark & Lisa P.",
-    location: "Birmingham, AL",
+    id: 'mark-lisa-p',
+    author: 'Mark & Lisa P.',
+    location: 'Birmingham, AL',
     rating: 5,
     quote:
-      "Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.",
+      'Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.',
     media: {
-      url: "/reviews/mark-lisa-duke.webp",
-      alt: "English Bulldog Duke with owners Mark and Lisa P. from Birmingham, AL",
+      url: '/reviews/mark-lisa-duke.webp',
+      alt: 'English Bulldog Duke with owners Mark and Lisa P. from Birmingham, AL',
     },
   },
   {
-    id: "anthony-d",
-    author: "Anthony D.",
-    location: "Montgomery, AL",
+    id: 'anthony-d',
+    author: 'Anthony D.',
+    location: 'Montgomery, AL',
     rating: 5,
     quote:
-      "Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.",
+      'Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.',
     media: {
-      url: "/reviews/anthony-tommy.webp",
-      alt: "French Bulldog Tommy with owner Anthony D. from Montgomery, AL",
+      url: '/reviews/anthony-tommy.webp',
+      alt: 'French Bulldog Tommy with owner Anthony D. from Montgomery, AL',
     },
   },
 ];
@@ -67,10 +67,13 @@ export function ReviewsPreview() {
                   <p className="text-sm font-semibold text-text">{review.author}</p>
                   <p className="text-xs uppercase tracking-wide text-muted">{review.location}</p>
                 </div>
-                <div className="flex items-center gap-0.5 text-sm text-accent-aux" aria-label={`${review.rating} out of 5 stars`}>
+                <div
+                  className="flex items-center gap-0.5 text-sm text-accent-aux"
+                  aria-label={`${review.rating} out of 5 stars`}
+                >
                   {Array.from({ length: 5 }).map((_, index) => (
                     <span key={index} aria-hidden="true">
-                      {index < review.rating ? "★" : "☆"}
+                      {index < review.rating ? '★' : '☆'}
                     </span>
                   ))}
                 </div>
@@ -107,12 +110,7 @@ export function ReviewsPreview() {
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>

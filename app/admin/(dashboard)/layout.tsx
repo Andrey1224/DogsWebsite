@@ -1,14 +1,14 @@
-import { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { AdminToaster } from "@/components/admin-toaster";
-import { signOut } from "@/app/admin/actions";
-import { getAdminSession } from "@/lib/admin/session";
+import { ReactNode } from 'react';
+import { redirect } from 'next/navigation';
+import { AdminToaster } from '@/components/admin-toaster';
+import { signOut } from '@/app/admin/actions';
+import { getAdminSession } from '@/lib/admin/session';
 
 export default async function AdminDashboardLayout({ children }: { children: ReactNode }) {
   const session = await getAdminSession();
 
   if (!session) {
-    redirect("/admin/login");
+    redirect('/admin/login');
   }
 
   return (
@@ -31,7 +31,9 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
             </form>
           </div>
         </header>
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">{children}</section>
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          {children}
+        </section>
       </div>
       <AdminToaster />
     </div>

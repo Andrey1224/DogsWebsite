@@ -22,7 +22,7 @@ export function getRequiredEnv(key: string, description?: string): string {
     const desc = description || key;
     throw new Error(
       `Missing required environment variable: ${key}. ` +
-        `Please add ${desc} to your .env.local file.`
+        `Please add ${desc} to your .env.local file.`,
     );
   }
 
@@ -75,9 +75,7 @@ export function getSiteUrl(): string {
     return 'http://localhost:3000';
   }
 
-  throw new Error(
-    'NEXT_PUBLIC_SITE_URL must be set in production environments'
-  );
+  throw new Error('NEXT_PUBLIC_SITE_URL must be set in production environments');
 }
 
 /**
@@ -107,7 +105,7 @@ export function validatePaymentEnv(): void {
   if (missing.length > 0) {
     throw new Error(
       `Missing required payment environment variables:\n- ${missing.join('\n- ')}\n\n` +
-        'Please add these to your .env.local file. See .env.example for details.'
+        'Please add these to your .env.local file. See .env.example for details.',
     );
   }
 }

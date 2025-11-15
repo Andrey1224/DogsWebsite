@@ -1,6 +1,6 @@
 'use client';
 
-import { Toaster } from "sonner";
+import { Toaster } from 'sonner';
 
 export function AdminToaster() {
   return <Toaster position="top-center" richColors closeButton duration={3500} />;

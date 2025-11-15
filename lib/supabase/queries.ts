@@ -1,10 +1,10 @@
-import "server-only";
+import 'server-only';
 
-import { cache } from "react";
+import { cache } from 'react';
 
-import { createServiceRoleClient } from "./client";
-import { runArchiveAwareQuery } from "./archive-support";
-import type { Litter, Parent, Puppy, PuppyStatus, PuppyWithRelations } from "./types";
+import { createServiceRoleClient } from './client';
+import { runArchiveAwareQuery } from './archive-support';
+import type { Litter, Parent, Puppy, PuppyStatus, PuppyWithRelations } from './types';
 
 let cachedClient: ReturnType<typeof createServiceRoleClient> | null = null;
 
@@ -16,8 +16,8 @@ function getSupabaseClient() {
 }
 
 export type PuppyFilter = {
-  status?: PuppyStatus | "all";
-  breed?: "french_bulldog" | "english_bulldog" | "all";
+  status?: PuppyStatus | 'all';
+  breed?: 'french_bulldog' | 'english_bulldog' | 'all';
 };
 
 function normalizeArchiveFlag<T extends { is_archived?: boolean | null }>(
@@ -53,22 +53,24 @@ function normalizeArchiveFlagForRecord<T extends { is_archived?: boolean | null 
 }
 
 export const getPuppies = cache(async () => {
-  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy[]>(async ({ useArchiveColumn }) => {
-    let query = getSupabaseClient()
-      .from("puppies")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy[]>(
+    async ({ useArchiveColumn }) => {
+      let query = getSupabaseClient()
+        .from('puppies')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (useArchiveColumn) {
-      query = query.eq("is_archived", false);
-    }
+      if (useArchiveColumn) {
+        query = query.eq('is_archived', false);
+      }
 
-    const response = await query;
-    return {
-      data: (response.data ?? []) as Puppy[],
-      error: response.error,
-    };
-  });
+      const response = await query;
+      return {
+        data: (response.data ?? []) as Puppy[],
+        error: response.error,
+      };
+    },
+  );
 
   if (error) {
     throw error;
@@ -78,7 +80,7 @@ export const getPuppies = cache(async () => {
 });
 
 export const getParents = cache(async () => {
-  const { data, error } = await getSupabaseClient().from("parents").select("*").order("name");
+  const { data, error } = await getSupabaseClient().from('parents').select('*').order('name');
   if (error) {
     throw error;
   }
@@ -86,43 +88,37 @@ export const getParents = cache(async () => {
 });
 
 export const getLitters = cache(async () => {
-  const { data, error } = await getSupabaseClient().from("litters").select("*").order("born_at", { ascending: false });
+  const { data, error } = await getSupabaseClient()
+    .from('litters')
+    .select('*')
+    .order('born_at', { ascending: false });
   if (error) {
     throw error;
   }
   return (data ?? []) as Litter[];
 });
 
-export function applyPuppyFilters(
-  puppies: PuppyWithRelations[],
-  filter: PuppyFilter = {},
-) {
+export function applyPuppyFilters(puppies: PuppyWithRelations[], filter: PuppyFilter = {}) {
   return puppies.filter((puppy) => {
     const matchesStatus =
-      !filter.status || filter.status === "all" || puppy.status === filter.status;
+      !filter.status || filter.status === 'all' || puppy.status === filter.status;
 
-    const breedFilter = filter.breed ?? "all";
-    if (breedFilter === "all") {
+    const breedFilter = filter.breed ?? 'all';
+    if (breedFilter === 'all') {
       return matchesStatus;
     }
 
     const sireBreed = puppy.parents?.sire?.breed;
     const damBreed = puppy.parents?.dam?.breed;
     const matchesBreed =
-      puppy.breed === breedFilter ||
-      sireBreed === breedFilter ||
-      damBreed === breedFilter;
+      puppy.breed === breedFilter || sireBreed === breedFilter || damBreed === breedFilter;
 
     return matchesStatus && matchesBreed;
   });
 }
 
 export const getPuppiesWithRelations = cache(async () => {
-  const [puppies, litters, parents] = await Promise.all([
-    getPuppies(),
-    getLitters(),
-    getParents(),
-  ]);
+  const [puppies, litters, parents] = await Promise.all([getPuppies(), getLitters(), getParents()]);
 
   const parentById = new Map<string, Parent>();
   parents.forEach((parent) => {
@@ -135,20 +131,20 @@ export const getPuppiesWithRelations = cache(async () => {
   });
 
   return puppies.map<PuppyWithRelations>((puppy) => {
-    const litter = puppy.litter_id ? litterById.get(puppy.litter_id) ?? null : null;
+    const litter = puppy.litter_id ? (litterById.get(puppy.litter_id) ?? null) : null;
 
     // Get parents directly from puppy's sire_id/dam_id (new approach)
     // Falls back to litter parents if direct IDs are not set (backward compatibility)
     const sire = puppy.sire_id
-      ? parentById.get(puppy.sire_id) ?? null
+      ? (parentById.get(puppy.sire_id) ?? null)
       : litter?.sire_id
-        ? parentById.get(litter.sire_id) ?? null
+        ? (parentById.get(litter.sire_id) ?? null)
         : null;
 
     const dam = puppy.dam_id
-      ? parentById.get(puppy.dam_id) ?? null
+      ? (parentById.get(puppy.dam_id) ?? null)
       : litter?.dam_id
-        ? parentById.get(litter.dam_id) ?? null
+        ? (parentById.get(litter.dam_id) ?? null)
         : null;
 
     return {
@@ -168,22 +164,21 @@ export const getFilteredPuppies = cache(async (filter: PuppyFilter = {}) => {
 });
 
 export const getPuppyBySlug = cache(async (slug: string) => {
-  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy | null>(async ({ useArchiveColumn }) => {
-    let queryBuilder = getSupabaseClient()
-      .from("puppies")
-      .select("*")
-      .eq("slug", slug);
+  const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<Puppy | null>(
+    async ({ useArchiveColumn }) => {
+      let queryBuilder = getSupabaseClient().from('puppies').select('*').eq('slug', slug);
 
-    if (useArchiveColumn) {
-      queryBuilder = queryBuilder.eq("is_archived", false);
-    }
+      if (useArchiveColumn) {
+        queryBuilder = queryBuilder.eq('is_archived', false);
+      }
 
-    const response = await queryBuilder.maybeSingle();
-    return {
-      data: (response.data as Puppy | null) ?? null,
-      error: response.error,
-    };
-  });
+      const response = await queryBuilder.maybeSingle();
+      return {
+        data: (response.data as Puppy | null) ?? null,
+        error: response.error,
+      };
+    },
+  );
 
   if (error) {
     throw error;
@@ -196,7 +191,7 @@ export const getPuppyBySlug = cache(async (slug: string) => {
   }
 
   const litters = await getLitters();
-  const litter = record.litter_id ? litters.find((l) => l.id === record.litter_id) ?? null : null;
+  const litter = record.litter_id ? (litters.find((l) => l.id === record.litter_id) ?? null) : null;
 
   const parentsList = await getParents();
 
@@ -204,14 +199,14 @@ export const getPuppyBySlug = cache(async (slug: string) => {
   // Falls back to litter parents if direct IDs are not set (backward compatibility)
   const parents = {
     sire: record.sire_id
-      ? parentsList.find((p) => p.id === record.sire_id) ?? null
+      ? (parentsList.find((p) => p.id === record.sire_id) ?? null)
       : litter?.sire_id
-        ? parentsList.find((p) => p.id === litter.sire_id) ?? null
+        ? (parentsList.find((p) => p.id === litter.sire_id) ?? null)
         : null,
     dam: record.dam_id
-      ? parentsList.find((p) => p.id === record.dam_id) ?? null
+      ? (parentsList.find((p) => p.id === record.dam_id) ?? null)
       : litter?.dam_id
-        ? parentsList.find((p) => p.id === litter.dam_id) ?? null
+        ? (parentsList.find((p) => p.id === litter.dam_id) ?? null)
         : null,
   };
 

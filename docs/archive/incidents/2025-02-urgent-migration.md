@@ -123,6 +123,7 @@ FROM puppies;
 ```
 
 **Expected Output:**
+
 - ✅ Column `is_archived` exists (type: `boolean`, nullable: `NO`, default: `false`)
 - ✅ Two indexes: `idx_puppies_is_archived` and `idx_puppies_active_created`
 - ✅ Trigger `trigger_auto_archive_sold` exists
@@ -157,6 +158,7 @@ node scripts/verify-constraints.mjs
 ```
 
 **Expected Output:**
+
 ```
 ✅ All required columns exist!
 ✅ Function exists and validation works
@@ -189,17 +191,21 @@ Vercel deployments should automatically work now since the database schema match
 ## Troubleshooting
 
 ### "relation already exists" or "column already exists"
+
 ✅ **This is GOOD!** Migration was already applied. Skip to next step.
 
 ### "permission denied"
+
 ❌ Use service role key or database owner credentials. Check you're logged in as project owner.
 
 ### Migration runs but verification fails
+
 1. Refresh Supabase dashboard
 2. Check you're connected to correct project
 3. Re-run verification query after 30 seconds
 
 ### Still failing after migrations applied
+
 1. Clear Next.js build cache: `rm -rf .next`
 2. Restart dev server: `npm run dev`
 3. Check environment variables match production

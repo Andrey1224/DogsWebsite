@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 import type {
   PayPalButtonsComponent,
   PayPalButtonsComponentOptions,
   PayPalNamespace,
-} from "@paypal/paypal-js";
-import { loadScript } from "@paypal/paypal-js";
+} from '@paypal/paypal-js';
+import { loadScript } from '@paypal/paypal-js';
 
 interface PayPalButtonProps {
   clientId: string | null;
@@ -34,25 +34,29 @@ export function PayPalButton({
 
     async function initializePayPal() {
       if (!clientId) {
-        onError?.("PayPal is not configured yet. Please contact support to enable this payment method.");
+        onError?.(
+          'PayPal is not configured yet. Please contact support to enable this payment method.',
+        );
         return;
       }
 
       try {
         const paypal = await loadScript({
           clientId,
-          components: "buttons",
-          currency: "USD",
-          intent: "capture",
-          disableFunding: "credit,card",
+          components: 'buttons',
+          currency: 'USD',
+          intent: 'capture',
+          disableFunding: 'credit,card',
         });
 
         if (!paypal || !isMounted) {
           return;
         }
 
-        if (typeof paypal.Buttons !== "function") {
-          onError?.("PayPal SDK did not provide the Buttons component. Please refresh and try again.");
+        if (typeof paypal.Buttons !== 'function') {
+          onError?.(
+            'PayPal SDK did not provide the Buttons component. Please refresh and try again.',
+          );
           return;
         }
 
@@ -64,19 +68,19 @@ export function PayPalButton({
 
         const button = paypal.Buttons({
           style: {
-            layout: "horizontal",
-            color: "gold",
-            shape: "pill",
-            label: "paypal",
+            layout: 'horizontal',
+            color: 'gold',
+            shape: 'pill',
+            label: 'paypal',
           },
           createOrder: async () => {
             onError?.(null);
             onProcessingChange?.(true);
 
-            const response = await fetch("/api/paypal/create-order", {
-              method: "POST",
+            const response = await fetch('/api/paypal/create-order', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({ puppySlug }),
             });
@@ -85,9 +89,9 @@ export function PayPalButton({
 
             if (!response.ok || !data.orderId) {
               const message =
-                typeof data.error === "string"
+                typeof data.error === 'string'
                   ? data.error
-                  : "Unable to create PayPal order. Please try again.";
+                  : 'Unable to create PayPal order. Please try again.';
               onError?.(message);
               onProcessingChange?.(false);
               throw new Error(message);
@@ -97,10 +101,10 @@ export function PayPalButton({
           },
           onApprove: async (data) => {
             try {
-              const response = await fetch("/api/paypal/capture", {
-                method: "POST",
+              const response = await fetch('/api/paypal/capture', {
+                method: 'POST',
                 headers: {
-                  "Content-Type": "application/json",
+                  'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ orderId: data.orderID }),
               });
@@ -109,9 +113,9 @@ export function PayPalButton({
 
               if (!response.ok || !captureData.success) {
                 const message =
-                  typeof captureData.error === "string"
+                  typeof captureData.error === 'string'
                     ? captureData.error
-                    : "Unable to capture PayPal order. Please contact support.";
+                    : 'Unable to capture PayPal order. Please contact support.';
                 onError?.(message);
                 throw new Error(message);
               }
@@ -119,7 +123,7 @@ export function PayPalButton({
               onSuccess?.(captureData.captureId as string | undefined);
             } catch (error) {
               const message =
-                error instanceof Error ? error.message : "Unexpected error capturing PayPal order.";
+                error instanceof Error ? error.message : 'Unexpected error capturing PayPal order.';
               onError?.(message);
               throw error;
             } finally {
@@ -132,14 +136,14 @@ export function PayPalButton({
           },
           onError: (err) => {
             const message =
-              err instanceof Error ? err.message : "PayPal encountered an unexpected error.";
+              err instanceof Error ? err.message : 'PayPal encountered an unexpected error.';
             onProcessingChange?.(false);
             onError?.(message);
           },
         } satisfies PayPalButtonsComponentOptions);
 
         if (!button.isEligible()) {
-          onError?.("PayPal is unavailable in your region or browser.");
+          onError?.('PayPal is unavailable in your region or browser.');
           return;
         }
 
@@ -152,7 +156,7 @@ export function PayPalButton({
         const message =
           error instanceof Error
             ? error.message
-            : "Failed to initialise PayPal. Please refresh and try again.";
+            : 'Failed to initialise PayPal. Please refresh and try again.';
         onProcessingChange?.(false);
         onError?.(message);
       }
@@ -169,7 +173,7 @@ export function PayPalButton({
   }, [clientId, puppySlug, onError, onProcessingChange, onSuccess]);
 
   return (
-    <div className={`w-full ${disabled ? "pointer-events-none opacity-60" : ""}`}>
+    <div className={`w-full ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
       <div ref={containerRef} aria-live="polite" />
     </div>
   );

@@ -1,20 +1,20 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 const topFaqs = [
   {
-    question: "How do I place a deposit?",
+    question: 'How do I place a deposit?',
     answer:
       "Open the puppy's detail page and tap Reserve with Stripe or PayPal. The $300 deposit immediately marks the puppy as reserved while we finalize your contract and pickup timeline.",
   },
   {
-    question: "Is the deposit refundable?",
+    question: 'Is the deposit refundable?',
     answer:
-      "Deposits are non-refundable because we pause all other inquiries for that puppy. If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.",
+      'Deposits are non-refundable because we pause all other inquiries for that puppy. If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
   },
   {
-    question: "What are the pickup and delivery options?",
+    question: 'What are the pickup and delivery options?',
     answer:
-      "You can pick up in Montgomery by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.",
+      'You can pick up in Montgomery by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.',
   },
 ];
 
@@ -59,12 +59,7 @@ export function FaqPreview() {
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>

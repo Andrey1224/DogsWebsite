@@ -27,7 +27,9 @@ export class ReservationQueries {
   /**
    * Create a new reservation
    */
-  static async create(reservation: Omit<Reservation, 'id' | 'created_at' | 'updated_at'>): Promise<Reservation> {
+  static async create(
+    reservation: Omit<Reservation, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<Reservation> {
     try {
       const { data, error } = await supabase
         .from('reservations')
@@ -51,11 +53,7 @@ export class ReservationQueries {
    */
   static async getById(id: string): Promise<Reservation | null> {
     try {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('reservations').select('*').eq('id', id).single();
 
       if (error || !data) {
         return null;
@@ -73,7 +71,7 @@ export class ReservationQueries {
    */
   static async getByPayment(
     provider: PaymentProvider,
-    externalPaymentId: string
+    externalPaymentId: string,
   ): Promise<Reservation | null> {
     try {
       const { data, error } = await supabase
@@ -97,10 +95,7 @@ export class ReservationQueries {
   /**
    * Update reservation
    */
-  static async update(
-    id: string,
-    updates: Partial<Reservation>
-  ): Promise<Reservation | null> {
+  static async update(id: string, updates: Partial<Reservation>): Promise<Reservation | null> {
     try {
       const { data, error } = await supabase
         .from('reservations')
@@ -126,10 +121,7 @@ export class ReservationQueries {
   /**
    * Update reservation status
    */
-  static async updateStatus(
-    id: string,
-    status: ReservationStatus
-  ): Promise<Reservation | null> {
+  static async updateStatus(id: string, status: ReservationStatus): Promise<Reservation | null> {
     return this.update(id, { status });
   }
 
@@ -217,11 +209,15 @@ export class ReservationQueries {
   /**
    * Get reservations with puppy details
    */
-  static async getWithPuppy(limit: number = 50, offset: number = 0): Promise<ReservationWithPuppy[]> {
+  static async getWithPuppy(
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<ReservationWithPuppy[]> {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select(`
+        .select(
+          `
           *,
           puppy:puppies(
             id,
@@ -230,7 +226,8 @@ export class ReservationQueries {
             status,
             price
           )
-        `)
+        `,
+        )
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -272,8 +269,9 @@ export class ReservationQueries {
    */
   static async getSummary(puppyId: string): Promise<ReservationSummary> {
     try {
-      const { data, error } = await supabase
-        .rpc('get_reservation_summary', { puppy_id_param: puppyId });
+      const { data, error } = await supabase.rpc('get_reservation_summary', {
+        puppy_id_param: puppyId,
+      });
 
       if (error || !data || data.length === 0) {
         return {
@@ -322,8 +320,7 @@ export class ReservationQueries {
    */
   static async expireOldPending(): Promise<number> {
     try {
-      const { data, error } = await supabase
-        .rpc('expire_pending_reservations');
+      const { data, error } = await supabase.rpc('expire_pending_reservations');
 
       if (error) {
         console.error('Error expiring pending reservations:', error);
@@ -342,10 +339,7 @@ export class ReservationQueries {
    */
   static async delete(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('reservations')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('reservations').delete().eq('id', id);
 
       return !error;
     } catch (error) {
@@ -405,7 +399,8 @@ export class PuppyQueries {
     try {
       const { data, error } = await supabase
         .from('puppies')
-        .select(`
+        .select(
+          `
           id,
           name,
           breed_id,
@@ -414,7 +409,8 @@ export class PuppyQueries {
           gender,
           birth_date,
           description
-        `)
+        `,
+        )
         .eq('id', puppyId)
         .single();
 
@@ -434,10 +430,7 @@ export class PuppyQueries {
    */
   static async updateStatus(puppyId: string, status: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('puppies')
-        .update({ status })
-        .eq('id', puppyId);
+      const { error } = await supabase.from('puppies').update({ status }).eq('id', puppyId);
 
       return !error;
     } catch (error) {
@@ -454,13 +447,11 @@ export class WebhookEventQueries {
   /**
    * Create webhook event
    */
-  static async create(event: Omit<WebhookEvent, 'id' | 'created_at' | 'updated_at'>): Promise<WebhookEvent> {
+  static async create(
+    event: Omit<WebhookEvent, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<WebhookEvent> {
     try {
-      const { data, error } = await supabase
-        .from('webhook_events')
-        .insert(event)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('webhook_events').insert(event).select().single();
 
       if (error) {
         throw new Error(`Failed to create webhook event: ${error.message}`);
@@ -500,7 +491,7 @@ export class WebhookEventQueries {
    */
   static async getByProviderEvent(
     provider: PaymentProvider,
-    eventId: string
+    eventId: string,
   ): Promise<WebhookEvent | null> {
     try {
       const { data, error } = await supabase
@@ -530,7 +521,7 @@ export class WebhookEventQueries {
         .from('webhook_events')
         .select('*')
         .eq('processed', false)
-        .or('processing_started_at.is.null,processing_started_at.lt.now() - interval \'5 minutes\'')
+        .or("processing_started_at.is.null,processing_started_at.lt.now() - interval '5 minutes'")
         .order('created_at', { ascending: true })
         .limit(limit);
 
@@ -548,10 +539,7 @@ export class WebhookEventQueries {
   /**
    * Update webhook event
    */
-  static async update(
-    id: number,
-    updates: Partial<WebhookEvent>
-  ): Promise<WebhookEvent | null> {
+  static async update(id: number, updates: Partial<WebhookEvent>): Promise<WebhookEvent | null> {
     try {
       const { data, error } = await supabase
         .from('webhook_events')
@@ -577,10 +565,7 @@ export class WebhookEventQueries {
   /**
    * Mark webhook event as processed
    */
-  static async markAsProcessed(
-    id: number,
-    reservationId?: string
-  ): Promise<boolean> {
+  static async markAsProcessed(id: number, reservationId?: string): Promise<boolean> {
     try {
       const updates: Partial<WebhookEvent> = {
         processed: true,
@@ -591,10 +576,7 @@ export class WebhookEventQueries {
         updates.reservation_id = reservationId;
       }
 
-      const { error } = await supabase
-        .from('webhook_events')
-        .update(updates)
-        .eq('id', id);
+      const { error } = await supabase.from('webhook_events').update(updates).eq('id', id);
 
       return !error;
     } catch (error) {
@@ -655,15 +637,14 @@ export class TransactionQueries {
    */
   static async createReservationWithWebhook(
     reservation: Omit<Reservation, 'id' | 'created_at' | 'updated_at'>,
-    webhookEvent: Omit<WebhookEvent, 'id' | 'created_at' | 'updated_at' | 'reservation_id'>
+    webhookEvent: Omit<WebhookEvent, 'id' | 'created_at' | 'updated_at' | 'reservation_id'>,
   ): Promise<{ reservation: Reservation; webhookEvent: WebhookEvent }> {
     try {
       // Use a single RPC call for atomic transaction
-      const { data, error } = await supabase
-        .rpc('create_reservation_with_webhook', {
-          p_reservation: reservation,
-          p_webhook_event: webhookEvent,
-        });
+      const { data, error } = await supabase.rpc('create_reservation_with_webhook', {
+        p_reservation: reservation,
+        p_webhook_event: webhookEvent,
+      });
 
       if (error || !data) {
         throw new Error(`Failed to create reservation with webhook: ${error?.message}`);

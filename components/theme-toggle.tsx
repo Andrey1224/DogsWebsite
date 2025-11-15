@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from '@/components/theme-provider';
 
 const OPTIONS = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "Auto" },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'Auto' },
 ] as const;
 
 export function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
 
   const helperLabel = useMemo(() => {
-    if (theme !== "system") {
+    if (theme !== 'system') {
       return null;
     }
-    return resolvedTheme === "dark" ? "System dark" : "System light";
+    return resolvedTheme === 'dark' ? 'System dark' : 'System light';
   }, [resolvedTheme, theme]);
 
   return (
@@ -32,8 +32,8 @@ export function ThemeToggle() {
               onClick={() => setTheme(option.value)}
               className={`rounded-full px-3 py-1 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-aux ${
                 isActive
-                  ? "bg-[color:var(--btn-bg)] text-[color:var(--btn-text)] shadow"
-                  : "text-muted hover:bg-[color:var(--hover)]"
+                  ? 'bg-[color:var(--btn-bg)] text-[color:var(--btn-text)] shadow'
+                  : 'text-muted hover:bg-[color:var(--hover)]'
               }`}
               aria-pressed={isActive}
             >

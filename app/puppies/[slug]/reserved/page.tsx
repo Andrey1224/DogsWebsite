@@ -46,23 +46,15 @@ export default async function ReservationSuccessPage({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
-        <h1 className="text-3xl font-semibold tracking-tight text-text">
-          Reservation Confirmed!
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-text">Reservation Confirmed!</h1>
 
         <p className="text-lg text-muted">
           Congratulations! Your reservation for{' '}
-          <span className="font-semibold text-text">{puppy.name}</span> has been
-          confirmed.
+          <span className="font-semibold text-text">{puppy.name}</span> has been confirmed.
         </p>
       </div>
 
@@ -80,12 +72,9 @@ export default async function ReservationSuccessPage({
               1
             </span>
             <div>
-              <p className="font-semibold text-text">
-                Check your email for confirmation
-              </p>
+              <p className="font-semibold text-text">Check your email for confirmation</p>
               <p className="text-muted">
-                We&apos;ve sent a confirmation email with your reservation details and
-                receipt.
+                We&apos;ve sent a confirmation email with your reservation details and receipt.
               </p>
             </div>
           </li>
@@ -97,8 +86,8 @@ export default async function ReservationSuccessPage({
             <div>
               <p className="font-semibold text-text">We&apos;ll reach out shortly</p>
               <p className="text-muted">
-                Our team will contact you within 24 hours to discuss pickup details
-                and answer any questions.
+                Our team will contact you within 24 hours to discuss pickup details and answer any
+                questions.
               </p>
             </div>
           </li>
@@ -110,8 +99,8 @@ export default async function ReservationSuccessPage({
             <div>
               <p className="font-semibold text-text">Prepare for your new puppy</p>
               <p className="text-muted">
-                We&apos;ll provide you with care instructions, health records, and tips
-                for bringing your puppy home.
+                We&apos;ll provide you with care instructions, health records, and tips for bringing
+                your puppy home.
               </p>
             </div>
           </li>

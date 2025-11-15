@@ -8,12 +8,7 @@
 /**
  * Reservation status (matches database enum)
  */
-export type ReservationStatus =
-  | 'pending'
-  | 'paid'
-  | 'cancelled'
-  | 'expired'
-  | 'refunded';
+export type ReservationStatus = 'pending' | 'paid' | 'cancelled' | 'expired' | 'refunded';
 
 /**
  * Payment provider

@@ -5,21 +5,21 @@
  * service and idempotency manager to ensure safe, atomic operations.
  */
 
-import { ReservationCreationError, ReservationCreationService } from "@/lib/reservations/create";
-import { idempotencyManager } from "@/lib/reservations/idempotency";
-import type { ReservationChannel } from "@/lib/reservations/types";
-import { trackDepositPaid } from "@/lib/analytics/server-events";
+import { ReservationCreationError, ReservationCreationService } from '@/lib/reservations/create';
+import { idempotencyManager } from '@/lib/reservations/idempotency';
+import type { ReservationChannel } from '@/lib/reservations/types';
+import { trackDepositPaid } from '@/lib/analytics/server-events';
 import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
-} from "@/lib/emails/deposit-notifications";
-import { getPayPalOrder } from "./client";
+} from '@/lib/emails/deposit-notifications';
+import { getPayPalOrder } from './client';
 import type {
   PayPalCapture,
   PayPalOrderMetadata,
   PayPalWebhookEvent,
   PayPalWebhookProcessingResult,
-} from "./types";
+} from './types';
 
 interface PayPalCaptureResource extends PayPalCapture {
   custom_id?: string;
@@ -38,11 +38,11 @@ export class PayPalWebhookHandler {
     console.log(`[PayPal Webhook] Received event ${eventType} (${eventId})`);
 
     switch (eventType) {
-      case "PAYMENT.CAPTURE.COMPLETED":
+      case 'PAYMENT.CAPTURE.COMPLETED':
         return this.handleCaptureCompleted(event);
-      case "CHECKOUT.ORDER.APPROVED":
+      case 'CHECKOUT.ORDER.APPROVED':
         await idempotencyManager.createWebhookEvent({
-          provider: "paypal",
+          provider: 'paypal',
           eventId,
           eventType,
           payload: event,
@@ -69,7 +69,7 @@ export class PayPalWebhookHandler {
     try {
       return JSON.parse(customId) as PayPalOrderMetadata;
     } catch (error) {
-      console.error("[PayPal Webhook] Failed to parse custom_id metadata:", error);
+      console.error('[PayPal Webhook] Failed to parse custom_id metadata:', error);
       return null;
     }
   }
@@ -80,28 +80,28 @@ export class PayPalWebhookHandler {
     const eventId = event.id;
     const captureData = event.resource as unknown;
 
-    if (!captureData || typeof captureData !== "object") {
-      console.error("[PayPal Webhook] Invalid capture resource payload");
+    if (!captureData || typeof captureData !== 'object') {
+      console.error('[PayPal Webhook] Invalid capture resource payload');
       return {
         success: false,
         eventType: event.event_type,
-        error: "Invalid capture resource",
+        error: 'Invalid capture resource',
       };
     }
 
     const capture = captureData as PayPalCaptureResource;
 
     if (!capture || !capture.id) {
-      console.error("[PayPal Webhook] Missing capture resource or ID");
+      console.error('[PayPal Webhook] Missing capture resource or ID');
       return {
         success: false,
         eventType: event.event_type,
-        error: "Missing capture resource or ID",
+        error: 'Missing capture resource or ID',
       };
     }
 
-    if (capture.status && capture.status !== "COMPLETED") {
-      console.error("[PayPal Webhook] Capture status not completed", capture.status);
+    if (capture.status && capture.status !== 'COMPLETED') {
+      console.error('[PayPal Webhook] Capture status not completed', capture.status);
       return {
         success: false,
         eventType: event.event_type,
@@ -114,7 +114,7 @@ export class PayPalWebhookHandler {
     const orderId = capture.supplementary_data?.related_ids?.order_id;
 
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
-      "paypal",
+      'paypal',
       eventId,
       captureId,
     );
@@ -131,23 +131,23 @@ export class PayPalWebhookHandler {
 
     const metadata = this.parseMetadata(capture.custom_id);
     if (!metadata || !metadata.puppy_id) {
-      console.error("[PayPal Webhook] Missing required metadata (puppy_id)");
+      console.error('[PayPal Webhook] Missing required metadata (puppy_id)');
       return {
         success: false,
         eventType: event.event_type,
         captureId,
-        error: "Missing required metadata: puppy_id",
+        error: 'Missing required metadata: puppy_id',
       };
     }
 
-    const amountValue = Number.parseFloat(capture.amount?.value ?? "0");
+    const amountValue = Number.parseFloat(capture.amount?.value ?? '0');
     if (!Number.isFinite(amountValue) || amountValue <= 0) {
-      console.error("[PayPal Webhook] Invalid capture amount", capture.amount);
+      console.error('[PayPal Webhook] Invalid capture amount', capture.amount);
       return {
         success: false,
         eventType: event.event_type,
         captureId,
-        error: "Invalid capture amount",
+        error: 'Invalid capture amount',
       };
     }
 
@@ -159,27 +159,25 @@ export class PayPalWebhookHandler {
       try {
         const orderDetails = await getPayPalOrder(orderId);
         customerEmail = customerEmail ?? orderDetails.payer?.email_address ?? undefined;
-        const paypalName = [
-          orderDetails.payer?.name?.given_name,
-          orderDetails.payer?.name?.surname,
-        ]
+        const paypalName = [orderDetails.payer?.name?.given_name, orderDetails.payer?.name?.surname]
           .filter(Boolean)
-          .join(" ")
+          .join(' ')
           .trim();
         customerName = metadata.customer_name ?? (paypalName || undefined);
-        customerPhone = customerPhone ?? orderDetails.payer?.phone?.phone_number?.national_number ?? undefined;
+        customerPhone =
+          customerPhone ?? orderDetails.payer?.phone?.phone_number?.national_number ?? undefined;
       } catch (error) {
-        console.error("[PayPal Webhook] Failed to fetch order details:", error);
+        console.error('[PayPal Webhook] Failed to fetch order details:', error);
       }
     }
 
     if (!customerEmail) {
-      console.error("[PayPal Webhook] Missing customer email");
+      console.error('[PayPal Webhook] Missing customer email');
       return {
         success: false,
         eventType: event.event_type,
         captureId,
-        error: "Missing customer email",
+        error: 'Missing customer email',
       };
     }
 
@@ -191,13 +189,13 @@ export class PayPalWebhookHandler {
           customerName: customerName || undefined,
           customerPhone: customerPhone || undefined,
           depositAmount: amountValue,
-          paymentProvider: "paypal",
+          paymentProvider: 'paypal',
           externalPaymentId: captureId,
-          channel: (metadata.channel || "site") as ReservationChannel,
-          notes: orderId ? `PayPal Order ${orderId}` : "PayPal capture",
+          channel: (metadata.channel || 'site') as ReservationChannel,
+          notes: orderId ? `PayPal Order ${orderId}` : 'PayPal capture',
         },
         {
-          provider: "paypal",
+          provider: 'paypal',
           eventId,
           eventType: event.event_type,
           payload: event,

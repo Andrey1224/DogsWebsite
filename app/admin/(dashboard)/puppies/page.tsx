@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { adminPuppyStatusSchema } from "@/lib/admin/puppies/schema";
-import { fetchAdminPuppies } from "@/lib/admin/puppies/queries";
-import { CreatePuppyPanel } from "./create-puppy-panel";
-import { PuppyRow } from "./puppy-row";
+import Link from 'next/link';
+import { adminPuppyStatusSchema } from '@/lib/admin/puppies/schema';
+import { fetchAdminPuppies } from '@/lib/admin/puppies/queries';
+import { CreatePuppyPanel } from './create-puppy-panel';
+import { PuppyRow } from './puppy-row';
 
 const statusOptions = adminPuppyStatusSchema.options.map((value) => ({
   value,
@@ -15,8 +15,8 @@ type PageProps = {
 
 export default async function AdminPuppiesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const view = params.view === "archived" ? "archived" : "active";
-  const isArchived = view === "archived";
+  const view = params.view === 'archived' ? 'archived' : 'active';
+  const isArchived = view === 'archived';
 
   const puppies = await fetchAdminPuppies({ archived: isArchived, includeReservationState: true });
 
@@ -24,7 +24,9 @@ export default async function AdminPuppiesPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-text">Manage puppies</h2>
-        <p className="text-sm text-muted">Review statuses, pricing, and quick links to public listings.</p>
+        <p className="text-sm text-muted">
+          Review statuses, pricing, and quick links to public listings.
+        </p>
       </div>
 
       {/* Tabs */}
@@ -33,9 +35,9 @@ export default async function AdminPuppiesPage({ searchParams }: PageProps) {
           <Link
             href="/admin/puppies"
             className={`border-b-2 pb-2 text-sm font-medium transition ${
-              view === "active"
-                ? "border-accent text-text"
-                : "border-transparent text-muted hover:text-text"
+              view === 'active'
+                ? 'border-accent text-text'
+                : 'border-transparent text-muted hover:text-text'
             }`}
           >
             Active
@@ -43,9 +45,9 @@ export default async function AdminPuppiesPage({ searchParams }: PageProps) {
           <Link
             href="/admin/puppies?view=archived"
             className={`border-b-2 pb-2 text-sm font-medium transition ${
-              view === "archived"
-                ? "border-accent text-text"
-                : "border-transparent text-muted hover:text-text"
+              view === 'archived'
+                ? 'border-accent text-text'
+                : 'border-transparent text-muted hover:text-text'
             }`}
           >
             Archived
@@ -59,11 +61,11 @@ export default async function AdminPuppiesPage({ searchParams }: PageProps) {
       {puppies.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-bg/40 p-8 text-center">
           <p className="text-lg font-medium text-text">
-            {isArchived ? "No archived puppies" : "No puppies yet"}
+            {isArchived ? 'No archived puppies' : 'No puppies yet'}
           </p>
           <p className="mt-2 text-sm text-muted">
             {isArchived
-              ? "Archived puppies will appear here when you archive them from the Active tab."
+              ? 'Archived puppies will appear here when you archive them from the Active tab.'
               : 'Use "Add puppy" to create your first listing.'}
           </p>
         </div>
@@ -78,7 +80,12 @@ export default async function AdminPuppiesPage({ searchParams }: PageProps) {
           </div>
           <ul className="divide-y divide-border" data-testid="admin-puppy-list">
             {puppies.map((puppy) => (
-              <PuppyRow key={puppy.id} puppy={puppy} statusOptions={statusOptions} archived={isArchived} />
+              <PuppyRow
+                key={puppy.id}
+                puppy={puppy}
+                statusOptions={statusOptions}
+                archived={isArchived}
+              />
             ))}
           </ul>
         </div>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
 interface ParentPhotoUploadProps {
-  parentType?: "sire" | "dam";
+  parentType?: 'sire' | 'dam';
   /**
    * Override the default label text (otherwise derived from parentType)
    */
@@ -58,13 +58,12 @@ export function ParentPhotoUpload({
   const [previews, setPreviews] = useState<string[]>([]);
 
   const fallbackLabel =
-    parentType === "dam" ? "Dam Photos" : parentType === "sire" ? "Sire Photos" : "Photos";
+    parentType === 'dam' ? 'Dam Photos' : parentType === 'sire' ? 'Sire Photos' : 'Photos';
   const resolvedLabel = label ?? fallbackLabel;
   const resolvedInputName =
     inputName ??
-    (parentType === "dam" ? "damPhotoUrls" : parentType === "sire" ? "sirePhotoUrls" : "photoUrls");
-  const resolvedHelpText =
-    helpText ?? "Accepted formats: JPG, PNG, WebP. Maximum 3 photos.";
+    (parentType === 'dam' ? 'damPhotoUrls' : parentType === 'sire' ? 'sirePhotoUrls' : 'photoUrls');
+  const resolvedHelpText = helpText ?? 'Accepted formats: JPG, PNG, WebP. Maximum 3 photos.';
 
   // Clean up preview URLs on unmount
   useEffect(() => {
@@ -106,7 +105,7 @@ export function ParentPhotoUpload({
     setSelectedFiles(newFiles);
 
     // Clear the file input
-    fileInputRef.current.value = "";
+    fileInputRef.current.value = '';
 
     // Notify parent component
     onFilesSelected?.(newFiles);
@@ -176,9 +175,7 @@ export function ParentPhotoUpload({
         </div>
       )}
 
-      <p className="text-xs text-muted">
-        {resolvedHelpText}
-      </p>
+      <p className="text-xs text-muted">{resolvedHelpText}</p>
     </div>
   );
 }

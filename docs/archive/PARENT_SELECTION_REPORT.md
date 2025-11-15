@@ -25,6 +25,7 @@
 ## Краткое резюме
 
 Заменили выбор помёта (litter) на **прямой выбор родителей** (sire/dam) в админ-панели создания щенка. Теперь вместо одного dropdown "Litter" есть два отдельных dropdown:
+
 - **Sire / Father** (отец) - показывает только самцов
 - **Dam / Mother** (мать) - показывает только самок
 
@@ -41,12 +42,14 @@
 ```
 
 **Недостатки:**
+
 1. ❌ Нужно создавать litter для каждого помёта
 2. ❌ Сложно указать родителей без помёта
 3. ❌ Непонятно, как добавить фото для родителей конкретного щенка
 4. ❌ Лишняя таблица-посредник для простых случаев
 
 **Пример проблемы:**
+
 - Щенок "Plusha" создан без litter → показывает "Sire: TBD", "Dam: TBD", "Litter: Private"
 - Щенок "Regal" создан с litter "Royal Heritage" → показывает "Sire: Sir Winston", "Dam: Lady Clementine", "Litter: Royal Heritage Litter"
 
@@ -63,6 +66,7 @@
 ```
 
 **Преимущества:**
+
 1. ✅ Прямой выбор родителей из dropdown
 2. ✅ Не нужно создавать litter
 3. ✅ Родители уже имеют поле `photo_urls[]` - готово для загрузки фото
@@ -70,6 +74,7 @@
 5. ✅ Показывает породу рядом с именем: "Sir Winston (English Bulldog)"
 
 **Архитектура:**
+
 - Добавлены поля `sire_id` и `dam_id` в таблицу `puppies`
 - Прямые foreign key ссылки на таблицу `parents`
 - Backward compatibility: старые щенки с `litter_id` продолжают работать
@@ -137,8 +142,8 @@ puppies:
 export type Puppy = {
   id: string;
   litter_id: string | null;
-  sire_id: string | null;  // ← НОВОЕ
-  dam_id: string | null;   // ← НОВОЕ
+  sire_id: string | null; // ← НОВОЕ
+  dam_id: string | null; // ← НОВОЕ
   name: string | null;
   slug: string | null;
   // ... остальные поля
@@ -157,7 +162,7 @@ export type Puppy = {
 export type AdminParent = {
   id: string;
   name: string;
-  breed: "french_bulldog" | "english_bulldog" | null;
+  breed: 'french_bulldog' | 'english_bulldog' | null;
   photo_urls: string[] | null;
 };
 
@@ -165,10 +170,10 @@ export type AdminParent = {
 export async function fetchAdminSires(): Promise<AdminParent[]> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("parents")
-    .select("id,name,breed,photo_urls")
-    .eq("sex", "male")  // ← фильтр
-    .order("name", { ascending: true });
+    .from('parents')
+    .select('id,name,breed,photo_urls')
+    .eq('sex', 'male') // ← фильтр
+    .order('name', { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as AdminParent[];
@@ -178,10 +183,10 @@ export async function fetchAdminSires(): Promise<AdminParent[]> {
 export async function fetchAdminDams(): Promise<AdminParent[]> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("parents")
-    .select("id,name,breed,photo_urls")
-    .eq("sex", "female")  // ← фильтр
-    .order("name", { ascending: true });
+    .from('parents')
+    .select('id,name,breed,photo_urls')
+    .eq('sex', 'female') // ← фильтр
+    .order('name', { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as AdminParent[];
@@ -320,7 +325,9 @@ export function CreatePuppyPanel({
 #### Новый UI (два dropdown):
 
 ```jsx
-{/* Sire (Father) */}
+{
+  /* Sire (Father) */
+}
 <div className="space-y-2">
   <label htmlFor="sireId">Sire / Father (optional)</label>
   <select id="sireId" name="sireId" disabled={pending}>
@@ -331,10 +338,12 @@ export function CreatePuppyPanel({
       </option>
     ))}
   </select>
-  {fieldError("sireId") ? <p className="text-xs text-red-500">{fieldError("sireId")}</p> : null}
-</div>
+  {fieldError('sireId') ? <p className="text-xs text-red-500">{fieldError('sireId')}</p> : null}
+</div>;
 
-{/* Dam (Mother) */}
+{
+  /* Dam (Mother) */
+}
 <div className="space-y-2">
   <label htmlFor="damId">Dam / Mother (optional)</label>
   <select id="damId" name="damId" disabled={pending}>
@@ -345,11 +354,12 @@ export function CreatePuppyPanel({
       </option>
     ))}
   </select>
-  {fieldError("damId") ? <p className="text-xs text-red-500">{fieldError("damId")}</p> : null}
-</div>
+  {fieldError('damId') ? <p className="text-xs text-red-500">{fieldError('damId')}</p> : null}
+</div>;
 ```
 
 **Пример dropdown options:**
+
 - Sire: `"Sir Winston (English Bulldog)"`, `"Pierre (French Bulldog)"`
 - Dam: `"Lady Clementine (English Bulldog)"`, `"Colette (French Bulldog)"`
 
@@ -387,36 +397,37 @@ const submission = {
 ```typescript
 export const getPuppyBySlug = cache(async (slug: string) => {
   const { data, error } = await getSupabaseClient()
-    .from("puppies")
-    .select("*")
-    .eq("slug", slug)
+    .from('puppies')
+    .select('*')
+    .eq('slug', slug)
     .maybeSingle();
 
   if (!data) return null;
 
   const litters = await getLitters();
-  const litter = data.litter_id ? litters.find((l) => l.id === data.litter_id) ?? null : null;
+  const litter = data.litter_id ? (litters.find((l) => l.id === data.litter_id) ?? null) : null;
   const parentsList = await getParents();
 
   // Приоритет: прямые sire_id/dam_id → litter parents → null
   const parents = {
     sire: data.sire_id
-      ? parentsList.find((p) => p.id === data.sire_id) ?? null
+      ? (parentsList.find((p) => p.id === data.sire_id) ?? null)
       : litter?.sire_id
-        ? parentsList.find((p) => p.id === litter.sire_id) ?? null
+        ? (parentsList.find((p) => p.id === litter.sire_id) ?? null)
         : null,
     dam: data.dam_id
-      ? parentsList.find((p) => p.id === data.dam_id) ?? null
+      ? (parentsList.find((p) => p.id === data.dam_id) ?? null)
       : litter?.dam_id
-        ? parentsList.find((p) => p.id === litter.dam_id) ?? null
+        ? (parentsList.find((p) => p.id === litter.dam_id) ?? null)
         : null,
   };
 
-  return { ...data as Puppy, litter, parents } as PuppyWithRelations;
+  return { ...(data as Puppy), litter, parents } as PuppyWithRelations;
 });
 ```
 
 **Логика:**
+
 1. Сначала проверяем `puppy.sire_id` и `puppy.dam_id` (новый подход)
 2. Если не найдено → проверяем `litter.sire_id` и `litter.dam_id` (старый подход)
 3. Если и там пусто → `null` (показывается "TBD")
@@ -425,15 +436,15 @@ export const getPuppyBySlug = cache(async (slug: string) => {
 
 ```typescript
 const sire = puppy.sire_id
-  ? parentById.get(puppy.sire_id) ?? null
+  ? (parentById.get(puppy.sire_id) ?? null)
   : litter?.sire_id
-    ? parentById.get(litter.sire_id) ?? null
+    ? (parentById.get(litter.sire_id) ?? null)
     : null;
 
 const dam = puppy.dam_id
-  ? parentById.get(puppy.dam_id) ?? null
+  ? (parentById.get(puppy.dam_id) ?? null)
   : litter?.dam_id
-    ? parentById.get(litter.dam_id) ?? null
+    ? (parentById.get(litter.dam_id) ?? null)
     : null;
 ```
 
@@ -488,11 +499,13 @@ const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
 ### 1. Упрощение рабочего процесса
 
 **Раньше:**
+
 1. Создать родителей (sire, dam)
 2. Создать litter и указать sire_id, dam_id
 3. Создать щенка и указать litter_id
 
 **Теперь:**
+
 1. Создать родителей (если ещё нет)
 2. Создать щенка и выбрать родителей из dropdown
 
@@ -517,13 +530,14 @@ const basePuppy: Omit<PuppyWithRelations, "parents" | "litter"> = {
 export type Parent = {
   id: string;
   name: string;
-  photo_urls: string[] | null;  // ← Уже есть!
-  video_urls: string[] | null;  // ← Уже есть!
+  photo_urls: string[] | null; // ← Уже есть!
+  video_urls: string[] | null; // ← Уже есть!
   // ...
 };
 ```
 
 **Будущие шаги (Phase 2):**
+
 1. Добавить UI загрузки фото в админ-панель (Supabase Storage)
 2. Показать фото родителей на карточке щенка (маленькие thumbnails рядом с именами)
 3. Создать страницу родителя с полной галереей
@@ -535,20 +549,26 @@ export type Parent = {
 ### 4. Лучшая структура данных
 
 **Старая структура:**
+
 ```
 Puppy --litter_id--> Litter --sire_id--> Parent (Sire)
                            --dam_id--> Parent (Dam)
 ```
+
 **Проблемы:**
+
 - Промежуточная таблица (litter) нужна всегда
 - Нельзя указать родителей без litter
 
 **Новая структура:**
+
 ```
 Puppy --sire_id--> Parent (Sire)
       --dam_id--> Parent (Dam)
 ```
+
 **Преимущества:**
+
 - Прямая связь
 - Опциональный litter (для дополнительной информации)
 - Проще для понимания
@@ -574,11 +594,13 @@ Puppy --sire_id--> Parent (Sire)
 ### Тестирование на реальных данных:
 
 **Щенок "Regal" (создан со старым подходом):**
+
 - До миграции: `litter_id = "aaaaa..."`, `sire_id = null`, `dam_id = null`
 - После миграции: `litter_id = "aaaaa..."`, `sire_id = "11111..."` (Sir Winston), `dam_id = "22222..."` (Lady Clementine)
 - Результат: Показывает "Sire: Sir Winston", "Dam: Lady Clementine" ✅
 
 **Щенок "Plusha" (создан без litter):**
+
 - До изменений: `litter_id = null`, показывало "Sire: TBD", "Dam: TBD"
 - После изменений: можно выбрать родителей напрямую через новые dropdown
 - Результат: Гибкость повысилась ✅
@@ -592,11 +614,13 @@ Puppy --sire_id--> Parent (Sire)
 #### 1. Фотографии родителей
 
 **Админ-панель:**
+
 - Страница `/admin/parents` с CRUD для родителей
 - Загрузка фото через Supabase Storage
 - Обновление поля `photo_urls[]` для каждого родителя
 
 **Публичные страницы:**
+
 ```jsx
 <div className="flex items-center gap-2">
   {puppy.parents?.sire?.photo_urls?.[0] && (
@@ -606,11 +630,12 @@ Puppy --sire_id--> Parent (Sire)
       className="w-10 h-10 rounded-full object-cover"
     />
   )}
-  <span>Sire: {sireName ?? "TBD"}</span>
+  <span>Sire: {sireName ?? 'TBD'}</span>
 </div>
 ```
 
 **Пример:** Карточка Regal показывает:
+
 - Маленькое фото Sir Winston рядом с "Sire: Sir Winston"
 - Маленькое фото Lady Clementine рядом с "Dam: Lady Clementine"
 
@@ -621,6 +646,7 @@ Puppy --sire_id--> Parent (Sire)
 **URL:** `/parents/[slug]`
 
 **Содержание:**
+
 - Фотогалерея родителя
 - Информация о породе
 - Список всех детей (щенки от этого родителя)
@@ -628,6 +654,7 @@ Puppy --sire_id--> Parent (Sire)
 - Вес, окрас, дата рождения
 
 **Пример:** `/parents/sir-winston` показывает:
+
 - Фото Sir Winston
 - "English Bulldog"
 - "Health Clearances: OFA Hips Excellent, CERF Clear"
@@ -638,10 +665,12 @@ Puppy --sire_id--> Parent (Sire)
 #### 3. Inline добавление родителей
 
 **Текущее состояние:**
+
 - Dropdown показывает только **существующих** родителей из базы
 - Если нужного родителя нет → нужно создать вручную через отдельную админку
 
 **Улучшение:**
+
 ```jsx
 <select id="sireId" name="sireId">
   <option value="">No sire specified</option>
@@ -683,6 +712,7 @@ Puppy --sire_id--> Parent (Sire)
    - **Dam / Mother:** `"Lady Clementine (English Bulldog)"` ← dropdown
 
 5. **Добавить описание (optional):**
+
    ```
    Calm demeanor, excels with children, AKC paperwork included.
    ```

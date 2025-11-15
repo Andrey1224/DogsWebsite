@@ -1,11 +1,9 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 export default function PuppyNotFound() {
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-6 py-16 text-center">
-      <h1 className="text-2xl font-semibold text-text">
-        We couldn’t find that puppy
-      </h1>
+      <h1 className="text-2xl font-semibold text-text">We couldn’t find that puppy</h1>
       <p className="text-sm text-muted">
         It may have just been reserved or the link could be outdated. Browse the current catalog to
         see who is still available.

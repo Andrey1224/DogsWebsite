@@ -1,6 +1,6 @@
-import "server-only";
+import 'server-only';
 
-import { createServiceRoleClient } from "@/lib/supabase/client";
+import { createServiceRoleClient } from '@/lib/supabase/client';
 
 let adminClient: ReturnType<typeof createServiceRoleClient> | null = null;
 

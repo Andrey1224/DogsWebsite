@@ -7,12 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "e2e": "playwright test",
     "validate-deployment": "npx tsx scripts/validate-deployment.ts",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run e2e"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run e2e",
+    "supabase:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^1.12.1",
@@ -50,6 +53,7 @@
     "eslint-plugin-vitest": "^0.5.4",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.0.0",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^6.0.0",

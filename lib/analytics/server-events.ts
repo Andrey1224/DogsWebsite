@@ -5,11 +5,11 @@
  * where client-side tracking is not available.
  */
 
-import type { DepositPaidEventParams } from "./types";
+import type { DepositPaidEventParams } from './types';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GA_API_SECRET = process.env.GA4_API_SECRET;
-const MEASUREMENT_PROTOCOL_URL = "https://www.google-analytics.com/mp/collect";
+const MEASUREMENT_PROTOCOL_URL = 'https://www.google-analytics.com/mp/collect';
 
 /**
  * Sends a deposit_paid event to GA4 Measurement Protocol
@@ -19,12 +19,12 @@ const MEASUREMENT_PROTOCOL_URL = "https://www.google-analytics.com/mp/collect";
  */
 export async function trackDepositPaid(
   params: DepositPaidEventParams,
-  clientId?: string
+  clientId?: string,
 ): Promise<void> {
   // Skip in development or if GA is not configured
-  if (process.env.NODE_ENV === "development" || !GA_MEASUREMENT_ID || !GA_API_SECRET) {
-    if (process.env.NODE_ENV === "development") {
-      console.log("📊 [DEV] Server Analytics: deposit_paid", params);
+  if (process.env.NODE_ENV === 'development' || !GA_MEASUREMENT_ID || !GA_API_SECRET) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 [DEV] Server Analytics: deposit_paid', params);
     }
     return;
   }
@@ -34,7 +34,7 @@ export async function trackDepositPaid(
       client_id: clientId || generateClientId(),
       events: [
         {
-          name: "deposit_paid",
+          name: 'deposit_paid',
           params: {
             value: params.value,
             currency: params.currency,
@@ -50,18 +50,18 @@ export async function trackDepositPaid(
     const url = `${MEASUREMENT_PROTOCOL_URL}?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`;
 
     const response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      console.error("Failed to send GA4 event:", response.status, response.statusText);
+      console.error('Failed to send GA4 event:', response.status, response.statusText);
     }
   } catch (error) {
-    console.error("Error sending GA4 event:", error);
+    console.error('Error sending GA4 event:', error);
   }
 }
 

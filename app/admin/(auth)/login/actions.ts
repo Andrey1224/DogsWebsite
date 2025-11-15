@@ -1,26 +1,26 @@
 'use server';
 
-import { redirect } from "next/navigation";
-import { z } from "zod";
-import { setAdminSession } from "@/lib/admin/session";
-import type { LoginState } from "./state";
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
+import { setAdminSession } from '@/lib/admin/session';
+import type { LoginState } from './state';
 
 const loginSchema = z.object({
-  login: z.string().min(1, "Login is required"),
-  password: z.string().min(1, "Password is required"),
+  login: z.string().min(1, 'Login is required'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export async function authenticate(_: LoginState, formData: FormData): Promise<LoginState> {
-  "use server";
+  'use server';
   const submission = {
-    login: formData.get("login"),
-    password: formData.get("password"),
+    login: formData.get('login'),
+    password: formData.get('password'),
   };
 
   const parsed = loginSchema.safeParse(submission);
   if (!parsed.success) {
     return {
-      status: "error",
+      status: 'error',
       errors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -31,22 +31,22 @@ export async function authenticate(_: LoginState, formData: FormData): Promise<L
 
   if (!expectedLogin || !expectedPassword) {
     return {
-      status: "error",
+      status: 'error',
       errors: {
-        form: ["Admin credentials are not configured. Set ADMIN_LOGIN and ADMIN_PASSWORD."],
+        form: ['Admin credentials are not configured. Set ADMIN_LOGIN and ADMIN_PASSWORD.'],
       },
     };
   }
 
   if (login !== expectedLogin || password !== expectedPassword) {
     return {
-      status: "error",
+      status: 'error',
       errors: {
-        form: ["Invalid login or password."],
+        form: ['Invalid login or password.'],
       },
     };
   }
 
   await setAdminSession(login);
-  redirect("/admin/puppies");
+  redirect('/admin/puppies');
 }

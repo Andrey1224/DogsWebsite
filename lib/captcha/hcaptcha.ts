@@ -1,24 +1,25 @@
-const VERIFY_ENDPOINT = "https://hcaptcha.com/siteverify";
+const VERIFY_ENDPOINT = 'https://hcaptcha.com/siteverify';
 
 type VerificationResponse = {
   success: boolean;
-  "error-codes"?: string[];
+  'error-codes'?: string[];
 };
 
-type VerifyResult =
-  | { ok: true }
-  | { ok: false; message: string };
+type VerifyResult = { ok: true } | { ok: false; message: string };
 
 function formatErrorCodes(codes?: string[]) {
   if (!codes || codes.length === 0) {
     return undefined;
   }
-  return codes.join(", ");
+  return codes.join(', ');
 }
 
-export async function verifyHCaptcha(token: string, remoteIp?: string | null): Promise<VerifyResult> {
+export async function verifyHCaptcha(
+  token: string,
+  remoteIp?: string | null,
+): Promise<VerifyResult> {
   const bypassToken = process.env.HCAPTCHA_BYPASS_TOKEN;
-  const isNonProduction = process.env.NODE_ENV !== "production";
+  const isNonProduction = process.env.NODE_ENV !== 'production';
 
   if (bypassToken && token === bypassToken && isNonProduction) {
     return { ok: true };
@@ -27,27 +28,27 @@ export async function verifyHCaptcha(token: string, remoteIp?: string | null): P
   const secret = process.env.HCAPTCHA_SECRET_KEY;
 
   if (!secret) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("HCaptcha secret missing; skipping verification in non-production environment.");
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HCaptcha secret missing; skipping verification in non-production environment.');
       return { ok: true };
     }
     return {
       ok: false,
-      message: "Captcha misconfigured. Contact the site owner.",
+      message: 'Captcha misconfigured. Contact the site owner.',
     };
   }
 
   const params = new URLSearchParams();
-  params.set("response", token);
-  params.set("secret", secret);
+  params.set('response', token);
+  params.set('secret', secret);
   if (remoteIp) {
-    params.set("remoteip", remoteIp);
+    params.set('remoteip', remoteIp);
   }
 
   const response = await fetch(VERIFY_ENDPOINT, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: params.toString(),
   });
@@ -62,10 +63,10 @@ export async function verifyHCaptcha(token: string, remoteIp?: string | null): P
   const payload = (await response.json()) as VerificationResponse;
 
   if (!payload.success) {
-    const codes = formatErrorCodes(payload["error-codes"]);
+    const codes = formatErrorCodes(payload['error-codes']);
     return {
       ok: false,
-      message: codes ? `Captcha rejected (${codes}).` : "Captcha rejected. Please try again.",
+      message: codes ? `Captcha rejected (${codes}).` : 'Captcha rejected. Please try again.',
     };
   }
 

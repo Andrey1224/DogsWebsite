@@ -126,7 +126,7 @@ describe('PayPal Client', () => {
           headers: expect.objectContaining({
             'Content-Type': 'application/x-www-form-urlencoded',
           }),
-        })
+        }),
       );
     });
 
@@ -204,7 +204,7 @@ describe('PayPal Client', () => {
       const { getPayPalAccessToken } = await import('./client');
 
       await expect(getPayPalAccessToken()).rejects.toThrow(
-        'Failed to obtain PayPal access token (401 Unauthorized): Invalid credentials'
+        'Failed to obtain PayPal access token (401 Unauthorized): Invalid credentials',
       );
     });
   });
@@ -259,7 +259,7 @@ describe('PayPal Client', () => {
         expect.objectContaining({
           method: 'POST',
           body: expect.stringContaining('500.00'),
-        })
+        }),
       );
     });
 
@@ -288,7 +288,7 @@ describe('PayPal Client', () => {
             customer_email: 'test@example.com',
             customer_name: 'Test User',
           },
-        })
+        }),
       ).rejects.toThrow('PayPal custom_id exceeds 127 character limit');
     });
 
@@ -323,7 +323,7 @@ describe('PayPal Client', () => {
             customer_email: 'test@example.com',
             customer_name: 'Test User',
           },
-        })
+        }),
       ).rejects.toThrow('PayPal API request failed (400 Bad Request): Invalid amount');
     });
   });
@@ -369,7 +369,7 @@ describe('PayPal Client', () => {
         'https://api-m.sandbox.paypal.com/v2/checkout/orders/ORDER_123/capture',
         expect.objectContaining({
           method: 'POST',
-        })
+        }),
       );
     });
   });
@@ -413,7 +413,7 @@ describe('PayPal Client', () => {
         'https://api-m.sandbox.paypal.com/v2/checkout/orders/ORDER_123',
         expect.objectContaining({
           method: 'GET',
-        })
+        }),
       );
     });
   });

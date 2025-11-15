@@ -1,33 +1,36 @@
-import { Geist, Geist_Mono } from "next/font/google";
-import { AnalyticsProvider } from "@/components/analytics-provider";
-import { ContactBar } from "@/components/contact-bar";
-import { ConsentBanner } from "@/components/consent-banner";
-import { CrispChat } from "@/components/crisp-chat";
-import { JsonLd } from "@/components/json-ld";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { ThemeProvider } from "@/components/theme-provider";
-import { validateDevelopmentEnvironment, validateProductionEnvironment } from "@/lib/env-validation";
-import { getDefaultMetadata } from "@/lib/seo/metadata";
-import { getLocalBusinessSchema, getOrganizationSchema } from "@/lib/seo/structured-data";
-import "./globals.css";
+import { Geist, Geist_Mono } from 'next/font/google';
+import { AnalyticsProvider } from '@/components/analytics-provider';
+import { ContactBar } from '@/components/contact-bar';
+import { ConsentBanner } from '@/components/consent-banner';
+import { CrispChat } from '@/components/crisp-chat';
+import { JsonLd } from '@/components/json-ld';
+import { SiteFooter } from '@/components/site-footer';
+import { SiteHeader } from '@/components/site-header';
+import { ThemeProvider } from '@/components/theme-provider';
+import {
+  validateDevelopmentEnvironment,
+  validateProductionEnvironment,
+} from '@/lib/env-validation';
+import { getDefaultMetadata } from '@/lib/seo/metadata';
+import { getLocalBusinessSchema, getOrganizationSchema } from '@/lib/seo/structured-data';
+import './globals.css';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata = getDefaultMetadata();
 
 // Environment validation
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === 'development') {
   validateDevelopmentEnvironment();
-} else if (process.env.NODE_ENV === "production") {
+} else if (process.env.NODE_ENV === 'production') {
   validateProductionEnvironment();
 }
 
@@ -42,7 +45,7 @@ export default function RootLayout({
   const themeScript = `
     (function() {
       try {
-        var storageKey = '${"puppy-theme-preference"}';
+        var storageKey = '${'puppy-theme-preference'}';
         var stored = window.localStorage.getItem(storageKey);
         var preference = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
         var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
-import { useAnalytics } from "@/components/analytics-provider";
-import { CONTACT_CHANNELS } from "@/lib/config/contact";
+import { useAnalytics } from '@/components/analytics-provider';
+import { CONTACT_CHANNELS } from '@/lib/config/contact';
 
-type Availability = "online" | "offline" | "unknown";
+type Availability = 'online' | 'offline' | 'unknown';
 
 export function ContactBar() {
-  const [availability, setAvailability] = useState<Availability>("unknown");
+  const [availability, setAvailability] = useState<Availability>('unknown');
   const pathname = usePathname();
   const { trackEvent } = useAnalytics();
 
@@ -21,19 +21,19 @@ export function ContactBar() {
       }
     }
 
-    window.addEventListener("crisp:availability", handleAvailability as EventListener);
+    window.addEventListener('crisp:availability', handleAvailability as EventListener);
 
     return () => {
-      window.removeEventListener("crisp:availability", handleAvailability as EventListener);
+      window.removeEventListener('crisp:availability', handleAvailability as EventListener);
     };
   }, []);
 
   const availabilityLabel =
-    availability === "online"
-      ? "Chat is live"
-      : availability === "offline"
-        ? "Chat is offline"
-        : "Chat connecting…";
+    availability === 'online'
+      ? 'Chat is live'
+      : availability === 'offline'
+        ? 'Chat is offline'
+        : 'Chat connecting…';
 
   return (
     <aside className="fixed bottom-4 left-1/2 z-50 w-[92%] max-w-3xl -translate-x-1/2 rounded-full border border-border bg-card/95 p-2 shadow-lg backdrop-blur">
@@ -44,7 +44,7 @@ export function ContactBar() {
             href={contact.href}
             className="rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-text transition-colors hover:border-border hover:bg-[color:var(--hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-aux"
             onClick={() =>
-              trackEvent("contact_click", {
+              trackEvent('contact_click', {
                 channel: contact.id,
                 href: contact.href,
                 context_path: pathname,

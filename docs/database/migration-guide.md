@@ -13,6 +13,7 @@ This guide walks you through applying the reservation expiry enforcement migrati
 ## Prerequisites
 
 ✅ **Before you begin, ensure:**
+
 1. You have access to your Supabase Dashboard
 2. You have the project URL: `https://vsjsrbmcxryuodlqscnl.supabase.co`
 3. You have admin/owner permissions in Supabase
@@ -81,10 +82,12 @@ WHERE table_name = 'reservations'
 **File**: `supabase/migrations/stage1_create_reservation_transaction.sql`
 
 **What it does**:
+
 - Adds 15-minute default expiry: `COALESCE(p_expires_at, NOW() + interval '15 minutes')`
 - **Critical fix**: Adds missing `GRANT EXECUTE` statement for `service_role`
 
 **To execute**:
+
 1. Open [Supabase SQL Editor](https://supabase.com/dashboard/project/vsjsrbmcxryuodlqscnl/sql)
 2. Click **+ New query**
 3. Copy entire contents of `stage1_create_reservation_transaction.sql`
@@ -92,11 +95,13 @@ WHERE table_name = 'reservations'
 5. Click **Run** (or press `Cmd/Ctrl + Enter`)
 
 **Expected output**:
+
 ```
 NOTICE:  Successfully updated create_reservation_transaction with 15-minute default expiry
 ```
 
 **✅ Verification**:
+
 ```sql
 -- Verify GRANT permission (CRITICAL!)
 SELECT has_function_privilege(
@@ -116,20 +121,24 @@ SELECT has_function_privilege(
 **File**: `supabase/migrations/stage2_check_puppy_availability.sql`
 
 **What it does**:
+
 - Updates availability logic to respect `expires_at` timestamp
 - Expired pending reservations no longer block new reservations
 
 **To execute**:
+
 1. Copy entire contents of `stage2_check_puppy_availability.sql`
 2. Paste into SQL Editor
 3. Click **Run**
 
 **Expected output**:
+
 ```
 Success. No rows returned
 ```
 
 **✅ Verification**:
+
 ```sql
 -- Verify function updated
 SELECT pg_get_functiondef(oid)
@@ -145,20 +154,24 @@ WHERE proname = 'check_puppy_availability';
 **File**: `supabase/migrations/stage3_recreate_trigger.sql`
 
 **What it does**:
+
 - Drops existing trigger
 - Creates new trigger with updated function from Stage 2
 
 **To execute**:
+
 1. Copy entire contents of `stage3_recreate_trigger.sql`
 2. Paste into SQL Editor
 3. Click **Run**
 
 **Expected output**:
+
 ```
 NOTICE:  Successfully recreated enforce_puppy_availability trigger
 ```
 
 **✅ Verification**:
+
 ```sql
 -- Verify trigger exists and is enabled
 SELECT tgname, tgenabled
@@ -174,21 +187,25 @@ WHERE tgname = 'enforce_puppy_availability';
 **File**: `supabase/migrations/stage4_expire_pending_reservations.sql`
 
 **What it does**:
+
 - Changes return type from `VOID` to `INTEGER`
 - Returns count of expired reservations for monitoring
 - Releases puppies when no active reservations exist
 
 **To execute**:
+
 1. Copy entire contents of `stage4_expire_pending_reservations.sql`
 2. Paste into SQL Editor
 3. Click **Run**
 
 **Expected output**:
+
 ```
 Success. No rows returned
 ```
 
 **✅ Verification**:
+
 ```sql
 -- Test function execution
 SELECT expire_pending_reservations() as expired_count;
@@ -216,6 +233,7 @@ WHERE proname = 'expire_pending_reservations';
 **Review results for each query**:
 
 #### Query 1: Function Signatures
+
 ```
 function_name                    | return_type | arguments
 ---------------------------------|-------------|----------------------------------
@@ -227,6 +245,7 @@ expire_pending_reservations      | integer     |
 ✅ **Pass**: All 3 functions exist with correct return types
 
 #### Query 2: Trigger Status
+
 ```
 trigger_name                | enabled | definition
 ----------------------------|---------|-----------------------------------
@@ -236,6 +255,7 @@ enforce_puppy_availability  | O       | CREATE TRIGGER enforce_puppy_...
 ✅ **Pass**: Trigger exists and is enabled (`O` = origin enabled)
 
 #### Query 3: Expiry Function Test
+
 ```
 expired_count
 -------------
@@ -245,6 +265,7 @@ expired_count
 ✅ **Pass**: Function executes and returns integer
 
 #### Query 4: Service Role Permission (CRITICAL!)
+
 ```
 service_role_can_execute
 ------------------------
@@ -256,9 +277,11 @@ t
 ⚠️ **FAIL if `f`**: Payment flows will break! Re-run Stage 1.
 
 #### Query 5: Current Reservations
+
 Shows all pending reservations with expiry status. Review for anomalies.
 
 #### Query 6: Orphaned Puppies
+
 ```
 (No rows)
 ```
@@ -266,6 +289,7 @@ Shows all pending reservations with expiry status. Review for anomalies.
 ✅ **Pass**: No puppies stuck in 'reserved' status without active reservations
 
 ⚠️ **If rows returned**: Run manual cleanup:
+
 ```sql
 -- Release orphaned puppies
 UPDATE puppies
@@ -297,6 +321,7 @@ curl -X POST http://localhost:3000/api/cron/expire-reservations \
 ```
 
 **Expected response**:
+
 ```json
 {
   "expired": 0,
@@ -314,6 +339,7 @@ curl -X POST http://localhost:3000/api/cron/expire-reservations \
 4. Complete Stripe/PayPal test payment
 
 **Verify in Supabase**:
+
 ```sql
 SELECT id, expires_at, created_at, status
 FROM reservations
@@ -326,6 +352,7 @@ LIMIT 1;
 ### Test 3: Expiry Enforcement
 
 **Create a test expired reservation**:
+
 ```sql
 -- Insert test reservation
 INSERT INTO reservations (
@@ -358,6 +385,7 @@ RETURNING id, puppy_id, expires_at;
 ```
 
 **Mark puppy as reserved**:
+
 ```sql
 UPDATE puppies
 SET status = 'reserved'
@@ -365,11 +393,13 @@ WHERE id = (SELECT puppy_id FROM reservations WHERE external_payment_id LIKE 'te
 ```
 
 **Call expiry function**:
+
 ```sql
 SELECT expire_pending_reservations();
 ```
 
 **Verify results**:
+
 ```sql
 -- Reservation should be cancelled
 SELECT status
@@ -387,6 +417,7 @@ WHERE id = (SELECT puppy_id FROM reservations WHERE external_payment_id LIKE 'te
 ✅ **Pass**: Expired reservation cancelled and puppy released
 
 **Cleanup**:
+
 ```sql
 DELETE FROM reservations WHERE external_payment_id LIKE 'test_%';
 ```
@@ -413,6 +444,7 @@ Create `vercel.json` in project root:
 ```
 
 Set environment variable in Vercel:
+
 1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
 2. Add: `CRON_SECRET` = `your-strong-random-secret`
 3. Scope: Production, Preview, Development
@@ -438,6 +470,7 @@ git push origin main
 ### 3. Monitor Deployment
 
 After deployment:
+
 1. Check Vercel logs for cron execution
 2. Monitor `/api/health/webhooks` endpoint
 3. Verify no errors in Supabase logs
@@ -546,6 +579,7 @@ RAISE NOTICE 'Rollback completed successfully';
 **Cause**: Stage 1 GRANT statement failed
 
 **Solution**: Re-run Stage 1 or manually execute:
+
 ```sql
 GRANT EXECUTE ON FUNCTION create_reservation_transaction(
   UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, TIMESTAMPTZ, TEXT
@@ -557,6 +591,7 @@ GRANT EXECUTE ON FUNCTION create_reservation_transaction(
 **Cause**: Expiry function not releasing puppies correctly
 
 **Solution**: Run manual cleanup:
+
 ```sql
 UPDATE puppies AS p
 SET status = 'available', updated_at = NOW()
@@ -573,6 +608,7 @@ WHERE p.status = 'reserved'
 **Cause**: `CRON_SECRET` mismatch or missing
 
 **Solution**: Verify environment variable matches in:
+
 1. `.env.local` (local development)
 2. Vercel environment variables (production)
 3. Cron job configuration
@@ -582,6 +618,7 @@ WHERE p.status = 'reserved'
 **Cause**: Dependencies from earlier migrations not applied
 
 **Solution**: Apply prerequisite migrations:
+
 1. `20251010T021104Z_reservation_constraints.sql` (adds `expires_at` column)
 2. `20251015T000000Z_create_reservation_transaction_function.sql` (creates original function)
 
@@ -590,6 +627,7 @@ WHERE p.status = 'reserved'
 ## Success Criteria
 
 ✅ **Migration is successful when**:
+
 1. All 4 stage scripts execute without errors
 2. All 6 verification queries pass
 3. Service role has EXECUTE permission on `create_reservation_transaction`
@@ -603,6 +641,7 @@ WHERE p.status = 'reserved'
 ## Support
 
 If you encounter issues not covered in this guide:
+
 1. Check Supabase logs: Dashboard → Logs → Postgres Logs
 2. Review application logs in Vercel Dashboard
 3. Search GitHub issues: `anthropics/claude-code`

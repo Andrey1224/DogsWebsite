@@ -4,9 +4,9 @@
  * Sent when a customer successfully pays a deposit via Stripe or PayPal
  */
 
-import { Resend } from "resend";
-import type { PaymentProvider } from "@/lib/analytics/types";
-import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "./delivery-control";
+import { Resend } from 'resend';
+import type { PaymentProvider } from '@/lib/analytics/types';
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from './delivery-control';
 
 // Create a factory function for better testability
 function createResendClient() {
@@ -56,7 +56,7 @@ interface DepositData {
  * Generate owner notification email for deposit payment
  */
 function generateOwnerDepositEmail(data: DepositData): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const safeName = escapeHtml(data.customerName);
   const safeEmail = escapeHtml(data.customerEmail);
   const safePuppyName = escapeHtml(data.puppyName);
@@ -158,7 +158,7 @@ function generateOwnerDepositEmail(data: DepositData): string {
  * Generate customer confirmation email for deposit payment
  */
 function generateCustomerDepositEmail(data: DepositData): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const safeName = escapeHtml(data.customerName);
   const safePuppyName = escapeHtml(data.puppyName);
   const puppyUrl = `${siteUrl}/puppies/${data.puppySlug}`;
@@ -243,12 +243,16 @@ function generateCustomerDepositEmail(data: DepositData): string {
                 <span class="label">Email:</span>
                 <a href="mailto:${contactEmail}" style="color: #007bff;">${contactEmail}</a>
             </div>
-            ${contactPhone ? `
+            ${
+              contactPhone
+                ? `
             <div class="field">
                 <span class="label">Phone:</span>
                 <a href="tel:${contactPhone}" style="color: #007bff;">${contactPhone}</a>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
 
         <div class="footer">
@@ -273,19 +277,19 @@ export async function sendOwnerDepositNotification(data: DepositData) {
   }
 
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[Email] Resend API key not configured, skipping owner deposit notification");
-    return { success: false, error: "Resend API key not configured" };
+    console.warn('[Email] Resend API key not configured, skipping owner deposit notification');
+    return { success: false, error: 'Resend API key not configured' };
   }
 
   const ownerEmail = process.env.OWNER_EMAIL;
   if (!ownerEmail) {
-    console.warn("[Email] Owner email not configured, skipping owner deposit notification");
-    return { success: false, error: "Owner email not configured" };
+    console.warn('[Email] Owner email not configured, skipping owner deposit notification');
+    return { success: false, error: 'Owner email not configured' };
   }
 
   try {
     const { data: emailData, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "noreply@exoticbulldoglegacy.com",
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@exoticbulldoglegacy.com',
       to: [ownerEmail],
       subject: `💰 New Deposit: $${data.depositAmount} for ${data.puppyName}`,
       replyTo: data.customerEmail,
@@ -293,14 +297,14 @@ export async function sendOwnerDepositNotification(data: DepositData) {
     });
 
     if (error) {
-      console.error("[Email] Failed to send owner deposit notification:", error);
+      console.error('[Email] Failed to send owner deposit notification:', error);
       return { success: false, error };
     }
 
-    console.log("[Email] ✅ Owner deposit notification sent successfully:", emailData);
+    console.log('[Email] ✅ Owner deposit notification sent successfully:', emailData);
     return { success: true, data: emailData };
   } catch (error) {
-    console.error("[Email] Error sending owner deposit notification:", error);
+    console.error('[Email] Error sending owner deposit notification:', error);
     return { success: false, error };
   }
 }
@@ -317,27 +321,27 @@ export async function sendCustomerDepositConfirmation(data: DepositData) {
   }
 
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[Email] Resend API key not configured, skipping customer deposit confirmation");
-    return { success: false, error: "Resend API key not configured" };
+    console.warn('[Email] Resend API key not configured, skipping customer deposit confirmation');
+    return { success: false, error: 'Resend API key not configured' };
   }
 
   try {
     const { data: emailData, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "noreply@exoticbulldoglegacy.com",
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@exoticbulldoglegacy.com',
       to: [data.customerEmail],
       subject: `🎉 Deposit Confirmed - ${data.puppyName} is Reserved for You!`,
       html: generateCustomerDepositEmail(data),
     });
 
     if (error) {
-      console.error("[Email] Failed to send customer deposit confirmation:", error);
+      console.error('[Email] Failed to send customer deposit confirmation:', error);
       return { success: false, error };
     }
 
-    console.log("[Email] ✅ Customer deposit confirmation sent successfully:", emailData);
+    console.log('[Email] ✅ Customer deposit confirmation sent successfully:', emailData);
     return { success: true, data: emailData };
   } catch (error) {
-    console.error("[Email] Error sending customer deposit confirmation:", error);
+    console.error('[Email] Error sending customer deposit confirmation:', error);
     return { success: false, error };
   }
 }

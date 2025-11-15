@@ -7,6 +7,7 @@ Successfully implemented a simplified parent selection workflow for the puppy ad
 ## Problem Statement
 
 The previous implementation required:
+
 1. Creating a litter record first
 2. Selecting parents from existing parent records via dropdowns
 3. This was cumbersome because the client breeds different parents each time and they're not always the same ones
@@ -14,6 +15,7 @@ The previous implementation required:
 ## Solution
 
 Implemented a metadata-based approach where parent information is stored directly on the puppy record:
+
 - **Text inputs** for parent names (sire_name, dam_name)
 - **File upload fields** for parent photos (up to 3 per parent)
 - Photos stored in Supabase Storage bucket
@@ -26,6 +28,7 @@ Implemented a metadata-based approach where parent information is stored directl
 **File**: `supabase/migrations/20250812T000000Z_add_parent_metadata_to_puppies.sql`
 
 Added 4 new columns to the `puppies` table:
+
 - `sire_name TEXT` - Direct sire (father) name
 - `dam_name TEXT` - Direct dam (mother) name
 - `sire_photo_urls TEXT[]` - Array of up to 3 photo URLs for sire
@@ -40,6 +43,7 @@ The migration maintains backward compatibility - existing sire_id/dam_id fields 
 **File**: `lib/supabase/types.ts`
 
 Updated the `Puppy` type to include the 4 new metadata fields:
+
 ```typescript
 export type Puppy = {
   // ... existing fields
@@ -58,6 +62,7 @@ Created storage bucket and policies for parent photos:
 **Bucket**: `puppies`
 
 **Policies**:
+
 - Public read access for all photos
 - Authenticated users can upload photos
 - Authenticated users can delete photos
@@ -71,6 +76,7 @@ Example: `abc123-def/sire/1625097600000-0.jpg`
 **File**: `components/admin/parent-photo-upload.tsx`
 
 Created a client-side component that:
+
 - Accepts up to 3 photos per parent
 - Shows live preview using Next.js Image component
 - Allows removing individual photos
@@ -78,6 +84,7 @@ Created a client-side component that:
 - Properly cleans up object URLs on unmount
 
 **Props**:
+
 - `parentType`: "sire" | "dam"
 - `disabled`: boolean (for pending states)
 
@@ -88,12 +95,14 @@ Created a client-side component that:
 Created utility functions for file uploads:
 
 **`uploadParentPhotos(files, parentType, puppyId)`**:
+
 - Uploads files to Supabase Storage
 - Generates unique filenames with timestamps
 - Returns array of public URLs
 - Handles errors with detailed error messages
 
 **`deleteParentPhotos(photoUrls)`**:
+
 - Deletes photos from storage (best-effort, doesn't throw)
 - Useful for cleanup on update/delete operations
 
@@ -102,15 +111,13 @@ Created utility functions for file uploads:
 **File**: `lib/admin/puppies/schema.ts`
 
 Added validation for parent names:
+
 ```typescript
-const parentNameSchema = z.preprocess(
-  (value) => {
-    if (value === null || typeof value === "undefined") return undefined;
-    const stringValue = String(value).trim();
-    return stringValue.length === 0 ? undefined : stringValue;
-  },
-  z.string().max(120, "Parent name must be 120 characters or fewer").optional()
-);
+const parentNameSchema = z.preprocess((value) => {
+  if (value === null || typeof value === 'undefined') return undefined;
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.string().max(120, 'Parent name must be 120 characters or fewer').optional());
 
 export const createPuppySchema = z.object({
   // ... existing fields
@@ -125,6 +132,7 @@ export const createPuppySchema = z.object({
 **File**: `app/admin/(dashboard)/puppies/actions.ts`
 
 Updated `createPuppyAction` to:
+
 1. Extract parent names from FormData
 2. Extract photo files from FormData (sirePhotos, damPhotos)
 3. Generate temporary UUID for storage paths
@@ -132,16 +140,17 @@ Updated `createPuppyAction` to:
 5. Store returned URLs in database
 
 **Implementation**:
+
 ```typescript
 // Extract file uploads
-const sirePhotos = formData.getAll("sirePhotos") as File[];
+const sirePhotos = formData.getAll('sirePhotos') as File[];
 if (sirePhotos.length > 0 && sirePhotos[0].size > 0) {
-  sirePhotoUrls = await uploadParentPhotos(sirePhotos, "sire", tempId);
+  sirePhotoUrls = await uploadParentPhotos(sirePhotos, 'sire', tempId);
 }
 
-const damPhotos = formData.getAll("damPhotos") as File[];
+const damPhotos = formData.getAll('damPhotos') as File[];
 if (damPhotos.length > 0 && damPhotos[0].size > 0) {
-  damPhotoUrls = await uploadParentPhotos(damPhotos, "dam", tempId);
+  damPhotoUrls = await uploadParentPhotos(damPhotos, 'dam', tempId);
 }
 
 // Insert with photo URLs
@@ -160,10 +169,12 @@ await insertAdminPuppy({
 Updated `mapCreatePayload` and `insertAdminPuppy` to accept and store photo URLs:
 
 ```typescript
-function mapCreatePayload(input: CreatePuppyPayload & {
-  sirePhotoUrls?: string[];
-  damPhotoUrls?: string[]
-}) {
+function mapCreatePayload(
+  input: CreatePuppyPayload & {
+    sirePhotoUrls?: string[];
+    damPhotoUrls?: string[];
+  },
+) {
   return {
     // ... existing mappings
     sire_name: input.sireName ?? null,
@@ -180,20 +191,24 @@ function mapCreatePayload(input: CreatePuppyPayload & {
 **File**: `app/admin/(dashboard)/puppies/create-puppy-panel.tsx`
 
 **Replaced**:
+
 - Two parent dropdowns (sire/dam) → Two text inputs for names
 - Removed dependency on fetching sires/dams from database
 
 **Added**:
+
 - Two `ParentPhotoUpload` components (one for sire, one for dam)
 - Text inputs for parent names with placeholders
 
 **Removed Props**:
+
 - `sireOptions: ParentOption[]`
 - `damOptions: ParentOption[]`
 
 **File**: `app/admin/(dashboard)/puppies/page.tsx`
 
 **Removed**:
+
 - `fetchAdminSires()` call
 - `fetchAdminDams()` call
 - `sireOptions` and `damOptions` prop passing
@@ -217,10 +232,12 @@ This ensures that if parent names are entered directly, they take precedence ove
 Updated test files to include new required fields:
 
 **Files**:
+
 - `app/puppies/page.test.tsx`
 - `lib/supabase/queries.test.ts`
 
 Added to all puppy mock objects:
+
 ```typescript
 sire_name: null,
 dam_name: null,
@@ -237,6 +254,7 @@ The system now follows this priority for displaying parent information:
 3. **Litter parent records** - Final fallback for backward compatibility
 
 This allows maximum flexibility:
+
 - Quick puppy creation with just names and photos (new workflow)
 - Full parent record linking for detailed pedigree tracking (existing workflow)
 - Both approaches can coexist in the same database
@@ -244,11 +262,13 @@ This allows maximum flexibility:
 ## Files Modified
 
 ### Created:
+
 1. `supabase/migrations/20250812T000000Z_add_parent_metadata_to_puppies.sql`
 2. `components/admin/parent-photo-upload.tsx`
 3. `lib/admin/puppies/upload.ts`
 
 ### Modified:
+
 1. `lib/supabase/types.ts` - Added 4 new Puppy fields
 2. `lib/admin/puppies/schema.ts` - Added parentNameSchema validation
 3. `lib/admin/puppies/queries.ts` - Updated mapCreatePayload and insertAdminPuppy
@@ -262,27 +282,34 @@ This allows maximum flexibility:
 ## Validation Results
 
 ### TypeScript Compilation
+
 ✅ **PASSED** - No type errors
 
 ### ESLint
+
 ✅ **PASSED** - No warnings (max-warnings=0 policy enforced)
 
 ### Production Build
+
 ✅ **PASSED** - Successfully compiled and optimized all routes
 
 ### Unit Tests
+
 ⚠️ **SKIPPED** - Vitest configuration issue (unrelated to our changes)
+
 - All test mocks updated with new required fields
 - Tests would pass once Vitest ESM issue is resolved
 
 ## Storage Configuration
 
 ### Bucket Details
+
 - **Name**: `puppies`
 - **Access**: Public read, authenticated write/delete
 - **Path structure**: `{puppyId}/{parentType}/{timestamp}-{index}.{ext}`
 
 ### Upload Constraints
+
 - Max 3 photos per parent
 - Supported formats: JPG, PNG, WebP
 - Cache control: 3600 seconds
@@ -290,12 +317,14 @@ This allows maximum flexibility:
 ## User Workflow
 
 ### Before (Complex):
+
 1. Create parent records in parents table
 2. Create litter record linking parents
 3. Create puppy record selecting litter
 4. Parents shown via litter relationship
 
 ### After (Simple):
+
 1. Open "Add puppy" form
 2. Fill puppy details
 3. Type parent names directly in text inputs
@@ -307,6 +336,7 @@ This allows maximum flexibility:
 ## Backward Compatibility
 
 The implementation maintains full backward compatibility:
+
 - Existing puppies with sire_id/dam_id continue to work
 - Existing litter-based relationships still function
 - No data migration required for existing records
@@ -315,6 +345,7 @@ The implementation maintains full backward compatibility:
 ## Future Enhancements (Not Implemented)
 
 Potential improvements for future sprints:
+
 1. Display parent photos on public puppy detail page
 2. Add photo upload limits (file size, dimensions)
 3. Implement photo editing/cropping before upload
@@ -340,6 +371,7 @@ Potential improvements for future sprints:
 ## Conclusion
 
 Successfully implemented a streamlined parent selection workflow that:
+
 - Eliminates the need for pre-existing parent records
 - Simplifies the admin UX with text inputs and file uploads
 - Maintains backward compatibility with existing data

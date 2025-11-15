@@ -1,13 +1,13 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { slugifyName } from "@/lib/admin/puppies/slug";
-import { ParentPhotoUpload } from "@/components/admin/parent-photo-upload";
-import { useMediaUpload } from "@/lib/admin/hooks/use-media-upload";
-import { createPuppyAction } from "./actions";
-import { initialCreatePuppyState, type CreatePuppyState } from "./types";
+import { useRouter } from 'next/navigation';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { slugifyName } from '@/lib/admin/puppies/slug';
+import { ParentPhotoUpload } from '@/components/admin/parent-photo-upload';
+import { useMediaUpload } from '@/lib/admin/hooks/use-media-upload';
+import { createPuppyAction } from './actions';
+import { initialCreatePuppyState, type CreatePuppyState } from './types';
 
 type StatusOption = {
   value: string;
@@ -23,10 +23,10 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const processedSuccessRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-  const [status, setStatus] = useState(statusOptions[0]?.value ?? "available");
+  const [status, setStatus] = useState(statusOptions[0]?.value ?? 'available');
 
   // File upload state
   const { uploadFiles, isUploading } = useMediaUpload();
@@ -37,17 +37,20 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   const [puppyFiles, setPuppyFiles] = useState<File[]>([]);
   const [puppyPhotoUrls, setPuppyPhotoUrls] = useState<string[]>([]);
 
-  const [state, formAction, pending] = useActionState<CreatePuppyState, FormData>(createPuppyAction, initialCreatePuppyState);
+  const [state, formAction, pending] = useActionState<CreatePuppyState, FormData>(
+    createPuppyAction,
+    initialCreatePuppyState,
+  );
 
   useEffect(() => {
-    if (state.status === "success" && !processedSuccessRef.current) {
+    if (state.status === 'success' && !processedSuccessRef.current) {
       processedSuccessRef.current = true;
-      toast.success("Puppy created");
+      toast.success('Puppy created');
       formRef.current?.reset();
-      setName("");
-      setSlug("");
+      setName('');
+      setSlug('');
       setSlugManuallyEdited(false);
-      setStatus(statusOptions[0]?.value ?? "available");
+      setStatus(statusOptions[0]?.value ?? 'available');
       setSireFiles([]);
       setDamFiles([]);
       setSirePhotoUrls([]);
@@ -56,12 +59,12 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       setPuppyPhotoUrls([]);
       setIsOpen(false);
       router.refresh();
-    } else if (state.status === "error" && state.formError) {
+    } else if (state.status === 'error' && state.formError) {
       toast.error(state.formError);
     }
 
     // Reset flag when starting new submission
-    if (state.status === "idle") {
+    if (state.status === 'idle') {
       processedSuccessRef.current = false;
     }
   }, [state, router, statusOptions]);
@@ -89,7 +92,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
 
       // Upload sire photos if any
       if (sireFiles.length > 0) {
-        toast.info("Uploading sire photos...");
+        toast.info('Uploading sire photos...');
         const urls = await uploadFiles(sireFiles, `${tempId}/sire`);
         nextSirePhotoUrls = urls;
         setSirePhotoUrls(urls);
@@ -97,14 +100,14 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
 
       // Upload dam photos if any
       if (damFiles.length > 0) {
-        toast.info("Uploading dam photos...");
+        toast.info('Uploading dam photos...');
         const urls = await uploadFiles(damFiles, `${tempId}/dam`);
         nextDamPhotoUrls = urls;
         setDamPhotoUrls(urls);
       }
 
       if (puppyFiles.length > 0) {
-        toast.info("Uploading puppy photos...");
+        toast.info('Uploading puppy photos...');
         const urls = await uploadFiles(puppyFiles, `${tempId}/gallery`);
         nextPuppyPhotoUrls = urls;
         setPuppyPhotoUrls(urls);
@@ -121,24 +124,24 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
         filteredFormData.append(key, value);
       });
 
-      filteredFormData.delete("sirePhotoUrls");
+      filteredFormData.delete('sirePhotoUrls');
       nextSirePhotoUrls.forEach((url) => {
-        filteredFormData.append("sirePhotoUrls", url);
+        filteredFormData.append('sirePhotoUrls', url);
       });
 
-      filteredFormData.delete("damPhotoUrls");
+      filteredFormData.delete('damPhotoUrls');
       nextDamPhotoUrls.forEach((url) => {
-        filteredFormData.append("damPhotoUrls", url);
+        filteredFormData.append('damPhotoUrls', url);
       });
 
-      filteredFormData.delete("photoUrls");
+      filteredFormData.delete('photoUrls');
       nextPuppyPhotoUrls.forEach((url) => {
-        filteredFormData.append("photoUrls", url);
+        filteredFormData.append('photoUrls', url);
       });
 
       formAction(filteredFormData);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
       toast.error(errorMessage);
     }
   };
@@ -148,14 +151,16 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-text">Add new puppy</p>
-          <p className="text-xs text-muted">Create a listing with name, status, price, and optional birth date.</p>
+          <p className="text-xs text-muted">
+            Create a listing with name, status, price, and optional birth date.
+          </p>
         </div>
         <button
           type="button"
           className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text transition hover:bg-hover"
           onClick={() => setIsOpen((value) => !value)}
         >
-          {isOpen ? "Close form" : "Add puppy"}
+          {isOpen ? 'Close form' : 'Add puppy'}
         </button>
       </div>
 
@@ -179,7 +184,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("name") ? <p className="text-xs text-red-500">{fieldError("name")}</p> : null}
+            {fieldError('name') ? (
+              <p className="text-xs text-red-500">{fieldError('name')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -198,7 +205,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               required
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("slug") ? <p className="text-xs text-red-500">{fieldError("slug")}</p> : null}
+            {fieldError('slug') ? (
+              <p className="text-xs text-red-500">{fieldError('slug')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -219,7 +228,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
                 </option>
               ))}
             </select>
-            {fieldError("status") ? <p className="text-xs text-red-500">{fieldError("status")}</p> : null}
+            {fieldError('status') ? (
+              <p className="text-xs text-red-500">{fieldError('status')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -236,7 +247,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               <option value="french_bulldog">French Bulldog</option>
               <option value="english_bulldog">English Bulldog</option>
             </select>
-            {fieldError("breed") ? <p className="text-xs text-red-500">{fieldError("breed")}</p> : null}
+            {fieldError('breed') ? (
+              <p className="text-xs text-red-500">{fieldError('breed')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -253,7 +266,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
-            {fieldError("sex") ? <p className="text-xs text-red-500">{fieldError("sex")}</p> : null}
+            {fieldError('sex') ? <p className="text-xs text-red-500">{fieldError('sex')}</p> : null}
           </div>
 
           <div className="space-y-2">
@@ -267,7 +280,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("color") ? <p className="text-xs text-red-500">{fieldError("color")}</p> : null}
+            {fieldError('color') ? (
+              <p className="text-xs text-red-500">{fieldError('color')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -284,7 +299,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("priceUsd") ? <p className="text-xs text-red-500">{fieldError("priceUsd")}</p> : null}
+            {fieldError('priceUsd') ? (
+              <p className="text-xs text-red-500">{fieldError('priceUsd')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -298,7 +315,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("birthDate") ? <p className="text-xs text-red-500">{fieldError("birthDate")}</p> : null}
+            {fieldError('birthDate') ? (
+              <p className="text-xs text-red-500">{fieldError('birthDate')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -315,7 +334,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("weightOz") ? <p className="text-xs text-red-500">{fieldError("weightOz")}</p> : null}
+            {fieldError('weightOz') ? (
+              <p className="text-xs text-red-500">{fieldError('weightOz')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -329,7 +350,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("sireName") ? <p className="text-xs text-red-500">{fieldError("sireName")}</p> : null}
+            {fieldError('sireName') ? (
+              <p className="text-xs text-red-500">{fieldError('sireName')}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -343,7 +366,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
-            {fieldError("damName") ? <p className="text-xs text-red-500">{fieldError("damName")}</p> : null}
+            {fieldError('damName') ? (
+              <p className="text-xs text-red-500">{fieldError('damName')}</p>
+            ) : null}
           </div>
 
           <div className="col-span-full">
@@ -356,7 +381,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               uploadedUrls={puppyPhotoUrls}
               isUploading={isUploading}
             />
-            {fieldError("photoUrls") ? <p className="text-xs text-red-500">{fieldError("photoUrls")}</p> : null}
+            {fieldError('photoUrls') ? (
+              <p className="text-xs text-red-500">{fieldError('photoUrls')}</p>
+            ) : null}
           </div>
 
           <div className="col-span-full md:col-span-1">
@@ -391,7 +418,9 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent resize-y"
             />
-            {fieldError("description") ? <p className="text-xs text-red-500">{fieldError("description")}</p> : null}
+            {fieldError('description') ? (
+              <p className="text-xs text-red-500">{fieldError('description')}</p>
+            ) : null}
           </div>
 
           {state.formError ? (
@@ -406,7 +435,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               disabled={pending || isUploading}
               className="rounded-lg bg-[color:var(--btn-bg,#0D1A44)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text,#FFFFFF)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isUploading ? "Uploading photos..." : pending ? "Saving..." : "Create puppy"}
+              {isUploading ? 'Uploading photos...' : pending ? 'Saving...' : 'Create puppy'}
             </button>
             <button
               type="button"

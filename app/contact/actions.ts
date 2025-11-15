@@ -1,15 +1,15 @@
-"use server";
+'use server';
 
-import { headers } from "next/headers";
+import { headers } from 'next/headers';
 
-import { verifyHCaptcha } from "@/lib/captcha/hcaptcha";
-import { checkInquiryRateLimit } from "@/lib/inquiries/rate-limit";
-import { inquirySubmissionSchema } from "@/lib/inquiries/schema";
-import { createServiceRoleClient } from "@/lib/supabase/client";
-import { sendOwnerNotification } from "@/lib/emails/owner-notification";
-import { sendCustomerConfirmation } from "@/lib/emails/customer-confirmation";
+import { verifyHCaptcha } from '@/lib/captcha/hcaptcha';
+import { checkInquiryRateLimit } from '@/lib/inquiries/rate-limit';
+import { inquirySubmissionSchema } from '@/lib/inquiries/schema';
+import { createServiceRoleClient } from '@/lib/supabase/client';
+import { sendOwnerNotification } from '@/lib/emails/owner-notification';
+import { sendCustomerConfirmation } from '@/lib/emails/customer-confirmation';
 
-export type ContactFormStatus = "idle" | "error" | "success";
+export type ContactFormStatus = 'idle' | 'error' | 'success';
 
 export type ContactFormState = {
   status: ContactFormStatus;
@@ -18,16 +18,16 @@ export type ContactFormState = {
 };
 
 function extractFieldErrors(error: unknown): Partial<Record<string, string>> {
-  if (typeof error !== "object" || !error) {
+  if (typeof error !== 'object' || !error) {
     return {};
   }
 
-  if ("flatten" in error && typeof error.flatten === "function") {
+  if ('flatten' in error && typeof error.flatten === 'function') {
     const flattened = error.flatten();
-    const allowed = new Set(["name", "email", "phone", "message", "captcha"]);
+    const allowed = new Set(['name', 'email', 'phone', 'message', 'captcha']);
     const fieldEntries = Object.entries(flattened.fieldErrors ?? {})
       .map(([key, value]) => {
-        const normalizedKey = key === "hcaptchaToken" ? "captcha" : key;
+        const normalizedKey = key === 'hcaptchaToken' ? 'captcha' : key;
         const message = Array.isArray(value) && value.length > 0 ? value[0] : undefined;
         return [normalizedKey, message] as const;
       })
@@ -40,15 +40,15 @@ function extractFieldErrors(error: unknown): Partial<Record<string, string>> {
 }
 
 function asString(value: FormDataEntryValue | null): string | undefined {
-  return typeof value === "string" ? value : undefined;
+  return typeof value === 'string' ? value : undefined;
 }
 
 type HeaderLike = Awaited<ReturnType<typeof headers>>;
 
 function getClientIp(headerList: HeaderLike): string | null {
-  const forwarded = headerList.get("x-forwarded-for");
+  const forwarded = headerList.get('x-forwarded-for');
   if (!forwarded) return null;
-  const first = forwarded.split(",")[0]?.trim();
+  const first = forwarded.split(',')[0]?.trim();
   return first || null;
 }
 
@@ -57,22 +57,22 @@ export async function submitContactInquiry(
   formData: FormData,
 ): Promise<ContactFormState> {
   const shape = {
-    name: asString(formData.get("name")),
-    email: asString(formData.get("email")),
-    phone: asString(formData.get("phone")),
-    message: asString(formData.get("message")),
-    puppyId: asString(formData.get("puppyId")),
-    puppySlug: asString(formData.get("puppySlug")),
-    contextPath: asString(formData.get("contextPath")),
-    hcaptchaToken: asString(formData.get("h-captcha-response")),
+    name: asString(formData.get('name')),
+    email: asString(formData.get('email')),
+    phone: asString(formData.get('phone')),
+    message: asString(formData.get('message')),
+    puppyId: asString(formData.get('puppyId')),
+    puppySlug: asString(formData.get('puppySlug')),
+    contextPath: asString(formData.get('contextPath')),
+    hcaptchaToken: asString(formData.get('h-captcha-response')),
   };
 
   const parsed = inquirySubmissionSchema.safeParse(shape);
 
   if (!parsed.success) {
     return {
-      status: "error",
-      message: "Please correct the highlighted fields.",
+      status: 'error',
+      message: 'Please correct the highlighted fields.',
       fieldErrors: extractFieldErrors(parsed.error),
     };
   }
@@ -87,7 +87,7 @@ export async function submitContactInquiry(
 
   if (!rateLimitResult.ok) {
     return {
-      status: "error",
+      status: 'error',
       message: rateLimitResult.message,
     };
   }
@@ -95,7 +95,7 @@ export async function submitContactInquiry(
   const captchaResult = await verifyHCaptcha(submission.hcaptchaToken, clientIp);
   if (!captchaResult.ok) {
     return {
-      status: "error",
+      status: 'error',
       message: captchaResult.message,
       fieldErrors: {
         captcha: captchaResult.message,
@@ -103,14 +103,14 @@ export async function submitContactInquiry(
     };
   }
 
-  const referer = headerList.get("referer") || undefined;
-  const userAgent = headerList.get("user-agent") || undefined;
-  const host = headerList.get("host") || undefined;
+  const referer = headerList.get('referer') || undefined;
+  const userAgent = headerList.get('user-agent') || undefined;
+  const host = headerList.get('host') || undefined;
 
   try {
     const supabase = createServiceRoleClient();
-    const { error } = await supabase.from("inquiries").insert({
-      source: "form",
+    const { error } = await supabase.from('inquiries').insert({
+      source: 'form',
       name: submission.name,
       email: submission.email,
       phone: submission.phone ?? null,
@@ -127,22 +127,22 @@ export async function submitContactInquiry(
     });
 
     if (error) {
-      console.error("Failed to persist inquiry", error);
+      console.error('Failed to persist inquiry', error);
       return {
-        status: "error",
+        status: 'error',
         message: "We couldn't save your inquiry. Please try again shortly.",
       };
     }
   } catch (clientError) {
-    if (process.env.NODE_ENV === "production") {
-      console.error("Supabase service role client misconfigured.", clientError);
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Supabase service role client misconfigured.', clientError);
       return {
-        status: "error",
+        status: 'error',
         message: "We couldn't save your inquiry. Please try again shortly.",
       };
     }
     console.warn(
-      "Supabase service role client unavailable; skipping inquiry persistence in non-production environment.",
+      'Supabase service role client unavailable; skipping inquiry persistence in non-production environment.',
       clientError,
     );
   }
@@ -159,7 +159,7 @@ export async function submitContactInquiry(
           puppy_id: submission.puppyId,
           puppy_slug: submission.puppySlug,
           created_at: new Date().toISOString(),
-          source: "form",
+          source: 'form',
         },
       }),
       sendCustomerConfirmation({
@@ -171,17 +171,17 @@ export async function submitContactInquiry(
     // Send emails asynchronously without blocking the response
     emailPromises.forEach((promise) => {
       promise.catch((emailError) => {
-        console.error("Email notification failed:", emailError);
+        console.error('Email notification failed:', emailError);
         // Don't fail the form submission if emails fail
       });
     });
   } catch (emailError) {
-    console.error("Failed to send email notifications:", emailError);
+    console.error('Failed to send email notifications:', emailError);
     // Don't fail the form submission if emails fail
   }
 
   return {
-    status: "success",
+    status: 'success',
     message:
       "Thanks for reaching out! We'll respond within one business day with next steps and availability.",
   };

@@ -51,9 +51,7 @@ describe('Webhook Health Check Endpoint', () => {
   it('should include cache-control headers', async () => {
     const response = await GET();
 
-    expect(response.headers.get('cache-control')).toBe(
-      'no-cache, no-store, must-revalidate'
-    );
+    expect(response.headers.get('cache-control')).toBe('no-cache, no-store, must-revalidate');
   });
 
   it('should return provider health metrics', async () => {
@@ -103,8 +101,7 @@ expect.extend({
 
     return {
       pass,
-      message: () =>
-        `expected ${received} to be one of ${expected.join(', ')}`,
+      message: () => `expected ${received} to be one of ${expected.join(', ')}`,
     };
   },
 });

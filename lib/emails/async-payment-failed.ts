@@ -141,12 +141,16 @@ function generateAsyncPaymentFailedEmail(data: AsyncPaymentFailedData): string {
                 <span class="label">Email:</span>
                 <a href="mailto:${contactEmail}" style="color: #2196f3;">${contactEmail}</a>
             </div>
-            ${contactPhone ? `
+            ${
+              contactPhone
+                ? `
             <div class="field">
                 <span class="label">Phone:</span>
                 <a href="tel:${contactPhone}" style="color: #2196f3;">${contactPhone}</a>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             <p style="margin-top: 15px;">
                 <a href="mailto:${contactEmail}" class="btn btn-contact">Email Us</a>
             </p>
@@ -188,7 +192,7 @@ export async function sendAsyncPaymentFailedEmail(data: AsyncPaymentFailedData) 
 
   if (!process.env.RESEND_API_KEY) {
     console.warn(
-      '[Email] Resend API key not configured, skipping async payment failed notification'
+      '[Email] Resend API key not configured, skipping async payment failed notification',
     );
     return { success: false, error: 'Resend API key not configured' };
   }

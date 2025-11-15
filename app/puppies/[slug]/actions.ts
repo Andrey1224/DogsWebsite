@@ -36,7 +36,7 @@ export interface CreateCheckoutSessionResult {
  * @returns Result with session URL or error
  */
 export async function createCheckoutSession(
-  puppySlug: string
+  puppySlug: string,
 ): Promise<CreateCheckoutSessionResult> {
   try {
     // Step 1: Fetch puppy data
@@ -83,8 +83,7 @@ export async function createCheckoutSession(
       : DEPOSIT_AMOUNT_USD;
 
     // Step 4: Get site URL for redirect URLs
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     // Step 5: Create Stripe Checkout Session
     const params: CreateCheckoutSessionParams = {
@@ -134,9 +133,7 @@ export async function createCheckoutSession(
       expires_at: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
     });
 
-    console.log(
-      `[Checkout Session] Created session for puppy ${puppy.slug}: ${session.id}`
-    );
+    console.log(`[Checkout Session] Created session for puppy ${puppy.slug}: ${session.id}`);
 
     return {
       success: true,

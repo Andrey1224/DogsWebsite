@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState } from "react";
+import Image from 'next/image';
+import { useState } from 'react';
 
-import { resolveLocalImage } from "@/lib/utils/images";
+import { resolveLocalImage } from '@/lib/utils/images';
 
 type PuppyGalleryProps = {
   photos: string[];
@@ -11,10 +11,12 @@ type PuppyGalleryProps = {
   name?: string | null;
 };
 
-const placeholder = "/reviews/cameron-milo.webp";
+const placeholder = '/reviews/cameron-milo.webp';
 
 export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
-  const media = (photos.length ? photos : [placeholder]).map((url) => resolveLocalImage(url, placeholder));
+  const media = (photos.length ? photos : [placeholder]).map((url) =>
+    resolveLocalImage(url, placeholder),
+  );
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
@@ -23,7 +25,7 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
         <Image
           src={media[activeIndex]}
           fill
-          alt={name ? `${name} photo ${activeIndex + 1}` : "Puppy photo"}
+          alt={name ? `${name} photo ${activeIndex + 1}` : 'Puppy photo'}
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
@@ -37,8 +39,8 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
               onClick={() => setActiveIndex(index)}
               className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border transition ${
                 index === activeIndex
-                  ? "border-accent-aux/50 ring-2 ring-[color:color-mix(in srgb, var(--accent-aux) 35%, transparent)]"
-                  : "border-border"
+                  ? 'border-accent-aux/50 ring-2 ring-[color:color-mix(in srgb, var(--accent-aux) 35%, transparent)]'
+                  : 'border-border'
               }`}
             >
               <Image src={url} alt="Puppy thumbnail" fill className="object-cover" sizes="80px" />

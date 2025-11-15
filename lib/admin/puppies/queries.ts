@@ -1,12 +1,9 @@
-import "server-only";
+import 'server-only';
 
-import type { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/admin/supabase";
-import type { Puppy } from "@/lib/supabase/types";
-import {
-  isArchiveColumnMissingError,
-  runArchiveAwareQuery,
-} from "@/lib/supabase/archive-support";
+import type { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { getAdminSupabaseClient } from '@/lib/admin/supabase';
+import type { Puppy } from '@/lib/supabase/types';
+import { isArchiveColumnMissingError, runArchiveAwareQuery } from '@/lib/supabase/archive-support';
 import {
   CreatePuppyInput,
   deletePuppySchema,
@@ -15,26 +12,39 @@ import {
   updatePuppyStatusSchema,
   archivePuppySchema,
   restorePuppySchema,
-} from "./schema";
+} from './schema';
 
 const ADMIN_PUPPY_BASE_FIELDS =
-  "id,name,slug,status,price_usd,birth_date,litter_id,created_at,updated_at";
+  'id,name,slug,status,price_usd,birth_date,litter_id,created_at,updated_at';
 
 function getAdminPuppyFields(includeArchiveColumn: boolean) {
-  return includeArchiveColumn
-    ? `${ADMIN_PUPPY_BASE_FIELDS},is_archived`
-    : ADMIN_PUPPY_BASE_FIELDS;
+  return includeArchiveColumn ? `${ADMIN_PUPPY_BASE_FIELDS},is_archived` : ADMIN_PUPPY_BASE_FIELDS;
 }
 
 export type AdminPuppyRecord = Pick<
   Puppy,
-  "id" | "name" | "slug" | "status" | "price_usd" | "birth_date" | "litter_id" | "is_archived" | "created_at" | "updated_at"
+  | 'id'
+  | 'name'
+  | 'slug'
+  | 'status'
+  | 'price_usd'
+  | 'birth_date'
+  | 'litter_id'
+  | 'is_archived'
+  | 'created_at'
+  | 'updated_at'
 >;
 
 // Type for insertion with required slug
 type CreatePuppyPayload = Omit<CreatePuppyInput, 'slug'> & { slug: string };
 
-function mapCreatePayload(input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[]; photoUrls?: string[] }) {
+function mapCreatePayload(
+  input: CreatePuppyPayload & {
+    sirePhotoUrls?: string[];
+    damPhotoUrls?: string[];
+    photoUrls?: string[];
+  },
+) {
   return {
     name: input.name,
     slug: input.slug,
@@ -69,17 +79,17 @@ export async function fetchAdminPuppies(
   const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<AdminPuppyRecord[]>(
     async ({ useArchiveColumn }) => {
       let query = supabase
-        .from("puppies")
+        .from('puppies')
         .select(getAdminPuppyFields(useArchiveColumn))
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (useArchiveColumn) {
-        query = query.eq("is_archived", archived);
+        query = query.eq('is_archived', archived);
       }
 
-      const response = await query;
+      const response = await query.returns<AdminPuppyRecord[]>();
       return {
-        data: (response.data ?? []) as unknown as AdminPuppyRecord[],
+        data: response.data ?? [],
         error: response.error,
       };
     },
@@ -118,13 +128,17 @@ export async function fetchAdminPuppies(
 }
 
 export async function insertAdminPuppy(
-  input: CreatePuppyPayload & { sirePhotoUrls?: string[]; damPhotoUrls?: string[]; photoUrls?: string[] },
+  input: CreatePuppyPayload & {
+    sirePhotoUrls?: string[];
+    damPhotoUrls?: string[];
+    photoUrls?: string[];
+  },
 ): Promise<AdminPuppyRecord> {
   const supabase = getAdminSupabaseClient();
   const { data, error, usedArchiveColumn } = await runArchiveAwareQuery<AdminPuppyRecord>(
     async ({ useArchiveColumn }) => {
       const response = await supabase
-        .from("puppies")
+        .from('puppies')
         .insert(mapCreatePayload(input))
         .select(getAdminPuppyFields(useArchiveColumn))
         .single();
@@ -150,13 +164,16 @@ export async function insertAdminPuppy(
   };
 }
 
-export async function updateAdminPuppyStatus(input: { id: string; status: AdminPuppyRecord["status"] }) {
+export async function updateAdminPuppyStatus(input: {
+  id: string;
+  status: AdminPuppyRecord['status'];
+}) {
   const payload = updatePuppyStatusSchema.parse(input);
   const supabase = getAdminSupabaseClient();
   const { error } = await supabase
-    .from("puppies")
+    .from('puppies')
     .update({ status: payload.status })
-    .eq("id", payload.id);
+    .eq('id', payload.id);
 
   if (error) {
     throw error;
@@ -171,9 +188,9 @@ export async function updateAdminPuppyPrice(input: { id: string; priceUsd: unkno
 
   const supabase = getAdminSupabaseClient();
   const { error } = await supabase
-    .from("puppies")
+    .from('puppies')
     .update({ price_usd: parsed.priceUsd })
-    .eq("id", parsed.id);
+    .eq('id', parsed.id);
 
   if (error) {
     throw error;
@@ -183,7 +200,7 @@ export async function updateAdminPuppyPrice(input: { id: string; priceUsd: unkno
 export async function deleteAdminPuppy(input: { id: string }) {
   const payload = deletePuppySchema.parse(input);
   const supabase = getAdminSupabaseClient();
-  const { error } = await supabase.from("puppies").delete().eq("id", payload.id);
+  const { error } = await supabase.from('puppies').delete().eq('id', payload.id);
   if (error) {
     throw error;
   }
@@ -191,9 +208,12 @@ export async function deleteAdminPuppy(input: { id: string }) {
 
 export async function isPuppySlugTaken(slug: string, options: { excludeId?: string } = {}) {
   const supabase = getAdminSupabaseClient();
-  let query = supabase.from("puppies").select("id", { head: true, count: "exact" }).eq("slug", slug);
+  let query = supabase
+    .from('puppies')
+    .select('id', { head: true, count: 'exact' })
+    .eq('slug', slug);
   if (options.excludeId) {
-    query = query.neq("id", options.excludeId);
+    query = query.neq('id', options.excludeId);
   }
 
   const response = (await query) as PostgrestSingleResponse<null>;
@@ -204,19 +224,21 @@ export async function isPuppySlugTaken(slug: string, options: { excludeId?: stri
   return (response.count ?? 0) > 0;
 }
 
-export async function getAdminPuppyById(id: string): Promise<Pick<AdminPuppyRecord, "id" | "name" | "slug"> | null> {
+export async function getAdminPuppyById(
+  id: string,
+): Promise<Pick<AdminPuppyRecord, 'id' | 'name' | 'slug'> | null> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("puppies")
-    .select("id,name,slug")
-    .eq("id", id)
+    .from('puppies')
+    .select('id,name,slug')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  return (data as Pick<AdminPuppyRecord, "id" | "name" | "slug">) ?? null;
+  return (data as Pick<AdminPuppyRecord, 'id' | 'name' | 'slug'>) ?? null;
 }
 
 type RawAdminLitterWithParents = {
@@ -236,14 +258,16 @@ export type AdminLitterWithParents = {
 export async function fetchAdminLittersWithParents(): Promise<AdminLitterWithParents[]> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("litters")
-    .select(`
+    .from('litters')
+    .select(
+      `
       id,
       name,
       sire:parents!litters_sire_id_fkey(name),
       dam:parents!litters_dam_id_fkey(name)
-    `)
-    .order("name", { ascending: true });
+    `,
+    )
+    .order('name', { ascending: true });
 
   if (error) {
     throw error;
@@ -262,17 +286,17 @@ export async function fetchAdminLittersWithParents(): Promise<AdminLitterWithPar
 export type AdminParent = {
   id: string;
   name: string;
-  breed: "french_bulldog" | "english_bulldog" | null;
+  breed: 'french_bulldog' | 'english_bulldog' | null;
   photo_urls: string[] | null;
 };
 
 export async function fetchAdminSires(): Promise<AdminParent[]> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("parents")
-    .select("id,name,breed,photo_urls")
-    .eq("sex", "male")
-    .order("name", { ascending: true });
+    .from('parents')
+    .select('id,name,breed,photo_urls')
+    .eq('sex', 'male')
+    .order('name', { ascending: true });
 
   if (error) {
     throw error;
@@ -284,10 +308,10 @@ export async function fetchAdminSires(): Promise<AdminParent[]> {
 export async function fetchAdminDams(): Promise<AdminParent[]> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("parents")
-    .select("id,name,breed,photo_urls")
-    .eq("sex", "female")
-    .order("name", { ascending: true });
+    .from('parents')
+    .select('id,name,breed,photo_urls')
+    .eq('sex', 'female')
+    .order('name', { ascending: true });
 
   if (error) {
     throw error;
@@ -302,10 +326,10 @@ export async function fetchAdminDams(): Promise<AdminParent[]> {
 export async function hasActiveReservations(puppyId: string): Promise<boolean> {
   const supabase = getAdminSupabaseClient();
   const { data, error } = await supabase
-    .from("reservations")
-    .select("status, expires_at")
-    .eq("puppy_id", puppyId)
-    .in("status", ["pending", "paid"]);
+    .from('reservations')
+    .select('status, expires_at')
+    .eq('puppy_id', puppyId)
+    .in('status', ['pending', 'paid']);
 
   if (error) {
     throw error;
@@ -317,7 +341,7 @@ export async function hasActiveReservations(puppyId: string): Promise<boolean> {
 
   const now = Date.now();
   return data.some((reservation) => {
-    if (reservation.status === "paid") {
+    if (reservation.status === 'paid') {
       return true;
     }
 
@@ -338,17 +362,17 @@ export async function archivePuppy(id: string): Promise<void> {
   const supabase = getAdminSupabaseClient();
 
   const { error } = await supabase
-    .from("puppies")
+    .from('puppies')
     .update({
       is_archived: true,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
-    .eq("id", payload.id);
+    .eq('id', payload.id);
 
   if (error) {
     if (isArchiveColumnMissingError(error)) {
       throw new Error(
-        "Cannot archive puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.",
+        'Cannot archive puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.',
       );
     }
     throw error;
@@ -363,17 +387,17 @@ export async function restorePuppy(id: string): Promise<void> {
   const supabase = getAdminSupabaseClient();
 
   const { error } = await supabase
-    .from("puppies")
+    .from('puppies')
     .update({
       is_archived: false,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
-    .eq("id", payload.id);
+    .eq('id', payload.id);
 
   if (error) {
     if (isArchiveColumnMissingError(error)) {
       throw new Error(
-        "Cannot restore puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.",
+        'Cannot restore puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.',
       );
     }
     throw error;

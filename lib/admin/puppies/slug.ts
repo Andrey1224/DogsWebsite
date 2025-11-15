@@ -1,14 +1,14 @@
-const FALLBACK_SLUG_PREFIX = "puppy";
+const FALLBACK_SLUG_PREFIX = 'puppy';
 const MAX_SLUG_ATTEMPTS = 25;
 
 export function slugifyName(value: string): string {
   return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-")
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
     .slice(0, 80);
 }
 
@@ -31,5 +31,5 @@ export async function generateUniqueSlug(
     }
   }
 
-  throw new Error("Unable to generate a unique slug. Please try a different name.");
+  throw new Error('Unable to generate a unique slug. Please try a different name.');
 }

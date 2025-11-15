@@ -14,8 +14,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 if (!stripeSecretKey) {
   throw new Error(
-    'Missing STRIPE_SECRET_KEY environment variable. ' +
-    'Please add it to your .env.local file.'
+    'Missing STRIPE_SECRET_KEY environment variable. ' + 'Please add it to your .env.local file.',
   );
 }
 
@@ -46,7 +45,6 @@ export const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 if (!webhookSecret) {
   console.warn(
-    'WARNING: STRIPE_WEBHOOK_SECRET is not set. ' +
-    'Webhook signature verification will fail.'
+    'WARNING: STRIPE_WEBHOOK_SECRET is not set. ' + 'Webhook signature verification will fail.',
   );
 }

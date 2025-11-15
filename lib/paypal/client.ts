@@ -6,18 +6,18 @@
  * order capture, and generic request handling.
  */
 
-import crypto from "node:crypto";
+import crypto from 'node:crypto';
 
 import type {
   PayPalCaptureResponse,
   PayPalCreateOrderResponse,
   PayPalEnvironment,
   PayPalOrderMetadata,
-} from "./types";
+} from './types';
 
 const PAYPAL_API_BASE: Record<PayPalEnvironment, string> = {
-  sandbox: "https://api-m.sandbox.paypal.com",
-  live: "https://api-m.paypal.com",
+  sandbox: 'https://api-m.sandbox.paypal.com',
+  live: 'https://api-m.paypal.com',
 };
 
 interface AccessTokenCache {
@@ -30,13 +30,13 @@ let accessTokenCache: AccessTokenCache | null = null;
 function getClientConfig() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-  const env = (process.env.PAYPAL_ENV || "sandbox").toLowerCase() as PayPalEnvironment;
+  const env = (process.env.PAYPAL_ENV || 'sandbox').toLowerCase() as PayPalEnvironment;
 
   if (!clientId || !clientSecret) {
-    throw new Error("PayPal client credentials are not configured");
+    throw new Error('PayPal client credentials are not configured');
   }
 
-  if (env !== "sandbox" && env !== "live") {
+  if (env !== 'sandbox' && env !== 'live') {
     throw new Error(`Invalid PAYPAL_ENV value: ${process.env.PAYPAL_ENV}`);
   }
 
@@ -62,12 +62,12 @@ async function requestAccessToken(forceRefresh = false): Promise<string> {
   const url = `${getPayPalApiBaseUrl()}/v1/oauth2/token`;
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: new URLSearchParams({ grant_type: "client_credentials" }).toString(),
+    body: new URLSearchParams({ grant_type: 'client_credentials' }).toString(),
   });
 
   if (!response.ok) {
@@ -94,7 +94,7 @@ export async function getPayPalAccessToken(forceRefresh = false): Promise<string
 async function paypalFetch<T>(
   path: string,
   options: {
-    method?: "GET" | "POST";
+    method?: 'GET' | 'POST';
     body?: Record<string, unknown> | string;
     requestId?: string;
   } = {},
@@ -103,17 +103,22 @@ async function paypalFetch<T>(
   const url = `${getPayPalApiBaseUrl()}${path}`;
   const headers = new Headers({
     Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   });
 
   if (options.requestId) {
-    headers.set("PayPal-Request-Id", options.requestId);
+    headers.set('PayPal-Request-Id', options.requestId);
   }
 
   const response = await fetch(url, {
-    method: options.method ?? "GET",
+    method: options.method ?? 'GET',
     headers,
-    body: typeof options.body === "string" ? options.body : options.body ? JSON.stringify(options.body) : undefined,
+    body:
+      typeof options.body === 'string'
+        ? options.body
+        : options.body
+          ? JSON.stringify(options.body)
+          : undefined,
   });
 
   if (!response.ok) {
@@ -141,17 +146,17 @@ function buildCustomId(metadata: PayPalOrderMetadata, amount: number): string {
     id: metadata.puppy_id,
     slug: metadata.puppy_slug,
     name: metadata.puppy_name,
-    channel: metadata.channel ?? "",
-    email: metadata.customer_email ?? "",
-    customer: metadata.customer_name ?? "",
-    phone: metadata.customer_phone ?? "",
+    channel: metadata.channel ?? '',
+    email: metadata.customer_email ?? '',
+    customer: metadata.customer_name ?? '',
+    phone: metadata.customer_phone ?? '',
     amt: metadata.deposit_amount ?? amount,
   };
 
   // Remove empty values to keep the payload minimal
   for (const key of Object.keys(compactMetadata)) {
     const value = compactMetadata[key];
-    if (value === "" || value === undefined) {
+    if (value === '' || value === undefined) {
       delete compactMetadata[key];
     }
   }
@@ -159,7 +164,7 @@ function buildCustomId(metadata: PayPalOrderMetadata, amount: number): string {
   const metadataString = JSON.stringify(compactMetadata);
 
   if (metadataString.length > 127) {
-    throw new Error("PayPal custom_id exceeds 127 character limit");
+    throw new Error('PayPal custom_id exceeds 127 character limit');
   }
 
   return metadataString;
@@ -174,11 +179,11 @@ export async function createPayPalOrder(
   const metadataString = buildCustomId(metadata, amount);
 
   const body = {
-    intent: "CAPTURE",
+    intent: 'CAPTURE',
     purchase_units: [
       {
         amount: {
-          currency_code: "USD",
+          currency_code: 'USD',
           value: amountValue,
         },
         description,
@@ -186,16 +191,16 @@ export async function createPayPalOrder(
       },
     ],
     application_context: {
-      user_action: "PAY_NOW",
-      shipping_preference: "NO_SHIPPING",
-      brand_name: "Exotic Bulldog Legacy",
+      user_action: 'PAY_NOW',
+      shipping_preference: 'NO_SHIPPING',
+      brand_name: 'Exotic Bulldog Legacy',
       return_url: returnUrl,
       cancel_url: cancelUrl,
     },
   };
 
-  return paypalFetch<PayPalCreateOrderResponse>("/v2/checkout/orders", {
-    method: "POST",
+  return paypalFetch<PayPalCreateOrderResponse>('/v2/checkout/orders', {
+    method: 'POST',
     body,
     requestId: requestId ?? crypto.randomUUID(),
   });
@@ -212,15 +217,13 @@ export async function capturePayPalOrder(
   const { orderId, requestId } = options;
 
   return paypalFetch<PayPalCaptureResponse>(`/v2/checkout/orders/${orderId}/capture`, {
-    method: "POST",
-    body: "{}",
+    method: 'POST',
+    body: '{}',
     requestId: requestId ?? crypto.randomUUID(),
   });
 }
 
-export async function getPayPalOrder(
-  orderId: string,
-): Promise<PayPalCreateOrderResponse> {
+export async function getPayPalOrder(orderId: string): Promise<PayPalCreateOrderResponse> {
   return paypalFetch<PayPalCreateOrderResponse>(`/v2/checkout/orders/${orderId}`);
 }
 

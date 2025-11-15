@@ -1,14 +1,14 @@
-import { ContactForm } from "@/components/contact-form";
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { ContactCards } from "@/components/contact-cards";
-import { CONTACT_CARDS } from "@/lib/config/contact";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { ContactForm } from '@/components/contact-form';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { ContactCards } from '@/components/contact-cards';
+import { CONTACT_CARDS } from '@/lib/config/contact';
+import { buildMetadata } from '@/lib/seo/metadata';
 
 export const metadata = buildMetadata({
-  title: "Contact Exotic Bulldog Legacy",
+  title: 'Contact Exotic Bulldog Legacy',
   description:
-    "Call, text, or message Exotic Bulldog Legacy to plan your French or English bulldog adoption, book kennel visits, or ask health questions.",
-  path: "/contact",
+    'Call, text, or message Exotic Bulldog Legacy to plan your French or English bulldog adoption, book kennel visits, or ask health questions.',
+  path: '/contact',
 });
 
 export default function ContactPage() {
@@ -16,8 +16,8 @@ export default function ContactPage() {
     <div className="mx-auto max-w-4xl space-y-12 px-6 py-12">
       <Breadcrumbs
         items={[
-          { label: "Home", href: "/" },
-          { label: "Contact", href: "/contact" },
+          { label: 'Home', href: '/' },
+          { label: 'Contact', href: '/contact' },
         ]}
       />
       <header className="space-y-3">
@@ -26,8 +26,8 @@ export default function ContactPage() {
           Let’s plan your bulldog match
         </h1>
         <p className="text-sm text-muted">
-          Send an inquiry or tap the quick actions in the contact bar. Share a bit about your family,
-          desired timing, and any must-have traits so we can recommend the right puppy.
+          Send an inquiry or tap the quick actions in the contact bar. Share a bit about your
+          family, desired timing, and any must-have traits so we can recommend the right puppy.
         </p>
       </header>
 
@@ -35,10 +35,10 @@ export default function ContactPage() {
 
       <ContactForm
         heading={{
-          eyebrow: "Inquiry",
-          title: "Send an introduction",
+          eyebrow: 'Inquiry',
+          title: 'Send an introduction',
           description:
-            "Let us know the puppy you’re eyeing, your preferred timeline, and how you’d like us to connect.",
+            'Let us know the puppy you’re eyeing, your preferred timeline, and how you’d like us to connect.',
         }}
       />
     </div>

@@ -5,12 +5,12 @@
  * events before they are processed.
  */
 
-import { getPayPalAccessToken, getPayPalApiBaseUrl } from "./client";
+import { getPayPalAccessToken, getPayPalApiBaseUrl } from './client';
 import type {
   PayPalWebhookEvent,
   PayPalWebhookVerificationPayload,
   PayPalWebhookVerificationResponse,
-} from "./types";
+} from './types';
 
 export interface VerifyWebhookSignatureParams {
   authAlgo: string;
@@ -40,10 +40,10 @@ export async function verifyPayPalWebhookSignature(
   const response = await fetch(
     `${getPayPalApiBaseUrl()}/v1/notifications/verify-webhook-signature`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     },
@@ -57,5 +57,5 @@ export async function verifyPayPalWebhookSignature(
   }
 
   const data = (await response.json()) as PayPalWebhookVerificationResponse;
-  return data.verification_status === "SUCCESS";
+  return data.verification_status === 'SUCCESS';
 }

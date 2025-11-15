@@ -1,6 +1,6 @@
-import { Resend } from "resend";
-import { generateCustomerConfirmationEmail } from "./simple-templates";
-import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "./delivery-control";
+import { Resend } from 'resend';
+import { generateCustomerConfirmationEmail } from './simple-templates';
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from './delivery-control';
 
 // Create a factory function for better testability
 function createResendClient() {
@@ -21,10 +21,7 @@ interface CustomerConfirmationParams {
   email: string;
 }
 
-export async function sendCustomerConfirmation({
-  name,
-  email,
-}: CustomerConfirmationParams) {
+export async function sendCustomerConfirmation({ name, email }: CustomerConfirmationParams) {
   if (!shouldSendTransactionalEmails()) {
     console.info(
       `[Email] Skipping customer confirmation (delivery disabled: ${getEmailDeliveryReason()})`,
@@ -34,21 +31,21 @@ export async function sendCustomerConfirmation({
 
   try {
     const { data, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
       to: [email],
       subject: "Your Exotic Bulldog Legacy Inquiry - We'll Be in Touch Soon! 🐾",
       html: generateCustomerConfirmationEmail(name),
     });
 
     if (error) {
-      console.error("Failed to send customer confirmation email:", error);
+      console.error('Failed to send customer confirmation email:', error);
       throw error;
     }
 
-    console.log("✅ Customer confirmation email sent successfully:", data);
+    console.log('✅ Customer confirmation email sent successfully:', data);
     return { success: true, data };
   } catch (error) {
-    console.error("Error sending customer confirmation email:", error);
+    console.error('Error sending customer confirmation email:', error);
     throw error;
   }
 }

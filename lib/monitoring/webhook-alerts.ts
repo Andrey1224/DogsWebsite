@@ -11,15 +11,18 @@
  * - Automatic throttling to prevent alert spam
  */
 
-import { Resend } from "resend";
-import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "@/lib/emails/delivery-control";
+import { Resend } from 'resend';
+import {
+  getEmailDeliveryReason,
+  shouldSendTransactionalEmails,
+} from '@/lib/emails/delivery-control';
 
 // Alert configuration
 const ALERT_CONFIG = {
   // Minimum time between alerts (in minutes) to prevent spam
   THROTTLE_MINUTES: 15,
   // Email recipients for critical alerts
-  ALERT_EMAILS: process.env.ALERT_EMAILS?.split(",") || [process.env.OWNER_EMAIL],
+  ALERT_EMAILS: process.env.ALERT_EMAILS?.split(',') || [process.env.OWNER_EMAIL],
   // Slack webhook URL (optional)
   SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
 };
@@ -28,7 +31,7 @@ const ALERT_CONFIG = {
 const lastAlertTime = new Map<string, number>();
 
 interface WebhookErrorContext {
-  provider: "stripe" | "paypal";
+  provider: 'stripe' | 'paypal';
   eventType: string;
   eventId: string;
   error: string;
@@ -48,7 +51,7 @@ export async function alertWebhookError(context: WebhookErrorContext): Promise<v
 
   if (lastAlert && now - lastAlert < ALERT_CONFIG.THROTTLE_MINUTES * 60 * 1000) {
     console.log(
-      `[Webhook Alert] Throttled: ${throttleKey} (last alert ${Math.round((now - lastAlert) / 60000)}m ago)`
+      `[Webhook Alert] Throttled: ${throttleKey} (last alert ${Math.round((now - lastAlert) / 60000)}m ago)`,
     );
     return;
   }
@@ -80,8 +83,8 @@ export async function alertWebhookError(context: WebhookErrorContext): Promise<v
 
   // Log results
   results.forEach((result, index) => {
-    const channel = index === 0 ? "email" : "slack";
-    if (result.status === "fulfilled") {
+    const channel = index === 0 ? 'email' : 'slack';
+    if (result.status === 'fulfilled') {
       console.log(`[Webhook Alert] ✅ ${channel} alert sent for ${throttleKey}`);
     } else {
       console.error(`[Webhook Alert] ❌ Failed to send ${channel} alert:`, result.reason);
@@ -159,7 +162,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
                 <span class="value">${context.puppyId}</span>
             </div>
             `
-                : ""
+                : ''
             }
             ${
               context.customerEmail
@@ -169,7 +172,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
                 <span class="value">${escapeHtml(context.customerEmail)}</span>
             </div>
             `
-                : ""
+                : ''
             }
         </div>
 
@@ -180,7 +183,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
                 <li>Review webhook event logs in Supabase database</li>
                 <li>Verify ${context.provider.toUpperCase()} webhook configuration</li>
                 <li>Check for any service outages or API changes</li>
-                <li>If customer payment was affected, contact customer: ${context.customerEmail || "N/A"}</li>
+                <li>If customer payment was affected, contact customer: ${context.customerEmail || 'N/A'}</li>
             </ol>
         </div>
 
@@ -194,7 +197,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
   `;
 
   await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "alerts@exoticbulldoglegacy.com",
+    from: process.env.RESEND_FROM_EMAIL || 'alerts@exoticbulldoglegacy.com',
     to: ALERT_CONFIG.ALERT_EMAILS.filter((email): email is string => !!email),
     subject,
     html,
@@ -213,60 +216,60 @@ async function sendSlackAlert(context: WebhookErrorContext): Promise<void> {
     text: `🚨 Webhook Error: ${context.provider.toUpperCase()} - ${context.eventType}`,
     blocks: [
       {
-        type: "header",
+        type: 'header',
         text: {
-          type: "plain_text",
+          type: 'plain_text',
           text: `🚨 Webhook Processing Error`,
           emoji: true,
         },
       },
       {
-        type: "section",
+        type: 'section',
         fields: [
           {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: `*Provider:*\n${context.provider.toUpperCase()}`,
           },
           {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: `*Event Type:*\n${context.eventType}`,
           },
           {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: `*Event ID:*\n\`${context.eventId}\``,
           },
           {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: `*Timestamp:*\n${context.timestamp.toISOString()}`,
           },
         ],
       },
       {
-        type: "section",
+        type: 'section',
         text: {
-          type: "mrkdwn",
+          type: 'mrkdwn',
           text: `*Error:*\n\`\`\`${context.error}\`\`\``,
         },
       },
       ...(context.customerEmail
         ? [
             {
-              type: "section",
+              type: 'section',
               text: {
-                type: "mrkdwn",
+                type: 'mrkdwn',
                 text: `*Customer Email:* ${context.customerEmail}`,
               },
             },
           ]
         : []),
       {
-        type: "actions",
+        type: 'actions',
         elements: [
           {
-            type: "button",
+            type: 'button',
             text: {
-              type: "plain_text",
-              text: "View Health Check",
+              type: 'plain_text',
+              text: 'View Health Check',
               emoji: true,
             },
             url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/health/webhooks`,
@@ -277,9 +280,9 @@ async function sendSlackAlert(context: WebhookErrorContext): Promise<void> {
   };
 
   const response = await fetch(ALERT_CONFIG.SLACK_WEBHOOK_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
@@ -294,11 +297,11 @@ async function sendSlackAlert(context: WebhookErrorContext): Promise<void> {
  */
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
   };
   return text.replace(/[&<>"']/g, (char) => map[char]);
 }
@@ -308,8 +311,8 @@ function escapeHtml(text: string): string {
  * Can be used to calculate error rates over time
  */
 export async function trackWebhookSuccess(
-  provider: "stripe" | "paypal",
-  eventType: string
+  provider: 'stripe' | 'paypal',
+  eventType: string,
 ): Promise<void> {
   // Future: Store success metrics in database or external monitoring service
   // For now, just log for observability

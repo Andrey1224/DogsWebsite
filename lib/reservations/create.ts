@@ -14,9 +14,7 @@ import type {
   PaymentProvider,
   ReservationCreationErrorCode,
 } from './types';
-import {
-  enhancedCreateReservationParamsSchema,
-} from './schema';
+import { enhancedCreateReservationParamsSchema } from './schema';
 import { ReservationQueries, WebhookEventQueries } from './queries';
 import { idempotencyManager } from './idempotency';
 import { createSupabaseClient } from '@/lib/supabase/client';
@@ -25,7 +23,7 @@ import { formatCentsToUSD } from '@/lib/utils/currency';
 export class ReservationCreationError extends Error {
   constructor(
     message: string,
-    public code: ReservationCreationErrorCode
+    public code: ReservationCreationErrorCode,
   ) {
     super(message);
     this.name = 'ReservationCreationError';
@@ -41,7 +39,7 @@ export class ReservationCreationService {
    */
   static async createReservation(
     params: CreateReservationParams,
-    webhookEvent?: CreateWebhookEventParams
+    webhookEvent?: CreateWebhookEventParams,
   ): Promise<CreateReservationResponse> {
     try {
       // Validate input parameters
@@ -50,7 +48,7 @@ export class ReservationCreationService {
         const errorMessages = validationResult.error.issues.map((e) => e.message).join(', ');
         throw new ReservationCreationError(
           `Validation error: ${errorMessages}`,
-          'VALIDATION_ERROR'
+          'VALIDATION_ERROR',
         );
       }
 
@@ -60,7 +58,7 @@ export class ReservationCreationService {
       // Check idempotency - prevent duplicate reservations
       const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
         validatedParams.paymentProvider,
-        validatedParams.externalPaymentId
+        validatedParams.externalPaymentId,
       );
 
       if (idempotencyCheck.exists) {
@@ -70,7 +68,7 @@ export class ReservationCreationService {
 
         const existingReservation = await ReservationQueries.getByPayment(
           validatedParams.paymentProvider,
-          validatedParams.externalPaymentId
+          validatedParams.externalPaymentId,
         );
 
         if (existingReservation?.id) {
@@ -83,8 +81,7 @@ export class ReservationCreationService {
       const sanitizedCustomerPhone = validatedParams.customerPhone?.trim() || null;
       const sanitizedChannel = validatedParams.channel || 'site';
       const sanitizedNotes = validatedParams.notes?.trim() || null;
-      const expiresAt =
-        validatedParams.expiresAt?.toISOString() || this.calculateDefaultExpiry();
+      const expiresAt = validatedParams.expiresAt?.toISOString() || this.calculateDefaultExpiry();
 
       // Create webhook event if provided
       let createdWebhookEvent: WebhookEvent | null = null;
@@ -93,7 +90,7 @@ export class ReservationCreationService {
         if (!webhookResult.success) {
           throw new ReservationCreationError(
             `Failed to create webhook event: ${webhookResult.error}`,
-            'DATABASE_ERROR'
+            'DATABASE_ERROR',
           );
         }
         createdWebhookEvent = webhookResult.webhookEvent || null;
@@ -125,7 +122,7 @@ export class ReservationCreationService {
         if (normalizedMessage.includes('PUPPY_NOT_AVAILABLE')) {
           throw new ReservationCreationError(
             'Puppy is no longer available for reservation',
-            'RACE_CONDITION_LOST'
+            'RACE_CONDITION_LOST',
           );
         }
 
@@ -136,7 +133,7 @@ export class ReservationCreationService {
         if (normalizedMessage.includes('DEPOSIT_EXCEEDS_PRICE')) {
           throw new ReservationCreationError(
             'Deposit amount cannot exceed puppy price',
-            'VALIDATION_ERROR'
+            'VALIDATION_ERROR',
           );
         }
 
@@ -144,13 +141,12 @@ export class ReservationCreationService {
       }
 
       const reservationData = data as Partial<Reservation> & { reservation_id?: string };
-      const reservationId =
-        reservationData.id ?? reservationData.reservation_id;
+      const reservationId = reservationData.id ?? reservationData.reservation_id;
 
       if (!reservationId) {
         throw new ReservationCreationError(
           'Reservation ID not returned by transaction',
-          'DATABASE_ERROR'
+          'DATABASE_ERROR',
         );
       }
 
@@ -170,7 +166,7 @@ export class ReservationCreationService {
       console.error('Unexpected error in createReservation:', error);
       throw new ReservationCreationError(
         error instanceof Error ? error.message : 'Unknown error occurred',
-        'DATABASE_ERROR'
+        'DATABASE_ERROR',
       );
     }
   }
@@ -186,7 +182,7 @@ export class ReservationCreationService {
     customerName?: string,
     customerPhone?: string,
     amount?: number,
-    webhookEvent?: CreateWebhookEventParams
+    webhookEvent?: CreateWebhookEventParams,
   ): Promise<CreateReservationResponse> {
     const params: CreateReservationParams = {
       puppyId,
@@ -209,7 +205,7 @@ export class ReservationCreationService {
   static async createWithConfirmedPayment(
     params: CreateReservationParams,
     paymentAmount: number,
-    webhookEvent?: CreateWebhookEventParams
+    webhookEvent?: CreateWebhookEventParams,
   ): Promise<CreateReservationResponse> {
     // First create as pending
     const { reservationId } = await this.createReservation(params, webhookEvent);
@@ -241,7 +237,7 @@ export class ReservationCreationService {
   private static validateCustomerInfo(
     email: string,
     name?: string,
-    phone?: string
+    phone?: string,
   ): {
     valid: boolean;
     error?: string;
@@ -286,7 +282,7 @@ export class ReservationCreationService {
   private static async checkDuplicateReservation(
     puppyId: string,
     customerEmail: string,
-    timeWindowHours: number = 1
+    timeWindowHours: number = 1,
   ): Promise<Reservation | null> {
     const cutoffTime = new Date();
     cutoffTime.setHours(cutoffTime.getHours() - timeWindowHours);
@@ -315,13 +311,16 @@ export class ReservationCreationService {
   /**
    * Generate reservation confirmation data
    */
-  static generateConfirmationData(reservation: Reservation, puppy: {
-    name?: string;
-    breed_id?: string;
-    price?: number;
-    gender?: string;
-    birth_date?: string;
-  }) {
+  static generateConfirmationData(
+    reservation: Reservation,
+    puppy: {
+      name?: string;
+      breed_id?: string;
+      price?: number;
+      gender?: string;
+      birth_date?: string;
+    },
+  ) {
     return {
       reservationId: reservation.id,
       puppyName: puppy?.name || 'Unknown Puppy',
@@ -334,7 +333,9 @@ export class ReservationCreationService {
       createdAt: reservation.created_at,
       puppyDetails: {
         breed: puppy?.breed_id,
-        price: puppy?.price ? formatCentsToUSD(Math.round(puppy.price * 100)) : 'Price not available',
+        price: puppy?.price
+          ? formatCentsToUSD(Math.round(puppy.price * 100))
+          : 'Price not available',
         gender: puppy?.gender,
         birthDate: puppy?.birth_date,
       },
@@ -386,7 +387,7 @@ export class ReservationCreationService {
  */
 export async function createReservation(
   params: CreateReservationParams,
-  webhookEvent?: CreateWebhookEventParams
+  webhookEvent?: CreateWebhookEventParams,
 ): Promise<CreateReservationResponse> {
   return ReservationCreationService.createReservation(params, webhookEvent);
 }
@@ -402,7 +403,7 @@ export async function createReservationFromPayment(
   customerName?: string,
   customerPhone?: string,
   amount?: number,
-  webhookEvent?: CreateWebhookEventParams
+  webhookEvent?: CreateWebhookEventParams,
 ): Promise<CreateReservationResponse> {
   return ReservationCreationService.createFromPayment(
     paymentProvider,
@@ -412,7 +413,7 @@ export async function createReservationFromPayment(
     customerName,
     customerPhone,
     amount,
-    webhookEvent
+    webhookEvent,
   );
 }
 
@@ -422,11 +423,7 @@ export async function createReservationFromPayment(
 export async function createConfirmedReservation(
   params: CreateReservationParams,
   paymentAmount: number,
-  webhookEvent?: CreateWebhookEventParams
+  webhookEvent?: CreateWebhookEventParams,
 ): Promise<CreateReservationResponse> {
-  return ReservationCreationService.createWithConfirmedPayment(
-    params,
-    paymentAmount,
-    webhookEvent
-  );
+  return ReservationCreationService.createWithConfirmedPayment(params, paymentAmount, webhookEvent);
 }

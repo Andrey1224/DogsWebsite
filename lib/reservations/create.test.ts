@@ -11,9 +11,8 @@ import { ReservationCreationError, ReservationCreationService } from './create';
 import type { CreateReservationParams, Reservation } from './types';
 import type { SupabaseFixture } from '../../tests/fixtures/supabase-client-fixture';
 
-const supabaseFixture =
-  (globalThis as { __SUPABASE_FIXTURE__?: SupabaseFixture })
-    .__SUPABASE_FIXTURE__;
+const supabaseFixture = (globalThis as { __SUPABASE_FIXTURE__?: SupabaseFixture })
+  .__SUPABASE_FIXTURE__;
 
 vi.mock('@/lib/supabase/client', () => ({
   createSupabaseClient: () => supabaseFixture,
@@ -66,7 +65,9 @@ describe('ReservationCreationService', () => {
   }
 
   beforeEach(async () => {
-    const { ReservationQueries, WebhookEventQueries, TransactionQueries } = await import('./queries');
+    const { ReservationQueries, WebhookEventQueries, TransactionQueries } = await import(
+      './queries'
+    );
     Object.values(ReservationQueries).forEach((mockFn) => mockFn.mockReset());
     Object.values(WebhookEventQueries).forEach((mockFn) => mockFn.mockReset());
     Object.values(TransactionQueries).forEach((mockFn) => mockFn.mockReset?.());
@@ -170,12 +171,12 @@ describe('ReservationCreationService', () => {
         error: { message: 'Database error' },
       }));
 
-      await expect(
-        ReservationCreationService.createReservation(validParams)
-      ).rejects.toMatchObject({
-        code: 'DATABASE_ERROR',
-        message: expect.any(String),
-      });
+      await expect(ReservationCreationService.createReservation(validParams)).rejects.toMatchObject(
+        {
+          code: 'DATABASE_ERROR',
+          message: expect.any(String),
+        },
+      );
       expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
 
@@ -193,12 +194,12 @@ describe('ReservationCreationService', () => {
         error: { message: 'DEPOSIT_EXCEEDS_PRICE' },
       }));
 
-      await expect(
-        ReservationCreationService.createReservation(validParams)
-      ).rejects.toMatchObject({
-        code: 'VALIDATION_ERROR',
-        message: expect.stringContaining('cannot exceed puppy price'),
-      });
+      await expect(ReservationCreationService.createReservation(validParams)).rejects.toMatchObject(
+        {
+          code: 'VALIDATION_ERROR',
+          message: expect.stringContaining('cannot exceed puppy price'),
+        },
+      );
       expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
   });
@@ -316,7 +317,7 @@ describe('ReservationCreationService', () => {
       };
 
       await expect(
-        ReservationCreationService.createReservation(invalidParams)
+        ReservationCreationService.createReservation(invalidParams),
       ).rejects.toMatchObject({
         code: 'VALIDATION_ERROR',
         message: expect.stringContaining('Validation error'),
@@ -331,7 +332,7 @@ describe('ReservationCreationService', () => {
       };
 
       await expect(
-        ReservationCreationService.createReservation(invalidParams)
+        ReservationCreationService.createReservation(invalidParams),
       ).rejects.toMatchObject({
         code: 'VALIDATION_ERROR',
         message: expect.stringContaining('Invalid payment ID format'),
@@ -363,10 +364,7 @@ describe('ReservationCreationService', () => {
       );
 
       expect(result).toEqual({ reservationId: 'paid-reservation' });
-      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith(
-        'paid-reservation',
-        'paid',
-      );
+      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('paid-reservation', 'paid');
     });
 
     it('should leave status unchanged when payment amount differs', async () => {
@@ -472,7 +470,10 @@ describe('ReservationCreationService', () => {
         status: 'pending',
         expires_at: yesterday.toISOString(),
       } as Reservation);
-      (ReservationQueries.updateStatus as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'res_expire', status: 'expired' } as Reservation);
+      (ReservationQueries.updateStatus as ReturnType<typeof vi.fn>).mockResolvedValue({
+        id: 'res_expire',
+        status: 'expired',
+      } as Reservation);
 
       const result = await ReservationCreationService.processExpiration('res_expire');
 
@@ -495,7 +496,7 @@ describe('ReservationCreationService', () => {
       expect(shouldExpire).toBe(false);
     });
 
-  it('bulk expires pending reservations via query helper', async () => {
+    it('bulk expires pending reservations via query helper', async () => {
       const { ReservationQueries } = await import('./queries');
       (ReservationQueries.expireOldPending as ReturnType<typeof vi.fn>).mockResolvedValue(3);
 

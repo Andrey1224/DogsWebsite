@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useAnalytics } from "@/components/analytics-provider";
+import { useAnalytics } from '@/components/analytics-provider';
 
 export function ConsentBanner() {
   const { consent, grantConsent, denyConsent } = useAnalytics();
 
-  if (consent !== "unknown") {
+  if (consent !== 'unknown') {
     return null;
   }
 
@@ -15,7 +15,8 @@ export function ConsentBanner() {
         <div>
           <p className="font-semibold text-text">Cookies & analytics</p>
           <p className="mt-1 text-xs text-muted">
-            We use Google Analytics and Meta Pixel to measure interest in our puppies. Accept to enable tracking or decline to stay anonymous.
+            We use Google Analytics and Meta Pixel to measure interest in our puppies. Accept to
+            enable tracking or decline to stay anonymous.
           </p>
         </div>
         <div className="flex flex-shrink-0 gap-2">

@@ -1,5 +1,5 @@
 export type LoginState = {
-  status: "idle" | "error";
+  status: 'idle' | 'error';
   errors?: {
     login?: string[];
     password?: string[];
@@ -8,5 +8,5 @@ export type LoginState = {
 };
 
 export const initialLoginState: LoginState = {
-  status: "idle",
+  status: 'idle',
 };

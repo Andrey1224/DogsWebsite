@@ -3,9 +3,7 @@
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-6 py-16 text-center">
-      <h1 className="text-2xl font-semibold text-text">
-        Unable to load puppies right now
-      </h1>
+      <h1 className="text-2xl font-semibold text-text">Unable to load puppies right now</h1>
       <p className="text-sm text-muted">
         {error.message || 'Something went wrong while fetching the catalog.'}
       </p>

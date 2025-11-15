@@ -52,7 +52,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Prettier
+        run: npm run format
 
       - name: Lint
         run: npm run lint
@@ -66,11 +69,11 @@ jobs:
       - name: Unit tests
         run: npm run test
 
+      - name: Build
+        run: npm run build
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: E2E tests
         run: npm run e2e
-
-      - name: Build
-        run: npm run build

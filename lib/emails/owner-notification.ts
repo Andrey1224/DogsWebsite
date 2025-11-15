@@ -1,7 +1,7 @@
-import { Resend } from "resend";
-import { generateOwnerNotificationEmail } from "./simple-templates";
-import { getEmailDeliveryReason, shouldSendTransactionalEmails } from "./delivery-control";
-import type { Inquiry } from "@/lib/supabase/types";
+import { Resend } from 'resend';
+import { generateOwnerNotificationEmail } from './simple-templates';
+import { getEmailDeliveryReason, shouldSendTransactionalEmails } from './delivery-control';
+import type { Inquiry } from '@/lib/supabase/types';
 
 // Create a factory function for better testability
 function createResendClient() {
@@ -30,9 +30,7 @@ interface OwnerNotificationParams {
   };
 }
 
-export async function sendOwnerNotification({
-  inquiry,
-}: OwnerNotificationParams) {
+export async function sendOwnerNotification({ inquiry }: OwnerNotificationParams) {
   if (!shouldSendTransactionalEmails()) {
     console.info(
       `[Email] Skipping owner notification (delivery disabled: ${getEmailDeliveryReason()})`,
@@ -42,8 +40,8 @@ export async function sendOwnerNotification({
 
   try {
     const { data, error } = await getResendClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
-      to: [process.env.OWNER_EMAIL || "nepod77@gmail.com"],
+      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+      to: [process.env.OWNER_EMAIL || 'nepod77@gmail.com'],
       subject: `🐾 New Inquiry: ${inquiry.name} - Exotic Bulldog Legacy`,
       replyTo: inquiry.email,
       html: generateOwnerNotificationEmail({
@@ -54,19 +52,19 @@ export async function sendOwnerNotification({
         puppy_id: inquiry.puppy_id,
         puppy_slug: inquiry.puppy_slug,
         timestamp: new Date(inquiry.created_at).toLocaleString(),
-        source: inquiry.source || "form",
+        source: inquiry.source || 'form',
       }),
     });
 
     if (error) {
-      console.error("Failed to send owner notification email:", error);
+      console.error('Failed to send owner notification email:', error);
       throw error;
     }
 
-    console.log("✅ Owner notification email sent successfully:", data);
+    console.log('✅ Owner notification email sent successfully:', data);
     return { success: true, data };
   } catch (error) {
-    console.error("Error sending owner notification email:", error);
+    console.error('Error sending owner notification email:', error);
     throw error;
   }
 }
@@ -74,14 +72,14 @@ export async function sendOwnerNotification({
 export async function sendOwnerNotificationRaw(inquiry: Inquiry) {
   return sendOwnerNotification({
     inquiry: {
-      name: inquiry.name || "Unknown",
-      email: inquiry.email || "unknown@example.com",
+      name: inquiry.name || 'Unknown',
+      email: inquiry.email || 'unknown@example.com',
       phone: inquiry.phone || undefined,
-      message: inquiry.message || "",
+      message: inquiry.message || '',
       puppy_id: inquiry.puppy_id || undefined,
       puppy_slug: undefined, // We'll need to fetch this from puppy table if needed
       created_at: inquiry.created_at || new Date().toISOString(),
-      source: inquiry.source || "form",
+      source: inquiry.source || 'form',
     },
   });
 }

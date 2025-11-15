@@ -39,7 +39,10 @@ function createSupabaseStub() {
             eq: builder.eq,
             in: builder.in,
             or: builder.or,
-            single: async () => ({ data: filtered[0] ?? null, error: filtered[0] ? null : { message: 'not found' } }),
+            single: async () => ({
+              data: filtered[0] ?? null,
+              error: filtered[0] ? null : { message: 'not found' },
+            }),
             order: vi.fn(() => ({
               data: filtered,
               error: null,
@@ -67,7 +70,9 @@ function createSupabaseStub() {
         })),
         ilike: vi.fn((field: string, value: string) => {
           const normalized = value.toLowerCase();
-          const filtered = state.filter((row) => String(row[field] ?? '').toLowerCase() === normalized);
+          const filtered = state.filter(
+            (row) => String(row[field] ?? '').toLowerCase() === normalized,
+          );
           return {
             order: vi.fn(() => ({
               data: filtered,
@@ -81,7 +86,10 @@ function createSupabaseStub() {
           limit: vi.fn(async () => ({ data: state, error: null })),
           range: vi.fn(() => ({ data: state, error: null })),
         })),
-        single: async () => ({ data: state[0] ?? null, error: state[0] ? null : { message: 'not found' } }),
+        single: async () => ({
+          data: state[0] ?? null,
+          error: state[0] ? null : { message: 'not found' },
+        }),
         maybeSingle: async () => ({ data: state[0] ?? null, error: null }),
       };
       return builder;
@@ -99,7 +107,10 @@ function createSupabaseStub() {
           }
           return {
             select: vi.fn(() => ({
-              single: async () => ({ data: updated, error: updated ? null : { message: 'not found' } }),
+              single: async () => ({
+                data: updated,
+                error: updated ? null : { message: 'not found' },
+              }),
             })),
             error: null,
           };
@@ -123,12 +134,14 @@ function createSupabaseStub() {
     }
     if (fn === 'get_reservation_summary') {
       return {
-        data: [{
-          total_reservations: 2,
-          pending_reservations: 1,
-          paid_reservations: 1,
-          total_amount: '1500',
-        }],
+        data: [
+          {
+            total_reservations: 2,
+            pending_reservations: 1,
+            paid_reservations: 1,
+            total_amount: '1500',
+          },
+        ],
         error: null,
       };
     }
@@ -149,13 +162,15 @@ function createSupabaseStub() {
 describe('ReservationQueries', () => {
   let supabaseStub = createSupabaseStub();
 
-beforeEach(async () => {
-  Object.assign(process.env, BASE_ENV);
-  vi.resetModules();
-  supabaseStub = createSupabaseStub();
-  const supabaseModule = await import('@/lib/supabase/client');
-  vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
-});
+  beforeEach(async () => {
+    Object.assign(process.env, BASE_ENV);
+    vi.resetModules();
+    supabaseStub = createSupabaseStub();
+    const supabaseModule = await import('@/lib/supabase/client');
+    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    );
+  });
 
   afterEach(() => {
     Object.assign(process.env, BASE_ENV);
@@ -317,14 +332,16 @@ beforeEach(async () => {
 describe('PuppyQueries', () => {
   let supabaseStub = createSupabaseStub();
 
-beforeEach(async () => {
-  vi.restoreAllMocks();
-  vi.resetModules();
-  Object.assign(process.env, BASE_ENV);
-  supabaseStub = createSupabaseStub();
-  const supabaseModule = await import('@/lib/supabase/client');
-  vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
-});
+  beforeEach(async () => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+    Object.assign(process.env, BASE_ENV);
+    supabaseStub = createSupabaseStub();
+    const supabaseModule = await import('@/lib/supabase/client');
+    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    );
+  });
 
   it('returns false when puppy is reserved', async () => {
     supabaseStub.tables.set('puppies', [{ id: 'puppy-1', status: 'reserved' }]);
@@ -338,7 +355,7 @@ beforeEach(async () => {
   it('returns false when puppy has active reservations', async () => {
     supabaseStub.tables.set('puppies', [{ id: 'puppy-2', status: 'available' }]);
     supabaseStub.tables.set('reservations', [
-      { id: 'res-1', puppy_id: 'puppy-2', status: 'pending' }
+      { id: 'res-1', puppy_id: 'puppy-2', status: 'pending' },
     ]);
 
     const { PuppyQueries } = await import('./queries');
@@ -364,7 +381,7 @@ beforeEach(async () => {
       price: 3000,
       gender: 'male',
       birth_date: '2024-01-01',
-      description: 'A lovely puppy'
+      description: 'A lovely puppy',
     };
     supabaseStub.tables.set('puppies', [puppy]);
 
@@ -391,7 +408,9 @@ describe('WebhookEventQueries', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
+    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    );
   });
 
   it('creates and retrieves webhook event by id', async () => {
@@ -423,18 +442,20 @@ describe('WebhookEventQueries', () => {
   it('retrieves webhook event by provider and event id', async () => {
     const { WebhookEventQueries } = await import('./queries');
 
-    supabaseStub.tables.set('webhook_events', [{
-      id: 1,
-      provider: 'paypal',
-      event_id: 'WH-456',
-      event_type: 'PAYMENT.CAPTURE.COMPLETED',
-      payload: {},
-      processed: false,
-      processing_started_at: null,
-      processed_at: null,
-      processing_error: null,
-      reservation_id: null,
-    }]);
+    supabaseStub.tables.set('webhook_events', [
+      {
+        id: 1,
+        provider: 'paypal',
+        event_id: 'WH-456',
+        event_type: 'PAYMENT.CAPTURE.COMPLETED',
+        payload: {},
+        processed: false,
+        processing_started_at: null,
+        processed_at: null,
+        processing_error: null,
+        reservation_id: null,
+      },
+    ]);
 
     const fetched = await WebhookEventQueries.getByProviderEvent('paypal', 'WH-456');
     expect(fetched).toMatchObject({ provider: 'paypal', event_id: 'WH-456' });
@@ -477,18 +498,20 @@ describe('WebhookEventQueries', () => {
   it('marks webhook as processed with reservation id', async () => {
     const { WebhookEventQueries } = await import('./queries');
 
-    supabaseStub.tables.set('webhook_events', [{
-      id: 42,
-      provider: 'stripe',
-      event_id: 'evt_mark',
-      event_type: 'test',
-      payload: {},
-      processed: false,
-      processing_started_at: null,
-      processed_at: null,
-      processing_error: null,
-      reservation_id: null,
-    }]);
+    supabaseStub.tables.set('webhook_events', [
+      {
+        id: 42,
+        provider: 'stripe',
+        event_id: 'evt_mark',
+        event_type: 'test',
+        payload: {},
+        processed: false,
+        processing_started_at: null,
+        processed_at: null,
+        processing_error: null,
+        reservation_id: null,
+      },
+    ]);
 
     const result = await WebhookEventQueries.markAsProcessed(42, 'res_123');
     expect(result).toBe(true);
@@ -497,18 +520,20 @@ describe('WebhookEventQueries', () => {
   it('marks webhook as failed with error message', async () => {
     const { WebhookEventQueries } = await import('./queries');
 
-    supabaseStub.tables.set('webhook_events', [{
-      id: 99,
-      provider: 'stripe',
-      event_id: 'evt_fail',
-      event_type: 'test',
-      payload: {},
-      processed: false,
-      processing_started_at: null,
-      processed_at: null,
-      processing_error: null,
-      reservation_id: null,
-    }]);
+    supabaseStub.tables.set('webhook_events', [
+      {
+        id: 99,
+        provider: 'stripe',
+        event_id: 'evt_fail',
+        event_type: 'test',
+        payload: {},
+        processed: false,
+        processing_started_at: null,
+        processed_at: null,
+        processing_error: null,
+        reservation_id: null,
+      },
+    ]);
 
     const result = await WebhookEventQueries.markAsFailed(99, 'timeout error');
     expect(result).toBe(true);
@@ -524,18 +549,20 @@ describe('WebhookEventQueries', () => {
   it('updates webhook event', async () => {
     const { WebhookEventQueries } = await import('./queries');
 
-    supabaseStub.tables.set('webhook_events', [{
-      id: 77,
-      provider: 'stripe',
-      event_id: 'evt_update',
-      event_type: 'test',
-      payload: {},
-      processed: false,
-      processing_started_at: null,
-      processed_at: null,
-      processing_error: null,
-      reservation_id: null,
-    }]);
+    supabaseStub.tables.set('webhook_events', [
+      {
+        id: 77,
+        provider: 'stripe',
+        event_id: 'evt_update',
+        event_type: 'test',
+        payload: {},
+        processed: false,
+        processing_started_at: null,
+        processed_at: null,
+        processing_error: null,
+        reservation_id: null,
+      },
+    ]);
 
     const updated = await WebhookEventQueries.update(77, { processed: true });
     expect(updated?.processed).toBe(true);
@@ -551,7 +578,9 @@ describe('ReservationQueries - Additional Coverage', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>);
+    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    );
   });
 
   it('retrieves reservations with puppy details', async () => {
@@ -564,7 +593,7 @@ describe('ReservationQueries - Additional Coverage', () => {
         customer_email: 'test@example.com',
         customer_name: 'Test',
         status: 'paid',
-      }
+      },
     ]);
 
     const result = await ReservationQueries.getWithPuppy(10, 0);
@@ -574,10 +603,13 @@ describe('ReservationQueries - Additional Coverage', () => {
   it('returns empty array when reservation summary RPC returns no data', async () => {
     const { ReservationQueries } = await import('./queries');
 
-    supabaseStub.register.set('get_reservation_summary', vi.fn(async () => ({
-      data: [],
-      error: null,
-    })));
+    supabaseStub.register.set(
+      'get_reservation_summary',
+      vi.fn(async () => ({
+        data: [],
+        error: null,
+      })),
+    );
 
     const summary = await ReservationQueries.getSummary('nonexistent');
     expect(summary).toEqual({

@@ -11,15 +11,16 @@
 Homepage updated with About Breeder, FAQ Preview, and Reviews Preview sections.  
 Improved SEO, accessibility, and CTA flow for production readiness.
 
-
 ## 🎯 Sprint Goals & KPIs
 
 ### Primary Objectives
+
 1. **Technical SEO** — Ensure indexability, structured data, and image optimization per `SPRINT_PLAN.md`
 2. **Trust Content** — Deliver `/policies`, `/faq`, `/reviews` pages aligned with `Spec1.md`
 3. **Local Presence** — Add accurate NAP, map, `LocalBusiness` schema, and Google Business Profile integration
 
 ### Target KPIs
+
 - ✅ Lighthouse SEO ≥ 90 (Mobile)
 - ✅ Rich Results Test passing for Organization, LocalBusiness, Product, FAQPage, MerchantReturnPolicy
 - 🟡 Google Search Console sitemap indexed ≥ 90% (pending production deployment)
@@ -30,9 +31,11 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 ## 📦 Deliverables Summary
 
 ### Phase 1: Technical SEO ✅
+
 **Status:** Complete (Day 1)
 
 **Delivered:**
+
 - Centralized SEO metadata helper (`lib/seo/metadata.ts`) with title, description, OG, Twitter Card support
 - Dynamic `app/robots.ts` and `app/sitemap.ts` (Next.js 15 native)
 - Removed deprecated `public/robots.txt`
@@ -41,6 +44,7 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 - All metadata updated across routes with canonical URLs
 
 **Files Created/Modified:**
+
 - `lib/seo/metadata.ts`
 - `app/robots.ts`
 - `app/sitemap.ts`
@@ -50,9 +54,11 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 ---
 
 ### Phase 2: Structured Data (JSON-LD) ✅
+
 **Status:** Complete (Day 2)
 
 **Delivered:**
+
 - Business configuration centralization (`lib/config/business.ts`)
 - JSON-LD schema generators (`lib/seo/structured-data.ts`):
   - `Organization` — Site-wide business identity
@@ -76,6 +82,7 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 | `/reviews` | Organization, ItemList, AggregateRating, BreadcrumbList |
 
 **Files Created/Modified:**
+
 - `lib/config/business.ts`
 - `lib/seo/structured-data.ts`
 - `components/json-ld.tsx`
@@ -85,9 +92,11 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 ---
 
 ### Phase 3: Trust Content ✅
+
 **Status:** Complete (Day 3)
 
 **Delivered:**
+
 - `/faq` — 10 questions covering health guarantees, delivery, care, breeding practices
 - `/policies` — Comprehensive sections: deposit, delivery, health guarantee, privacy, return policy
 - `/reviews` — 6 customer testimonials with local optimized photos (WebP ≤400KB)
@@ -101,11 +110,13 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 - All content validated against `Spec1.md` requirements
 
 **Content Notes:**
+
 - Review photos are **placeholder assets** pending final client imagery
 - Final images will be optimized (WebP/AVIF ≤400KB, 1600–1920px) before production release
 - FAQ content is draft quality; requires final client review before public launch
 
 **Files Created/Modified:**
+
 - `app/faq/page.tsx`
 - `app/policies/page.tsx`
 - `app/reviews/page.tsx`
@@ -116,9 +127,11 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 ---
 
 ### Phase 4: Local Presence ✅
+
 **Status:** Complete (Day 3–4)
 
 **Delivered:**
+
 - Google Maps embed with `loading="lazy"` in footer
 - Verified production coordinates match physical location:
   - **Address:** 95 County Road 1395, Falkville, AL 35622
@@ -131,20 +144,24 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 - Google Business Profile sync pending client confirmation
 
 **Validation:**
+
 - Map renders correctly at production coordinates
 - Phone format: E.164 compatible
 - Business hours format matches `openingHoursSpecification` schema requirements
 
 **Pending:**
+
 - Client confirmation of Google Business Profile (`Dog Breeder` / `Pet Service` category)
 - Final verification of NAP consistency with GBP listing
 
 ---
 
 ### Phase 5: Accessibility & Core Web Vitals ✅
+
 **Status:** Complete (Day 4)
 
 **Delivered:**
+
 - Global accessibility improvements:
   - Skip-to-content link (`#main-content`)
   - Enhanced `focus-visible` outline styles (2px accent ring)
@@ -164,16 +181,19 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 | Reviews | 75 | 96 | 100 | 100 |
 
 **Core Web Vitals:**
+
 - LCP: 1.8s (hero image)
 - CLS: 0.02
 - INP: 120ms
 
 **Notes on Performance:**
+
 - Scores constrained by placeholder imagery and Supabase CDN fetch failures in local environment
 - Final optimization scheduled after client provides production assets
 - Target: Performance ≥90 achievable with optimized hero (currently ~2.5MB, needs reduction to ≤400KB)
 
 **Files Created/Modified:**
+
 - `app/globals.css` (focus styles)
 - `app/head.tsx` (preconnect)
 - `app/layout.tsx` (skip link)
@@ -182,6 +202,7 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 ---
 
 ### Phase 6: Tests & Documentation ✅
+
 **Status:** Complete (Day 4–5)
 
 **Test Results:**
@@ -196,25 +217,28 @@ Improved SEO, accessibility, and CTA flow for production readiness.
 **Rich Results Validation:**
 Validated with `npx structured-data-testing-tool --presets Google`:
 
-| Page | Status | Schemas Detected |
-|------|--------|------------------|
-| `/` | ✅ Valid | Organization, LocalBusiness (PetStore) |
-| `/faq` | ✅ Valid | Organization, FAQPage (10 Q&A entities) |
-| `/reviews` | ✅ Valid | Organization, ItemList, AggregateRating |
-| `/puppies/duke-english-bulldog` | ✅ Valid | Organization, Product, BreadcrumbList |
+| Page                            | Status   | Schemas Detected                        |
+| ------------------------------- | -------- | --------------------------------------- |
+| `/`                             | ✅ Valid | Organization, LocalBusiness (PetStore)  |
+| `/faq`                          | ✅ Valid | Organization, FAQPage (10 Q&A entities) |
+| `/reviews`                      | ✅ Valid | Organization, ItemList, AggregateRating |
+| `/puppies/duke-english-bulldog` | ✅ Valid | Organization, Product, BreadcrumbList   |
 
 **Known Local Environment Issues:**
+
 - CDN requests to `images.exoticbulldog.dev` return HTTP 500 in local dev
 - Does not affect test execution (E2E suite passes)
 - Resolved in production environment
 
 **Artifacts Generated:**
+
 - `lighthouse-home.json`
 - `lighthouse-reviews.json`
 - Content & validation log (Appendix A)
 - This report (`SPRINT4_REPORT.md`)
 
 **Documentation Updates:**
+
 - Updated `CLAUDE.md` with Sprint 4 notes
 - Maintained `SPRINT4_PROGRESS.md` with daily logs
 - Updated `.env.example` with new variables
@@ -224,11 +248,13 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 ## 🚨 Important Reminders for Future Sprints
 
 ### Content Pending Client Approval
+
 1. **FAQ Content** — Current text is draft quality; requires final review before public launch (noted in Phase 3)
 2. **Review Photos** — Placeholder images in use; client to provide final testimonial photos
 3. **Hero Images** — Current catalog hero images are temporary; optimize to WebP/AVIF ≤400KB when finals arrive
 
 ### Pre-Release Checklist
+
 1. Replace placeholder review photos with client-approved assets
 2. Optimize all hero images (currently ~2.5MB → target ≤400KB)
 3. Re-run Lighthouse audits after final imagery (target Performance ≥90)
@@ -238,12 +264,14 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 7. Update Vercel environment variables if LAT/LNG/HOURS change
 
 ### Production Deployment Notes
+
 - **NAP Validation:** Coordinates validated at 95 County Road 1395, Falkville, AL 35622 (34.3698, -86.9084)
 - **Environment Sync:** Ensure Vercel production env matches `.env.example` for all `NEXT_PUBLIC_CONTACT_*` variables
 - **GBP Sync:** Confirm Google Business Profile uses identical NAP/hours before launch
 - **Media Pipeline:** All final images must be processed through WebP/AVIF optimization (≤400KB, 1600–1920px)
 
 ### Technical Debt
+
 - None identified in this sprint
 - Hero image optimization deferred until client provides production assets (performance trade-off acceptable for staging)
 
@@ -252,17 +280,19 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 ## 📊 Sprint Metrics
 
 ### Effort Breakdown
-| Phase | Estimated | Actual | Variance |
-|-------|-----------|--------|----------|
-| Technical SEO | 0.5–1d | 1d | On target |
-| Structured Data | 1d | 1d | On target |
-| Trust Content | 0.5–1d | 1d | +0.5d (content iteration) |
-| Local Presence | 0.5d | 0.5d | On target |
-| Accessibility & CWV | 0.5d | 0.5d | On target |
-| Tests & Docs | 0.5d | 0.5d | On target |
-| **Total** | **3–4d** | **4.5d** | +0.5d (acceptable) |
+
+| Phase               | Estimated | Actual   | Variance                  |
+| ------------------- | --------- | -------- | ------------------------- |
+| Technical SEO       | 0.5–1d    | 1d       | On target                 |
+| Structured Data     | 1d        | 1d       | On target                 |
+| Trust Content       | 0.5–1d    | 1d       | +0.5d (content iteration) |
+| Local Presence      | 0.5d      | 0.5d     | On target                 |
+| Accessibility & CWV | 0.5d      | 0.5d     | On target                 |
+| Tests & Docs        | 0.5d      | 0.5d     | On target                 |
+| **Total**           | **3–4d**  | **4.5d** | +0.5d (acceptable)        |
 
 ### Definition of Done Status
+
 - ✅ JSON-LD schemas valid (Organization, LocalBusiness, Product, FAQPage, MerchantReturnPolicy)
 - ✅ `robots.txt`, `sitemap.xml`, canonical, OG/Twitter meta configured
 - ✅ Pages `/faq`, `/policies`, `/reviews` delivered with Return Policy section
@@ -278,17 +308,20 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 ## 🎓 Lessons Learned
 
 ### What Went Well
+
 - Centralized SEO/structured data helpers reduced code duplication
 - Context7 MCP integration accelerated Next.js 15 best practices adoption
 - Breadcrumbs + JSON-LD pattern reusable across all paginated content
 - Image optimization pipeline (blur placeholder + preload) significantly improved LCP
 
 ### What Could Be Improved
+
 - Content approval process should gate schema implementation (FAQ text changed post-schema)
 - Lighthouse audits should run against production-like assets (local CDN failures skewed metrics)
 - Google Business Profile sync should be validated earlier in sprint
 
 ### Recommendations for Next Sprint
+
 - Establish content freeze checkpoint before schema generation
 - Set up Vercel preview branch with production CDN for accurate Lighthouse scores
 - Create GBP audit checklist as part of DoD
@@ -298,9 +331,11 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 ## 📸 Validation Artifacts
 
 ### Rich Results Test (Google Preset)
+
 **Command:** `npx structured-data-testing-tool --presets Google`
 
 **Results:**
+
 - **Home (`/`)**: Organization ✅, LocalBusiness (PetStore) ✅
 - **FAQ (`/faq`)**: Organization ✅, FAQPage ✅ (10 questions detected)
 - **Reviews (`/reviews`)**: Organization ✅, ItemList ✅, AggregateRating ✅ (4.9/5 from 6 reviews)
@@ -309,16 +344,18 @@ Validated with `npx structured-data-testing-tool --presets Google`:
 Full validation logs summarised in Appendix A of this report.
 
 ### Lighthouse Audits
+
 **Environment:** Local dev server (`npm run dev`)
 **Device:** Mobile emulation (Moto G Power)
 
 **Home Page:**
+
 ```json
 {
   "performance": 0.79,
   "accessibility": 0.96,
-  "best-practices": 1.00,
-  "seo": 1.00,
+  "best-practices": 1.0,
+  "seo": 1.0,
   "lcp": 1800,
   "cls": 0.02,
   "inp": 120
@@ -326,12 +363,13 @@ Full validation logs summarised in Appendix A of this report.
 ```
 
 **Reviews Page:**
+
 ```json
 {
   "performance": 0.75,
   "accessibility": 0.96,
-  "best-practices": 1.00,
-  "seo": 1.00,
+  "best-practices": 1.0,
+  "seo": 1.0,
   "lcp": 2100,
   "cls": 0.03,
   "inp": 115
@@ -341,9 +379,11 @@ Full validation logs summarised in Appendix A of this report.
 Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 
 ### E2E Test Coverage
+
 **Playwright Specs:** 23/23 passing
 
 **Coverage Areas:**
+
 - Catalog filtering (breed, gender, price)
 - Contact form submission with hCaptcha bypass
 - Puppy detail page navigation
@@ -352,6 +392,7 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 - Review card rendering
 
 **Known Issue (Non-blocking):**
+
 - Local CDN requests to `images.exoticbulldog.dev` return HTTP 500
 - Tests designed to tolerate network failures
 - Resolved in production environment
@@ -364,16 +405,17 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 
 **FAQ Highlights (published at `/faq`):**
 
-| Question | Answer |
-|----------|--------|
-| How do I reserve a puppy? | On the puppy page choose **Reserve with Stripe** or **PayPal** and submit the \$300 deposit. The puppy is instantly marked “Reserved”. |
-| Is the deposit refundable? | Deposits are non-refundable but transferable to another puppy with prior approval. |
-| How do I pick up my puppy? | Arrange an in-person pickup or use our ground transport partner—coordinated individually. |
-| What documents do puppies receive? | Veterinary exam, vaccination record, and a starter packet accompany every puppy. |
-| Can I visit before reserving? | Yes, visits are available by appointment via the contact form. |
-| How do I know the site is legitimate? | All payments run through Stripe and PayPal; we never request direct wire transfers. |
+| Question                              | Answer                                                                                                                                 |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| How do I reserve a puppy?             | On the puppy page choose **Reserve with Stripe** or **PayPal** and submit the \$300 deposit. The puppy is instantly marked “Reserved”. |
+| Is the deposit refundable?            | Deposits are non-refundable but transferable to another puppy with prior approval.                                                     |
+| How do I pick up my puppy?            | Arrange an in-person pickup or use our ground transport partner—coordinated individually.                                              |
+| What documents do puppies receive?    | Veterinary exam, vaccination record, and a starter packet accompany every puppy.                                                       |
+| Can I visit before reserving?         | Yes, visits are available by appointment via the contact form.                                                                         |
+| How do I know the site is legitimate? | All payments run through Stripe and PayPal; we never request direct wire transfers.                                                    |
 
 **Policies Overview (published at `/policies`):**
+
 - **Deposit Policy:** \$300, non-refundable, applied toward final purchase price.
 - **Refunds & Exchanges:** Only for documented health issues confirmed by a licensed veterinarian.
 - **Health Guarantee:** One-year coverage against congenital defects; puppies leave with vet clearance.
@@ -382,14 +424,14 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 
 **Reviews Dataset (published at `/reviews`):**
 
-| Customer | Location | Date | Rating | Highlight | Media |
-|----------|----------|------|--------|-----------|--------|
-| Sarah W. | Huntsville, AL | 2025-06-18 | ⭐⭐⭐⭐⭐ | “Charlie has been the sweetest, healthiest puppy—we loved the transparent process.” | `/reviews/sarah-charlie.jpg` |
+| Customer       | Location       | Date       | Rating     | Highlight                                                                           | Media                         |
+| -------------- | -------------- | ---------- | ---------- | ----------------------------------------------------------------------------------- | ----------------------------- |
+| Sarah W.       | Huntsville, AL | 2025-06-18 | ⭐⭐⭐⭐⭐ | “Charlie has been the sweetest, healthiest puppy—we loved the transparent process.” | `/reviews/sarah-charlie.jpg`  |
 | Mark & Lisa P. | Birmingham, AL | 2025-07-03 | ⭐⭐⭐⭐⭐ | “Deposit and pickup were super easy and professional for our English Bulldog Duke.” | `/reviews/mark-lisa-duke.jpg` |
-| Jessica M. | Nashville, TN | 2025-08-02 | ⭐⭐⭐⭐⭐ | “Videos and updates kept us confident until Bella arrived healthy and happy.” | `/reviews/jessica-bella.mp4` |
-| Anthony D. | Montgomery, AL | 2025-05-27 | ⭐⭐⭐⭐⭐ | “You can tell they care—Tommy settled immediately with the family.” | `/reviews/anthony-tommy.jpg` |
-| Rachel K. | Atlanta, GA | 2025-07-22 | ⭐⭐⭐⭐⭐ | “Worth the drive from Georgia; vet praised our pup’s condition.” | `/reviews/rachel-ga.jpg` |
-| Cameron H. | Decatur, AL | 2025-09-05 | ⭐⭐⭐⭐⭐ | “PayPal checkout was seamless, and Milo is already the star of the neighborhood.” | `/reviews/cameron-milo.jpg` |
+| Jessica M.     | Nashville, TN  | 2025-08-02 | ⭐⭐⭐⭐⭐ | “Videos and updates kept us confident until Bella arrived healthy and happy.”       | `/reviews/jessica-bella.mp4`  |
+| Anthony D.     | Montgomery, AL | 2025-05-27 | ⭐⭐⭐⭐⭐ | “You can tell they care—Tommy settled immediately with the family.”                 | `/reviews/anthony-tommy.jpg`  |
+| Rachel K.      | Atlanta, GA    | 2025-07-22 | ⭐⭐⭐⭐⭐ | “Worth the drive from Georgia; vet praised our pup’s condition.”                    | `/reviews/rachel-ga.jpg`      |
+| Cameron H.     | Decatur, AL    | 2025-09-05 | ⭐⭐⭐⭐⭐ | “PayPal checkout was seamless, and Milo is already the star of the neighborhood.”   | `/reviews/cameron-milo.jpg`   |
 
 **Structured Data Validation:** `npx structured-data-testing-tool --presets Google` passes for Organization, LocalBusiness, FAQPage, ItemList, AggregateRating, and Product schemas; Lighthouse reports stored alongside this document.
 
@@ -405,6 +447,7 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 ## 🚀 Next Steps (Post-Sprint)
 
 ### Immediate (Before Production Release)
+
 1. Client to provide final review photos + testimonial approvals
 2. Replace all placeholder images with optimized WebP/AVIF (≤400KB)
 3. Re-run Lighthouse audits (target Performance ≥90)
@@ -412,12 +455,14 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 5. Update this report with final screenshots
 
 ### Short-Term (Week 1 Post-Launch)
+
 1. Submit `sitemap.xml` to Google Search Console
 2. Monitor GSC for indexation rate (target ≥90%)
 3. Track CWV metrics via GSC and Vercel Analytics
 4. Address any Rich Results warnings/errors flagged by Google
 
 ### Medium-Term (Month 1 Post-Launch)
+
 1. Review FAQ content performance (page views, time-on-page)
 2. Collect authentic customer reviews to replace placeholders
 3. Update `AggregateRating` schema with real review count
@@ -428,6 +473,7 @@ Full JSON reports: `lighthouse-home.json`, `lighthouse-reviews.json`
 ## 📋 Appendices
 
 ### A. Environment Variables Added
+
 ```bash
 # Business Location (required for LocalBusiness schema)
 NEXT_PUBLIC_CONTACT_LATITUDE=34.3698
@@ -438,7 +484,9 @@ NEXT_PUBLIC_CONTACT_HOURS="Mo-Su 09:00-18:00"
 ```
 
 ### B. File Structure Changes
+
 **New Files:**
+
 - `lib/config/business.ts` — Business metadata centralization
 - `lib/seo/metadata.ts` — SEO helper functions
 - `lib/seo/structured-data.ts` — JSON-LD schema generators
@@ -452,6 +500,7 @@ NEXT_PUBLIC_CONTACT_HOURS="Mo-Su 09:00-18:00"
 - `app/head.tsx` — Global head config (preconnect)
 
 **Modified Files:**
+
 - All `app/**/page.tsx` — Added `generateMetadata()`
 - `components/site-header.tsx` — Added FAQ/Policies/Reviews nav
 - `components/site-footer.tsx` — Added map + NAP + hours
@@ -461,12 +510,15 @@ NEXT_PUBLIC_CONTACT_HOURS="Mo-Su 09:00-18:00"
 - `CLAUDE.md` — Sprint 4 notes
 
 **Removed Files:**
+
 - `public/robots.txt` — Replaced by `app/robots.ts`
 
 ### C. Dependencies Added
+
 None (used existing Next.js 15 capabilities)
 
 ### D. Testing Coverage Update (2025-02-17)
+
 - Added Vitest suites for contact intake (`app/contact/actions.ts`, `lib/inquiries/rate-limit.ts`), reservations (`lib/reservations/create.ts`/`idempotency.ts`), analytics (`lib/analytics/server-events.ts`), and env/config utilities.
 - Installed `@vitest/coverage-v8` and enabled coverage collection in CI; latest run reports 26.76% lines / 26.76% statements / 62.58% functions / 23.44% branches overall (`coverage/PuppyWebsite/index.html`).
 - Directory coverage shifts: `app/contact` at 74.57% lines, `lib/inquiries` 98.13%, `lib/analytics` 92%, `lib/captcha` 94%, and `lib/reservations` 55.62% lines after webhook/idempotency additions; guardrails enforce global ≥25% and reservations ≥35% lines to lock in gains.

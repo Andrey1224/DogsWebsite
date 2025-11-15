@@ -1,12 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation';
 
-import { ParentPhotoCarousel } from "@/components/parent-photo-carousel";
+import { ParentPhotoCarousel } from '@/components/parent-photo-carousel';
 
-const sirePhotos = ["/about/family-bulldogs.webp", "/about/puppy-play.webp", "/about/nursery.webp"];
-const damPhotos = ["/about/puppy-play.webp", "/about/nursery.webp"];
+const sirePhotos = ['/about/family-bulldogs.webp', '/about/puppy-play.webp', '/about/nursery.webp'];
+const damPhotos = ['/about/puppy-play.webp', '/about/nursery.webp'];
 
 export default function LineagePreviewPage() {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === 'production') {
     notFound();
   }
 

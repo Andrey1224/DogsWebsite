@@ -1,12 +1,20 @@
-"use client";
+'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import Script from "next/script";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import Script from 'next/script';
 
-const STORAGE_KEY = "exoticbulldoglegacy-consent";
-const COOKIE_KEY = "exoticbulldoglegacy_consent";
+const STORAGE_KEY = 'exoticbulldoglegacy-consent';
+const COOKIE_KEY = 'exoticbulldoglegacy_consent';
 
-type ConsentState = "unknown" | "granted" | "denied";
+type ConsentState = 'unknown' | 'granted' | 'denied';
 
 type AnalyticsContextValue = {
   consent: ConsentState;
@@ -23,16 +31,15 @@ type AnalyticsProviderProps = {
   children: React.ReactNode;
 };
 
-type FacebookPixel = NonNullable<Window["fbq"]>;
+type FacebookPixel = NonNullable<Window['fbq']>;
 type FbqCommand = Parameters<FacebookPixel>;
 
-
 function persistConsent(consent: ConsentState) {
-  if (consent === "unknown") return;
+  if (consent === 'unknown') return;
   try {
     window.localStorage.setItem(STORAGE_KEY, consent);
   } catch (error) {
-    console.warn("Failed to persist consent to localStorage", error);
+    console.warn('Failed to persist consent to localStorage', error);
   }
 
   const ttl = 365 * 24 * 60 * 60;
@@ -40,22 +47,26 @@ function persistConsent(consent: ConsentState) {
 }
 
 function readStoredConsent(): ConsentState {
-  if (typeof window === "undefined") {
-    return "unknown";
+  if (typeof window === 'undefined') {
+    return 'unknown';
   }
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === "granted" || stored === "denied") {
+    if (stored === 'granted' || stored === 'denied') {
       return stored;
     }
   } catch (error) {
-    console.warn("Failed to read consent from localStorage", error);
+    console.warn('Failed to read consent from localStorage', error);
   }
-  return "unknown";
+  return 'unknown';
 }
 
-export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: AnalyticsProviderProps) {
-  const [consent, setConsent] = useState<ConsentState>("unknown");
+export function AnalyticsProvider({
+  gaMeasurementId,
+  metaPixelId,
+  children,
+}: AnalyticsProviderProps) {
+  const [consent, setConsent] = useState<ConsentState>('unknown');
   const pixelLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -63,36 +74,36 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
   }, []);
 
   useEffect(() => {
-    if (consent === "unknown") return;
+    if (consent === 'unknown') return;
     persistConsent(consent);
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("📊 Analytics: Consent status changed:", consent);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Analytics: Consent status changed:', consent);
     }
   }, [consent]);
 
   useEffect(() => {
     if (!gaMeasurementId) return;
 
-    if (consent === "granted" && typeof window.gtag === "function") {
-      if (process.env.NODE_ENV === "development") {
-        console.log("📊 Analytics: GA4 consent granted", { gaMeasurementId });
+    if (consent === 'granted' && typeof window.gtag === 'function') {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Analytics: GA4 consent granted', { gaMeasurementId });
       }
-      window.gtag("consent", "update", {
-        ad_user_data: "granted",
-        ad_personalization: "granted",
-        analytics_storage: "granted",
+      window.gtag('consent', 'update', {
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        analytics_storage: 'granted',
       });
     }
 
-    if (consent === "denied" && typeof window.gtag === "function") {
-      if (process.env.NODE_ENV === "development") {
-        console.log("📊 Analytics: GA4 consent denied");
+    if (consent === 'denied' && typeof window.gtag === 'function') {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Analytics: GA4 consent denied');
       }
-      window.gtag("consent", "update", {
-        ad_user_data: "denied",
-        ad_personalization: "denied",
-        analytics_storage: "denied",
+      window.gtag('consent', 'update', {
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
       });
     }
   }, [consent, gaMeasurementId]);
@@ -100,9 +111,9 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
   useEffect(() => {
     if (!metaPixelId) return;
 
-    if (consent === "granted" && !pixelLoadedRef.current) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("📊 Analytics: Meta Pixel consent granted", { metaPixelId });
+    if (consent === 'granted' && !pixelLoadedRef.current) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Analytics: Meta Pixel consent granted', { metaPixelId });
       }
 
       let fbq = window.fbq;
@@ -113,56 +124,56 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
         }) as FacebookPixel;
         placeholder.queue = [];
         placeholder.loaded = false;
-        placeholder.version = "2.0";
-        const script = document.createElement("script");
+        placeholder.version = '2.0';
+        const script = document.createElement('script');
         script.async = true;
-        script.src = "https://connect.facebook.net/en_US/fbevents.js";
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
         document.head.appendChild(script);
 
-        if (process.env.NODE_ENV === "development") {
-          console.log("📊 Analytics: Meta Pixel script loaded");
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📊 Analytics: Meta Pixel script loaded');
         }
 
         window.fbq = placeholder;
         fbq = placeholder;
       }
 
-      fbq?.("init", metaPixelId);
-      fbq?.("consent", "grant");
-      fbq?.("track", "PageView");
+      fbq?.('init', metaPixelId);
+      fbq?.('consent', 'grant');
+      fbq?.('track', 'PageView');
       pixelLoadedRef.current = true;
     }
 
-    if (consent === "denied" && pixelLoadedRef.current) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("📊 Analytics: Meta Pixel consent denied");
+    if (consent === 'denied' && pixelLoadedRef.current) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Analytics: Meta Pixel consent denied');
       }
-      window.fbq?.("consent", "revoke");
+      window.fbq?.('consent', 'revoke');
     }
   }, [consent, metaPixelId]);
 
-  const grantConsent = useCallback(() => setConsent("granted"), []);
-  const denyConsent = useCallback(() => setConsent("denied"), []);
+  const grantConsent = useCallback(() => setConsent('granted'), []);
+  const denyConsent = useCallback(() => setConsent('denied'), []);
 
   const trackEvent = useCallback(
     (event: string, params?: Record<string, unknown>) => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("📈 Analytics: trackEvent called", { event, params, consent });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📈 Analytics: trackEvent called', { event, params, consent });
       }
 
-      if (consent !== "granted") {
-        if (process.env.NODE_ENV === "development") {
-          console.log("📈 Analytics: Event blocked - consent not granted");
+      if (consent !== 'granted') {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📈 Analytics: Event blocked - consent not granted');
         }
         return;
       }
 
-      if (process.env.NODE_ENV === "development") {
-        console.log("📈 Analytics: Event fired", { event, params });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📈 Analytics: Event fired', { event, params });
       }
 
-      window.gtag?.("event", event, params);
-      window.fbq?.("trackCustom", event, params);
+      window.gtag?.('event', event, params);
+      window.fbq?.('trackCustom', event, params);
     },
     [consent],
   );
@@ -179,15 +190,15 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
 
   return (
     <AnalyticsContext.Provider value={value}>
-      {consent === "granted" && gaMeasurementId ? (
+      {consent === 'granted' && gaMeasurementId ? (
         <>
           <Script
             id="ga-gtag"
             src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
             strategy="afterInteractive"
             onLoad={() => {
-              if (process.env.NODE_ENV === "development") {
-                console.log("📊 Analytics: GA4 script loaded successfully", { gaMeasurementId });
+              if (process.env.NODE_ENV === 'development') {
+                console.log('📊 Analytics: GA4 script loaded successfully', { gaMeasurementId });
               }
             }}
           />
@@ -198,20 +209,20 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
               __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaMeasurementId}', { send_page_view: false });`,
             }}
             onLoad={() => {
-              if (process.env.NODE_ENV === "development") {
-                console.log("📊 Analytics: GA4 initialized", { gaMeasurementId });
+              if (process.env.NODE_ENV === 'development') {
+                console.log('📊 Analytics: GA4 initialized', { gaMeasurementId });
               }
             }}
           />
         </>
       ) : null}
-      {consent === "granted" && metaPixelId ? (
+      {consent === 'granted' && metaPixelId ? (
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             height="1"
             width="1"
-            style={{ display: "none" }}
+            style={{ display: 'none' }}
             src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
             alt=""
           />
@@ -225,7 +236,7 @@ export function AnalyticsProvider({ gaMeasurementId, metaPixelId, children }: An
 export function useAnalytics() {
   const context = useContext(AnalyticsContext);
   if (!context) {
-    throw new Error("useAnalytics must be used within AnalyticsProvider");
+    throw new Error('useAnalytics must be used within AnalyticsProvider');
   }
   return context;
 }

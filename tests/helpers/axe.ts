@@ -1,4 +1,4 @@
-import { configureAxe, type JestAxeConfigureOptions } from "jest-axe";
+import { configureAxe, type JestAxeConfigureOptions } from 'jest-axe';
 
 /**
  * Custom axe configuration for our project.
@@ -7,17 +7,17 @@ import { configureAxe, type JestAxeConfigureOptions } from "jest-axe";
 const axeConfig: JestAxeConfigureOptions = {
   rules: {
     // Enforce color contrast ratios
-    "color-contrast": { enabled: true },
+    'color-contrast': { enabled: true },
     // Ensure all images have alt text
-    "image-alt": { enabled: true },
+    'image-alt': { enabled: true },
     // Require labels for form elements
     label: { enabled: true },
     // Ensure proper heading hierarchy
-    "heading-order": { enabled: true },
+    'heading-order': { enabled: true },
     // Require accessible names for interactive elements
-    "button-name": { enabled: true },
+    'button-name': { enabled: true },
     // Ensure links have discernible text
-    "link-name": { enabled: true },
+    'link-name': { enabled: true },
   },
 };
 

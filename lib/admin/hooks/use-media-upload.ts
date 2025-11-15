@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { getSignedUploadUrl, getPublicUrl } from "@/app/admin/(dashboard)/puppies/upload-actions";
+import { useState } from 'react';
+import { getSignedUploadUrl, getPublicUrl } from '@/app/admin/(dashboard)/puppies/upload-actions';
 
 export type UploadProgress = {
   fileName: string;
   progress: number; // 0-100
-  status: "pending" | "uploading" | "completed" | "error";
+  status: 'pending' | 'uploading' | 'completed' | 'error';
   error?: string;
   publicUrl?: string;
 };
@@ -28,10 +28,7 @@ export function useMediaUpload() {
   /**
    * Upload a single file to Supabase Storage
    */
-  const uploadFile = async (
-    file: File,
-    storagePath: string
-  ): Promise<UploadResult> => {
+  const uploadFile = async (file: File, storagePath: string): Promise<UploadResult> => {
     try {
       // Update progress: pending
       setProgress((prev) => {
@@ -39,7 +36,7 @@ export function useMediaUpload() {
         next.set(file.name, {
           fileName: file.name,
           progress: 0,
-          status: "pending",
+          status: 'pending',
         });
         return next;
       });
@@ -53,18 +50,18 @@ export function useMediaUpload() {
         next.set(file.name, {
           fileName: file.name,
           progress: 10,
-          status: "uploading",
+          status: 'uploading',
         });
         return next;
       });
 
       // Upload file directly to Supabase Storage
       const uploadResponse = await fetch(signedUrl, {
-        method: "PUT",
+        method: 'PUT',
         body: file,
         headers: {
-          "Content-Type": file.type,
-          "x-upsert": "false",
+          'Content-Type': file.type,
+          'x-upsert': 'false',
         },
       });
 
@@ -79,7 +76,7 @@ export function useMediaUpload() {
         next.set(file.name, {
           fileName: file.name,
           progress: 90,
-          status: "uploading",
+          status: 'uploading',
         });
         return next;
       });
@@ -93,7 +90,7 @@ export function useMediaUpload() {
         next.set(file.name, {
           fileName: file.name,
           progress: 100,
-          status: "completed",
+          status: 'completed',
           publicUrl,
         });
         return next;
@@ -104,7 +101,7 @@ export function useMediaUpload() {
         publicUrl,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
 
       // Update progress: error
       setProgress((prev) => {
@@ -112,7 +109,7 @@ export function useMediaUpload() {
         next.set(file.name, {
           fileName: file.name,
           progress: 0,
-          status: "error",
+          status: 'error',
           error: errorMessage,
         });
         return next;
@@ -129,10 +126,7 @@ export function useMediaUpload() {
    * Upload multiple files to Supabase Storage
    * Returns array of public URLs in the same order as input files
    */
-  const uploadFiles = async (
-    files: File[],
-    baseStoragePath: string
-  ): Promise<string[]> => {
+  const uploadFiles = async (files: File[], baseStoragePath: string): Promise<string[]> => {
     setIsUploading(true);
     setProgress(new Map());
 
@@ -142,7 +136,7 @@ export function useMediaUpload() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const timestamp = Date.now();
-        const fileExt = file.name.split(".").pop() ?? "jpg";
+        const fileExt = file.name.split('.').pop() ?? 'jpg';
         const storagePath = `${baseStoragePath}/${timestamp}-${i}.${fileExt}`;
 
         const result = await uploadFile(file, storagePath);

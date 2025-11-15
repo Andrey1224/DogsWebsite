@@ -54,9 +54,12 @@ describe('verifyHCaptcha', () => {
 
     const result = await verifyHCaptcha('token', '203.0.113.5');
 
-    expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
     expect(result).toEqual({
       ok: false,
       message: expect.stringContaining('status 500'),
