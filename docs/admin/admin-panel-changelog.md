@@ -2,6 +2,7 @@
 
 | Date       | Phase                                    | Status      | Notes                                                                                                                                                                              |
 | ---------- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2025-11-15 | Feature — Puppy Edit Functionality       | ✅ Complete | Added full edit capability for puppies with drawer UI, photo management, and read-only slug. Completes CRUD operations for admin panel.                                           |
 | 2025-11-14 | Infrastructure — pg_cron Migration       | ✅ Complete | Migrated from Vercel Cron (Pro-only) to Supabase pg_cron for reservation expiry. Saves $20/month, eliminates HTTP overhead, improves reliability.                                  |
 | 2025-11-14 | Test Fix — E2E Empty State               | ✅ Complete | Fixed E2E test failure by updating text pattern to match actual component ("match" vs "matching").                                                                                 |
 | 2025-11-14 | Docs — Project Reorganization            | ✅ Complete | Reorganized documentation structure: created docs/database/, docs/deployment/, archived temp files, updated navigation.                                                            |
@@ -812,5 +813,493 @@ See detailed documentation in:
 - **Main docs**: `README.md` (Reservation Expiry section)
 - **Migration guide**: `docs/database/migration-guide.md`
 - **Cron config**: Now via Supabase pg_cron (see Infrastructure section above)
+
+---
+
+## Feature — Puppy Edit Functionality (2025-11-15) ✅
+
+### Problem
+
+Admin panel only supported **Create** and **Delete** operations for puppies. No way to edit existing puppy data after creation:
+
+- Cannot update name, breed, sex, color, weight, description
+- Cannot modify photos (add/remove existing, upload new)
+- Cannot update payment settings (Stripe link, PayPal toggle)
+- Cannot change parent metadata (sire/dam names and photos)
+- Only workaround: Delete puppy and recreate with correct data (loses reservation history)
+
+### Solution
+
+Implemented comprehensive **Edit** functionality with drawer UI panel, complete photo management, and read-only slug protection.
+
+### Implementation
+
+#### Backend Layer
+
+**1. Database Query (`lib/admin/puppies/queries.ts`)**
+
+Added full puppy data fetch and update operations:
+
+```typescript
+// Fetch complete puppy record for editing
+export async function fetchFullAdminPuppyById(id: string): Promise<Puppy | null> {
+  const supabase = getAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from('puppies')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Puppy) ?? null;
+}
+
+// Update puppy with partial payload
+type UpdatePuppyPayload = {
+  id: string;
+  name?: string;
+  status?: string;
+  priceUsd?: number | null;
+  // ... all fields optional except id
+};
+
+function mapUpdatePayload(input: UpdatePuppyPayload) {
+  const payload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  // Only include fields explicitly provided
+  if (input.name !== undefined) payload.name = input.name;
+  if (input.status !== undefined) payload.status = input.status;
+  // ... for each field
+  return payload;
+}
+
+export async function updateAdminPuppy(input: UpdatePuppyPayload): Promise<void> {
+  const supabase = getAdminSupabaseClient();
+  const payload = mapUpdatePayload(input);
+  const { error } = await supabase.from('puppies').update(payload).eq('id', input.id);
+  if (error) throw error;
+}
+```
+
+**2. Validation Schema (`lib/admin/puppies/schema.ts`)**
+
+```typescript
+export const updatePuppySchema = z.object({
+  id: adminPuppyIdSchema,
+  name: z.string().min(1).max(100).optional(),
+  status: adminPuppyStatusSchema.optional(),
+  priceUsd: priceUsdSchema.optional(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  breed: breedSchema.optional(),
+  sex: sexSchema.optional(),
+  color: z.string().max(50).optional().nullable(),
+  weightOz: z.number().int().positive().max(500).optional().nullable(),
+  description: z.string().max(2000).optional().nullable(),
+  sireId: z.string().uuid().optional().nullable(),
+  damId: z.string().uuid().optional().nullable(),
+  sireName: z.string().max(100).optional().nullable(),
+  damName: z.string().max(100).optional().nullable(),
+  sirePhotoUrls: z.array(z.string().url()).max(2).optional().nullable(),
+  damPhotoUrls: z.array(z.string().url()).max(2).optional().nullable(),
+  photoUrls: z.array(z.string().url()).max(3).optional().nullable(),
+  videoUrls: z.array(z.string().url()).max(2).optional().nullable(),
+  stripePaymentLink: z.string().url().optional().nullable(),
+  paypalEnabled: z.boolean().optional().nullable(),
+  // Note: slug excluded (read-only after creation)
+});
+```
+
+**3. Server Action (`app/admin/(dashboard)/puppies/actions.ts`)**
+
+```typescript
+export async function updatePuppyAction(
+  _: UpdatePuppyState,
+  formData: FormData,
+): Promise<UpdatePuppyState> {
+  try {
+    await requireAdminSession();
+
+    const puppyId = formData.get('id');
+    if (typeof puppyId !== 'string' || !puppyId) {
+      return { status: 'error', formError: 'Puppy ID is required' };
+    }
+
+    // Extract photo arrays (already uploaded by client)
+    const photoUrls = formData
+      .getAll('photoUrls')
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+    const sirePhotoUrls = formData.getAll('sirePhotoUrls').filter(/*...*/);
+    const damPhotoUrls = formData.getAll('damPhotoUrls').filter(/*...*/);
+    const videoUrls = formData.getAll('videoUrls').filter(/*...*/);
+
+    const submission = {
+      id: puppyId,
+      name: formData.get('name'),
+      status: formData.get('status'),
+      priceUsd: formData.get('priceUsd'),
+      // ... all fields
+      photoUrls: photoUrls.length > 0 ? photoUrls : undefined,
+      sirePhotoUrls: sirePhotoUrls.length > 0 ? sirePhotoUrls : undefined,
+      damPhotoUrls: damPhotoUrls.length > 0 ? damPhotoUrls : undefined,
+      videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
+    };
+
+    const parsed = updatePuppySchema.safeParse(submission);
+    if (!parsed.success) {
+      const { fieldErrors, formErrors } = parsed.error.flatten();
+      return {
+        status: 'error',
+        fieldErrors: Object.fromEntries(
+          Object.entries(fieldErrors).filter(([, value]) => value !== undefined),
+        ) as Record<string, string[]>,
+        formError: formErrors?.[0],
+      };
+    }
+
+    // Get current puppy for slug (needed for cache revalidation)
+    const currentPuppy = await fetchFullAdminPuppyById(puppyId);
+    if (!currentPuppy) {
+      return { status: 'error', formError: 'Puppy not found' };
+    }
+
+    await updateAdminPuppy(parsed.data);
+    revalidateCatalog(currentPuppy.slug);
+
+    return { status: 'success' };
+  } catch (error) {
+    console.error('Update puppy action error:', error);
+    return {
+      status: 'error',
+      formError: error instanceof Error ? error.message : 'Failed to update puppy. Please try again.',
+    };
+  }
+}
+```
+
+**4. Type Definitions (`app/admin/(dashboard)/puppies/types.ts`)**
+
+```typescript
+export type UpdatePuppyState = {
+  status: 'idle' | 'success' | 'error';
+  fieldErrors?: Record<string, string[]>;
+  formError?: string;
+};
+
+export const initialUpdatePuppyState: UpdatePuppyState = {
+  status: 'idle',
+};
+```
+
+#### Frontend Layer
+
+**1. Edit Panel Component (`app/admin/(dashboard)/puppies/edit-puppy-panel.tsx`)**
+
+New drawer component (~650 lines) with:
+
+- Loads puppy data on mount via `fetchFullAdminPuppyById`
+- Pre-populates all form fields
+- **Read-only slug field** (cannot change after creation)
+- Photo management: existing photos with delete + add new
+- Client-side uploads using `useMediaUpload` hook
+- Form validation with field-level errors
+- Success/error handling with toasts
+
+**Key Features:**
+
+```typescript
+// Load puppy data on mount
+useEffect(() => {
+  const loadPuppyData = async () => {
+    try {
+      const puppy = await fetchFullAdminPuppyById(puppyId);
+      if (!puppy) {
+        throw new Error('Puppy not found');
+      }
+
+      // Pre-populate form fields
+      setName(puppy.name ?? '');
+      setSlug(puppy.slug); // Read-only display
+      setStatus(puppy.status);
+      // ... all fields
+
+      // Load existing photos
+      setExistingPhotoUrls(puppy.photo_urls ?? []);
+      setExistingSirePhotoUrls(puppy.sire_photo_urls ?? []);
+      setExistingDamPhotoUrls(puppy.dam_photo_urls ?? []);
+      setExistingVideoUrls(puppy.video_urls ?? []);
+    } catch (error) {
+      setLoadError(error.message);
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  loadPuppyData();
+}, [puppyId]);
+
+// Photo deletion tracking
+const [deletedPhotos, setDeletedPhotos] = useState<Set<string>>(new Set());
+
+const handleDeletePhoto = (url: string, type: 'sire' | 'dam' | 'puppy') => {
+  if (type === 'puppy') {
+    setDeletedPhotos((prev) => new Set(prev).add(url));
+  }
+  // ... for sire, dam
+};
+
+// Submit: combine existing (not deleted) + new
+const finalPhotos = [
+  ...existingPhotoUrls.filter((url) => !deletedPhotos.has(url)),
+  ...newPhotoUrls,
+];
+```
+
+**Slug Protection:**
+
+```tsx
+<div className="col-span-full">
+  <label htmlFor="slug" className="block text-sm font-medium">
+    Slug (URL)
+  </label>
+  <input
+    id="slug"
+    name="slug"
+    type="text"
+    value={slug}
+    readOnly
+    disabled
+    className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted outline-none cursor-not-allowed"
+  />
+  <p className="text-xs text-muted mt-1">Slug cannot be changed after creation</p>
+</div>
+```
+
+**2. Photo Upload Component Updates (`components/admin/parent-photo-upload.tsx`)**
+
+Extended to support edit mode:
+
+```typescript
+interface ParentPhotoUploadProps {
+  // ... existing props
+  existingPhotos?: string[];
+  onDeleteExisting?: (url: string) => void;
+  files?: File[];
+  onFilesChange?: (files: File[]) => void;
+}
+
+export function ParentPhotoUpload({
+  existingPhotos = [],
+  onDeleteExisting,
+  files,
+  onFilesChange,
+  // ... other props
+}: ParentPhotoUploadProps) {
+  // Use controlled files if provided, otherwise internal state
+  const effectiveFiles = files ?? selectedFiles;
+  const updateFiles = onFilesChange ?? setSelectedFiles;
+
+  // Calculate available slots
+  const currentCount = existingPhotos.length + effectiveFiles.length;
+  const availableSlots = maxFiles - currentCount;
+
+  return (
+    <div className="space-y-2">
+      {/* Existing photos section */}
+      {existingPhotos.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {existingPhotos.map((url) => (
+            <div key={url} className="relative">
+              <Image src={url} alt="Existing photo" width={80} height={80} />
+              {onDeleteExisting && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteExisting(url)}
+                  disabled={disabled}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* New files preview */}
+      {/* ... */}
+
+      {/* File input - only show if can add more */}
+      {canAddMore && <input type="file" /* ... */ />}
+    </div>
+  );
+}
+```
+
+**3. Integration in Puppy Row (`app/admin/(dashboard)/puppies/puppy-row.tsx`)**
+
+Added Edit button and panel:
+
+```tsx
+// State
+const [editPanelOpen, setEditPanelOpen] = useState(false);
+
+// Render Edit button (before "Open public page")
+{
+  !archived && (
+    <>
+      <button
+        type="button"
+        onClick={() => setEditPanelOpen(true)}
+        disabled={sharedDisabled}
+        className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white"
+      >
+        Edit
+      </button>
+      <Link href={`/puppies/${puppy.slug}`}>Open public page</Link>
+    </>
+  );
+}
+
+// Render panel
+{
+  editPanelOpen && (
+    <EditPuppyPanel
+      puppyId={puppy.id}
+      statusOptions={statusOptions}
+      onClose={() => setEditPanelOpen(false)}
+    />
+  );
+}
+```
+
+### Features Checklist
+
+- ✅ Edit all puppy fields (name, breed, sex, color, weight, description)
+- ✅ **Slug is read-only** (displayed but disabled, cannot change)
+- ✅ Status dropdown
+- ✅ Price editing
+- ✅ Birth date picker
+- ✅ Parent metadata (sire/dam names + photos)
+- ✅ Puppy photos management (up to 3)
+- ✅ Video URLs
+- ✅ Payment settings (Stripe link, PayPal toggle)
+- ✅ **Existing photos display** with delete capability
+- ✅ **Add new photos** while keeping existing ones
+- ✅ Client-side upload with progress tracking
+- ✅ Form validation with field-level errors
+- ✅ Success/error toast notifications
+- ✅ Automatic cache revalidation (`/puppies`, `/puppies/[slug]`, `/admin/puppies`)
+- ✅ Drawer UI (consistent with Create panel)
+
+### User Flow
+
+1. Navigate to `/admin/puppies`
+2. Find puppy to edit
+3. Click **Edit** button (accent-colored, before "Open public page")
+4. Drawer panel opens from right side
+5. All fields pre-populated with current data
+6. **Slug field is grayed out and disabled** (read-only)
+7. Existing photos displayed with × delete button
+8. Can delete existing photos
+9. Can upload new photos (respects max limits)
+10. Modify any editable fields
+11. Click "Update puppy"
+12. Photos upload (if any new files)
+13. Toast: "Puppy updated successfully"
+14. Panel closes automatically
+15. Table refreshes with updated data
+
+### Technical Details
+
+**Upload Flow:**
+
+1. User selects new photos
+2. Existing photos tracked separately (`existingPhotoUrls`)
+3. Deleted photos tracked in `Set<string>` (`deletedPhotos`)
+4. New files tracked in `File[]` state
+5. On submit:
+   - Upload new files → get URLs
+   - Combine: `[...existingPhotoUrls.filter(not deleted), ...newUrls]`
+   - Submit final array to Server Action
+
+**Cache Revalidation:**
+
+```typescript
+revalidatePath('/admin/puppies');
+revalidatePath('/puppies');
+if (slug) {
+  revalidatePath(`/puppies/${slug}`);
+}
+```
+
+Ensures:
+
+- Admin panel updates immediately
+- Public catalog updates
+- Individual puppy page updates
+
+### Files Modified
+
+**Backend:**
+
+- `lib/admin/puppies/queries.ts` - Added `fetchFullAdminPuppyById`, `updateAdminPuppy`
+- `lib/admin/puppies/schema.ts` - Added `updatePuppySchema`
+- `app/admin/(dashboard)/puppies/types.ts` - Added `UpdatePuppyState`
+- `app/admin/(dashboard)/puppies/actions.ts` - Added `updatePuppyAction`
+
+**Frontend:**
+
+- `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx` - **NEW FILE** (~650 lines)
+- `components/admin/parent-photo-upload.tsx` - Extended for edit mode
+- `app/admin/(dashboard)/puppies/puppy-row.tsx` - Added Edit button + panel
+
+### Verification
+
+**TypeScript:**
+
+```bash
+npm run typecheck
+# ✅ No errors
+```
+
+**Linting:**
+
+```bash
+npm run lint
+# ✅ No warnings
+```
+
+**Dev Server:**
+
+```bash
+npm run dev
+# ✅ Compiles successfully
+# ✅ Edit panel renders
+# ✅ Form pre-populates
+# ✅ Photo management works
+# ✅ Updates save correctly
+```
+
+### Impact
+
+**Completes CRUD Operations:**
+
+- ✅ **C**reate - Create puppy panel (existing)
+- ✅ **R**ead - Puppy list + detail views (existing)
+- ✅ **U**pdate - **NEW: Edit panel** ⭐
+- ✅ **D**elete - Delete confirmation (existing)
+
+**Admin Workflow Improvement:**
+
+- **Before**: Delete puppy → Recreate with correct data (loses history)
+- **After**: Click Edit → Modify → Save (preserves all data + history)
+
+### Related Documentation
+
+- **Admin Panel Changelog**: This file
+- **Claude Context**: `CLAUDE.md` (Admin Panel Architecture section)
+- **Schema**: `lib/admin/puppies/schema.ts`
+- **Queries**: `lib/admin/puppies/queries.ts`
 
 ---

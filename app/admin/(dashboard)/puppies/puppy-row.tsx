@@ -12,6 +12,7 @@ import {
   archivePuppyAction,
   restorePuppyAction,
 } from './actions';
+import { EditPuppyPanel } from './edit-puppy-panel';
 
 type StatusOption = {
   value: string;
@@ -38,6 +39,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmName, setConfirmName] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
 
   const originalPrice = useMemo(
     () => (typeof puppy.price_usd === 'number' ? String(puppy.price_usd) : ''),
@@ -241,14 +243,24 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
 
       <div className="flex flex-col items-start gap-2 md:items-end">
         {!archived && (
-          <Link
-            href={`/puppies/${puppy.slug}`}
-            prefetch={false}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:bg-hover"
-            target="_blank"
-          >
-            Open public page
-          </Link>
+          <>
+            <button
+              type="button"
+              onClick={() => setEditPanelOpen(true)}
+              disabled={sharedDisabled}
+              className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Edit
+            </button>
+            <Link
+              href={`/puppies/${puppy.slug}`}
+              prefetch={false}
+              className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:bg-hover"
+              target="_blank"
+            >
+              Open public page
+            </Link>
+          </>
         )}
 
         {archived ? (
@@ -353,6 +365,14 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
           </>
         )}
       </div>
+
+      {editPanelOpen && (
+        <EditPuppyPanel
+          puppyId={puppy.id}
+          statusOptions={statusOptions}
+          onClose={() => setEditPanelOpen(false)}
+        />
+      )}
     </li>
   );
 }

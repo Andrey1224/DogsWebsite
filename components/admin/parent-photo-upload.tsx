@@ -39,6 +39,22 @@ interface ParentPhotoUploadProps {
    * Whether upload is in progress
    */
   isUploading?: boolean;
+  /**
+   * Existing photos from database (for edit mode)
+   */
+  existingPhotos?: string[];
+  /**
+   * Callback when existing photo should be deleted
+   */
+  onDeleteExisting?: (url: string) => void;
+  /**
+   * Controlled files state (for edit mode)
+   */
+  files?: File[];
+  /**
+   * Callback to update files state
+   */
+  onFilesChange?: (files: File[]) => void;
 }
 
 export function ParentPhotoUpload({
@@ -52,10 +68,18 @@ export function ParentPhotoUpload({
   uploadedUrls = [],
   uploadProgress = 0,
   isUploading = false,
+  existingPhotos = [],
+  onDeleteExisting,
+  files,
+  onFilesChange,
 }: ParentPhotoUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+
+  // Use controlled files if provided, otherwise use internal state
+  const effectiveFiles = files ?? selectedFiles;
+  const updateFiles = onFilesChange ?? setSelectedFiles;
 
   const fallbackLabel =
     parentType === 'dam' ? 'Dam Photos' : parentType === 'sire' ? 'Sire Photos' : 'Photos';
@@ -73,10 +97,12 @@ export function ParentPhotoUpload({
   }, [previews]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
+    const newFiles = Array.from(e.target.files ?? []);
 
-    // Limit to 3 files
-    const limitedFiles = files.slice(0, maxFiles);
+    // Calculate how many files can be added
+    const currentCount = existingPhotos.length + effectiveFiles.length;
+    const availableSlots = maxFiles - currentCount;
+    const limitedFiles = newFiles.slice(0, availableSlots);
 
     // Create preview URLs
     const newPreviews = limitedFiles.map((file) => URL.createObjectURL(file));
@@ -85,7 +111,7 @@ export function ParentPhotoUpload({
     previews.forEach((url) => URL.revokeObjectURL(url));
 
     setPreviews(newPreviews);
-    setSelectedFiles(limitedFiles);
+    updateFiles(limitedFiles);
 
     // Notify parent component
     onFilesSelected?.(limitedFiles);
@@ -96,13 +122,13 @@ export function ParentPhotoUpload({
 
     // Remove the preview
     const newPreviews = previews.filter((_, i) => i !== index);
-    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newFiles = effectiveFiles.filter((_, i) => i !== index);
 
     // Clean up removed preview URL
     URL.revokeObjectURL(previews[index]);
 
     setPreviews(newPreviews);
-    setSelectedFiles(newFiles);
+    updateFiles(newFiles);
 
     // Clear the file input
     fileInputRef.current.value = '';
@@ -115,33 +141,45 @@ export function ParentPhotoUpload({
   const displayImages = uploadedUrls.length > 0 ? uploadedUrls : previews;
   const showUploadProgress = isUploading && uploadProgress > 0;
 
+  const totalPhotos = existingPhotos.length + effectiveFiles.length;
+  const canAddMore = totalPhotos < maxFiles;
+
   return (
     <div className="space-y-2">
       <label htmlFor={`${resolvedInputName}-file`} className="block text-sm font-medium">
-        {resolvedLabel} {maxFiles ? `(up to ${maxFiles})` : null}
+        {resolvedLabel} {maxFiles ? `(${totalPhotos}/${maxFiles})` : null}
       </label>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        id={`${resolvedInputName}-file`}
-        accept="image/*"
-        multiple
-        disabled={disabled || isUploading}
-        onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-accent-gradient file:text-white hover:file:opacity-90 disabled:opacity-50"
-      />
-
-      {/* Upload progress bar */}
-      {showUploadProgress && (
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-accent-gradient h-2 rounded-full transition-all duration-300"
-            style={{ width: `${uploadProgress}%` }}
-          />
+      {/* Existing photos section */}
+      {existingPhotos.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {existingPhotos.map((url) => (
+            <div key={url} className="relative">
+              <Image
+                src={url}
+                alt={`Existing ${resolvedLabel}`}
+                width={80}
+                height={80}
+                className="w-20 h-20 object-cover rounded border border-border"
+                unoptimized
+              />
+              {onDeleteExisting && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteExisting(url)}
+                  disabled={disabled}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 disabled:opacity-50"
+                  aria-label="Delete existing photo"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
+      {/* New files preview */}
       {displayImages.length > 0 && (
         <div className="flex gap-2 flex-wrap mt-2">
           {displayImages.map((imageUrl, index) => (
@@ -173,6 +211,30 @@ export function ParentPhotoUpload({
             </div>
           ))}
         </div>
+      )}
+
+      {/* Upload progress bar */}
+      {showUploadProgress && (
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-accent-gradient h-2 rounded-full transition-all duration-300"
+            style={{ width: `${uploadProgress}%` }}
+          />
+        </div>
+      )}
+
+      {/* File input - only show if can add more */}
+      {canAddMore && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          id={`${resolvedInputName}-file`}
+          accept="image/*"
+          multiple
+          disabled={disabled || isUploading}
+          onChange={handleFileChange}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-accent-gradient file:text-white hover:file:opacity-90 disabled:opacity-50"
+        />
       )}
 
       <p className="text-xs text-muted">{resolvedHelpText}</p>

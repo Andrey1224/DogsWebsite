@@ -246,6 +246,25 @@ export async function getAdminPuppyById(
   return (data as Pick<AdminPuppyRecord, 'id' | 'name' | 'slug'>) ?? null;
 }
 
+/**
+ * Fetch full puppy data for editing
+ * Returns all editable fields including photos, parent metadata, etc.
+ */
+export async function fetchFullAdminPuppyById(id: string): Promise<Puppy | null> {
+  const supabase = getAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from('puppies')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as Puppy) ?? null;
+}
+
 type RawAdminLitterWithParents = {
   id: string;
   name: string | null;
@@ -405,6 +424,74 @@ export async function restorePuppy(id: string): Promise<void> {
         'Cannot restore puppy because the `is_archived` column has not been added. Run the latest Supabase migrations.',
       );
     }
+    throw error;
+  }
+}
+
+// Type for update payload (similar to CreatePuppyPayload but without slug)
+type UpdatePuppyPayload = {
+  id: string;
+  name?: string;
+  status?: string;
+  priceUsd?: number | null;
+  birthDate?: string | null;
+  breed?: string | null;
+  sireId?: string | null;
+  damId?: string | null;
+  sireName?: string | null;
+  damName?: string | null;
+  sirePhotoUrls?: string[] | null;
+  damPhotoUrls?: string[] | null;
+  sex?: string | null;
+  color?: string | null;
+  weightOz?: number | null;
+  description?: string | null;
+  photoUrls?: string[] | null;
+  videoUrls?: string[] | null;
+  stripePaymentLink?: string | null;
+  paypalEnabled?: boolean | null;
+};
+
+function mapUpdatePayload(input: UpdatePuppyPayload) {
+  const payload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  // Only include fields that are explicitly provided
+  if (input.name !== undefined) payload.name = input.name;
+  if (input.status !== undefined) payload.status = input.status;
+  if (input.priceUsd !== undefined) payload.price_usd = input.priceUsd;
+  if (input.birthDate !== undefined) payload.birth_date = input.birthDate;
+  if (input.breed !== undefined) payload.breed = input.breed;
+  if (input.sireId !== undefined) payload.sire_id = input.sireId;
+  if (input.damId !== undefined) payload.dam_id = input.damId;
+  if (input.sireName !== undefined) payload.sire_name = input.sireName;
+  if (input.damName !== undefined) payload.dam_name = input.damName;
+  if (input.sirePhotoUrls !== undefined) payload.sire_photo_urls = input.sirePhotoUrls;
+  if (input.damPhotoUrls !== undefined) payload.dam_photo_urls = input.damPhotoUrls;
+  if (input.sex !== undefined) payload.sex = input.sex;
+  if (input.color !== undefined) payload.color = input.color;
+  if (input.weightOz !== undefined) payload.weight_oz = input.weightOz;
+  if (input.description !== undefined) payload.description = input.description;
+  if (input.photoUrls !== undefined) payload.photo_urls = input.photoUrls;
+  if (input.videoUrls !== undefined) payload.video_urls = input.videoUrls;
+  if (input.stripePaymentLink !== undefined) payload.stripe_payment_link = input.stripePaymentLink;
+  if (input.paypalEnabled !== undefined) payload.paypal_enabled = input.paypalEnabled;
+
+  return payload;
+}
+
+/**
+ * Update puppy with partial data
+ * Note: slug cannot be updated (read-only after creation)
+ */
+export async function updateAdminPuppy(input: UpdatePuppyPayload): Promise<void> {
+  const supabase = getAdminSupabaseClient();
+  const payload = mapUpdatePayload(input);
+
+  const { error } = await supabase.from('puppies').update(payload).eq('id', input.id);
+
+  if (error) {
     throw error;
   }
 }

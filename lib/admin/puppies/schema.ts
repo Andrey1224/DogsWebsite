@@ -165,7 +165,36 @@ export const restorePuppySchema = z.object({
   id: adminPuppyIdSchema,
 });
 
+/**
+ * Schema for updating a puppy
+ * All fields optional except id (partial update)
+ * Slug is excluded (read-only after creation)
+ */
+export const updatePuppySchema = z.object({
+  id: adminPuppyIdSchema,
+  name: z.string().min(1).max(100).optional(),
+  status: adminPuppyStatusSchema.optional(),
+  priceUsd: priceUsdSchema.optional(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  breed: breedSchema.optional(),
+  sireId: z.string().uuid().optional().nullable(),
+  damId: z.string().uuid().optional().nullable(),
+  sireName: z.string().max(100).optional().nullable(),
+  damName: z.string().max(100).optional().nullable(),
+  sirePhotoUrls: z.array(z.string().url()).max(2).optional().nullable(),
+  damPhotoUrls: z.array(z.string().url()).max(2).optional().nullable(),
+  sex: sexSchema.optional(),
+  color: z.string().max(50).optional().nullable(),
+  weightOz: z.number().int().positive().max(500).optional().nullable(),
+  description: z.string().max(2000).optional().nullable(),
+  photoUrls: z.array(z.string().url()).max(3).optional().nullable(),
+  videoUrls: z.array(z.string().url()).max(2).optional().nullable(),
+  stripePaymentLink: z.string().url().optional().nullable(),
+  paypalEnabled: z.boolean().optional().nullable(),
+});
+
 export type CreatePuppyInput = z.infer<typeof createPuppySchema>;
+export type UpdatePuppyInput = z.infer<typeof updatePuppySchema>;
 export type UpdatePuppyStatusInput = z.infer<typeof updatePuppyStatusSchema>;
 export type UpdatePuppyPriceInput = z.infer<typeof updatePuppyPriceSchema>;
 export type ArchivePuppyInput = z.infer<typeof archivePuppySchema>;

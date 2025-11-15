@@ -92,7 +92,8 @@ The contact system spans multiple interconnected files:
 - **Authentication**: Session-based auth with signed cookies (`lib/admin/session.ts`)
 - **Middleware Protection**: `/admin/*` routes guarded by `middleware.ts`
 - **Login**: `/admin/login` with credential validation
-- **Dashboard**: `/admin/puppies` with CRUD operations
+- **Dashboard**: `/admin/puppies` with full CRUD operations (Create, Read, Update, Delete)
+- **Edit Functionality**: Drawer-based edit panel with photo management and read-only slug protection
 - **File Uploads**: Client-side direct uploads to Supabase Storage via signed URLs (bypasses 1MB Server Action limit)
 - **Parent Metadata**: Supports direct text input + photo uploads (no parent records required)
 - **Breed Field**: Direct `breed` field on puppies table (french_bulldog | english_bulldog) with priority over parent breed
@@ -101,16 +102,19 @@ The contact system spans multiple interconnected files:
 
 - `lib/admin/session.ts` - Session cookie encoding/decoding
 - `lib/admin/supabase.ts` - Admin Supabase client (service role)
-- `lib/admin/puppies/queries.ts` - Admin puppy CRUD operations
-- `lib/admin/puppies/schema.ts` - Zod validation schemas
+- `lib/admin/puppies/queries.ts` - Admin puppy CRUD operations (includes `fetchFullAdminPuppyById`, `updateAdminPuppy`)
+- `lib/admin/puppies/schema.ts` - Zod validation schemas (`createPuppySchema`, `updatePuppySchema`)
 - `lib/admin/puppies/slug.ts` - Slug generation with collision detection
-- `app/admin/(dashboard)/puppies/actions.ts` - Server Actions for puppy mutations
+- `app/admin/(dashboard)/puppies/actions.ts` - Server Actions for puppy mutations (`createPuppyAction`, `updatePuppyAction`, etc.)
 - `app/admin/(dashboard)/puppies/upload-actions.ts` - Signed URL generation for file uploads
+- `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx` - Edit drawer component with photo management
 - `lib/admin/hooks/use-media-upload.ts` - Client-side upload hook with progress tracking
 
 **Important Implementation Notes**:
 
 - **File Uploads**: Files are uploaded client-side directly to Supabase Storage using signed URLs (60s validity). Server Actions only receive URLs (< 1KB payload) to avoid the 1MB Server Action limit.
+- **Edit Mode**: Existing photos are displayed with delete buttons. New photos can be added while preserving existing ones. Deleted photos are tracked separately and filtered out on submit.
+- **Slug Protection**: Slug field is read-only in edit mode (displayed but disabled). Slugs cannot change after puppy creation to preserve public URLs and SEO.
 - **Breed Priority**: Always use `puppy.breed` field first, fallback to `puppy.parents.sire.breed` or `puppy.parents.dam.breed` for backward compatibility. This applies to filtering (`lib/supabase/queries.ts`), display (`components/puppy-card.tsx`), and detail pages (`app/puppies/[slug]/page.tsx`).
 - **Parent Metadata**: Puppies can have direct `sire_name`, `dam_name`, `sire_photo_urls[]`, `dam_photo_urls[]` fields without requiring parent records in `parents` table.
 

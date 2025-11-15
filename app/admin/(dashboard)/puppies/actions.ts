@@ -12,6 +12,8 @@ import {
   hasActiveReservations,
   archivePuppy,
   restorePuppy,
+  fetchFullAdminPuppyById,
+  updateAdminPuppy,
 } from '@/lib/admin/puppies/queries';
 import {
   createPuppySchema,
@@ -21,9 +23,10 @@ import {
   updatePuppyStatusSchema,
   archivePuppySchema,
   restorePuppySchema,
+  updatePuppySchema,
 } from '@/lib/admin/puppies/schema';
 import { generateUniqueSlug, slugifyName } from '@/lib/admin/puppies/slug';
-import type { CreatePuppyState } from './types';
+import type { CreatePuppyState, UpdatePuppyState } from './types';
 
 function revalidateCatalog(slug?: string | null) {
   revalidatePath('/admin/puppies');
@@ -183,6 +186,99 @@ export async function deletePuppyAction(input: { id: string; confirmName: string
   revalidateCatalog(record.slug);
 
   return { success: true };
+}
+
+export async function updatePuppyAction(
+  _: UpdatePuppyState,
+  formData: FormData,
+): Promise<UpdatePuppyState> {
+  try {
+    await requireAdminSession();
+
+    const puppyId = formData.get('id');
+    if (typeof puppyId !== 'string' || !puppyId) {
+      return {
+        status: 'error',
+        formError: 'Puppy ID is required',
+      };
+    }
+
+    // Extract photo arrays from FormData (already uploaded by client)
+    const photoUrls = formData
+      .getAll('photoUrls')
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+    const sirePhotoUrls = formData
+      .getAll('sirePhotoUrls')
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+    const damPhotoUrls = formData
+      .getAll('damPhotoUrls')
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+    const videoUrls = formData
+      .getAll('videoUrls')
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+
+    const submission = {
+      id: puppyId,
+      name: formData.get('name'),
+      status: formData.get('status'),
+      priceUsd: formData.get('priceUsd'),
+      birthDate: formData.get('birthDate'),
+      breed: formData.get('breed'),
+      sireId: formData.get('sireId'),
+      damId: formData.get('damId'),
+      sireName: formData.get('sireName'),
+      damName: formData.get('damName'),
+      sex: formData.get('sex'),
+      color: formData.get('color'),
+      weightOz: formData.get('weightOz'),
+      description: formData.get('description'),
+      stripePaymentLink: formData.get('stripePaymentLink'),
+      paypalEnabled: formData.get('paypalEnabled'),
+      photoUrls: photoUrls.length > 0 ? photoUrls : undefined,
+      sirePhotoUrls: sirePhotoUrls.length > 0 ? sirePhotoUrls : undefined,
+      damPhotoUrls: damPhotoUrls.length > 0 ? damPhotoUrls : undefined,
+      videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
+    };
+
+    const parsed = updatePuppySchema.safeParse(submission);
+    if (!parsed.success) {
+      const { fieldErrors, formErrors } = parsed.error.flatten();
+      return {
+        status: 'error',
+        fieldErrors: Object.fromEntries(
+          Object.entries(fieldErrors).filter(([, value]) => value !== undefined),
+        ) as Record<string, string[]>,
+        formError: formErrors?.[0],
+      };
+    }
+
+    const payload = parsed.data;
+
+    // Get current puppy data for slug (needed for revalidation)
+    const currentPuppy = await fetchFullAdminPuppyById(puppyId);
+    if (!currentPuppy) {
+      return {
+        status: 'error',
+        formError: 'Puppy not found',
+      };
+    }
+
+    await updateAdminPuppy(payload);
+
+    // Revalidate catalog with current slug
+    revalidateCatalog(currentPuppy.slug);
+
+    return {
+      status: 'success',
+    };
+  } catch (error) {
+    console.error('Update puppy action error:', error);
+    return {
+      status: 'error',
+      formError:
+        error instanceof Error ? error.message : 'Failed to update puppy. Please try again.',
+    };
+  }
 }
 
 export async function archivePuppyAction(input: { id: string; slug?: string | null }) {
