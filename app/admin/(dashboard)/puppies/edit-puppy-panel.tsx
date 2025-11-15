@@ -32,6 +32,15 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
   const [name, setName] = useState('');
   const [slug, setSlug] = useState(''); // Read-only
   const [status, setStatus] = useState(statusOptions[0]?.value ?? 'available');
+  const [priceUsd, setPriceUsd] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [breed, setBreed] = useState('');
+  const [sex, setSex] = useState('');
+  const [color, setColor] = useState('');
+  const [weightOz, setWeightOz] = useState('');
+  const [description, setDescription] = useState('');
+  const [sireName, setSireName] = useState('');
+  const [damName, setDamName] = useState('');
 
   // File upload state
   const { uploadFiles, isUploading } = useMediaUpload();
@@ -76,38 +85,20 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
         setName(puppy.name || '');
         setSlug(puppy.slug || '');
         setStatus(puppy.status || 'available');
+        setPriceUsd(puppy.price_usd !== null ? String(puppy.price_usd) : '');
+        setBirthDate(puppy.birth_date || '');
+        setBreed(puppy.breed || '');
+        setSex(puppy.sex || '');
+        setColor(puppy.color || '');
+        setWeightOz(puppy.weight_oz !== null ? String(puppy.weight_oz) : '');
+        setDescription(puppy.description || '');
+        setSireName(puppy.sire_name || '');
+        setDamName(puppy.dam_name || '');
 
         // Set existing photos
         setExistingSirePhotoUrls(puppy.sire_photo_urls || []);
         setExistingDamPhotoUrls(puppy.dam_photo_urls || []);
         setExistingPuppyPhotoUrls(puppy.photo_urls || []);
-
-        // Pre-populate other form fields via formRef
-        if (formRef.current) {
-          const form = formRef.current;
-          if (puppy.price_usd !== null)
-            (form.elements.namedItem('priceUsd') as HTMLInputElement).value = String(
-              puppy.price_usd,
-            );
-          if (puppy.birth_date)
-            (form.elements.namedItem('birthDate') as HTMLInputElement).value = puppy.birth_date;
-          if (puppy.breed)
-            (form.elements.namedItem('breed') as HTMLSelectElement).value = puppy.breed;
-          if (puppy.sex) (form.elements.namedItem('sex') as HTMLSelectElement).value = puppy.sex;
-          if (puppy.color)
-            (form.elements.namedItem('color') as HTMLInputElement).value = puppy.color;
-          if (puppy.weight_oz !== null)
-            (form.elements.namedItem('weightOz') as HTMLInputElement).value = String(
-              puppy.weight_oz,
-            );
-          if (puppy.description)
-            (form.elements.namedItem('description') as HTMLTextAreaElement).value =
-              puppy.description;
-          if (puppy.sire_name)
-            (form.elements.namedItem('sireName') as HTMLInputElement).value = puppy.sire_name;
-          if (puppy.dam_name)
-            (form.elements.namedItem('damName') as HTMLInputElement).value = puppy.dam_name;
-        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to load puppy data';
         setLoadError(errorMessage);
@@ -359,6 +350,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
               step="0.01"
               min="0"
               placeholder="3000"
+              value={priceUsd}
+              onChange={(e) => setPriceUsd(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               aria-describedby={fieldError('priceUsd') ? 'priceUsd-error' : undefined}
               aria-invalid={!!fieldError('priceUsd')}
@@ -379,6 +372,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
               id="birthDate"
               name="birthDate"
               type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               aria-describedby={fieldError('birthDate') ? 'birthDate-error' : undefined}
               aria-invalid={!!fieldError('birthDate')}
@@ -398,6 +393,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
             <select
               id="breed"
               name="breed"
+              value={breed}
+              onChange={(e) => setBreed(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="">Select breed</option>
@@ -414,6 +411,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
             <select
               id="sex"
               name="sex"
+              value={sex}
+              onChange={(e) => setSex(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="">Select sex</option>
@@ -432,6 +431,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
               name="color"
               type="text"
               placeholder="Lilac, Blue, etc."
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
@@ -448,6 +449,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
               step="1"
               min="0"
               placeholder="24"
+              value={weightOz}
+              onChange={(e) => setWeightOz(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
@@ -463,6 +466,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
             name="description"
             rows={4}
             placeholder="Describe the puppy's personality, health, and features..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
@@ -481,6 +486,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
                 name="sireName"
                 type="text"
                 placeholder="Optional"
+                value={sireName}
+                onChange={(e) => setSireName(e.target.value)}
                 className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
@@ -494,6 +501,8 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
                 name="damName"
                 type="text"
                 placeholder="Optional"
+                value={damName}
+                onChange={(e) => setDamName(e.target.value)}
                 className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
