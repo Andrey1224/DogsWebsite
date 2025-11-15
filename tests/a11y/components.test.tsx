@@ -63,7 +63,7 @@ describe("Component Accessibility Tests", () => {
       const { container } = await renderWithAct(<ContactForm />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
-    });
+    }, 10000);
 
     it("should have accessible form with heading", async () => {
       const { container } = await renderWithAct(

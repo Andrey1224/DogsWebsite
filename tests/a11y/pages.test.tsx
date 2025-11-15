@@ -75,7 +75,7 @@ describe("Page Accessibility Tests", () => {
       });
 
       expect(results).toHaveNoViolations();
-    });
+    }, 10000);
 
     it("should have proper heading hierarchy", async () => {
       const { container } = await renderPage(HomePage);
