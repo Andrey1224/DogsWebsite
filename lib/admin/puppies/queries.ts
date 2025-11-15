@@ -99,7 +99,7 @@ export async function fetchAdminPuppies(
     throw error;
   }
 
-  const rows = (data ?? []) as AdminPuppyRecord[];
+  const rows = data ?? [];
 
   let normalizedRows: AdminPuppyRecordWithState[];
   if (usedArchiveColumn) {
@@ -141,25 +141,30 @@ export async function insertAdminPuppy(
         .from('puppies')
         .insert(mapCreatePayload(input))
         .select(getAdminPuppyFields(useArchiveColumn))
-        .single();
+        .single()
+        .returns<AdminPuppyRecord>();
 
       return {
-        data: (response.data as AdminPuppyRecord | null) ?? null,
+        data: response.data ?? null,
         error: response.error,
       };
     },
   );
 
-  if (error || !data) {
+  if (error) {
     throw error;
   }
 
+  if (!data) {
+    throw new Error('Failed to insert puppy record');
+  }
+
   if (usedArchiveColumn) {
-    return data as AdminPuppyRecord;
+    return data;
   }
 
   return {
-    ...(data as AdminPuppyRecord),
+    ...data,
     is_archived: false,
   };
 }

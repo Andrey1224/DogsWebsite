@@ -40,6 +40,12 @@ function serializeStripeEvent(event: Stripe.Event): Json {
 }
 
 const STALE_EVENT_TTL_SECONDS = 60 * 60 * 2; // 2 hours
+const REQUIRED_METADATA_FIELDS: Array<keyof StripeCheckoutMetadata> = [
+  'puppy_id',
+  'puppy_slug',
+  'puppy_name',
+  'customer_email',
+];
 
 function getServiceRoleClient() {
   if (supabaseAdminClient) {
@@ -54,6 +60,44 @@ function getServiceRoleClient() {
     console.warn('[Stripe Webhook] Service role client unavailable:', message);
     return null;
   }
+}
+
+function getPaymentIntentId(session: Stripe.Checkout.Session): string | null {
+  const { payment_intent: paymentIntent } = session;
+  if (!paymentIntent) {
+    return null;
+  }
+
+  if (typeof paymentIntent === 'string') {
+    return paymentIntent;
+  }
+
+  return paymentIntent.id ?? null;
+}
+
+function normalizeMetadataValue(value?: string | null): string | undefined {
+  return value && value.length > 0 ? value : undefined;
+}
+
+function getCheckoutMetadata(session: Stripe.Checkout.Session): StripeCheckoutMetadata | null {
+  const metadata = session.metadata as Record<string, string> | null;
+  if (!metadata) {
+    return null;
+  }
+
+  if (REQUIRED_METADATA_FIELDS.some((field) => !metadata[field])) {
+    return null;
+  }
+
+  return {
+    puppy_id: metadata.puppy_id,
+    puppy_slug: metadata.puppy_slug,
+    puppy_name: metadata.puppy_name,
+    customer_email: metadata.customer_email,
+    customer_name: normalizeMetadataValue(metadata.customer_name),
+    customer_phone: normalizeMetadataValue(metadata.customer_phone),
+    channel: normalizeMetadataValue(metadata.channel),
+  };
 }
 
 /**
@@ -123,12 +167,31 @@ export class StripeWebhookHandler {
     eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
+    const metadata = getCheckoutMetadata(session);
+    if (!metadata) {
+      console.error('[Stripe Webhook] Missing required metadata on checkout.session.completed');
+      return {
+        success: false,
+        eventType: 'checkout.session.completed',
+        error: 'Missing required session metadata',
+      };
+    }
+
+    const paymentIntentId = getPaymentIntentId(session);
+    if (!paymentIntentId) {
+      console.error('[Stripe Webhook] Missing payment_intent on checkout.session.completed');
+      return {
+        success: false,
+        eventType: 'checkout.session.completed',
+        error: 'Missing payment_intent on session',
+      };
+    }
 
     // Check for duplicate event
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
       eventId,
-      session.payment_intent as string,
+      paymentIntentId,
     );
 
     if (idempotencyCheck.exists) {
@@ -136,20 +199,8 @@ export class StripeWebhookHandler {
       return {
         success: true,
         eventType: 'checkout.session.completed',
-        paymentIntentId: session.payment_intent as string,
+        paymentIntentId,
         duplicate: true,
-      };
-    }
-
-    // Extract metadata
-    const metadata = session.metadata as StripeCheckoutMetadata;
-
-    if (!metadata || !metadata.puppy_id) {
-      console.error('[Stripe Webhook] Missing required metadata: puppy_id');
-      return {
-        success: false,
-        eventType: 'checkout.session.completed',
-        error: 'Missing required metadata: puppy_id',
       };
     }
 
@@ -164,20 +215,26 @@ export class StripeWebhookHandler {
         provider: 'stripe',
         eventId,
         eventType: 'checkout.session.completed',
-        idempotencyKey: `stripe:${session.payment_intent}`,
+        idempotencyKey: `stripe:${paymentIntentId}`,
         payload: serializeStripeEvent(event),
       });
 
       return {
         success: true,
         eventType: 'checkout.session.completed',
-        paymentIntentId: session.payment_intent as string,
+        paymentIntentId,
         error: 'Payment pending - waiting for async_payment_succeeded',
       };
     }
 
     // Payment is complete - create reservation
-    return this.createReservationFromSession(session, eventId);
+    return this.createReservationFromSession(
+      session,
+      eventId,
+      'checkout.session.completed',
+      metadata,
+      paymentIntentId,
+    );
   }
 
   /**
@@ -191,12 +248,35 @@ export class StripeWebhookHandler {
     eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
+    const metadata = getCheckoutMetadata(session);
+    if (!metadata) {
+      console.error(
+        '[Stripe Webhook] Missing required metadata on checkout.session.async_payment_succeeded',
+      );
+      return {
+        success: false,
+        eventType: 'checkout.session.async_payment_succeeded',
+        error: 'Missing required session metadata',
+      };
+    }
+
+    const paymentIntentId = getPaymentIntentId(session);
+    if (!paymentIntentId) {
+      console.error(
+        '[Stripe Webhook] Missing payment_intent on checkout.session.async_payment_succeeded',
+      );
+      return {
+        success: false,
+        eventType: 'checkout.session.async_payment_succeeded',
+        error: 'Missing payment_intent on session',
+      };
+    }
 
     // Check for duplicate event
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
       eventId,
-      session.payment_intent as string,
+      paymentIntentId,
     );
 
     if (idempotencyCheck.exists) {
@@ -204,7 +284,7 @@ export class StripeWebhookHandler {
       return {
         success: true,
         eventType: 'checkout.session.async_payment_succeeded',
-        paymentIntentId: session.payment_intent as string,
+        paymentIntentId,
         duplicate: true,
       };
     }
@@ -214,6 +294,8 @@ export class StripeWebhookHandler {
       session,
       eventId,
       'checkout.session.async_payment_succeeded',
+      metadata,
+      paymentIntentId,
     );
   }
 
@@ -231,6 +313,25 @@ export class StripeWebhookHandler {
     eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
+    const metadata = getCheckoutMetadata(session);
+    if (!metadata) {
+      console.error('[Stripe Webhook] Missing required metadata on async_payment_failed');
+      return {
+        success: false,
+        eventType: 'checkout.session.async_payment_failed',
+        error: 'Missing required session metadata',
+      };
+    }
+
+    const paymentIntentId = getPaymentIntentId(session);
+    if (!paymentIntentId) {
+      console.error('[Stripe Webhook] Missing payment_intent on async_payment_failed');
+      return {
+        success: false,
+        eventType: 'checkout.session.async_payment_failed',
+        error: 'Missing payment_intent on session',
+      };
+    }
 
     console.warn(
       `[Stripe Webhook] Async payment failed for session: ${session.id}, payment_intent: ${session.payment_intent}`,
@@ -241,12 +342,11 @@ export class StripeWebhookHandler {
       provider: 'stripe',
       eventId,
       eventType: 'checkout.session.async_payment_failed',
-      idempotencyKey: `stripe:${session.payment_intent}:failed`,
+      idempotencyKey: `stripe:${paymentIntentId}:failed`,
       payload: serializeStripeEvent(event),
     });
 
     // Send email to customer with helpful information
-    const metadata = session.metadata as StripeCheckoutMetadata;
     const customerEmail = session.customer_details?.email || metadata.customer_email;
     const customerName = session.customer_details?.name || metadata.customer_name || undefined;
 
@@ -264,7 +364,7 @@ export class StripeWebhookHandler {
     return {
       success: true,
       eventType: 'checkout.session.async_payment_failed',
-      paymentIntentId: session.payment_intent as string,
+      paymentIntentId,
       error: 'Async payment failed',
     };
   }
@@ -320,11 +420,10 @@ export class StripeWebhookHandler {
   private static async createReservationFromSession(
     session: TypedCheckoutSession,
     eventId: string,
-    eventType?: string,
+    eventType: 'checkout.session.completed' | 'checkout.session.async_payment_succeeded',
+    metadata: StripeCheckoutMetadata,
+    paymentIntentId: string,
   ): Promise<WebhookProcessingResult> {
-    const metadata = session.metadata;
-    const paymentIntentId = session.payment_intent as string;
-
     if (typeof session.amount_total !== 'number' || session.amount_total <= 0) {
       console.error('[Stripe Webhook] Invalid checkout amount:', session.amount_total);
       return {
@@ -366,7 +465,7 @@ export class StripeWebhookHandler {
 
         return {
           success: true,
-          eventType: eventType || 'checkout.session.completed',
+          eventType,
           paymentIntentId,
           duplicate: true,
           error: 'Puppy already reserved',
@@ -404,7 +503,7 @@ export class StripeWebhookHandler {
       await idempotencyManager.createWebhookEvent({
         provider: 'stripe',
         eventId,
-        eventType: eventType || 'checkout.session.completed',
+        eventType,
         idempotencyKey: `stripe:${paymentIntentId}`,
         payload: {
           event_id: eventId,
@@ -445,7 +544,7 @@ export class StripeWebhookHandler {
 
       return {
         success: true,
-        eventType: eventType || 'checkout.session.completed',
+        eventType,
         paymentIntentId,
         reservationId,
       };
@@ -454,7 +553,7 @@ export class StripeWebhookHandler {
         if (error.code === 'RACE_CONDITION_LOST') {
           return {
             success: true,
-            eventType: eventType || 'checkout.session.completed',
+            eventType,
             paymentIntentId,
             duplicate: true,
             error: error.message,
@@ -463,7 +562,7 @@ export class StripeWebhookHandler {
 
         return {
           success: false,
-          eventType: eventType || 'checkout.session.completed',
+          eventType,
           paymentIntentId,
           error: error.message,
           errorCode: error.code,
@@ -474,7 +573,7 @@ export class StripeWebhookHandler {
 
       return {
         success: false,
-        eventType: eventType || 'checkout.session.completed',
+        eventType,
         paymentIntentId,
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       };

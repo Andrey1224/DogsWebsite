@@ -3,7 +3,15 @@ import userEvent from '@testing-library/user-event';
 import { usePathname } from 'next/navigation';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
+import type { ContactFormState } from '@/app/contact/actions';
+
 let ContactForm: (typeof import('./contact-form'))['ContactForm'];
+const submitContactInquiryMock = vi.fn<
+  (prevState: ContactFormState, formData: FormData) => Promise<ContactFormState>
+>(async () => ({
+  status: 'success',
+  message: 'Thank you for your inquiry!',
+}));
 
 // Mock dependencies
 vi.mock('next/navigation', () => ({
@@ -27,15 +35,16 @@ vi.mock('@hcaptcha/react-hcaptcha', () => ({
 }));
 
 vi.mock('@/app/contact/actions', () => ({
-  submitContactInquiry: vi.fn(async () => ({
-    status: 'success' as const,
-    message: 'Thank you for your inquiry!',
-  })),
+  submitContactInquiry: submitContactInquiryMock,
 }));
 
 describe('ContactForm', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    submitContactInquiryMock.mockResolvedValue({
+      status: 'success',
+      message: 'Thank you for your inquiry!',
+    });
     (usePathname as ReturnType<typeof vi.fn>).mockReturnValue('/contact');
 
     process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY = 'test-site-key';
@@ -173,6 +182,58 @@ describe('ContactForm', () => {
       expect(submitButton).not.toBeDisabled();
     });
 
+    it('keeps submit disabled until captcha token is present', async () => {
+      const user = userEvent.setup();
+      render(<ContactForm />);
+
+      await user.type(screen.getByLabelText(/your name/i), 'Jane Smith');
+      await user.type(screen.getByLabelText(/email/i), 'jane@example.com');
+      await user.type(
+        screen.getByLabelText(/how can we help/i),
+        'We are interested in reserving a puppy this spring.',
+      );
+
+      const submitButton = screen.getByRole('button', { name: /share my inquiry/i });
+      expect(submitButton).toBeDisabled();
+
+      await user.click(screen.getByTestId('hcaptcha-widget'));
+      expect(submitButton).not.toBeDisabled();
+    });
+
+    it('displays field errors returned from the server action', async () => {
+      submitContactInquiryMock.mockResolvedValueOnce({
+        status: 'error',
+        message: 'Please correct the highlighted fields.',
+        fieldErrors: {
+          name: 'Name is required',
+          email: 'Provide a valid email',
+          phone: 'Phone number looks incorrect',
+          message: 'Message is required',
+          captcha: 'Complete the captcha',
+        },
+      });
+
+      const user = userEvent.setup();
+      render(<ContactForm />);
+
+      await user.type(screen.getByLabelText(/your name/i), 'Jane');
+      await user.type(screen.getByLabelText(/email/i), 'jane@example.com');
+      await user.type(
+        screen.getByLabelText(/how can we help/i),
+        'We are interested in learning more about your puppies.',
+      );
+      await user.click(screen.getByTestId('hcaptcha-widget'));
+      await user.click(screen.getByRole('button', { name: /share my inquiry/i }));
+
+      expect(await screen.findByText('Name is required')).toBeInTheDocument();
+      expect(screen.getByLabelText(/your name/i)).toHaveAttribute('aria-invalid', 'true');
+      expect(screen.getByText('Provide a valid email')).toBeInTheDocument();
+      expect(screen.getByText('Phone number looks incorrect')).toBeInTheDocument();
+      expect(screen.getByText('Message is required')).toBeInTheDocument();
+      expect(screen.getByText('Complete the captcha')).toBeInTheDocument();
+      expect(submitContactInquiryMock).toHaveBeenCalled();
+    });
+
     it('allows user to fill out form fields', async () => {
       const user = userEvent.setup();
       render(<ContactForm />);
@@ -290,6 +351,38 @@ describe('ContactForm', () => {
 
       expect(screen.getByText(/we respond within one business day/i)).toBeInTheDocument();
       expect(screen.getByText(/by submitting, you consent to be contacted/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Submission behavior', () => {
+    it('submits form data and renders success feedback', async () => {
+      const successMessage = 'Custom success message';
+      submitContactInquiryMock.mockResolvedValueOnce({
+        status: 'success',
+        message: successMessage,
+      });
+
+      const user = userEvent.setup();
+      render(<ContactForm />);
+
+      await user.type(screen.getByLabelText(/your name/i), 'John Doe');
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com');
+      await user.type(screen.getByLabelText(/phone/i), '+1 205 555 1234');
+      await user.type(
+        screen.getByLabelText(/how can we help/i),
+        'We would like to reserve a puppy later this month.',
+      );
+      await user.click(screen.getByTestId('hcaptcha-widget'));
+      await user.click(screen.getByRole('button', { name: /share my inquiry/i }));
+
+      expect(await screen.findByText(successMessage)).toBeInTheDocument();
+      const lastCall = submitContactInquiryMock.mock.calls.at(-1);
+      expect(lastCall).toBeDefined();
+      if (!lastCall) throw new Error('No calls to submitContactInquiry');
+      const formData = lastCall[1];
+      expect(formData.get('name')).toBe('John Doe');
+      expect(formData.get('email')).toBe('john@example.com');
+      expect(formData.get('phone')).toBe('+1 205 555 1234');
     });
   });
 });

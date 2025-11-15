@@ -175,7 +175,7 @@ describe('StripeWebhookHandler', () => {
       const result = await StripeWebhookHandler.processEvent(event);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Missing required metadata: puppy_id');
+      expect(result.error).toContain('Missing required session metadata');
     });
 
     it('should handle unpaid status (async payment pending)', async () => {
@@ -325,7 +325,7 @@ describe('StripeWebhookHandler', () => {
       );
     });
 
-    it('sends async failure email using customer details when metadata email missing', async () => {
+    it('prefers customer_details over metadata when sending async failure email', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
       const { sendAsyncPaymentFailedEmail } = await import('@/lib/emails/async-payment-failed');
 
@@ -338,7 +338,8 @@ describe('StripeWebhookHandler', () => {
           puppy_id: mockPuppyId,
           puppy_slug: 'test-puppy',
           puppy_name: 'Test Puppy',
-          customer_email: '',
+          customer_email: 'metadata@example.com',
+          customer_name: 'Metadata Name',
           channel: 'site',
         },
         customer_details: {

@@ -11,14 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+      # CI uses staging/test Supabase keys. Fall back to prod secrets only if CI-specific ones are missing.
+      SUPABASE_URL_CI: ${{ secrets.SUPABASE_URL_CI || secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY_CI: ${{ secrets.SUPABASE_ANON_KEY_CI || secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_CI: ${{ secrets.SUPABASE_SERVICE_ROLE_CI || secrets.SUPABASE_SERVICE_ROLE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL_CI || secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_CI || secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_CI || secrets.SUPABASE_SERVICE_ROLE }}
       NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ${{ secrets.NEXT_PUBLIC_HCAPTCHA_SITE_KEY }}
       HCAPTCHA_SECRET_KEY: ${{ secrets.HCAPTCHA_SECRET_KEY }}
       NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN: dev-bypass-token
       HCAPTCHA_BYPASS_TOKEN: dev-bypass-token
       HCAPTCHA_ALLOW_BYPASS_IN_PROD: 'true'
+      PLAYWRIGHT_MOCK_RESERVATION: 'true'
       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
@@ -63,9 +68,6 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
-
-      - name: Verify Database Schema
-        run: node scripts/verify-constraints.mjs
 
       - name: Unit tests
         run: npm run test

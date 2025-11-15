@@ -13,6 +13,7 @@ import { stripe } from '@/lib/stripe/client';
 import { getPuppyBySlug } from '@/lib/supabase/queries';
 import type { CreateCheckoutSessionParams } from '@/lib/stripe/types';
 import { ReservationQueries } from '@/lib/reservations/queries';
+import { calculateDepositAmount } from '@/lib/payments/deposit';
 
 /**
  * Result of checkout session creation
@@ -77,13 +78,17 @@ export async function createCheckoutSession(
     }
 
     // Step 3: Determine deposit amount (fixed $300 or use puppy price if lower)
-    const DEPOSIT_AMOUNT_USD = 300;
-    const depositAmount = puppy.price_usd
-      ? Math.min(DEPOSIT_AMOUNT_USD, puppy.price_usd)
-      : DEPOSIT_AMOUNT_USD;
+    const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
 
     // Step 4: Get site URL for redirect URLs
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+    if (process.env.PLAYWRIGHT_MOCK_RESERVATION === 'true') {
+      return {
+        success: true,
+        sessionUrl: `/mock-checkout?puppy=${encodeURIComponent(puppy.slug || puppySlug)}`,
+      };
+    }
 
     // Step 5: Create Stripe Checkout Session
     const params: CreateCheckoutSessionParams = {

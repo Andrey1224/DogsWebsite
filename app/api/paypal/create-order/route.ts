@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { createPayPalOrder } from '@/lib/paypal/client';
 import { getPuppyBySlug } from '@/lib/supabase/queries';
 import { ReservationQueries } from '@/lib/reservations/queries';
+import { calculateDepositAmount } from '@/lib/payments/deposit';
 
 export const runtime = 'nodejs';
 
@@ -39,10 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const DEPOSIT_AMOUNT_USD = 300;
-    const depositAmount = puppy.price_usd
-      ? Math.min(DEPOSIT_AMOUNT_USD, puppy.price_usd)
-      : DEPOSIT_AMOUNT_USD;
+    const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 

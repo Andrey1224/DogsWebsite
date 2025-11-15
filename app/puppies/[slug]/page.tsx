@@ -10,6 +10,7 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { getProductSchema } from '@/lib/seo/structured-data';
 import { ReserveButton } from './reserve-button';
 import { getPuppyReservationState } from '@/lib/reservations/state';
+import { calculateDepositAmount } from '@/lib/payments/deposit';
 
 export const revalidate = 60;
 
@@ -99,10 +100,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   const statusLabel = puppy.status
     ? puppy.status.charAt(0).toUpperCase() + puppy.status.slice(1)
     : 'Unknown';
-  const DEPOSIT_AMOUNT_USD = 300;
-  const depositAmount = puppy.price_usd
-    ? Math.min(DEPOSIT_AMOUNT_USD, puppy.price_usd)
-    : DEPOSIT_AMOUNT_USD;
+  const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
   const paypalClientId = process.env.PAYPAL_CLIENT_ID ?? null;
 
   return (

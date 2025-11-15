@@ -30,6 +30,15 @@ interface PayPalCaptureResource extends PayPalCapture {
   };
 }
 
+function isPayPalCaptureResource(resource: unknown): resource is PayPalCaptureResource {
+  if (!resource || typeof resource !== 'object') {
+    return false;
+  }
+
+  const candidate = resource as PayPalCaptureResource;
+  return typeof candidate.id === 'string' && typeof candidate.amount?.value === 'string';
+}
+
 export class PayPalWebhookHandler {
   static async processEvent(
     event: PayPalWebhookEvent<Record<string, unknown>>,
@@ -78,9 +87,7 @@ export class PayPalWebhookHandler {
     event: PayPalWebhookEvent<Record<string, unknown>>,
   ): Promise<PayPalWebhookProcessingResult> {
     const eventId = event.id;
-    const captureData = event.resource as unknown;
-
-    if (!captureData || typeof captureData !== 'object') {
+    if (!isPayPalCaptureResource(event.resource)) {
       console.error('[PayPal Webhook] Invalid capture resource payload');
       return {
         success: false,
@@ -89,8 +96,7 @@ export class PayPalWebhookHandler {
       };
     }
 
-    const capture = captureData as PayPalCaptureResource;
-
+    const capture = event.resource;
     if (!capture || !capture.id) {
       console.error('[PayPal Webhook] Missing capture resource or ID');
       return {

@@ -27,8 +27,11 @@ if (existsSync(envPath)) {
   console.warn('⚠️  .env.local not found; relying on CI environment variables only.');
 }
 
-const supabaseUrl = envVars.SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseServiceRole = envVars.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_ROLE;
+const envValue = (key) => envVars[key] || process.env[key];
+
+const supabaseUrl = envValue('SUPABASE_URL_CI') || envValue('SUPABASE_URL');
+const supabaseServiceRole =
+  envValue('SUPABASE_SERVICE_ROLE_CI') || envValue('SUPABASE_SERVICE_ROLE');
 
 if (!supabaseUrl || !supabaseServiceRole) {
   console.error('❌ Missing environment variables');

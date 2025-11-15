@@ -39,6 +39,21 @@ Sprint workspace for Exotic Bulldog Legacy. Sprint 1 delivered the Supabase-driv
 
 CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass lint, test, and build before merging.
 
+- Playwright reservation scenario: set `PLAYWRIGHT_MOCK_RESERVATION=true` so the Stripe checkout action returns a mock session URL (`/mock-checkout`) instead of hitting real gateways. The CI workflow exports this flag; for local runs use `PLAYWRIGHT_MOCK_RESERVATION=true npm run e2e`.
+
+## Supabase Credentials
+
+- Local development still uses `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE` from `.env.local`.
+- GitHub Actions now expects CI-specific secrets: `SUPABASE_URL_CI`, `SUPABASE_ANON_KEY_CI`, `SUPABASE_SERVICE_ROLE_CI`. Point them at a staging/test project; the workflow maps them to the generic `SUPABASE_*` variables that Next.js relies on.
+- Avoid exporting production service keys into CI — even though the workflow no longer calls Supabase while staging access is broken, we still source only staging/testing keys once Supabase resolves the issue.
+
+### Current Supabase CI status
+
+- We attempted to link the staging project (`gbiuuutwyswaghhzyiti`) via `supabase link --project-ref`, but the CLI returns `Your account does not have the necessary privileges to access this endpoint`.
+- Direct Postgres access via the project host (`db.gbiuuutwyswaghhzyiti.supabase.co`) fails on IPv4-only networks; the DNS record resolves to IPv6 only.
+- Using the session pooler URI (`postgres.gbiuuutwyswaghhzyiti@aws-1-us-east-2.pooler.supabase.com`) still returns `FATAL: Tenant or user not found (SQLSTATE XX000)` even with freshly reset passwords.
+- Because of these upstream issues, the CI workflow temporarily no longer runs `scripts/verify-constraints.mjs` or any Supabase commands. We will re-enable the database verification step once Supabase support restores access to the staging pooler.
+
 ## Reference Docs
 
 - `Spec1.md` — product scope and functional requirements.

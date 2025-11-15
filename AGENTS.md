@@ -32,6 +32,7 @@ Next.js routes live under `app/`, server actions stay alongside their routes (e.
 - `npm run build` / `npm run start` — production build and serve.
 - `npm run verify` — Aggregated lint + typecheck + unit + e2e.
 - Supabase CLI is **never** run by agents/CI; the maintainer regenerates types locally via `npm run supabase:types` when needed.
+- Reservation E2E uses a mock checkout flag. Set `PLAYWRIGHT_MOCK_RESERVATION=true` (CI already does this) so `createCheckoutSession` returns `/mock-checkout` instead of hitting Stripe; reset to `false` for normal behavior.
 
 ## Coding Style & Naming Conventions
 
@@ -45,6 +46,7 @@ Next.js routes live under `app/`, server actions stay alongside their routes (e.
 - Unit/component tests rely on Vitest + RTL; place specs alongside source (`foo.test.tsx`).
 - E2E lives in `tests/e2e/*.spec.ts`; run against production build using Playwright browsers.
 - Aim for ≥80% coverage on shared libraries, especially payments/reservations.
+- The reservation scenario in `tests/e2e/reservation.spec.ts` is skipped unless `PLAYWRIGHT_MOCK_RESERVATION=true`. Use that env var plus `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` for automated runs.
 
 ## Commit & Pull Request Guidelines
 
