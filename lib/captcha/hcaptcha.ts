@@ -20,8 +20,9 @@ export async function verifyHCaptcha(
 ): Promise<VerifyResult> {
   const bypassToken = process.env.HCAPTCHA_BYPASS_TOKEN;
   const isNonProduction = process.env.NODE_ENV !== 'production';
+  const allowBypassInProd = process.env.HCAPTCHA_ALLOW_BYPASS_IN_PROD === 'true';
 
-  if (bypassToken && token === bypassToken && isNonProduction) {
+  if (bypassToken && token === bypassToken && (isNonProduction || allowBypassInProd)) {
     return { ok: true };
   }
 
