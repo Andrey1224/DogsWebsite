@@ -203,7 +203,7 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
         });
 
         // Call the server action directly
-        const result = await updatePuppyAction(formState, filteredFormData);
+        const result = await updatePuppyAction({ status: 'idle' }, filteredFormData);
         setFormState(result);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Upload failed';
