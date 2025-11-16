@@ -204,7 +204,10 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
 
         // Call the server action directly
         const result = await updatePuppyAction({ status: 'idle' }, filteredFormData);
-        setFormState(result);
+        // State updates after await must be wrapped in their own startTransition
+        startTransition(() => {
+          setFormState(result);
+        });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Upload failed';
         toast.error(errorMessage);
