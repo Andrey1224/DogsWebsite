@@ -9,6 +9,7 @@
 ## Problem Statement
 
 When editing a puppy in the admin panel:
+
 1. ✅ Edit panel opens successfully
 2. ✅ All fields pre-populate correctly
 3. ✅ User can modify fields (e.g., Description)
@@ -26,6 +27,7 @@ When editing a puppy in the admin panel:
 ### Initial Investigation
 
 The component uses React 19's Server Actions with `useActionState` hook, but faces integration challenges with:
+
 - Client-side file uploads (sire/dam/puppy photos)
 - Async operations before calling server action
 - Form state management across transitions
@@ -33,6 +35,7 @@ The component uses React 19's Server Actions with `useActionState` hook, but fac
 ### Key Constraint
 
 **File uploads must happen client-side** before submitting to server action because:
+
 - Server Actions have 1MB payload limit
 - Photos can be several MB each
 - Solution: Upload to Supabase Storage via signed URLs, then pass URLs (< 1KB) to server action
@@ -61,6 +64,7 @@ startTransition(async () => {
 ```
 
 **Result**: ❌ FAILED
+
 - Button showed "Saving..."
 - POST request sent successfully
 - No state updates occurred
@@ -77,16 +81,19 @@ startTransition(async () => {
 ```typescript
 startTransition(async () => {
   const result = await updatePuppyAction({ status: 'idle' }, filteredFormData);
-  startTransition(() => {  // Nested
+  startTransition(() => {
+    // Nested
     setFormState(result);
   });
 });
 ```
 
 **React Documentation Reference**:
+
 > "State updates after await are not automatically transitions. Wrap them in startTransition."
 
 **Result**: ❌ FAILED
+
 - Button showed "Saving..."
 - POST request sent successfully
 - **Console Error**: Warnings about nested transitions
@@ -110,13 +117,14 @@ const [formState, formAction, isPending] = useActionState<UpdatePuppyState, Form
 // handleSubmit - simplified
 try {
   // ... upload files ...
-  formAction(filteredFormData);  // Direct call, no await
+  formAction(filteredFormData); // Direct call, no await
 } catch (error) {
   toast.error(error.message);
 }
 ```
 
 **Result**: ❌ FAILED
+
 - **Console Error**:
   ```
   An async function with useActionState was called outside of a transition.
@@ -149,6 +157,7 @@ try {
 ```
 
 **Result**: ⏳ UNKNOWN - User reports still not working
+
 - Console shows hydration error (unrelated - in contact-bar.tsx)
 - Need confirmation if Save Changes works now
 
@@ -159,11 +168,13 @@ try {
 ### File: `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx`
 
 **Imports**:
+
 ```typescript
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 ```
 
 **Hooks** (lines 64-68):
+
 ```typescript
 const [formState, formAction, isPending] = useActionState<UpdatePuppyState, FormData>(
   updatePuppyAction,
@@ -173,6 +184,7 @@ const [isTransitioning, startTransition] = useTransition();
 ```
 
 **Submit Handler** (lines 133-213):
+
 ```typescript
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
@@ -223,6 +235,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 ```
 
 **Success Handler** (lines 116-129):
+
 ```typescript
 useEffect(() => {
   if (formState.status === 'success' && !processedSuccessRef.current) {
@@ -241,6 +254,7 @@ useEffect(() => {
 ```
 
 **Button States** (lines 560-566):
+
 ```typescript
 <button
   type="submit"
@@ -355,12 +369,9 @@ The action executes successfully (confirmed by 200 OK response in logs).
 ```typescript
 export async function updateAdminPuppy(input: UpdatePuppyPayload): Promise<void> {
   const supabase = getAdminSupabaseClient();
-  const payload = mapUpdatePayload(input);  // Converts to snake_case
+  const payload = mapUpdatePayload(input); // Converts to snake_case
 
-  const { error } = await supabase
-    .from('puppies')
-    .update(payload)
-    .eq('id', input.id);
+  const { error } = await supabase.from('puppies').update(payload).eq('id', input.id);
 
   if (error) {
     throw error;
@@ -374,17 +385,17 @@ Database update succeeds (no errors in server logs).
 
 ## Observed Behavior vs Expected
 
-| Action | Expected | Observed |
-|--------|----------|----------|
-| Click "Save Changes" | Button shows "Saving..." | ✅ Works |
-| File uploads | Photos upload to Supabase | ✅ Works (when files present) |
-| POST request | Sent to `/admin/puppies` | ✅ Works (200 OK) |
-| Database update | Puppy record updated | ✅ Works (confirmed in DB) |
-| Server action returns | `{ status: 'success' }` | ✅ Works |
-| `formState` updates | Changes to `{ status: 'success' }` | ❌ FAILS |
-| `useEffect` triggers | Toast + close panel + refresh | ❌ FAILS (doesn't trigger) |
-| Panel closes | Edit panel dismisses | ❌ FAILS |
-| UI updates | Puppy card shows new data | ❌ FAILS |
+| Action                | Expected                           | Observed                      |
+| --------------------- | ---------------------------------- | ----------------------------- |
+| Click "Save Changes"  | Button shows "Saving..."           | ✅ Works                      |
+| File uploads          | Photos upload to Supabase          | ✅ Works (when files present) |
+| POST request          | Sent to `/admin/puppies`           | ✅ Works (200 OK)             |
+| Database update       | Puppy record updated               | ✅ Works (confirmed in DB)    |
+| Server action returns | `{ status: 'success' }`            | ✅ Works                      |
+| `formState` updates   | Changes to `{ status: 'success' }` | ❌ FAILS                      |
+| `useEffect` triggers  | Toast + close panel + refresh      | ❌ FAILS (doesn't trigger)    |
+| Panel closes          | Edit panel dismisses               | ❌ FAILS                      |
+| UI updates            | Puppy card shows new data          | ❌ FAILS                      |
 
 **Conclusion**: The server-side operation succeeds, but the client-side state update fails.
 
@@ -414,7 +425,7 @@ function UpdateName() {
 
   return (
     <form action={submitAction}>
-      <input type="text" name="name" disabled={isPending}/>
+      <input type="text" name="name" disabled={isPending} />
     </form>
   );
 }
@@ -425,14 +436,11 @@ function UpdateName() {
 ### From `react.dev/reference/react/useActionState`:
 
 ```jsx
-const [state, submitAction, isPending] = useActionState(
-  async (previousState, newName) => {
-    const error = await updateName(newName);
-    if (error) return error;
-    return null;
-  },
-  null,
-);
+const [state, submitAction, isPending] = useActionState(async (previousState, newName) => {
+  const error = await updateName(newName);
+  if (error) return error;
+  return null;
+}, null);
 ```
 
 **Pattern**: Server function integrated directly into `useActionState`.
@@ -440,10 +448,12 @@ const [state, submitAction, isPending] = useActionState(
 ### Our Hybrid Pattern
 
 We need BOTH:
+
 1. Async file uploads (before server action)
 2. Server action call with state management
 
 **The conflict**:
+
 - File uploads require async/await in handleSubmit
 - `useActionState` + `formAction` expects to be called either:
   - As form's `action` prop (declarative), OR
@@ -458,6 +468,7 @@ We chose option 2, but it still fails.
 ### Hypothesis 1: Async handleSubmit Breaks Transition Chain
 
 When `handleSubmit` is `async` and contains `await uploadFiles()`:
+
 1. Function becomes async
 2. `startTransition(() => formAction(...))` executes
 3. But the transition might not "wait" for file uploads
@@ -480,6 +491,7 @@ React 19's `useActionState` might have specific rules about when state can updat
 ## Debugging Steps Not Yet Tried
 
 1. **Add console.logs to server action**:
+
    ```typescript
    export async function updatePuppyAction(...) {
      console.log('[SERVER] Received formData:', Object.fromEntries(formData));
@@ -490,6 +502,7 @@ React 19's `useActionState` might have specific rules about when state can updat
    ```
 
 2. **Add console.logs to client useEffect**:
+
    ```typescript
    useEffect(() => {
      console.log('[CLIENT] formState changed:', formState);
@@ -553,10 +566,12 @@ const handleSubmit = async (e) => {
 ```
 
 **Pros**:
+
 - Full control over state flow
 - No React 19 transition complexity
 
 **Cons**:
+
 - Loses `useActionState` benefits
 - More manual error handling
 
@@ -580,7 +595,7 @@ const handleSubmit = async (e) => {
 
   // Build FormData with URLs
   const formData = new FormData();
-  sireUrls.forEach(url => formData.append('sirePhotoUrls', url));
+  sireUrls.forEach((url) => formData.append('sirePhotoUrls', url));
 
   // Call update action (pure server action flow)
   formAction(formData);
@@ -588,10 +603,12 @@ const handleSubmit = async (e) => {
 ```
 
 **Pros**:
+
 - All async operations in server actions
 - Clean separation of concerns
 
 **Cons**:
+
 - File uploads still hit 1MB Server Action limit
 - Doesn't solve the core constraint
 
@@ -618,9 +635,11 @@ const handleSubmit = async (e) => {
 ```
 
 **Pros**:
+
 - Follows React 19's declarative pattern
 
 **Cons**:
+
 - Poor UX (two-step process)
 - Breaks expected form submission flow
 
@@ -656,6 +675,7 @@ const handleSubmit = async (e) => {
 ### Immediate Testing
 
 1. **Add extensive logging**:
+
    ```typescript
    // Client
    console.log('[SUBMIT] Starting submission');
@@ -683,6 +703,7 @@ const handleSubmit = async (e) => {
 If testing reveals that async file uploads are incompatible with `useActionState`:
 
 **Recommended**: Option A (Manual Form Submission)
+
 - Remove `useActionState`
 - Use manual `isPending` state
 - Call server action directly with error handling
@@ -693,6 +714,7 @@ If testing reveals that async file uploads are incompatible with `useActionState
 ## Summary
 
 **What Works**:
+
 - ✅ Form pre-population
 - ✅ File uploads to Supabase
 - ✅ POST request to server
@@ -700,6 +722,7 @@ If testing reveals that async file uploads are incompatible with `useActionState
 - ✅ Server action execution
 
 **What Doesn't Work**:
+
 - ❌ Client-side state updates after server action returns
 - ❌ useEffect not triggering on success
 - ❌ Panel not closing

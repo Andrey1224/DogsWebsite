@@ -2,6 +2,7 @@
 
 | Date       | Phase                                    | Status      | Notes                                                                                                                                                                              |
 | ---------- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2025-11-16 | Bugfix — Description Not Saving          | ✅ Complete | Fixed Zod validation error preventing description updates. Empty weightOz field caused validation failure, blocking entire update. Added emptyToNull() helper.                      |
 | 2025-11-15 | Bugfix — Edit Form Pre-population        | ✅ Complete | Fixed edit form not pre-filling Price, Birth Date, Breed, Sex, Color, Weight, Description, Parent Names. Converted all fields to controlled React components.                      |
 | 2025-11-15 | Feature — Puppy Edit Functionality       | ✅ Complete | Added full edit capability for puppies with drawer UI, photo management, and read-only slug. Completes CRUD operations for admin panel.                                            |
 | 2025-11-14 | Infrastructure — pg_cron Migration       | ✅ Complete | Migrated from Vercel Cron (Pro-only) to Supabase pg_cron for reservation expiry. Saves $20/month, eliminates HTTP overhead, improves reliability.                                  |
