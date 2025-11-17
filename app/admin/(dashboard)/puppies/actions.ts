@@ -234,6 +234,10 @@ export async function updatePuppyAction(
       .getAll('videoUrls')
       .filter((url): url is string => typeof url === 'string' && url.length > 0);
 
+    // Helper to convert empty strings to null
+    const emptyToNull = (value: FormDataEntryValue | null) =>
+      typeof value === 'string' && value.trim() === '' ? null : value;
+
     const submission = {
       id: puppyId,
       name: formData.get('name'),
@@ -247,8 +251,8 @@ export async function updatePuppyAction(
       damName: formData.get('damName'),
       sex: formData.get('sex'),
       color: formData.get('color'),
-      weightOz: formData.get('weightOz'),
-      description: formData.get('description'),
+      weightOz: emptyToNull(formData.get('weightOz')),
+      description: emptyToNull(formData.get('description')),
       stripePaymentLink: formData.get('stripePaymentLink'),
       paypalEnabled: formData.get('paypalEnabled'),
       photoUrls: photoUrls.length > 0 ? photoUrls : undefined,
@@ -258,6 +262,7 @@ export async function updatePuppyAction(
     };
 
     const parsed = updatePuppySchema.safeParse(submission);
+
     if (!parsed.success) {
       const { fieldErrors, formErrors } = parsed.error.flatten();
       return {

@@ -1,12 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { ParentPhotoUpload } from '@/components/admin/parent-photo-upload';
 import { useMediaUpload } from '@/lib/admin/hooks/use-media-upload';
 import { fetchPuppyForEditAction, updatePuppyAction } from './actions';
-import type { UpdatePuppyState } from './types';
+import { initialUpdatePuppyState, type UpdatePuppyState } from './types';
 
 type StatusOption = {
   value: string;
@@ -60,11 +60,12 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
   const [damFiles, setDamFiles] = useState<File[]>([]);
   const [puppyFiles, setPuppyFiles] = useState<File[]>([]);
 
-  // Form submission state
-  const [isPending, startTransition] = useTransition();
-  const [formState, setFormState] = useState<UpdatePuppyState>({
-    status: 'idle',
-  });
+  // Form submission state using useActionState
+  const [formState, formAction, isPending] = useActionState<UpdatePuppyState, FormData>(
+    updatePuppyAction,
+    initialUpdatePuppyState,
+  );
+  const [isTransitioning, startTransition] = useTransition();
 
   // Load puppy data on mount
   useEffect(() => {
@@ -134,89 +135,81 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
     e.preventDefault();
     const formElement = e.currentTarget;
 
-    startTransition(async () => {
-      try {
-        const tempId = puppyId; // Use existing puppy ID for storage paths
+    try {
+      const tempId = puppyId; // Use existing puppy ID for storage paths
 
-        // Upload new photos
-        let newSirePhotoUrls: string[] = [];
-        let newDamPhotoUrls: string[] = [];
-        let newPuppyPhotoUrls: string[] = [];
+      // Upload new photos
+      let newSirePhotoUrls: string[] = [];
+      let newDamPhotoUrls: string[] = [];
+      let newPuppyPhotoUrls: string[] = [];
 
-        if (sireFiles.length > 0) {
-          toast.info('Uploading sire photos...');
-          newSirePhotoUrls = await uploadFiles(sireFiles, `${tempId}/sire`);
-        }
-
-        if (damFiles.length > 0) {
-          toast.info('Uploading dam photos...');
-          newDamPhotoUrls = await uploadFiles(damFiles, `${tempId}/dam`);
-        }
-
-        if (puppyFiles.length > 0) {
-          toast.info('Uploading puppy photos...');
-          newPuppyPhotoUrls = await uploadFiles(puppyFiles, `${tempId}/gallery`);
-        }
-
-        // Combine existing (not deleted) + new photos
-        const finalSirePhotos = [
-          ...existingSirePhotoUrls.filter((url) => !deletedSirePhotos.has(url)),
-          ...newSirePhotoUrls,
-        ];
-        const finalDamPhotos = [
-          ...existingDamPhotoUrls.filter((url) => !deletedDamPhotos.has(url)),
-          ...newDamPhotoUrls,
-        ];
-        const finalPuppyPhotos = [
-          ...existingPuppyPhotoUrls.filter((url) => !deletedPuppyPhotos.has(url)),
-          ...newPuppyPhotoUrls,
-        ];
-
-        // Build FormData without File objects
-        const rawFormData = new FormData(formElement);
-        const filteredFormData = new FormData();
-
-        // Add puppy ID
-        filteredFormData.append('id', puppyId);
-
-        // Copy non-file fields
-        rawFormData.forEach((value, key) => {
-          if (!(value instanceof File)) {
-            filteredFormData.append(key, value);
-          }
-        });
-
-        // Add photo URLs
-        filteredFormData.delete('sirePhotoUrls');
-        finalSirePhotos.forEach((url) => {
-          filteredFormData.append('sirePhotoUrls', url);
-        });
-
-        filteredFormData.delete('damPhotoUrls');
-        finalDamPhotos.forEach((url) => {
-          filteredFormData.append('damPhotoUrls', url);
-        });
-
-        filteredFormData.delete('photoUrls');
-        finalPuppyPhotos.forEach((url) => {
-          filteredFormData.append('photoUrls', url);
-        });
-
-        // Call the server action directly
-        const result = await updatePuppyAction({ status: 'idle' }, filteredFormData);
-        // State updates after await must be wrapped in their own startTransition
-        startTransition(() => {
-          setFormState(result);
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-        toast.error(errorMessage);
-        setFormState({
-          status: 'error',
-          formError: errorMessage,
-        });
+      if (sireFiles.length > 0) {
+        toast.info('Uploading sire photos...');
+        newSirePhotoUrls = await uploadFiles(sireFiles, `${tempId}/sire`);
       }
-    });
+
+      if (damFiles.length > 0) {
+        toast.info('Uploading dam photos...');
+        newDamPhotoUrls = await uploadFiles(damFiles, `${tempId}/dam`);
+      }
+
+      if (puppyFiles.length > 0) {
+        toast.info('Uploading puppy photos...');
+        newPuppyPhotoUrls = await uploadFiles(puppyFiles, `${tempId}/gallery`);
+      }
+
+      // Combine existing (not deleted) + new photos
+      const finalSirePhotos = [
+        ...existingSirePhotoUrls.filter((url) => !deletedSirePhotos.has(url)),
+        ...newSirePhotoUrls,
+      ];
+      const finalDamPhotos = [
+        ...existingDamPhotoUrls.filter((url) => !deletedDamPhotos.has(url)),
+        ...newDamPhotoUrls,
+      ];
+      const finalPuppyPhotos = [
+        ...existingPuppyPhotoUrls.filter((url) => !deletedPuppyPhotos.has(url)),
+        ...newPuppyPhotoUrls,
+      ];
+
+      // Build FormData without File objects
+      const rawFormData = new FormData(formElement);
+      const filteredFormData = new FormData();
+
+      // Add puppy ID
+      filteredFormData.append('id', puppyId);
+
+      // Copy non-file fields
+      rawFormData.forEach((value, key) => {
+        if (!(value instanceof File)) {
+          filteredFormData.append(key, value);
+        }
+      });
+
+      // Add photo URLs
+      filteredFormData.delete('sirePhotoUrls');
+      finalSirePhotos.forEach((url) => {
+        filteredFormData.append('sirePhotoUrls', url);
+      });
+
+      filteredFormData.delete('damPhotoUrls');
+      finalDamPhotos.forEach((url) => {
+        filteredFormData.append('damPhotoUrls', url);
+      });
+
+      filteredFormData.delete('photoUrls');
+      finalPuppyPhotos.forEach((url) => {
+        filteredFormData.append('photoUrls', url);
+      });
+
+      // Call the form action wrapped in startTransition
+      startTransition(() => {
+        formAction(filteredFormData);
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      toast.error(errorMessage);
+    }
   };
 
   const handleDeletePhoto = (url: string, type: 'sire' | 'dam' | 'puppy') => {
@@ -559,17 +552,17 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
           <button
             type="button"
             onClick={onClose}
-            disabled={isPending || isUploading}
+            disabled={isPending || isTransitioning || isUploading}
             className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text transition hover:bg-hover disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isPending || isUploading}
+            disabled={isPending || isTransitioning || isUploading}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            {isPending || isUploading ? 'Saving...' : 'Save Changes'}
+            {isPending || isTransitioning || isUploading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>
