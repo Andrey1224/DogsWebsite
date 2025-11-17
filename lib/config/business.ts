@@ -38,6 +38,7 @@ function parseAddress(raw?: string) {
     return {
       ...DEFAULT_ADDRESS,
       formatted: `${DEFAULT_ADDRESS.streetAddress}, ${DEFAULT_ADDRESS.addressLocality}, ${DEFAULT_ADDRESS.addressRegion} ${DEFAULT_ADDRESS.postalCode}`,
+      display: `${DEFAULT_ADDRESS.addressLocality}, ${DEFAULT_ADDRESS.addressRegion}`,
     };
   }
 
@@ -49,6 +50,7 @@ function parseAddress(raw?: string) {
     return {
       ...DEFAULT_ADDRESS,
       formatted: raw,
+      display: raw,
     };
   }
 
@@ -67,6 +69,7 @@ function parseAddress(raw?: string) {
     postalCode,
     addressCountry: addressCountryIso,
     formatted: `${streetAddress}, ${addressLocality}, ${addressRegion} ${postalCode}`,
+    display: `${addressLocality}, ${addressRegion}`,
   };
 }
 

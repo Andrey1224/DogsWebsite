@@ -165,6 +165,7 @@ Finalize performance, reliability, and compliance.
 - [ ] Enable Supabase backups + restore guide
 - [ ] Privacy/Cookie banner + Consent Mode sync
 - [ ] Configure DNS + HTTPS for custom domain
+- [x] Pre-commit hooks (Husky + lint-staged) enforce ESLint + Prettier on staged files
 - [ ] Add minimal admin ops (SQL scripts for bulk updates/imports)
   - [ ] `/admin` console for puppies management
     - [x] P1 Auth foundations (env vars, login form, session cookie, middleware)

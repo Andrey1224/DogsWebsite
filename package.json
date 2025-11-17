@@ -15,7 +15,8 @@
     "e2e": "playwright test",
     "validate-deployment": "npx tsx scripts/validate-deployment.ts",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run e2e",
-    "supabase:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts"
+    "supabase:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^1.12.1",
@@ -51,12 +52,23 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "eslint-plugin-vitest": "^0.5.4",
+    "husky": "^9.1.7",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.0.0",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^6.0.0",
     "vitest": "^3.2.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,scss}": [
+      "prettier --write"
+    ]
   }
 }

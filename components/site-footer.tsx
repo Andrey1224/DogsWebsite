@@ -35,10 +35,7 @@ export function SiteFooter() {
             <div>
               <p className="font-semibold uppercase tracking-wide text-xs text-muted">Visit</p>
               <address className="mt-2 not-italic text-sm leading-relaxed text-text">
-                {BUSINESS_PROFILE.address.streetAddress}
-                <br />
-                {BUSINESS_PROFILE.address.addressLocality}, {BUSINESS_PROFILE.address.addressRegion}{' '}
-                {BUSINESS_PROFILE.address.postalCode}
+                {BUSINESS_PROFILE.address.display}
               </address>
               <p className="mt-2 text-xs text-muted">Appointments scheduled by request only.</p>
               <div className="mt-2 text-sm">
