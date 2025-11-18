@@ -8,7 +8,6 @@ import { ThemeToggle } from '@/components/theme-toggle';
 
 const navItems = [
   { href: '/puppies', label: 'Available Puppies' },
-  { href: '/breeds', label: 'Breeds' },
   { href: '/reviews', label: 'Reviews' },
   { href: '/faq', label: 'FAQ' },
   { href: '/about', label: 'About' },
