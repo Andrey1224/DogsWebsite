@@ -48,15 +48,41 @@ function renderContactPage() {
 }
 
 describe('Contact Page', () => {
-  it('renders page structure with breadcrumbs', () => {
+  it('renders page heading and description', () => {
     renderContactPage();
 
-    // Check breadcrumbs navigation
-    const nav = screen.getByRole('navigation');
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: /Let's plan your bulldog match/i,
+      }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/Send an inquiry or tap the quick actions in the contact bar/i),
+    ).toBeInTheDocument();
+  });
+
+  it('renders breadcrumbs with correct links', () => {
+    renderContactPage();
+
+    const nav = screen.getByRole('navigation', { name: /Breadcrumb/i });
     expect(nav).toBeInTheDocument();
 
     const homeLink = screen.getByRole('link', { name: /Home/i });
     expect(homeLink).toHaveAttribute('href', '/');
+  });
+
+  it('renders contact form section', () => {
+    renderContactPage();
+
+    // Check that form heading is present
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: /Send an introduction/i,
+      }),
+    ).toBeInTheDocument();
   });
 
   it('renders contact form with required fields', () => {
@@ -69,11 +95,7 @@ describe('Contact Page', () => {
 
   it('passes accessibility checks', async () => {
     const { container } = renderContactPage();
-
-    // Skip axe check for this page due to duplicate banner landmarks from ContactForm header
-    // The ContactForm component uses <header> which creates a banner landmark,
-    // and the page header also creates one. This is a known structural issue.
-    // Individual form fields and navigation are still accessible.
+    await expectNoA11yViolations(container);
     expect(container).toBeTruthy();
   });
 

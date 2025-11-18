@@ -20,16 +20,16 @@ export default function ContactPage() {
           { label: 'Contact', href: '/contact' },
         ]}
       />
-      <header className="space-y-3">
+      <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Contact</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
-          Let’s plan your bulldog match
+          Let&apos;s plan your bulldog match
         </h1>
         <p className="text-sm text-muted">
           Send an inquiry or tap the quick actions in the contact bar. Share a bit about your
           family, desired timing, and any must-have traits so we can recommend the right puppy.
         </p>
-      </header>
+      </div>
 
       <ContactCards cards={CONTACT_CARDS} />
 
