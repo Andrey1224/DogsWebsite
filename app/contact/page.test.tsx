@@ -69,8 +69,9 @@ describe('Contact Page', () => {
     const homeLink = screen.getByRole('link', { name: /Home/i });
     expect(homeLink).toHaveAttribute('href', '/');
 
-    // Contact breadcrumb should be plain text (current page)
-    expect(screen.getByText('Contact')).toBeInTheDocument();
+    // Contact breadcrumb should be in navigation (current page)
+    const nav = screen.getByRole('navigation');
+    expect(nav).toHaveTextContent('Contact');
   });
 
   it('renders contact form section', () => {

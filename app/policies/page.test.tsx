@@ -59,9 +59,7 @@ describe('Policies Page', () => {
   it('renders all policy sections', () => {
     renderPoliciesPage();
 
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Deposit policy/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /Deposit policy/i })).toBeInTheDocument();
 
     expect(
       screen.getByRole('heading', { level: 2, name: /Refunds & exchanges/i }),
@@ -83,9 +81,7 @@ describe('Policies Page', () => {
   it('renders deposit policy content correctly', () => {
     renderPoliciesPage();
 
-    expect(
-      screen.getByText(/A \$300 deposit reserves your selected puppy/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/A \$300 deposit reserves your selected puppy/i)).toBeInTheDocument();
 
     expect(screen.getByText(/deposits are non-refundable/i)).toBeInTheDocument();
   });
@@ -108,7 +104,9 @@ describe('Policies Page', () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText(/We guarantee against life-threatening congenital conditions for 12 months/i),
+      screen.getByText(
+        /We guarantee against life-threatening congenital conditions for 12 months/i,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -140,8 +138,9 @@ describe('Policies Page', () => {
     const homeLink = screen.getByRole('link', { name: /Home/i });
     expect(homeLink).toHaveAttribute('href', '/');
 
-    // Policies breadcrumb should be plain text (current page)
-    expect(screen.getByText('Policies')).toBeInTheDocument();
+    // Policies breadcrumb should be in navigation (current page)
+    const nav = screen.getByRole('navigation');
+    expect(nav).toHaveTextContent('Policies');
   });
 
   it('renders documents section', () => {
@@ -156,15 +155,18 @@ describe('Policies Page', () => {
   it('renders JSON-LD structured data script', () => {
     const { container } = renderPoliciesPage();
 
-    const jsonLdScript = container.querySelector('script[type="application/ld+json"]');
-    expect(jsonLdScript).toBeInTheDocument();
+    const jsonLdScripts = container.querySelectorAll('script[type="application/ld+json"]');
+    expect(jsonLdScripts.length).toBeGreaterThan(0);
 
-    if (jsonLdScript) {
-      const structuredData = JSON.parse(jsonLdScript.textContent || '{}');
-      expect(structuredData['@type']).toBe('MerchantReturnPolicy');
-      expect(structuredData.returnPolicyCategory).toBeTruthy();
-      expect(structuredData.merchantReturnDays).toBeDefined();
-    }
+    // Find the MerchantReturnPolicy schema (may have multiple schemas including BreadcrumbList)
+    const schemas = Array.from(jsonLdScripts).map((script) =>
+      JSON.parse(script.textContent || '{}'),
+    );
+    const returnPolicySchema = schemas.find((schema) => schema['@type'] === 'MerchantReturnPolicy');
+
+    expect(returnPolicySchema).toBeTruthy();
+    expect(returnPolicySchema?.returnPolicyCategory).toBeTruthy();
+    expect(returnPolicySchema?.merchantReturnDays).toBeDefined();
   });
 
   it('passes accessibility checks', async () => {

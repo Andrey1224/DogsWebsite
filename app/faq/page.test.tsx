@@ -108,8 +108,9 @@ describe('FAQ Page', () => {
     const homeLink = screen.getByRole('link', { name: /Home/i });
     expect(homeLink).toHaveAttribute('href', '/');
 
-    // FAQ breadcrumb should be plain text (current page)
-    expect(screen.getByText('FAQ')).toBeInTheDocument();
+    // FAQ breadcrumb should be in navigation (current page)
+    const nav = screen.getByRole('navigation');
+    expect(nav).toHaveTextContent('FAQ');
   });
 
   it('renders contact CTA section', () => {
@@ -127,16 +128,19 @@ describe('FAQ Page', () => {
   it('renders JSON-LD structured data script', () => {
     const { container } = renderFaqPage();
 
-    const jsonLdScript = container.querySelector('script[type="application/ld+json"]');
-    expect(jsonLdScript).toBeInTheDocument();
+    const jsonLdScripts = container.querySelectorAll('script[type="application/ld+json"]');
+    expect(jsonLdScripts.length).toBeGreaterThan(0);
 
-    if (jsonLdScript) {
-      const structuredData = JSON.parse(jsonLdScript.textContent || '{}');
-      expect(structuredData['@type']).toBe('FAQPage');
-      expect(structuredData.mainEntity).toBeInstanceOf(Array);
-      expect(structuredData.mainEntity.length).toBeGreaterThan(0);
-      expect(structuredData.mainEntity[0]['@type']).toBe('Question');
-    }
+    // Find the FAQPage schema (may have multiple schemas including BreadcrumbList)
+    const schemas = Array.from(jsonLdScripts).map((script) =>
+      JSON.parse(script.textContent || '{}'),
+    );
+    const faqSchema = schemas.find((schema) => schema['@type'] === 'FAQPage');
+
+    expect(faqSchema).toBeTruthy();
+    expect(faqSchema?.mainEntity).toBeInstanceOf(Array);
+    expect(faqSchema?.mainEntity.length).toBeGreaterThan(0);
+    expect(faqSchema?.mainEntity[0]['@type']).toBe('Question');
   });
 
   it('passes accessibility checks', async () => {

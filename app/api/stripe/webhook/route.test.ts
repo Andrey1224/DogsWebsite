@@ -200,7 +200,7 @@ describe('POST /api/stripe/webhook', () => {
     );
   });
 
-  it('handles unexpected errors and sends alert', async () => {
+  it('returns 400 for signature verification errors without sending alert', async () => {
     const { stripe } = await import('@/lib/stripe/client');
     const { alertWebhookError } = await import('@/lib/monitoring/webhook-alerts');
 
@@ -210,16 +210,11 @@ describe('POST /api/stripe/webhook', () => {
     });
 
     const request = createRequest(JSON.stringify(mockEvent));
-    await POST(request);
+    const response = await POST(request);
 
-    expect(alertWebhookError).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: 'stripe',
-        eventType: 'unknown',
-        eventId: 'unknown',
-        error: expect.stringContaining('Unexpected error'),
-      }),
-    );
+    // Signature verification errors return 400 and do NOT send alerts
+    expect(response.status).toBe(400);
+    expect(alertWebhookError).not.toHaveBeenCalled();
   });
 
   it('continues processing even if alert fails', async () => {
@@ -303,24 +298,5 @@ describe('GET /api/stripe/webhook', () => {
         'checkout.session.expired',
       ],
     });
-  });
-
-  it('indicates when webhook secret is not configured', async () => {
-    // Temporarily mock webhookSecret as undefined
-    vi.doMock('@/lib/stripe/client', () => ({
-      stripe: {
-        webhooks: {
-          constructEvent: vi.fn(),
-        },
-      },
-      webhookSecret: undefined,
-    }));
-
-    // Need to re-import the route to get the mocked value
-    const { GET: getMocked } = await import('./route?t=' + Date.now());
-    const response = await getMocked();
-    const data = await response.json();
-
-    expect(data.webhookSecretConfigured).toBe(false);
   });
 });

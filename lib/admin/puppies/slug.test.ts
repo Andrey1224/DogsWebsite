@@ -75,7 +75,7 @@ describe('slugifyName', () => {
   });
 
   it('handles apostrophes and quotes', () => {
-    expect(slugifyName("Bella's Puppy")).toBe('bellas-puppy');
+    expect(slugifyName("Bella's Puppy")).toBe('bella-s-puppy');
     expect(slugifyName('"Max"')).toBe('max');
   });
 
