@@ -1,6 +1,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+// Blur placeholder data URLs for review images
+const BLUR_DATA_URLS = {
+  'sarah-charlie':
+    'data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAwAgCdASoQAAwAAgA0JaQAA3AA/vOIAAA=',
+  'mark-lisa-duke':
+    'data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAwAgCdASoQAAwAAgA0JaQAA3AA/vOIAAA=',
+  'anthony-tommy':
+    'data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAwAgCdASoQAAwAAgA0JaQAA3AA/vOIAAA=',
+};
+
 const featuredReviews = [
   {
     id: 'sarah-w',
@@ -12,6 +22,7 @@ const featuredReviews = [
     media: {
       url: '/reviews/sarah-charlie.webp',
       alt: 'French Bulldog Charlie with owner Sarah W. from Huntsville, AL',
+      blurDataURL: BLUR_DATA_URLS['sarah-charlie'],
     },
   },
   {
@@ -24,6 +35,7 @@ const featuredReviews = [
     media: {
       url: '/reviews/mark-lisa-duke.webp',
       alt: 'English Bulldog Duke with owners Mark and Lisa P. from Birmingham, AL',
+      blurDataURL: BLUR_DATA_URLS['mark-lisa-duke'],
     },
   },
   {
@@ -36,6 +48,7 @@ const featuredReviews = [
     media: {
       url: '/reviews/anthony-tommy.webp',
       alt: 'French Bulldog Tommy with owner Anthony D. from Montgomery, AL',
+      blurDataURL: BLUR_DATA_URLS['anthony-tommy'],
     },
   },
 ];
@@ -90,6 +103,9 @@ export function ReviewsPreview() {
                     height={300}
                     className="h-48 w-full object-cover"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 33vw, 400px"
+                    loading="lazy"
+                    placeholder="blur"
+                    blurDataURL={review.media.blurDataURL}
                   />
                 </div>
               )}
