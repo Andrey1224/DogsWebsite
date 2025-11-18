@@ -75,6 +75,7 @@ export default function Home() {
               alt="Healthy French and English Bulldog puppies from Exotic Bulldog Legacy breeder in Alabama"
               fill
               priority
+              fetchPriority="high"
               placeholder="blur"
               blurDataURL={HERO_BLUR_DATA_URL}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 28rem"

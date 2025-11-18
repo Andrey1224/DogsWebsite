@@ -73,8 +73,8 @@ export default async function PuppiesPage({
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
-          {puppies.map((puppy) => (
-            <PuppyCard key={puppy.id} puppy={puppy} />
+          {puppies.map((puppy, index) => (
+            <PuppyCard key={puppy.id} puppy={puppy} index={index} />
           ))}
         </div>
       )}
