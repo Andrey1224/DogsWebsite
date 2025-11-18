@@ -48,10 +48,10 @@ describe('PayPalButton', () => {
   });
 
   it('renders container with aria-live attribute', () => {
-    render(<PayPalButton {...mockProps} />);
+    const { container } = render(<PayPalButton {...mockProps} />);
 
-    const container = screen.getByRole('status');
-    expect(container).toBeInTheDocument();
+    const liveRegion = container.querySelector('[aria-live="polite"]');
+    expect(liveRegion).toBeInTheDocument();
   });
 
   it('applies disabled styles when disabled prop is true', () => {
