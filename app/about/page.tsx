@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import { Baby, Heart, Home, Quote, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Baby, Heart, Quote, ShieldCheck } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
@@ -13,14 +12,9 @@ export const dynamic = 'force-static';
 export const metadata = buildMetadata({
   title: 'About — Exotic Bulldog Legacy',
   description:
-    'Discover Exotic Bulldog Legacy’s family-run French and English Bulldog breeding program in Alabama and the journey that inspired it.',
+    "Discover Exotic Bulldog Legacy's family-run French and English Bulldog breeding program in Alabama and the journey that inspired it.",
   path: '/about',
 });
-
-const NURSERY_BLUR =
-  'data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQAgCdASoQABAAA4BaJQBOgCHfNUNt3b+AAP7niTyaxqqP7GlhJWrQ3MAcRzDQH2dJnjFMuREZprYzLmDcHzD/i2adQ3zcXGW80ZoIRTOEiii9ZqjZ3/RAAAA=';
-const VET_BLUR =
-  'data:image/webp;base64,UklGRjAAAABXRUJQVlA4ICQAAABQAQCdASoQABAAD8BaJQBOgCgAAP7vsd/vEb+Fbe/ZlFPlcAA=';
 
 const galleryImages = [
   {
@@ -71,27 +65,6 @@ const stats = [
   { label: 'Years with bulldogs', value: '35+' },
   { label: 'Healthy placements', value: '400+' },
   { label: 'Lifetime support', value: '100%' },
-];
-
-const milestones = [
-  {
-    year: '1980s',
-    title: 'Roman joins the family',
-    description:
-      'Our first French Bulldog, Roman, arrived in Ukraine and sparked a lifelong passion for the breed.',
-  },
-  {
-    year: '2000s',
-    title: 'Show ring experience',
-    description:
-      'Weekends on the road deepened our network with top breeders and veterinarians across the Southeast.',
-  },
-  {
-    year: '2020s',
-    title: 'Alabama family kennel',
-    description:
-      'Montgomery became home to Exotic Bulldog Legacy—pairing science-backed breeding with warm Southern hospitality.',
-  },
 ];
 
 export default function AboutPage() {
@@ -160,110 +133,98 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold text-text">My journey with bulldogs</h2>
-          <ol className="grid gap-6 md:grid-cols-3">
-            {milestones.map((milestone) => (
-              <li key={milestone.year} className="space-y-2">
-                <span className="text-sm font-semibold uppercase tracking-[0.25em] text-accent-aux">
-                  {milestone.year}
-                </span>
-                <h3 className="text-lg font-semibold text-text">{milestone.title}</h3>
-                <p className="text-sm text-muted">{milestone.description}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* Media + Copy */}
-        <section className="mt-16 grid gap-6 md:grid-cols-12">
-          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3] md:col-span-12 lg:col-span-6">
-            <Image
-              src="/about/nursery.webp"
-              alt="French Bulldog nursery space prepared for litters in Alabama"
-              width={900}
-              height={1350}
-              placeholder="blur"
-              blurDataURL={NURSERY_BLUR}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="h-full w-full object-cover object-center"
-              loading="lazy"
-            />
-          </figure>
-          <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-6">
-            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
-              <h3 className="text-lg font-semibold text-text mb-2">
-                Where puppies grow &amp; thrive
-              </h3>
-              <p className="text-sm text-muted">
-                Puppies are raised in dedicated nursery and play spaces with HEPA filtration, daily
-                sanitation, and climate control tuned for brachycephalic comfort.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
-              <h3 className="text-lg font-semibold text-text mb-2">Supervised outdoor play</h3>
-              <p className="text-sm text-muted">
-                Supervised outdoor play builds confidence while early leash work prepares them for
-                real-world routines.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
-              <h3 className="text-lg font-semibold text-text mb-2">Round-the-clock care</h3>
-              <p className="text-sm text-muted">
-                24/7 monitoring and support ensuring every puppy receives individual attention and
-                care tailored to their needs.
-              </p>
-            </div>
+        {/* French Bulldog */}
+        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-8 shadow-sm">
+          <h2 className="font-serif text-3xl font-bold text-text">
+            French Bulldog: The Square Flask of Joy and Sass
+          </h2>
+          <div className="space-y-4 text-sm text-muted md:text-base">
+            <p>
+              A French Bulldog is not just a dog. It is a certified style icon with a perpetually
+              serious, yet incredibly endearing, facial expression. When you bring a Frenchie into
+              your life, you are not just acquiring a pet; you are investing in a 24/7 source of
+              positive energy that fits perfectly on your lap.
+            </p>
+            <p>
+              What is their secret? Absolute self-confidence. The Frenchie operates on the
+              principle: &ldquo;I am adorable, and you know it. Now, please bring me a treat.&rdquo;
+            </p>
+            <p className="font-medium text-text">They possess two key positive qualities:</p>
+            <p>
+              <strong className="text-text">The Master of the Comedic Glare:</strong> Their big,
+              dark eyes and frowning brows can melt your heart in a second. They can ask for cheese
+              without uttering a sound, using only their facial expressions. And this expression
+              always leads to a positive outcome for them!
+            </p>
+            <p>
+              <strong className="text-text">Compact Comfort Energy:</strong> They are the ideal
+              companion for cozy evenings. They are always ready to be close—in your bed, on your
+              favourite blanket, or, even better, right on your head if you&rsquo;re lying
+              awkwardly. They are like a living, warm, slightly snorting anti-stress ball.
+            </p>
+            <p className="font-medium text-text">
+              The Bottom Line: The French Bulldog is absolute, positive happiness in a square flask.
+              This is your personal, perpetually pleased, slightly stubborn friend with satellite
+              ears who fills your every day with cheerful, low-key presence and boundless love. They
+              are the world&rsquo;s best experts on the dolce vita lifestyle.
+            </p>
           </div>
         </section>
 
-        {/* Facility & Veterinary */}
-        <section className="mt-16 grid gap-6 md:grid-cols-12">
-          <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-6 lg:order-1">
-            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
-              <div className="flex items-center gap-2 text-text mb-2">
-                <Home className="h-5 w-5" aria-hidden="true" />
-                <h3 className="text-lg font-semibold">Our facility</h3>
-              </div>
-              <p className="text-sm text-muted">
-                In-home nursery, play yards, and whelping suites with round-the-clock supervision,
-                plus tailored enrichment for every developmental milestone.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
-              <div className="flex items-center gap-2 text-text mb-2">
-                <Stethoscope className="h-5 w-5" aria-hidden="true" />
-                <h3 className="text-lg font-semibold">Veterinary partners</h3>
-              </div>
-              <p className="text-sm text-muted">
-                Board-certified reproductive veterinarians in Montgomery and Birmingham manage
-                progesterone timing, C-sections when needed, and newborn wellness exams.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-6 flex-1">
-              <div className="flex items-center gap-2 text-text mb-2">
-                <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-                <h3 className="text-lg font-semibold">Health protocols</h3>
-              </div>
-              <p className="text-sm text-muted">
-                Comprehensive health screening and vaccination protocols ensure every puppy meets
-                the highest standards before joining their new family.
-              </p>
-            </div>
+        {/* English Bulldog */}
+        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-8 shadow-sm">
+          <h2 className="font-serif text-3xl font-bold text-text">
+            🇬🇧 English Bulldog: Your Personal, Wrinkly Cloud of Happiness
+          </h2>
+          <div className="space-y-4 text-sm text-muted md:text-base">
+            <p>
+              The English Bulldog is a majestic creature whose rough, gladiator-like appearance
+              conceals the soul of a gentle, devoted teddy bear. Bring one home, and you will
+              understand what absolute cuteness is, wrapped up in folds and accompanied by a sound
+              like a quiet, contented rumble.
+            </p>
+            <p className="font-medium text-text">🥰 An Incredibly Sweet Being</p>
+            <p>
+              A Bulldog&rsquo;s cuteness is not aggressive; it is fundamental. Those round,
+              sorrowful eyes, always looking at you with endless love, will make you forget all your
+              problems. Their clumsy, waddling gait and attempts to jump onto the couch—more like a
+              strongman&rsquo;s lift—are a daily, free comedy sketch. The wrinkles on their
+              forehead? They are just a natural built-in mood indicator: they deepen when he asks
+              for a treat and smooth out when he is sleeping, which is his favourite pastime.
+            </p>
+            <p className="font-medium text-text">🤝 A Wonderful Companion</p>
+            <p>
+              The Bulldog is the king of low-effort, but deep, companionship. He won&rsquo;t demand
+              marathons, but he will demand your sofa. He is the perfect partner for:
+            </p>
+            <p>
+              <strong className="text-text">Movie Nights:</strong> His contented sighing nearby
+              creates the perfect cozy atmosphere.
+            </p>
+            <p>
+              <strong className="text-text">Reading Books:</strong> He will serve as a heavy, warm,
+              stabilizing anchor on your lap.
+            </p>
+            <p>
+              <strong className="text-text">Quiet Walks:</strong> He doesn&rsquo;t need speed; he
+              just needs the fact of your presence.
+            </p>
+            <p>
+              He is loyal to the end and considers you the most important person in the universe.
+            </p>
+            <p className="font-medium text-text">✨ Joy and Happiness You Can Handle</p>
+            <p>
+              The Bulldog brings as much joy and happiness into your home as you can bear. This
+              happiness is not in a whirlwind of crazy games, but in a calm, profound sense of
+              contentment. He will teach you to appreciate silence (between snores), enjoy simple
+              things (like a soft rug), and love without reservation.
+            </p>
+            <p className="font-medium text-text">
+              The Bottom Line: The English Bulldog is a marvellous, sweet creature that brings a
+              steady stream of positivity into your life. He is your personal, wrinkly friend who
+              will serve as your pillow, space heater, and therapist.
+            </p>
           </div>
-          <figure className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm aspect-[2/3] md:col-span-12 lg:col-span-6 lg:order-2">
-            <Image
-              src="/about/vet-check.webp"
-              alt="English Bulldog veterinary health check at Montgomery Alabama kennel"
-              width={900}
-              height={1350}
-              placeholder="blur"
-              blurDataURL={VET_BLUR}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="h-full w-full object-cover object-center"
-              loading="lazy"
-            />
-          </figure>
         </section>
 
         {/* CTA */}
