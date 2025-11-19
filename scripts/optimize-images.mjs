@@ -105,40 +105,32 @@ async function optimizeImage(filePath) {
     if (ext === '.jpg' || ext === '.jpeg' || ext === '.png') {
       // Generate WebP
       const webpPath = path.join(dirName, `${baseName}.webp`);
-      await image
-        .clone()
-        .webp({ quality: WEBP_QUALITY })
-        .toFile(webpPath);
+      await image.clone().webp({ quality: WEBP_QUALITY }).toFile(webpPath);
 
       const webpSize = await getFileSizeKB(webpPath);
-      const webpSaved = ((originalSize - webpSize) / originalSize * 100).toFixed(0);
+      const webpSaved = (((originalSize - webpSize) / originalSize) * 100).toFixed(0);
       results.push(`✓ WebP: ${webpSize}KB (${webpSaved}% saved)`);
 
       // Generate AVIF
       const avifPath = path.join(dirName, `${baseName}.avif`);
-      await image
-        .clone()
-        .avif({ quality: AVIF_QUALITY })
-        .toFile(avifPath);
+      await image.clone().avif({ quality: AVIF_QUALITY }).toFile(avifPath);
 
       const avifSize = await getFileSizeKB(avifPath);
-      const avifSaved = ((originalSize - avifSize) / originalSize * 100).toFixed(0);
+      const avifSaved = (((originalSize - avifSize) / originalSize) * 100).toFixed(0);
       results.push(`✓ AVIF: ${avifSize}KB (${avifSaved}% saved)`);
     }
 
     // Optimize existing WebP
     else if (ext === '.webp') {
       const tempPath = filePath + '.tmp';
-      await image
-        .webp({ quality: WEBP_QUALITY })
-        .toFile(tempPath);
+      await image.webp({ quality: WEBP_QUALITY }).toFile(tempPath);
 
       const newSize = await getFileSizeKB(tempPath);
 
       // Only replace if we saved space
       if (parseFloat(newSize) < parseFloat(originalSize)) {
         await fs.rename(tempPath, filePath);
-        const saved = ((originalSize - newSize) / originalSize * 100).toFixed(0);
+        const saved = (((originalSize - newSize) / originalSize) * 100).toFixed(0);
         results.push(`✓ Optimized: ${newSize}KB (${saved}% saved)`);
       } else {
         await fs.unlink(tempPath);
@@ -149,16 +141,14 @@ async function optimizeImage(filePath) {
     // Optimize existing AVIF
     else if (ext === '.avif') {
       const tempPath = filePath + '.tmp';
-      await image
-        .avif({ quality: AVIF_QUALITY })
-        .toFile(tempPath);
+      await image.avif({ quality: AVIF_QUALITY }).toFile(tempPath);
 
       const newSize = await getFileSizeKB(tempPath);
 
       // Only replace if we saved space
       if (parseFloat(newSize) < parseFloat(originalSize)) {
         await fs.rename(tempPath, filePath);
-        const saved = ((originalSize - newSize) / originalSize * 100).toFixed(0);
+        const saved = (((originalSize - newSize) / originalSize) * 100).toFixed(0);
         results.push(`✓ Optimized: ${newSize}KB (${saved}% saved)`);
       } else {
         await fs.unlink(tempPath);
