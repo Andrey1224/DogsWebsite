@@ -7,7 +7,6 @@
  */
 
 import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
-import type { CreateCheckoutSessionResult } from './actions';
 
 // Mock dependencies
 vi.mock('@/lib/stripe/client', () => ({

@@ -41,9 +41,8 @@ describe('Admin Session Module', () => {
 
   describe('Session Encoding and Decoding', () => {
     it('encodes and decodes valid session successfully', async () => {
-      const { setAdminSession, getAdminSession } = await import('./session');
+      const { setAdminSession } = await import('./session');
 
-      const mockToken = 'mock.token.value';
       mockCookies.set.mockImplementation((name, value) => {
         mockCookies.get.mockReturnValue({ name, value });
       });
@@ -265,7 +264,7 @@ describe('Admin Session Module', () => {
     });
 
     it('sets secure flag in production environment', async () => {
-      process.env.NODE_ENV = 'production';
+      vi.stubEnv('NODE_ENV', 'production');
       vi.resetModules();
 
       const { setAdminSession } = await import('./session');
@@ -281,10 +280,12 @@ describe('Admin Session Module', () => {
           secure: true,
         }),
       );
+
+      vi.unstubAllEnvs();
     });
 
     it('does not set secure flag in development', async () => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       vi.resetModules();
 
       const { setAdminSession } = await import('./session');
@@ -300,6 +301,8 @@ describe('Admin Session Module', () => {
           secure: false,
         }),
       );
+
+      vi.unstubAllEnvs();
     });
   });
 

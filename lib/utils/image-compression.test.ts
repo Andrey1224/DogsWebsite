@@ -7,7 +7,7 @@ import { compressImage, compressImages, estimateCompressedSize } from './image-c
 
 // Mock browser-image-compression
 vi.mock('browser-image-compression', () => ({
-  default: vi.fn((file, options) => {
+  default: vi.fn((file) => {
     // Simulate compression by reducing size by ~70%
     const compressedSize = file.size * 0.3;
     return Promise.resolve(

@@ -5,7 +5,7 @@
  * and cleanup. Critical for payment processing reliability.
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PayPalButton } from './paypal-button';
 import { loadScript } from '@paypal/paypal-js';
@@ -25,6 +25,30 @@ const mockButtons = vi.fn(() => ({
 
 const mockPayPalSDK = {
   Buttons: mockButtons,
+  version: '5.0.0',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any;
+
+// Helper to create mock Response
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createMockResponse = (body: unknown, ok = true): any => {
+  return {
+    ok,
+    json: () => Promise.resolve(body),
+    headers: new Headers(),
+    redirected: false,
+    status: ok ? 200 : 400,
+    statusText: ok ? 'OK' : 'Bad Request',
+    type: 'basic',
+    url: '',
+    clone: vi.fn(),
+    body: null,
+    bodyUsed: false,
+    arrayBuffer: vi.fn(),
+    blob: vi.fn(),
+    formData: vi.fn(),
+    text: vi.fn(),
+  };
 };
 
 // Mock fetch
@@ -108,7 +132,8 @@ describe('PayPalButton', () => {
   });
 
   it('calls onError when Buttons component is not available', async () => {
-    vi.mocked(loadScript).mockResolvedValue({});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(loadScript).mockResolvedValue({} as any);
 
     render(<PayPalButton {...mockProps} />);
 
@@ -160,10 +185,7 @@ describe('PayPalButton', () => {
 
   describe('createOrder flow', () => {
     it('creates order successfully and returns orderId', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({ orderId: 'ORDER-123' }),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(createMockResponse({ orderId: 'ORDER-123' }));
 
       render(<PayPalButton {...mockProps} />);
 
@@ -172,7 +194,8 @@ describe('PayPalButton', () => {
       });
 
       // Extract createOrder callback
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
       const orderId = await buttonOptions.createOrder();
 
       expect(mockProps.onProcessingChange).toHaveBeenCalledWith(true);
@@ -186,10 +209,9 @@ describe('PayPalButton', () => {
     });
 
     it('handles createOrder API error with error message', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: false,
-        json: async () => ({ error: 'Puppy is no longer available' }),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(
+        createMockResponse({ error: 'Puppy is no longer available' }, false),
+      );
 
       render(<PayPalButton {...mockProps} />);
 
@@ -197,7 +219,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.createOrder()).rejects.toThrow('Puppy is no longer available');
 
@@ -206,10 +229,7 @@ describe('PayPalButton', () => {
     });
 
     it('handles createOrder API error without error message', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: false,
-        json: async () => ({}),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(createMockResponse({}, false));
 
       render(<PayPalButton {...mockProps} />);
 
@@ -217,7 +237,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.createOrder()).rejects.toThrow(
         'Unable to create PayPal order. Please try again.',
@@ -229,10 +250,7 @@ describe('PayPalButton', () => {
     });
 
     it('handles createOrder missing orderId in response', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({}),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(createMockResponse({}));
 
       render(<PayPalButton {...mockProps} />);
 
@@ -240,7 +258,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.createOrder()).rejects.toThrow();
     });
@@ -248,10 +267,9 @@ describe('PayPalButton', () => {
 
   describe('onApprove flow', () => {
     it('captures order successfully and calls onSuccess', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true, captureId: 'CAPTURE-456' }),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(
+        createMockResponse({ success: true, captureId: 'CAPTURE-456' }),
+      );
 
       render(<PayPalButton {...mockProps} />);
 
@@ -259,7 +277,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
       await buttonOptions.onApprove({ orderID: 'ORDER-123' });
 
       expect(global.fetch).toHaveBeenCalledWith('/api/paypal/capture', {
@@ -273,10 +292,9 @@ describe('PayPalButton', () => {
     });
 
     it('handles capture API error with error message', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: false,
-        json: async () => ({ error: 'Order already captured' }),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(
+        createMockResponse({ error: 'Order already captured' }, false),
+      );
 
       render(<PayPalButton {...mockProps} />);
 
@@ -284,7 +302,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.onApprove({ orderID: 'ORDER-123' })).rejects.toThrow(
         'Order already captured',
@@ -295,10 +314,7 @@ describe('PayPalButton', () => {
     });
 
     it('handles capture API error without error message', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: false,
-        json: async () => ({}),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(createMockResponse({}, false));
 
       render(<PayPalButton {...mockProps} />);
 
@@ -306,7 +322,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.onApprove({ orderID: 'ORDER-123' })).rejects.toThrow(
         'Unable to capture PayPal order. Please contact support.',
@@ -318,10 +335,9 @@ describe('PayPalButton', () => {
     });
 
     it('handles capture success:false response', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: false, error: 'Reservation failed' }),
-      });
+      vi.mocked(global.fetch).mockResolvedValue(
+        createMockResponse({ success: false, error: 'Reservation failed' }),
+      );
 
       render(<PayPalButton {...mockProps} />);
 
@@ -329,7 +345,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.onApprove({ orderID: 'ORDER-123' })).rejects.toThrow(
         'Reservation failed',
@@ -347,7 +364,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
 
       await expect(buttonOptions.onApprove({ orderID: 'ORDER-123' })).rejects.toThrow();
 
@@ -363,7 +381,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
       buttonOptions.onCancel();
 
       expect(mockProps.onProcessingChange).toHaveBeenCalledWith(false);
@@ -379,7 +398,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
       buttonOptions.onError(new Error('PayPal timeout'));
 
       expect(mockProps.onProcessingChange).toHaveBeenCalledWith(false);
@@ -393,7 +413,8 @@ describe('PayPalButton', () => {
         expect(mockButtons).toHaveBeenCalled();
       });
 
-      const buttonOptions = mockButtons.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buttonOptions = (mockButtons.mock.calls[0] as any)[0];
       buttonOptions.onError('Unknown error');
 
       expect(mockProps.onProcessingChange).toHaveBeenCalledWith(false);
