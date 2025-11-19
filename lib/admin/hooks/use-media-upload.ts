@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getSignedUploadUrl, getPublicUrl } from '@/app/admin/(dashboard)/puppies/upload-actions';
+import { compressImage } from '@/lib/utils/image-compression';
 
 export type UploadProgress = {
   fileName: string;
@@ -41,6 +42,9 @@ export function useMediaUpload() {
         return next;
       });
 
+      // Compress image before upload (if it's an image file)
+      const fileToUpload = file.type.startsWith('image/') ? await compressImage(file) : file;
+
       // Get signed upload URL from server
       const { signedUrl, path } = await getSignedUploadUrl(storagePath);
 
@@ -58,9 +62,9 @@ export function useMediaUpload() {
       // Upload file directly to Supabase Storage
       const uploadResponse = await fetch(signedUrl, {
         method: 'PUT',
-        body: file,
+        body: fileToUpload,
         headers: {
-          'Content-Type': file.type,
+          'Content-Type': fileToUpload.type,
           'x-upsert': 'false',
         },
       });

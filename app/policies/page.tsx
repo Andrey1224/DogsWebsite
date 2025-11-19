@@ -51,7 +51,7 @@ export default function PoliciesPage() {
         ]}
       />
       <JsonLd id="return-policy" data={returnPolicySchema} />
-      <header className="space-y-3">
+      <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
           Policies
         </p>
@@ -62,7 +62,7 @@ export default function PoliciesPage() {
           We operate with clarity and care so every family knows what to expect. Review the key
           policies below and reach out if you need clarification before reserving.
         </p>
-      </header>
+      </div>
 
       <section className="space-y-6">
         {sections.map((section) => (

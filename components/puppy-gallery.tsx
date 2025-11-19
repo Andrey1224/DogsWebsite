@@ -28,6 +28,8 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
           alt={name ? `${name} photo ${activeIndex + 1}` : 'Puppy photo'}
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
+          priority={activeIndex === 0}
+          loading={activeIndex === 0 ? 'eager' : 'lazy'}
         />
       </div>
       {media.length > 1 && (
@@ -43,7 +45,14 @@ export function PuppyGallery({ photos, videos = [], name }: PuppyGalleryProps) {
                   : 'border-border'
               }`}
             >
-              <Image src={url} alt="Puppy thumbnail" fill className="object-cover" sizes="80px" />
+              <Image
+                src={url}
+                alt="Puppy thumbnail"
+                fill
+                className="object-cover"
+                sizes="80px"
+                loading="lazy"
+              />
             </button>
           ))}
         </div>

@@ -18,11 +18,13 @@ import './globals.css';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata = getDefaultMetadata();
@@ -60,8 +62,21 @@ export default function RootLayout({
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalBusinessSchema();
 
+  const supabaseHostname = process.env.SUPABASE_URL
+    ? new URL(process.env.SUPABASE_URL).hostname
+    : null;
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* DNS prefetch and preconnect for Supabase Storage */}
+        {supabaseHostname && (
+          <>
+            <link rel="dns-prefetch" href={`https://${supabaseHostname}`} />
+            <link rel="preconnect" href={`https://${supabaseHostname}`} crossOrigin="anonymous" />
+          </>
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
       >

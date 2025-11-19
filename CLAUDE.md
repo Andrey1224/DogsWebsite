@@ -27,13 +27,14 @@ nvm alias default 20
 ### Core Development
 
 - `npm run dev` - Start the development server on localhost:3000
-- `npm run build` - Build the production application (mirrors Vercel deployment)
+- `npm run build` - Build the production application (auto-runs image optimization, mirrors Vercel deployment)
 - `npm run start` - Start the production server
 - `npm run lint` - Run ESLint with Tailwind-aware rules (warnings fail CI)
 - `npm run typecheck` - Run TypeScript compiler in strict mode
 - `npm run test` - Run Vitest unit and component tests
 - `npm run test:watch` - Run Vitest in watch mode
 - `npm run e2e` - Run Playwright end-to-end tests (requires `npm run dev`)
+- `npm run optimize-images` - Optimize all static images in /public (auto-runs on build)
 - `npm run verify` - Run all quality checks (lint + typecheck + test + e2e)
 - `npm run validate-deployment` - Validate production deployment health
 
@@ -281,19 +282,40 @@ Track these events via `useAnalytics().trackEvent`:
 - **Analytics**: Server-side `deposit_paid` events tracked via GA4 Measurement Protocol
 - **Monitoring**: `/api/health/webhooks` endpoint + email/Slack alerts for webhook failures
 
-### Media Handling
+### Media Handling & Image Optimization
 
-- Store in Supabase Storage buckets: `puppies`, `parents`, `litters`
+- **Storage**: Supabase Storage buckets: `puppies`, `parents`, `litters`
 - **Admin Uploads**: Client-side direct uploads using signed URLs (bypasses Server Action 1MB limit)
-  - Flow: Request signed URL → Upload via fetch(PUT) → Get public URL → Submit URL to Server Action
+  - Flow: Request signed URL → **Compress image** → Upload via fetch(PUT) → Get public URL → Submit URL to Server Action
   - Implemented in `lib/admin/hooks/use-media-upload.ts` and `app/admin/(dashboard)/puppies/upload-actions.ts`
-- Use `next/image` optimization with proper sizing
-- Target WebP/AVIF formats ≤400KB for optimal LCP
-- Preload hero images and LCP candidates
+  - **Automatic Compression**: All images compressed to ≤400KB before upload using `browser-image-compression`
+  - Compression settings: max 1920px dimension, 85% quality, uses Web Worker for non-blocking UI
+  - Library: `lib/utils/image-compression.ts` with `compressImage()` and `compressImages()` helpers
 
-### SEO & Structured Data (Sprint 4)
+- **Build-Time Optimization**: Automated via `scripts/optimize-images.mjs`
+  - Runs automatically on `npm run build`
+  - Converts JPG/PNG → WebP + AVIF formats
+  - Optimizes existing WebP/AVIF files
+  - Shows detailed compression statistics
+  - Powered by Sharp, imagemin-webp, imagemin-avif
+
+- **Next.js Image Config** (`next.config.ts`):
+  - Formats priority: `['image/avif', 'image/webp']` (AVIF first for better compression)
+  - Device sizes: `[640, 750, 828, 1080, 1200, 1920, 2048, 3840]`
+  - Image sizes: `[16, 32, 48, 64, 96, 128, 256, 384]`
+  - Cache TTL: 60 seconds for CDN optimization
+  - Use `next/image` optimization with proper sizing
+
+- **Target**: WebP/AVIF formats ≤400KB for optimal LCP
+- **Best Practices**: Preload hero images and LCP candidates
+
+### SEO & Structured Data (Sprint 4 + Optimizations)
 
 - **Metadata**: Centralized helper in `lib/seo/metadata.ts` generates title, description, OG, Twitter Card tags
+  - **OpenGraph Image**: Auto-generated via `app/opengraph-image.tsx` (1200x630px, branded gradient)
+  - **Web App Manifest**: `app/manifest.ts` for PWA support and mobile install prompts
+  - **Admin Pages**: All admin routes have `robots: noindex` to prevent indexing
+
 - **Structured Data**: JSON-LD generators in `lib/seo/structured-data.ts` for:
   - `Organization` - Site-wide business identity
   - `LocalBusiness` (PetStore) - NAP, hours, geolocation, service area
@@ -301,10 +323,17 @@ Track these events via `useAnalytics().trackEvent`:
   - `FAQPage` - FAQ structured markup
   - `MerchantReturnPolicy` - Return/refund policy with country-specific rules
   - `BreadcrumbList` - Navigation breadcrumbs
+
 - **Routes**: Dynamic `app/robots.ts` and `app/sitemap.ts` for crawlability
 - **Business Config**: `lib/config/business.ts` centralizes NAP data from `NEXT_PUBLIC_CONTACT_*` env vars
 - **Validation**: All schemas validated via Google Rich Results Test and `structured-data-testing-tool`
-- **Performance**: Lighthouse targets ≥90 for SEO, Accessibility, Performance; Core Web Vitals LCP ≤2.5s, CLS ≤0.1
+
+- **Performance Optimizations**:
+  - **Font Loading**: Google Fonts use `display: 'swap'` to prevent FOIT (Flash of Invisible Text)
+  - **Code Splitting**: PayPal button dynamically imported to reduce initial bundle size
+  - **Accessibility**: Removed duplicate `<header>` landmarks from content pages (Contact, FAQ, Policies, Reviews)
+  - Lighthouse targets: ≥90 for SEO, Accessibility, Performance
+  - Core Web Vitals: LCP ≤2.5s, CLS ≤0.1, INP ≤200ms
 
 ## Quality Assurance
 

@@ -13,7 +13,13 @@ const statusStyles: Record<string, string> = {
   upcoming: 'border border-transparent bg-accent-gradient text-white shadow-sm',
 };
 
-export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
+type PuppyCardProps = {
+  puppy: PuppyWithRelations;
+  /** Index of the card in the list. First 2 cards load eagerly for LCP optimization. */
+  index?: number;
+};
+
+export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
   const coverImage = resolveLocalImage(puppy.photo_urls?.[0], '/reviews/mark-lisa-duke.webp');
   const statusClass =
     statusStyles[puppy.status] ??
@@ -29,6 +35,10 @@ export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
         .join(' ')
     : '';
 
+  // Optimize loading: First 2 cards load eagerly for LCP, rest lazy load
+  const isAboveFold = index < 2;
+  const loading = isAboveFold ? 'eager' : 'lazy';
+
   return (
     <article
       className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
@@ -41,7 +51,7 @@ export function PuppyCard({ puppy }: { puppy: PuppyWithRelations }) {
           fill
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24rem"
-          priority={false}
+          loading={loading}
         />
         <span className="absolute left-4 top-4 rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-aux shadow">
           {breedLabel || 'Bulldog'}

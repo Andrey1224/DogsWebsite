@@ -58,7 +58,7 @@ export default function FaqPage() {
       />
       <JsonLd id="faq-schema" data={faqSchema} />
 
-      <header className="space-y-3">
+      <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">FAQ</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
           Frequently asked questions about our bulldog program
@@ -68,7 +68,7 @@ export default function FaqPage() {
           guide every Exotic Bulldog Legacy placement. Reach out if you need details beyond these
           highlights.
         </p>
-      </header>
+      </div>
 
       <section className="space-y-4">
         {faqItems.map((item) => (
