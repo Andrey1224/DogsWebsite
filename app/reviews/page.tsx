@@ -191,7 +191,7 @@ export default async function ReviewsPage() {
       <JsonLd id="reviews-itemlist" data={reviewSchema} />
       <JsonLd id="reviews-aggregate" data={aggregateSchema} />
 
-      <header className="space-y-3 text-center">
+      <div className="space-y-3 text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Reviews</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
           Families who chose Exotic Bulldog Legacy
@@ -201,7 +201,7 @@ export default async function ReviewsPage() {
           of the adoption journey. These stories highlight the transparent, health-first experience
           we deliver across the Southeast.
         </p>
-      </header>
+      </div>
 
       <section className="grid gap-8 lg:grid-cols-2">
         {allReviews.map((review) => (

@@ -64,29 +64,33 @@ describe('About Page', () => {
     ).toBeDefined();
   });
 
-  it('renders journey timeline milestones', () => {
+  it('renders breed descriptions', () => {
     renderAboutPage();
 
     expect(
-      screen.getByRole('heading', { level: 2, name: /My journey with bulldogs/i }),
+      screen.getByRole('heading', {
+        level: 2,
+        name: /French Bulldog: The Square Flask of Joy and Sass/i,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 3, name: /Roman joins the family/i }),
+      screen.getByRole('heading', {
+        level: 2,
+        name: /English Bulldog: Your Personal, Wrinkly Cloud of Happiness/i,
+      }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 3, name: /Show ring experience/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 3, name: /Alabama family kennel/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/The Master of the Comedic Glare/i)).toBeInTheDocument();
+    expect(screen.getByText(/Compact Comfort Energy/i)).toBeInTheDocument();
   });
 
-  it('renders facility and veterinary cards with CTA', () => {
+  it('renders final CTA', () => {
     renderAboutPage();
 
-    expect(screen.getByRole('heading', { level: 3, name: /Our facility/i })).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 3, name: /Veterinary partners/i }),
+      screen.getByRole('heading', {
+        level: 2,
+        name: /Schedule a visit or a live video walkthrough/i,
+      }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', {
