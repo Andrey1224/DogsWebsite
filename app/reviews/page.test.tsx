@@ -103,7 +103,8 @@ describe('Reviews Page', () => {
     expect(screen.getByText(/Visited June 2025/i)).toBeInTheDocument();
     const julyDates = screen.getAllByText(/Visited July 2025/i);
     expect(julyDates.length).toBeGreaterThan(0);
-    expect(screen.getByText(/Visited September 2025/i)).toBeInTheDocument();
+    const septemberDates = screen.getAllByText(/Visited September 2025/i);
+    expect(septemberDates.length).toBeGreaterThan(0);
   });
 
   it('renders review quotes', async () => {
