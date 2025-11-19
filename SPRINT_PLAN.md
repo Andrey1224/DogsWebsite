@@ -136,6 +136,11 @@ Organic visibility, policies, credibility.
 - [ ] NAP block (name, address, phone) in footer
 - [ ] Google Maps embed (city + service area)
 - [ ] Pages: `Policies`, `FAQ`, `Reviews`
+- [x] About page: Updated with breed-focused content (Jan 18, 2025)
+  - Removed: "My journey with bulldogs" timeline section
+  - Added: French Bulldog and English Bulldog breed descriptions
+  - Content: Personality traits, care requirements, breed characteristics
+  - Design: Two-column cards with breed-specific narratives
 - [ ] FAQ copy finalized with owner review (draft content in place; adjust before release)
 - [ ] Policies: deposits, refunds, health, delivery
 - [x] Reviews: 4–6 testimonials (text + photo/video) + public submission form with optional photo uploads (Dec 22)
