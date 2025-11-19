@@ -61,7 +61,11 @@ nvm alias default 20
 #### Data Flow
 
 - **Catalog Pages**: `/puppies` and `/puppies/[slug]` use ISR with 60s revalidation
-- **Content Pages**: `/faq`, `/policies`, `/reviews` use static generation with rich JSON-LD schemas
+- **Content Pages**: `/about`, `/faq`, `/policies`, `/reviews` use static generation with rich JSON-LD schemas
+  - `/about`: Breed-focused content with French Bulldog and English Bulldog descriptions (personality, care, characteristics)
+  - `/faq`: Frequently asked questions with FAQ schema
+  - `/policies`: Deposit, refund, health, and delivery policies
+  - `/reviews`: Community + featured testimonials with photo uploads
 - **Contact Flow**: Form submissions → Server Action → Supabase `inquiries` table
 - **Rate Limiting**: Supabase-backed rate limiting prevents spam
 - **Captcha**: hCaptcha verification with local testing bypass
@@ -358,5 +362,5 @@ When modifying the contact/analytics stack or admin panel, update all connected 
 
 ### Sprint-Specific Notes
 
-- **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622).
+- **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/about`, `/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622). About page updated with breed-focused content (Jan 18, 2025): removed journey timeline, added French and English Bulldog descriptions.
 - **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `docs/admin/admin-panel-changelog.md` for detailed implementation history.
