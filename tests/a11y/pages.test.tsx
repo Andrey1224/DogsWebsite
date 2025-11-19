@@ -49,6 +49,15 @@ vi.mock('@/lib/supabase/queries', () => ({
   getAllBreeds: vi.fn(async () => []),
 }));
 
+vi.mock('@/lib/reviews/queries', () => ({
+  getPublishedReviews: vi.fn(async () => []),
+}));
+
+vi.mock('@/app/reviews/upload-actions', () => ({
+  createReviewPhotoUploadTarget: vi.fn(),
+  getReviewPhotoPublicUrl: vi.fn(async () => ''),
+}));
+
 type PageComponent = () => Promise<ReactElement> | ReactElement;
 
 async function renderPage(component: PageComponent) {

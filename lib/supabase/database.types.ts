@@ -366,6 +366,48 @@ export type Database = {
           },
         ];
       };
+      reviews: {
+        Row: {
+          author_name: string;
+          client_ip: unknown;
+          created_at: string;
+          id: string;
+          location: string;
+          photo_urls: string[];
+          rating: number;
+          source: string;
+          status: string;
+          story: string;
+          visit_date: string;
+        };
+        Insert: {
+          author_name: string;
+          client_ip?: unknown;
+          created_at?: string;
+          id?: string;
+          location: string;
+          photo_urls?: string[];
+          rating: number;
+          source?: string;
+          status?: string;
+          story: string;
+          visit_date: string;
+        };
+        Update: {
+          author_name?: string;
+          client_ip?: unknown;
+          created_at?: string;
+          id?: string;
+          location?: string;
+          photo_urls?: string[];
+          rating?: number;
+          source?: string;
+          status?: string;
+          story?: string;
+          visit_date?: string;
+        };
+        Relationships: [];
+      };
       webhook_events: {
         Row: {
           created_at: string;

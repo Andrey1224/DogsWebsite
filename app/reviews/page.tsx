@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
+import { ReviewForm } from '@/components/reviews/review-form';
+import { getPublishedReviews } from '@/lib/reviews/queries';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getLocalBusinessSchema } from '@/lib/seo/structured-data';
 
@@ -13,14 +15,13 @@ type Review = {
   visitDate: string;
   rating: number;
   quote: string;
-  media?: {
-    type: 'image' | 'video';
+  images?: Array<{
     url: string;
     alt: string;
-  };
+  }>;
 };
 
-const reviews: Review[] = [
+const featuredReviews: Review[] = [
   {
     id: 'sarah-w',
     author: 'Sarah W.',
@@ -29,11 +30,12 @@ const reviews: Review[] = [
     rating: 5,
     quote:
       'We picked up our French Bulldog, Charlie, in June and he’s been the sweetest, healthiest puppy we’ve ever had. The whole process was transparent and stress-free — communication was excellent!',
-    media: {
-      type: 'image',
-      url: '/reviews/sarah-charlie.webp',
-      alt: 'Sarah with French Bulldog Charlie',
-    },
+    images: [
+      {
+        url: '/reviews/sarah-charlie.webp',
+        alt: 'Sarah with French Bulldog Charlie',
+      },
+    ],
   },
   {
     id: 'mark-lisa-p',
@@ -43,11 +45,12 @@ const reviews: Review[] = [
     rating: 5,
     quote:
       'Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.',
-    media: {
-      type: 'image',
-      url: '/reviews/mark-lisa-duke.webp',
-      alt: 'Mark and Lisa with their English Bulldog Duke',
-    },
+    images: [
+      {
+        url: '/reviews/mark-lisa-duke.webp',
+        alt: 'Mark and Lisa with their English Bulldog Duke',
+      },
+    ],
   },
   {
     id: 'jessica-m',
@@ -66,11 +69,12 @@ const reviews: Review[] = [
     rating: 5,
     quote:
       'Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.',
-    media: {
-      type: 'image',
-      url: '/reviews/anthony-tommy.webp',
-      alt: 'Anthony with French Bulldog Tommy',
-    },
+    images: [
+      {
+        url: '/reviews/anthony-tommy.webp',
+        alt: 'Anthony with French Bulldog Tommy',
+      },
+    ],
   },
   {
     id: 'rachel-k',
@@ -89,11 +93,12 @@ const reviews: Review[] = [
     rating: 5,
     quote:
       'I loved how easy it was to reserve online. PayPal worked perfectly and the confirmation emails arrived instantly. Milo is already the star of our neighborhood!',
-    media: {
-      type: 'image',
-      url: '/reviews/cameron-milo.webp',
-      alt: 'Cameron holding bulldog puppy Milo',
-    },
+    images: [
+      {
+        url: '/reviews/cameron-milo.webp',
+        alt: 'Cameron holding bulldog puppy Milo',
+      },
+    ],
   },
 ];
 
@@ -104,16 +109,39 @@ export const metadata = buildMetadata({
   path: '/reviews',
 });
 
-export default function ReviewsPage() {
+export default async function ReviewsPage() {
+  const communityReviews = (await getPublishedReviews()).map<Review>((review) => ({
+    id: review.id,
+    author: review.author,
+    location: review.location,
+    visitDate: review.visitDate,
+    rating: review.rating,
+    quote: review.story,
+    images:
+      review.photoUrls.length > 0
+        ? review.photoUrls.slice(0, 3).map((url, index) => ({
+            url,
+            alt: `Photo ${index + 1} from ${review.author}`,
+          }))
+        : undefined,
+  }));
+
+  const allReviews = [...communityReviews, ...featuredReviews];
+
   const localBusiness = getLocalBusinessSchema();
   const businessId =
     (localBusiness as { ['@id']?: string })['@id'] ??
     `${localBusiness.url.replace(/\/$/, '')}#localbusiness`;
 
+  const averageRating =
+    allReviews.length > 0
+      ? (allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length).toFixed(1)
+      : '5.0';
+
   const reviewSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    itemListElement: reviews.map((review, index) => ({
+    itemListElement: allReviews.map((review, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       item: {
@@ -124,6 +152,9 @@ export default function ReviewsPage() {
         },
         datePublished: review.visitDate,
         reviewBody: review.quote,
+        ...(review.images && review.images.length > 0
+          ? { image: review.images.map((image) => image.url) }
+          : {}),
         reviewRating: {
           '@type': 'Rating',
           ratingValue: review.rating,
@@ -144,8 +175,8 @@ export default function ReviewsPage() {
     url: localBusiness.url,
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '5.0',
-      reviewCount: reviews.length,
+      ratingValue: averageRating,
+      reviewCount: allReviews.length,
     },
   };
 
@@ -173,7 +204,7 @@ export default function ReviewsPage() {
       </header>
 
       <section className="grid gap-8 lg:grid-cols-2">
-        {reviews.map((review) => (
+        {allReviews.map((review) => (
           <article
             key={review.id}
             className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-sm"
@@ -193,28 +224,36 @@ export default function ReviewsPage() {
               </div>
             </div>
             <p className="text-sm leading-relaxed text-muted">“{review.quote}”</p>
-            {review.media ? (
-              <div className="overflow-hidden rounded-2xl border border-border">
-                {review.media.type === 'image' ? (
-                  <Image
-                    src={review.media.url}
-                    alt={review.media.alt}
-                    width={640}
-                    height={400}
-                    className="h-64 w-full object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
-                  />
-                ) : (
-                  <div className="relative aspect-video">
-                    <iframe
-                      src={review.media.url}
-                      title={review.media.alt}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 h-full w-full"
-                    />
-                  </div>
-                )}
+            {review.images && review.images.length > 0 ? (
+              <div
+                className={
+                  review.images.length === 1
+                    ? 'overflow-hidden rounded-2xl border border-border'
+                    : 'grid grid-cols-3 gap-3'
+                }
+              >
+                {review.images.slice(0, 3).map((image) => {
+                  const isSingleImage = review.images && review.images.length === 1;
+                  return (
+                    <div
+                      key={`${review.id}-${image.url}`}
+                      className={
+                        isSingleImage
+                          ? undefined
+                          : 'overflow-hidden rounded-2xl border border-border'
+                      }
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.alt}
+                        width={640}
+                        height={400}
+                        className={`${isSingleImage ? 'h-64' : 'h-32'} w-full object-cover`}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : null}
             <div className="text-xs text-muted">
@@ -228,21 +267,24 @@ export default function ReviewsPage() {
         ))}
       </section>
 
-      <section className="rounded-3xl border border-border bg-card p-6 text-sm shadow-sm">
-        <p className="font-semibold text-text">Ready to plan your bulldog match?</p>
-        <p className="mt-2 text-muted">
-          Share your wish list and we’ll send temperament videos, health records, and timing
-          guidance tailored to your household.
-        </p>
-        <div className="mt-4">
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 rounded-full bg-[color:var(--btn-bg)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text)] transition hover:brightness-105"
-          >
-            Contact the team
-          </Link>
-        </div>
-      </section>
+      <div className="grid gap-6 lg:grid-cols-[3fr,2fr]">
+        <ReviewForm />
+        <section className="rounded-3xl border border-border bg-card p-6 text-sm shadow-sm">
+          <p className="font-semibold text-text">Ready to plan your bulldog match?</p>
+          <p className="mt-2 text-muted">
+            Share your wish list and we’ll send temperament videos, health records, and timing
+            guidance tailored to your household.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--btn-bg)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text)] transition hover:brightness-105"
+            >
+              Contact the team
+            </Link>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

@@ -138,7 +138,13 @@ Organic visibility, policies, credibility.
 - [ ] Pages: `Policies`, `FAQ`, `Reviews`
 - [ ] FAQ copy finalized with owner review (draft content in place; adjust before release)
 - [ ] Policies: deposits, refunds, health, delivery
-- [ ] Reviews: 4–6 testimonials (text + photo/video)
+- [x] Reviews: 4–6 testimonials (text + photo/video) + public submission form with optional photo uploads (Dec 22)
+  - [x] Migration `20251222T120000Z_create_reviews_table.sql` applied (Jan 18, 2025)
+  - [x] Storage bucket `reviews` created with 5MB limit (public access)
+  - [x] RLS policies configured (public read published, service role manages all)
+  - [x] Review form with hCaptcha, rating 1-5, photo upload (up to 3 photos)
+  - [x] Client-side photo uploads via signed URLs (bypasses 1MB Server Action limit)
+  - [x] Instant publish workflow (status: 'published' on form submit)
 - [ ] Accessibility: alt texts, focus visible, contrast ≥ 4.5:1
 - [ ] Image optimization: WebP/AVIF ≤ 400 KB, width 1600–1920px
 - [ ] Store long videos externally (YouTube unlisted / Vimeo)

@@ -42,6 +42,14 @@
 
 ---
 
+## Features (`docs/features/`)
+
+**Production Features:**
+
+- [`review-photos.md`](features/review-photos.md) - Customer testimonials with photo uploads (Sprint 4)
+
+---
+
 ## Deployment (`docs/deployment/`)
 
 **Feature Deployment Guides:**
