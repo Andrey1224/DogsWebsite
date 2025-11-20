@@ -15,10 +15,7 @@ const projectRoot = join(__dirname, '..');
 
 dotenv.config({ path: join(projectRoot, '.env.local') });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE);
 
 async function testTrigger() {
   console.log('\n🧪 Testing sold_at Trigger Functionality\n');
@@ -71,7 +68,7 @@ async function testTrigger() {
 
       // Test 2: Change status back to sold (should set sold_at)
       console.log('Test 2: Change status from "available" to "sold" (should set sold_at)');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
 
       const { data: updated2, error: error2 } = await supabase
         .from('puppies')
@@ -91,10 +88,7 @@ async function testTrigger() {
 
       // Restore original state
       console.log('Cleanup: Restoring original state...');
-      await supabase
-        .from('puppies')
-        .update({ status: 'sold' })
-        .eq('id', soldPuppy.id);
+      await supabase.from('puppies').update({ status: 'sold' }).eq('id', soldPuppy.id);
       console.log('   ✓ Restored\n');
     }
 

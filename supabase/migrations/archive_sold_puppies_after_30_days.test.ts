@@ -12,9 +12,7 @@ type PuppyRow = {
 const FIXED_NOW = new Date('2025-02-01T00:00:00.000Z');
 
 function createDb(): IMemoryDb {
-  const db = newDb({
-    now: () => new Date(FIXED_NOW),
-  });
+  const db = newDb();
 
   db.public.none(`
     CREATE TABLE puppies (
@@ -112,9 +110,9 @@ describe('archive_sold_puppies_after_30_days', () => {
       updatedAt: new Date('2024-12-18T00:00:00.000Z'),
     });
 
-    const { archived_count } = db.public.one<{
-      archived_count: number;
-    }>('SELECT archive_sold_puppies_after_30_days() AS archived_count;');
+    const { archived_count } = db.public.one(
+      'SELECT archive_sold_puppies_after_30_days() AS archived_count;',
+    ) as { archived_count: number };
 
     expect(archived_count).toBe(2);
 
@@ -151,9 +149,9 @@ describe('archive_sold_puppies_after_30_days', () => {
       updatedAt: new Date('2024-12-05T00:00:00.000Z'),
     });
 
-    const { archived_count } = db.public.one<{
-      archived_count: number;
-    }>('SELECT archive_sold_puppies_after_30_days() AS archived_count;');
+    const { archived_count } = db.public.one(
+      'SELECT archive_sold_puppies_after_30_days() AS archived_count;',
+    ) as { archived_count: number };
 
     expect(archived_count).toBe(1);
 
@@ -182,9 +180,9 @@ describe('archive_sold_puppies_after_30_days', () => {
       soldAt: null,
     });
 
-    const { archived_count } = db.public.one<{
-      archived_count: number;
-    }>('SELECT archive_sold_puppies_after_30_days() AS archived_count;');
+    const { archived_count } = db.public.one(
+      'SELECT archive_sold_puppies_after_30_days() AS archived_count;',
+    ) as { archived_count: number };
 
     expect(archived_count).toBe(0);
 

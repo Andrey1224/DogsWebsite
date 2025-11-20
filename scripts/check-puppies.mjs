@@ -20,7 +20,7 @@ try {
       if (key === 'SUPABASE_SERVICE_ROLE') supabaseKey = value;
     }
   });
-} catch (err) {
+} catch {
   // .env.local might not exist, use process.env
 }
 
@@ -89,14 +89,16 @@ async function checkPuppies() {
   });
 
   // Check sold puppies
-  const soldPuppies = allPuppies.filter(p => p.status === 'sold');
+  const soldPuppies = allPuppies.filter((p) => p.status === 'sold');
   if (soldPuppies.length > 0) {
     console.log(`\n💰 Sold puppies (${soldPuppies.length}):`);
-    soldPuppies.forEach(puppy => {
+    soldPuppies.forEach((puppy) => {
       const daysAgo = puppy.sold_at
         ? Math.floor((new Date() - new Date(puppy.sold_at)) / (1000 * 60 * 60 * 24))
         : null;
-      console.log(`  - ${puppy.name}: sold ${daysAgo !== null ? `${daysAgo} days ago` : 'date unknown'}`);
+      console.log(
+        `  - ${puppy.name}: sold ${daysAgo !== null ? `${daysAgo} days ago` : 'date unknown'}`,
+      );
     });
   }
 
