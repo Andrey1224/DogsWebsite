@@ -2,7 +2,7 @@
  * Policies Page Tests
  *
  * Tests the Policies page rendering, accessibility, and structured data.
- * Ensures all policy sections are displayed correctly.
+ * Ensures all policy sections are displayed correctly with the new UI.
  */
 
 import { render, screen } from '@testing-library/react';
@@ -52,84 +52,101 @@ describe('Policies Page', () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText(/We operate with clarity and care so every family knows what to expect/i),
+      screen.getByText(
+        /We operate with clarity and care so every family knows exactly what to expect/i,
+      ),
     ).toBeInTheDocument();
   });
 
-  it('renders all policy sections', () => {
+  it('renders hero section with Transparency First badge', () => {
     renderPoliciesPage();
 
-    expect(screen.getByRole('heading', { level: 2, name: /Deposit policy/i })).toBeInTheDocument();
+    expect(screen.getByText(/Transparency First/i)).toBeInTheDocument();
+    expect(screen.getByText(/No hidden clauses, just honest commitments/i)).toBeInTheDocument();
+  });
 
+  it('renders trust signals bar', () => {
+    renderPoliciesPage();
+
+    expect(screen.getByText(/AKC Registered/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vet Certified/i)).toBeInTheDocument();
+    expect(screen.getByText(/Secure Payments/i)).toBeInTheDocument();
+  });
+
+  it('renders all 6 policy sections', () => {
+    renderPoliciesPage();
+
+    expect(screen.getByRole('heading', { level: 2, name: /Deposit Policy/i })).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 2, name: /Refunds & exchanges/i }),
+      screen.getByRole('heading', { level: 2, name: /Health Guarantee/i }),
     ).toBeInTheDocument();
-
     expect(
-      screen.getByRole('heading', { level: 2, name: /Health guarantee/i }),
+      screen.getByRole('heading', { level: 2, name: /Delivery & Pickup/i }),
     ).toBeInTheDocument();
-
     expect(
-      screen.getByRole('heading', { level: 2, name: /Delivery & pickup/i }),
+      screen.getByRole('heading', { level: 2, name: /Refunds & Exchanges/i }),
     ).toBeInTheDocument();
-
     expect(
-      screen.getByRole('heading', { level: 2, name: /Privacy & payments/i }),
+      screen.getByRole('heading', { level: 2, name: /Privacy & Payments/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Documents & Contracts/i }),
     ).toBeInTheDocument();
   });
 
   it('renders deposit policy content correctly', () => {
     renderPoliciesPage();
 
-    expect(screen.getByText(/A \$300 deposit reserves your selected puppy/i)).toBeInTheDocument();
-
+    expect(screen.getByText(/\$300 deposit/i)).toBeInTheDocument();
+    expect(screen.getByText(/reserves your selected puppy/i)).toBeInTheDocument();
     expect(screen.getByText(/deposits are non-refundable/i)).toBeInTheDocument();
-  });
-
-  it('renders refunds policy content correctly', () => {
-    renderPoliciesPage();
-
-    expect(
-      screen.getByText(
-        /Once a puppy is reserved, refunds are not provided unless a licensed veterinarian/i,
-      ),
-    ).toBeInTheDocument();
   });
 
   it('renders health guarantee content correctly', () => {
     renderPoliciesPage();
 
+    expect(screen.getByText(/Every puppy receives a comprehensive vet exam/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Every puppy receives a comprehensive exam from our licensed veterinarian/i),
+      screen.getByText(/We guarantee against life-threatening congenital conditions for/i),
     ).toBeInTheDocument();
-
-    expect(
-      screen.getByText(
-        /We guarantee against life-threatening congenital conditions for 12 months/i,
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/12 months/i)).toBeInTheDocument();
   });
 
   it('renders delivery and pickup content correctly', () => {
     renderPoliciesPage();
 
     expect(
-      screen.getByText(/Pickup takes place in Montgomery, Alabama by appointment only/i),
+      screen.getByText(/Pickup takes place in Montgomery, AL by appointment/i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Flight nanny transport/i)).toBeInTheDocument();
+  });
+
+  it('renders refunds and exchanges content correctly', () => {
+    renderPoliciesPage();
 
     expect(
-      screen.getByText(/Courier delivery or flight nanny transport is available/i),
+      screen.getByText(
+        /Once reserved, refunds are not provided unless a licensed veterinarian documents a health concern/i,
+      ),
     ).toBeInTheDocument();
+    expect(screen.getByText(/replacement puppy/i)).toBeInTheDocument();
   });
 
   it('renders privacy and payments content correctly', () => {
     renderPoliciesPage();
 
-    expect(
-      screen.getByText(/We process payments exclusively through Stripe and PayPal/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/We process payments exclusively through/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stripe and PayPal/i)).toBeInTheDocument();
+    expect(screen.getByText(/no wire transfers/i)).toBeInTheDocument();
+  });
 
-    expect(screen.getByText(/no wire transfers or cash apps/i)).toBeInTheDocument();
+  it('renders documents and contracts content correctly', () => {
+    renderPoliciesPage();
+
+    expect(
+      screen.getByText(/Adoption contracts, medical records, and AKC paperwork are compiled in a/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/secure client portal/i)).toBeInTheDocument();
   });
 
   it('renders breadcrumbs with correct links', () => {
@@ -143,13 +160,15 @@ describe('Policies Page', () => {
     expect(nav).toHaveTextContent('Policies');
   });
 
-  it('renders documents section', () => {
+  it('renders contact link in footer note', () => {
     renderPoliciesPage();
 
-    expect(screen.getByText(/Documents & contracts/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Adoption contracts, medical records, and AKC paperwork/i),
+      screen.getByText(/These policies are part of our legal contract provided upon reservation/i),
     ).toBeInTheDocument();
+
+    const contactLink = screen.getByRole('link', { name: /Contact us/i });
+    expect(contactLink).toHaveAttribute('href', '/contact');
   });
 
   it('renders JSON-LD structured data script', () => {
@@ -178,19 +197,19 @@ describe('Policies Page', () => {
   it('renders all policy sections with proper article structure', () => {
     const { container } = renderPoliciesPage();
 
-    // 5 policy sections + 1 documents section = 6 articles total
+    // 6 policy sections as articles
     const articles = container.querySelectorAll('article');
-    expect(articles.length).toBeGreaterThanOrEqual(5);
+    expect(articles.length).toBe(6);
   });
 
-  it('has proper styling classes for cards', () => {
+  it('has proper styling classes for policy cards', () => {
     const { container } = renderPoliciesPage();
 
     const articles = container.querySelectorAll('article');
     articles.forEach((article) => {
-      expect(article.className).toContain('rounded-3xl');
+      expect(article.className).toContain('rounded-[2rem]');
       expect(article.className).toContain('border');
-      expect(article.className).toContain('bg-card');
+      expect(article.className).toContain('bg-[#151e32]');
     });
   });
 
@@ -198,6 +217,25 @@ describe('Policies Page', () => {
     renderPoliciesPage();
 
     const h2Elements = screen.getAllByRole('heading', { level: 2 });
-    expect(h2Elements.length).toBeGreaterThanOrEqual(5);
+    expect(h2Elements.length).toBe(6);
+  });
+
+  it('renders icons for each policy section', () => {
+    const { container } = renderPoliciesPage();
+
+    // Each article should have an icon container
+    const iconContainers = container.querySelectorAll('article svg');
+    expect(iconContainers.length).toBe(6);
+  });
+
+  it('applies hover effects to policy cards', () => {
+    const { container } = renderPoliciesPage();
+
+    const articles = container.querySelectorAll('article');
+    articles.forEach((article) => {
+      expect(article.className).toContain('hover:border-slate-600');
+      expect(article.className).toContain('hover:bg-[#1a253a]');
+      expect(article.className).toContain('group');
+    });
   });
 });
