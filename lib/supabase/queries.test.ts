@@ -27,6 +27,7 @@ const basePuppy: Omit<PuppyWithRelations, 'parents' | 'litter'> = {
   paypal_enabled: true,
   stripe_payment_link: null,
   is_archived: false,
+  sold_at: null,
   created_at: '',
   updated_at: '',
 };

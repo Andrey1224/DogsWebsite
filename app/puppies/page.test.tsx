@@ -84,6 +84,7 @@ describe('Puppies Page', () => {
         paypal_enabled: true,
         stripe_payment_link: null,
         is_archived: false,
+        sold_at: null,
         created_at: '2024-01-01',
         updated_at: '2024-01-01',
         sire_id: null,

@@ -204,6 +204,7 @@ export type Database = {
           sire_name: string | null;
           sire_photo_urls: string[] | null;
           slug: string | null;
+          sold_at: string | null;
           status: string;
           stripe_payment_link: string | null;
           updated_at: string | null;
@@ -231,6 +232,7 @@ export type Database = {
           sire_name?: string | null;
           sire_photo_urls?: string[] | null;
           slug?: string | null;
+          sold_at?: string | null;
           status?: string;
           stripe_payment_link?: string | null;
           updated_at?: string | null;
@@ -258,6 +260,7 @@ export type Database = {
           sire_name?: string | null;
           sire_photo_urls?: string[] | null;
           slug?: string | null;
+          sold_at?: string | null;
           status?: string;
           stripe_payment_link?: string | null;
           updated_at?: string | null;

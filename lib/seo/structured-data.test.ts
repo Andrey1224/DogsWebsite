@@ -219,6 +219,7 @@ describe('SEO Structured Data', () => {
       dam_name: null,
       dam_photo_urls: null,
       is_archived: false,
+      sold_at: null,
       litter_id: null,
       paypal_enabled: true,
       sex: 'female',

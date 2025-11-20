@@ -51,6 +51,7 @@ function buildPuppy(overrides: Partial<PuppyWithRelations> = {}): PuppyWithRelat
     litter: null,
     parents: { sire: null, dam: null },
     is_archived: false,
+    sold_at: null,
     ...overrides,
   };
 }
