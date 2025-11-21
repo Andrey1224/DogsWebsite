@@ -1,11 +1,23 @@
-import { Baby, Heart, Quote, ShieldCheck } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
+// New dark About page with breed spotlights
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  Shield,
+  Sparkles,
+  Users,
+  Award,
+  Star,
+  Bone,
+  PlayCircle,
+  BookOpen,
+  Coffee,
+  ArrowRight,
+} from 'lucide-react';
+
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { getOrganizationSchema } from '@/lib/seo/structured-data';
 import { buildMetadata } from '@/lib/seo/metadata';
-import { AnalyticsCtaLink } from './analytics-cta-link';
-import { GalleryCarousel } from './gallery-carousel';
 
 export const dynamic = 'force-static';
 
@@ -16,255 +28,298 @@ export const metadata = buildMetadata({
   path: '/about',
 });
 
-const galleryImages = [
-  {
-    src: '/about/family-bulldogs.webp',
-    alt: 'Exotic Bulldog Legacy family with French and English Bulldog puppies in Alabama',
-    blurDataURL:
-      'data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAABwAgCdASoQABAAA4BaJYwCdAaeQ3/WSf8PzX2AAP7mpSNPhA+Tgu2igCdau2BWnxlPABFDGp88RR6Ky3HclrwpqtCwMyhTy2iB1M+h1VBGkWZNiz4PaWGOLV8Anu1HSNE3iroNePZuf29LeNkSaNGuJsgl1MZPkDo704AA',
-  },
-  {
-    src: '/about/puppy-play.webp',
-    alt: 'French Bulldog puppies playing at an Alabama breeder nursery',
-    blurDataURL:
-      'data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADQAQCdASoQABAAA4BaJbACdAEJSxFcAADxvgTzzlkcQWpE53W3MW+Dbu2llKOhAnaPyatgke1phORJ3cc9SQ7+AIZpwRgL7idApv1X+nE1yTJ8/oSkJ99sQL4jvAAA',
-  },
-  {
-    src: '/about/nursery.webp',
-    alt: 'English Bulldog kennel nursery in Montgomery Alabama',
-    blurDataURL:
-      'data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQAgCdASoQABAAA4BaJQBOgCHfNUNt3b+AAP7niTyaxqqP7GlhJWrQ3MAcRzDQH2dJnjFMuREZprYzLmDcHzD/i2adQ3zcXGW80ZoIRTOEiii9ZqjZ3/RAAAA=',
-  },
-];
-
-const highlights = [
-  {
-    icon: ShieldCheck,
-    title: 'Health-first philosophy',
-    text: 'Parents are DNA-tested and OFA-screened so every pairing reduces hereditary risks while building sound temperaments.',
-  },
-  {
-    icon: Baby,
-    title: 'Enrichment-driven raising',
-    text: 'Early Neurological Stimulation, gentle kid exposure, sound desensitization, and crate conditioning come standard.',
-  },
-  {
-    icon: Heart,
-    title: 'Lifetime breeder support',
-    text: 'We stay in touch long after pickup with nutrition plans, training tips, and quick answers—whenever you need us.',
-  },
-];
-
-const storyParagraphs = [
-  'We are a small family breeder in Alabama, and our story starts in the 1980s when a little French Bulldog named Roman stole our hearts. What began as a personal passion quickly grew into a program grounded in ethics, health, and lifelong devotion to the breed.',
-  'Decades of showing dogs, learning from mentors, and refining our craft taught us that bulldogs thrive when science meets compassion. Parents are carefully matched, and every puppy is raised in-home with structure, play, and gentle socialization so they transition confidently into their forever families.',
-  'Each bulldog leaves with a veterinary exam, vaccination record, and a promise: we will always be a call away for nutrition, training, or a quick photo update. Bulldogs are our family, and helping them bring joy to yours is our greatest reward.',
-];
-
 const stats = [
-  { label: 'Years with bulldogs', value: '35+' },
-  { label: 'Healthy placements', value: '400+' },
-  { label: 'Lifetime support', value: '100%' },
+  { value: '35+', label: 'Years with bulldogs' },
+  { value: '400+', label: 'Healthy placements' },
+  { value: '100%', label: 'Lifetime support' },
+];
+
+const values = [
+  {
+    icon: Shield,
+    iconColor: 'text-orange-400',
+    title: 'Health-first philosophy',
+    desc: 'Parents are DNA-tested and OFA-screened. Every pairing reduces hereditary risks while building sound temperaments.',
+  },
+  {
+    icon: Sparkles,
+    iconColor: 'text-purple-400',
+    title: 'Enrichment-driven raising',
+    desc: 'Early Neurological Stimulation, gentle kid exposure, and sound desensitization come standard for every pup.',
+  },
+  {
+    icon: Users,
+    iconColor: 'text-blue-400',
+    title: 'Lifetime breeder support',
+    desc: 'We stay in touch long after pickup. Nutrition plans, training tips, and quick answers whenever you need us.',
+  },
 ];
 
 export default function AboutPage() {
   return (
-    <main id="main-content" className="bg-bg">
-      <JsonLd data={getOrganizationSchema()} />
-      <div className="mx-auto w-full max-w-7xl px-6 pb-16 pt-10 xl:px-8">
+    <main id="main-content" className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
+      {/* SEO - Hidden Breadcrumbs */}
+      <div className="sr-only">
         <Breadcrumbs
           items={[
             { label: 'Home', href: '/' },
             { label: 'About', href: '/about' },
           ]}
         />
+      </div>
+      <JsonLd data={getOrganizationSchema()} />
 
-        {/* Hero */}
-        <section className="mt-8 grid gap-6 md:grid-cols-12 items-start md:items-center">
-          <div className="space-y-6 md:col-span-12 lg:col-span-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
-              Our story
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-text md:text-4xl">
-              A boutique breeding program built on trust, transparency, and care
+      {/* --- HERO SECTION --- */}
+      <header className="relative mx-auto max-w-7xl px-6 pb-20 pt-32 md:px-12">
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+          {/* Text Content */}
+          <div className="relative z-10 space-y-8">
+            <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-orange-400">
+              <span className="h-[1px] w-8 bg-orange-500" /> Our Story
+            </div>
+            <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+              A boutique program built on <br />
+              <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
+                trust &amp; transparency
+              </span>
             </h1>
-            <div className="space-y-4 text-sm text-muted md:text-base">
-              {storyParagraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+            <p className="max-w-xl text-lg leading-relaxed text-slate-400">
+              We are a small family breeder in Alabama, and our story starts in the 1980s when a
+              little French Bulldog named Roman stole our hearts. What began as a personal passion
+              quickly grew into a program grounded in ethics, health, and lifelong devotion.
+            </p>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-6 border-t border-slate-800 pt-8">
+              {stats.map((stat) => (
+                <div key={stat.label}>
+                  <div className="mb-1 text-3xl font-bold text-white">{stat.value}</div>
+                  <div className="text-xs uppercase tracking-wider text-slate-500">
+                    {stat.label}
+                  </div>
+                </div>
               ))}
             </div>
-            <blockquote className="flex items-start gap-3 rounded-3xl border border-border bg-card/60 p-6 text-base text-muted shadow-sm md:text-lg">
-              <Quote className="mt-1 h-6 w-6 text-accent" aria-hidden="true" />
-              <span className="font-medium text-text">
-                &ldquo;Every puppy deserves a healthy start and a loving home.&rdquo;
-              </span>
-            </blockquote>
-            <div className="flex flex-wrap items-center gap-6">
-              <AnalyticsCtaLink
-                href="/puppies"
-                prefetch={false}
-                className="inline-flex items-center rounded-2xl bg-accent-gradient px-6 py-3 text-sm font-semibold text-text shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-              >
-                Meet Our Puppies →
-              </AnalyticsCtaLink>
-              <dl className="grid grid-cols-3 gap-4 text-left text-sm text-muted">
-                {stats.map((stat) => (
-                  <div key={stat.label}>
-                    <dt className="font-medium text-text">{stat.value}</dt>
-                    <dd>{stat.label}</dd>
-                  </div>
-                ))}
-              </dl>
+
+            <div className="pt-4">
+              <div className="rounded-r-xl border-l-4 border-orange-500 bg-[#1E293B] p-6 italic text-slate-300">
+                &ldquo;Every puppy deserves a healthy start and a loving home. That is our only
+                metric of success.&rdquo;
+              </div>
             </div>
           </div>
 
-          <div className="md:col-span-12 lg:col-span-6">
-            <GalleryCarousel className="mx-auto w-full" images={galleryImages} />
-          </div>
-        </section>
+          {/* Image Composition */}
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-r from-orange-500 to-purple-600 opacity-20 blur-2xl" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] border border-slate-700/50 shadow-2xl">
+              <Image
+                src="/about/family-bulldogs.webp"
+                alt="Breeder holding puppy"
+                fill
+                className="object-cover transition-transform duration-700 hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-transparent to-transparent opacity-60" />
 
-        {/* Highlights */}
-        <section className="mt-16">
-          <h2 className="sr-only">Program foundations</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {highlights.map((item) => (
-              <HighlightCard key={item.title} {...item} />
-            ))}
+              {/* Floating Badge */}
+              <div className="absolute bottom-8 right-8 max-w-[200px] rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
+                <div className="mb-1 flex items-center gap-2 font-bold text-white">
+                  <Award className="text-yellow-400" size={20} />
+                  <span>Award Winning</span>
+                </div>
+                <p className="text-xs text-slate-200">
+                  Recognized for excellence in temperament and health.
+                </p>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
+      </header>
 
-        {/* French Bulldog */}
-        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-8 shadow-sm">
-          <h2 className="font-serif text-3xl font-bold text-text">
-            French Bulldog: The Square Flask of Joy and Sass
-          </h2>
-          <div className="space-y-4 text-sm text-muted md:text-base">
-            <p>
-              A French Bulldog is not just a dog. It is a certified style icon with a perpetually
-              serious, yet incredibly endearing, facial expression. When you bring a Frenchie into
-              your life, you are not just acquiring a pet; you are investing in a 24/7 source of
-              positive energy that fits perfectly on your lap.
-            </p>
-            <p>
-              What is their secret? Absolute self-confidence. The Frenchie operates on the
-              principle: &ldquo;I am adorable, and you know it. Now, please bring me a treat.&rdquo;
-            </p>
-            <p className="font-medium text-text">They possess two key positive qualities:</p>
-            <p>
-              <strong className="text-text">The Master of the Comedic Glare:</strong> Their big,
-              dark eyes and frowning brows can melt your heart in a second. They can ask for cheese
-              without uttering a sound, using only their facial expressions. And this expression
-              always leads to a positive outcome for them!
-            </p>
-            <p>
-              <strong className="text-text">Compact Comfort Energy:</strong> They are the ideal
-              companion for cozy evenings. They are always ready to be close—in your bed, on your
-              favourite blanket, or, even better, right on your head if you&rsquo;re lying
-              awkwardly. They are like a living, warm, slightly snorting anti-stress ball.
-            </p>
-            <p className="font-medium text-text">
-              The Bottom Line: The French Bulldog is absolute, positive happiness in a square flask.
-              This is your personal, perpetually pleased, slightly stubborn friend with satellite
-              ears who fills your every day with cheerful, low-key presence and boundless love. They
-              are the world&rsquo;s best experts on the dolce vita lifestyle.
-            </p>
+      {/* --- VALUES SECTION --- */}
+      <section className="mx-auto max-w-7xl px-6 py-20 md:px-12">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {values.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={item.title}
+                className="group rounded-3xl border border-slate-800 bg-[#151e32] p-8 transition-all duration-300 hover:-translate-y-2 hover:border-orange-500/30"
+              >
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0B1120] transition-transform group-hover:scale-110">
+                  <IconComponent className={item.iconColor} size={28} />
+                </div>
+                <h2 className="mb-3 text-xl font-bold text-white">{item.title}</h2>
+                <p className="text-sm leading-relaxed text-slate-400">{item.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* --- BREED SPOTLIGHT: FRENCHIE --- */}
+      <section className="relative overflow-hidden bg-[#0f1629] py-24">
+        <div className="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:px-12 lg:grid-cols-2">
+          {/* Image Side */}
+          <div className="relative order-2 lg:order-1">
+            <div className="aspect-square rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 transition-transform duration-500 hover:rotate-0">
+              <Image
+                src="/about/puppy-play.webp"
+                alt="French Bulldog"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
           </div>
-        </section>
 
-        {/* English Bulldog */}
-        <section className="mt-16 space-y-6 rounded-3xl border border-border bg-card p-8 shadow-sm">
-          <h2 className="font-serif text-3xl font-bold text-text">
-            🇬🇧 English Bulldog: Your Personal, Wrinkly Cloud of Happiness
-          </h2>
-          <div className="space-y-4 text-sm text-muted md:text-base">
-            <p>
-              The English Bulldog is a majestic creature whose rough, gladiator-like appearance
-              conceals the soul of a gentle, devoted teddy bear. Bring one home, and you will
-              understand what absolute cuteness is, wrapped up in folds and accompanied by a sound
-              like a quiet, contented rumble.
-            </p>
-            <p className="font-medium text-text">🥰 An Incredibly Sweet Being</p>
-            <p>
-              A Bulldog&rsquo;s cuteness is not aggressive; it is fundamental. Those round,
-              sorrowful eyes, always looking at you with endless love, will make you forget all your
-              problems. Their clumsy, waddling gait and attempts to jump onto the couch—more like a
-              strongman&rsquo;s lift—are a daily, free comedy sketch. The wrinkles on their
-              forehead? They are just a natural built-in mood indicator: they deepen when he asks
-              for a treat and smooth out when he is sleeping, which is his favourite pastime.
-            </p>
-            <p className="font-medium text-text">🤝 A Wonderful Companion</p>
-            <p>
-              The Bulldog is the king of low-effort, but deep, companionship. He won&rsquo;t demand
-              marathons, but he will demand your sofa. He is the perfect partner for:
-            </p>
-            <p>
-              <strong className="text-text">Movie Nights:</strong> His contented sighing nearby
-              creates the perfect cozy atmosphere.
-            </p>
-            <p>
-              <strong className="text-text">Reading Books:</strong> He will serve as a heavy, warm,
-              stabilizing anchor on your lap.
-            </p>
-            <p>
-              <strong className="text-text">Quiet Walks:</strong> He doesn&rsquo;t need speed; he
-              just needs the fact of your presence.
-            </p>
-            <p>
-              He is loyal to the end and considers you the most important person in the universe.
-            </p>
-            <p className="font-medium text-text">✨ Joy and Happiness You Can Handle</p>
-            <p>
-              The Bulldog brings as much joy and happiness into your home as you can bear. This
-              happiness is not in a whirlwind of crazy games, but in a calm, profound sense of
-              contentment. He will teach you to appreciate silence (between snores), enjoy simple
-              things (like a soft rug), and love without reservation.
-            </p>
-            <p className="font-medium text-text">
-              The Bottom Line: The English Bulldog is a marvellous, sweet creature that brings a
-              steady stream of positivity into your life. He is your personal, wrinkly friend who
-              will serve as your pillow, space heater, and therapist.
-            </p>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="mt-16">
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-text">
-              Schedule a visit or a live video walkthrough
+          {/* Content Side */}
+          <div className="order-1 lg:order-2">
+            <div className="mb-4 inline-block rounded-full bg-purple-500/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-purple-400">
+              The Entertainer
+            </div>
+            <h2 className="mb-6 text-4xl font-bold">
+              French Bulldog: <br />
+              The Square Flask of Joy
             </h2>
-            <p className="mt-3 text-sm text-muted md:text-base">
-              We welcome families by appointment in Montgomery, AL and host virtual meet-and-greets
-              for out-of-state adopters. Reach out—we are happy to introduce you to the puppies.
+            <p className="mb-8 text-lg leading-relaxed text-slate-400">
+              Not just a dog, but a certified style icon with a perpetually serious, yet incredibly
+              endearing facial expression. You aren&apos;t just acquiring a pet; you are investing
+              in a 24/7 source of positive energy.
             </p>
-            <AnalyticsCtaLink
-              href="/puppies"
-              prefetch={false}
-              className="mt-6 inline-flex items-center rounded-2xl border border-transparent bg-accent-gradient px-6 py-3 text-sm font-semibold text-text shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-            >
-              See available puppies
-            </AnalyticsCtaLink>
+
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="mt-1 h-fit rounded-lg bg-purple-500/20 p-2">
+                  <Star size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Master of the Comedic Glare</h3>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Their big, dark eyes can melt your heart in a second. They ask for cheese
+                    without uttering a sound.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-1 h-fit rounded-lg bg-purple-500/20 p-2">
+                  <Bone size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Compact Comfort Energy</h3>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Always ready to be close—on your bed, or right on your head. A living, warm,
+                    slightly snorting anti-stress ball.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* --- BREED SPOTLIGHT: ENGLISH BULLDOG --- */}
+      <section className="relative bg-[#0B1120] py-24">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:px-12 lg:grid-cols-2">
+          {/* Content Side */}
+          <div className="space-y-8">
+            <div className="mb-2 inline-block rounded-full bg-orange-500/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-orange-400">
+              🇬🇧 The Classic
+            </div>
+            <h2 className="text-4xl font-bold">
+              English Bulldog: <br />
+              Your Wrinkly Cloud of Happiness
+            </h2>
+            <p className="text-lg leading-relaxed text-slate-400">
+              A majestic creature whose rough, gladiator-like appearance conceals the soul of a
+              gentle, devoted teddy bear. The king of low-effort, deep companionship.
+            </p>
+
+            <div className="space-y-4 rounded-2xl border border-slate-800 bg-[#1E293B]/50 p-6">
+              <h3 className="mb-4 border-b border-slate-700 pb-2 font-bold text-white">
+                Perfect Partner For:
+              </h3>
+
+              <div className="group flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 transition-colors group-hover:bg-blue-500 group-hover:text-white">
+                  <PlayCircle size={20} />
+                </div>
+                <div>
+                  <span className="block font-bold text-slate-200">Movie Nights</span>
+                  <span className="text-xs text-slate-500">
+                    His contented sighing creates the cozy atmosphere.
+                  </span>
+                </div>
+              </div>
+
+              <div className="group flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10 text-green-400 transition-colors group-hover:bg-green-500 group-hover:text-white">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <span className="block font-bold text-slate-200">Reading Books</span>
+                  <span className="text-xs text-slate-500">
+                    A heavy, warm, stabilizing anchor on your lap.
+                  </span>
+                </div>
+              </div>
+
+              <div className="group flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 transition-colors group-hover:bg-orange-500 group-hover:text-white">
+                  <Coffee size={20} />
+                </div>
+                <div>
+                  <span className="block font-bold text-slate-200">Quiet Walks</span>
+                  <span className="text-xs text-slate-500">
+                    He doesn&apos;t need speed; he just needs your presence.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="border-l-2 border-slate-700 pl-4 text-sm italic text-slate-500">
+              &ldquo;The English Bulldog is a steady stream of positivity. He is your pillow, space
+              heater, and therapist.&rdquo;
+            </p>
+          </div>
+
+          {/* Image Side */}
+          <div className="relative">
+            <div className="aspect-square -rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-black/50 transition-transform duration-500 hover:rotate-0">
+              <Image
+                src="/about/nursery.webp"
+                alt="English Bulldog"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+            <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-orange-500 opacity-20 blur-3xl" />
+          </div>
+        </div>
+      </section>
+
+      {/* --- CTA --- */}
+      <section className="px-6 py-20 text-center">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-6 text-3xl font-bold">
+            Ready to add a &ldquo;Cloud of Happiness&rdquo; to your life?
+          </h2>
+          <p className="mb-8 text-slate-400">
+            We welcome families by appointment in Montgomery, AL and host virtual meet-and-greets.
+          </p>
+          <Link
+            href="/puppies"
+            className="mx-auto inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 px-10 py-4 font-bold text-white shadow-lg shadow-orange-500/25 transition-transform hover:scale-105"
+          >
+            See available puppies <ArrowRight size={20} />
+          </Link>
+        </div>
+      </section>
     </main>
-  );
-}
-
-type HighlightCardProps = {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-  title: string;
-  text: string;
-};
-
-function HighlightCard({ icon: Icon, title, text }: HighlightCardProps) {
-  return (
-    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-transform duration-300 hover:scale-[1.03]">
-      <div className="flex items-center gap-2 text-text">
-        <Icon className="h-5 w-5" aria-hidden="true" />
-        <h2 className="text-lg font-semibold">{title}</h2>
-      </div>
-      <p className="mt-3 text-sm text-muted">{text}</p>
-    </article>
   );
 }
