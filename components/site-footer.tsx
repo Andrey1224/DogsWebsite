@@ -1,4 +1,14 @@
+// New dark footer UI with 4-column layout and integrated map
 import Link from 'next/link';
+import {
+  Instagram,
+  Send,
+  MessageCircle,
+  Clock,
+  ArrowUpRight,
+  MapPin,
+  Navigation,
+} from 'lucide-react';
 
 import { CONTACT_DETAILS } from '@/lib/config/contact';
 import { BUSINESS_PROFILE } from '@/lib/config/business';
@@ -17,124 +27,195 @@ function formatTimeTo12Hour(value: string) {
   return `${normalizedHours}:${minutes.toString().padStart(2, '0')} ${suffix}`;
 }
 
+const footerLinks = [
+  {
+    title: 'Explore',
+    items: [
+      { label: 'Available Puppies', href: '/puppies' },
+      { label: 'Reviews', href: '/reviews' },
+      { label: 'Our Story', href: '/about' },
+      { label: 'Health Policy', href: '/policies' },
+    ],
+  },
+  {
+    title: 'Support',
+    items: [
+      { label: 'FAQ', href: '/faq' },
+      { label: 'Contact Us', href: '/contact' },
+      { label: 'Deposit Terms', href: '/policies' },
+      { label: 'Flight Nanny Info', href: '/policies#delivery' },
+    ],
+  },
+];
+
+const SocialButton = ({
+  icon: Icon,
+  label,
+  href,
+}: {
+  icon: typeof Instagram;
+  label: string;
+  href: string;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noreferrer"
+    className="group flex h-10 w-10 items-center justify-center rounded-full bg-[#1E293B] text-slate-400 transition-all duration-300 hover:bg-orange-500 hover:text-white"
+    title={label}
+    aria-label={label}
+  >
+    <Icon size={18} />
+  </a>
+);
+
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-footer py-14">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[1.1fr,0.9fr]">
-        <div className="space-y-8">
-          <div>
-            <p className="font-serif text-lg font-semibold tracking-tight text-text">
-              Exotic Bulldog Legacy
-            </p>
-            <p className="mt-3 max-w-md text-sm text-muted">
+    <footer className="relative overflow-hidden border-t border-slate-800 bg-[#0B1120] pb-32 pt-20 font-sans text-white">
+      {/* Background Decor */}
+      <div className="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-1/4 h-96 w-96 rounded-full bg-blue-900/10 blur-[120px]" />
+
+      <div className="mx-auto max-w-7xl px-6 md:px-12">
+        <div className="mb-20 grid grid-cols-1 gap-12 lg:grid-cols-12">
+          {/* Brand Column (4 cols) */}
+          <div className="space-y-6 lg:col-span-4">
+            <h2 className="text-2xl font-bold tracking-tight">Exotic Bulldog Legacy</h2>
+            <p className="max-w-sm leading-relaxed text-slate-400">
               Responsible French & English bulldog breeding in Alabama with health-first practices,
-              transparent pedigrees, and concierge support before and after placement.
+              transparent pedigrees, and concierge support.
             </p>
+            <div className="flex gap-4 pt-2">
+              <SocialButton
+                icon={Instagram}
+                label="Instagram"
+                href="https://instagram.com/exoticbulldoglevel"
+              />
+              <SocialButton icon={Send} label="Telegram" href={CONTACT_DETAILS.telegram.link} />
+              <SocialButton
+                icon={MessageCircle}
+                label="WhatsApp"
+                href={CONTACT_DETAILS.whatsapp.link}
+              />
+            </div>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <p className="font-semibold uppercase tracking-wide text-xs text-muted">Visit</p>
-              <address className="mt-2 not-italic text-sm leading-relaxed text-text">
-                {BUSINESS_PROFILE.address.display}
-              </address>
-              <p className="mt-2 text-xs text-muted">Appointments scheduled by request only.</p>
-              <div className="mt-2 text-sm">
+
+          {/* Links Columns (2 cols each) */}
+          {footerLinks.map((section) => (
+            <div key={section.title} className="lg:col-span-2">
+              <h3 className="mb-6 text-sm font-bold uppercase tracking-wider text-orange-400">
+                {section.title}
+              </h3>
+              <ul className="space-y-4">
+                {section.items.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
+                    >
+                      <span className="h-1 w-1 rounded-full bg-slate-600 transition-colors group-hover:bg-orange-500"></span>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          {/* Hours & Visit (4 cols) */}
+          <div className="relative overflow-hidden rounded-3xl border border-slate-800/50 bg-[#151e32] p-6 lg:col-span-4">
+            <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-orange-500/10 blur-2xl" />
+
+            <div className="mb-6 flex items-center gap-2">
+              <Clock size={18} className="text-orange-400" />
+              <h3 className="font-bold">Kennel Hours (Central Time)</h3>
+            </div>
+
+            <div className="mb-6 space-y-3 text-sm">
+              {locationHours.map((entry) => {
+                const isToday =
+                  new Date().toLocaleDateString('en-US', { weekday: 'long' }) === entry.day;
+                const isClosed = entry.opens === '00:00' && entry.closes === '00:00';
+
+                return (
+                  <div
+                    key={entry.day}
+                    className="flex justify-between border-b border-slate-800/50 pb-2 text-slate-400 last:border-0"
+                  >
+                    <span className={isToday ? 'font-semibold text-white' : ''}>{entry.day}</span>
+                    <span className={isClosed ? 'text-slate-600' : 'text-white'}>
+                      {isClosed
+                        ? 'Closed'
+                        : `${formatTimeTo12Hour(entry.opens)} – ${formatTimeTo12Hour(entry.closes)}`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Link
+              href="/contact"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-[#0B1120] py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+            >
+              Schedule a Visit <ArrowUpRight size={16} />
+            </Link>
+          </div>
+        </div>
+
+        {/* Map Section */}
+        <div className="group relative h-64 overflow-hidden rounded-[2rem] border border-slate-800 md:h-80">
+          {/* Map Iframe */}
+          <iframe
+            src={mapSrc}
+            title="Exotic Bulldog Legacy location"
+            loading="lazy"
+            allowFullScreen
+            className="h-full w-full border-0 opacity-60 grayscale transition-opacity duration-500 group-hover:opacity-80 group-hover:grayscale-0"
+          />
+
+          {/* Overlay Card */}
+          <div className="absolute bottom-6 left-6 max-w-xs rounded-2xl border border-slate-700 bg-[#0B1120]/90 p-6 shadow-2xl backdrop-blur-md">
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-orange-500 p-2 text-white">
+                <MapPin size={20} />
+              </div>
+              <div>
+                <h4 className="font-bold text-white">
+                  {BUSINESS_PROFILE.address.addressLocality},{' '}
+                  {BUSINESS_PROFILE.address.addressRegion}
+                </h4>
+                <p className="mb-3 mt-1 text-xs text-slate-400">
+                  {BUSINESS_PROFILE.coordinates.latitude.toFixed(6)}°N{' '}
+                  {Math.abs(BUSINESS_PROFILE.coordinates.longitude).toFixed(6)}°W
+                </p>
                 <Link
                   href={BUSINESS_PROFILE.directionsUrl}
-                  className="text-accent-aux underline-offset-4 transition hover:underline"
                   target="_blank"
                   rel="noreferrer"
+                  className="flex items-center gap-1 text-xs font-bold text-orange-400 hover:underline"
                 >
-                  Get directions
+                  Get Directions <Navigation size={10} />
                 </Link>
               </div>
             </div>
-            <div>
-              <p className="font-semibold uppercase tracking-wide text-xs text-muted">Connect</p>
-              <ul className="mt-2 space-y-2 text-sm">
-                <li>
-                  <a
-                    className="transition hover:text-accent-aux"
-                    href={`tel:${CONTACT_DETAILS.phone.e164}`}
-                  >
-                    {CONTACT_DETAILS.phone.display}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="transition hover:text-accent-aux"
-                    href={`mailto:${CONTACT_DETAILS.email.address}`}
-                  >
-                    {CONTACT_DETAILS.email.address}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="transition hover:text-accent-aux"
-                    href={CONTACT_DETAILS.whatsapp.link}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    WhatsApp
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="transition hover:text-accent-aux"
-                    href={CONTACT_DETAILS.telegram.link}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Telegram
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="transition hover:text-accent-aux"
-                    href="https://instagram.com/exoticbulldoglevel"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Instagram
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div>
-            <p className="font-semibold uppercase tracking-wide text-xs text-muted">
-              Hours (Central Time)
-            </p>
-            <ul className="mt-2 space-y-1 text-sm text-muted">
-              {locationHours.map((entry) => (
-                <li key={entry.day} className="flex justify-between gap-4 text-text">
-                  <span>{entry.day}</span>
-                  <span className="text-muted">
-                    {formatTimeTo12Hour(entry.opens)} – {formatTimeTo12Hour(entry.closes)}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
-        <div className="flex flex-col gap-4">
-          <div className="overflow-hidden rounded-3xl border border-border shadow-sm">
-            <iframe
-              src={mapSrc}
-              title="Exotic Bulldog Legacy location"
-              loading="lazy"
-              allowFullScreen
-              className="h-64 w-full border-0"
-            />
+
+        {/* Bottom Bar */}
+        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 text-xs text-slate-500 md:flex-row">
+          <p>© {new Date().getFullYear()} Exotic Bulldog Legacy. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="/policies" className="hover:text-slate-300">
+              Privacy Policy
+            </Link>
+            <Link href="/policies" className="hover:text-slate-300">
+              Terms of Service
+            </Link>
+            <Link href="/sitemap.xml" className="hover:text-slate-300">
+              Sitemap
+            </Link>
           </div>
-          <p className="text-xs text-muted">
-            Service area: Alabama, Georgia, Florida, Tennessee. Travel logistics available via
-            ground couriers or flight nannies.
-          </p>
         </div>
-      </div>
-      <div className="mx-auto mt-10 max-w-6xl px-6 text-xs text-muted">
-        © {new Date().getFullYear()} Exotic Bulldog Legacy. All rights reserved.
       </div>
     </footer>
   );

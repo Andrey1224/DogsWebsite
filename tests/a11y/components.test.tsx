@@ -138,9 +138,11 @@ describe('Component Accessibility Tests', () => {
       const { container } = await renderWithAct(<SiteFooter />);
       const links = container.querySelectorAll('a');
 
-      // All links should have accessible text
+      // All links should have accessible text or aria-label
       links.forEach((link: HTMLAnchorElement) => {
-        expect(link.textContent?.trim().length).toBeGreaterThan(0);
+        const hasText = (link.textContent?.trim().length ?? 0) > 0;
+        const hasAriaLabel = (link.getAttribute('aria-label')?.trim().length ?? 0) > 0;
+        expect(hasText || hasAriaLabel).toBeTruthy();
       });
     });
 
