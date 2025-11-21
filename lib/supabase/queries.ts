@@ -18,6 +18,10 @@ function getSupabaseClient() {
 export type PuppyFilter = {
   status?: PuppyStatus | 'all';
   breed?: 'french_bulldog' | 'english_bulldog' | 'all';
+  sex?: 'male' | 'female' | 'all';
+  priceMin?: number;
+  priceMax?: number;
+  search?: string;
 };
 
 function normalizeArchiveFlag<T extends { is_archived?: boolean | null }>(
@@ -100,20 +104,35 @@ export const getLitters = cache(async () => {
 
 export function applyPuppyFilters(puppies: PuppyWithRelations[], filter: PuppyFilter = {}) {
   return puppies.filter((puppy) => {
+    // Status filter
     const matchesStatus =
       !filter.status || filter.status === 'all' || puppy.status === filter.status;
 
+    // Breed filter
     const breedFilter = filter.breed ?? 'all';
-    if (breedFilter === 'all') {
-      return matchesStatus;
-    }
-
     const sireBreed = puppy.parents?.sire?.breed;
     const damBreed = puppy.parents?.dam?.breed;
     const matchesBreed =
-      puppy.breed === breedFilter || sireBreed === breedFilter || damBreed === breedFilter;
+      breedFilter === 'all' ||
+      puppy.breed === breedFilter ||
+      sireBreed === breedFilter ||
+      damBreed === breedFilter;
 
-    return matchesStatus && matchesBreed;
+    // Sex filter
+    const sexFilter = filter.sex ?? 'all';
+    const matchesSex = sexFilter === 'all' || puppy.sex === sexFilter;
+
+    // Price range filter
+    const matchesPrice =
+      (!filter.priceMin || !puppy.price_usd || puppy.price_usd >= filter.priceMin) &&
+      (!filter.priceMax || !puppy.price_usd || puppy.price_usd <= filter.priceMax);
+
+    // Search filter (name)
+    const searchQuery = filter.search?.toLowerCase().trim() ?? '';
+    const matchesSearch =
+      !searchQuery || (puppy.name?.toLowerCase().includes(searchQuery) ?? false);
+
+    return matchesStatus && matchesBreed && matchesSex && matchesPrice && matchesSearch;
   });
 }
 

@@ -24,7 +24,8 @@ function formatReviewDate(review: Review): string {
   }).format(parsed);
 }
 
-function StarRow() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function StarRow({ rating: _rating }: { rating: number }) {
   return (
     <div className="flex gap-1">
       {Array.from({ length: 5 }).map((_, index) => (
