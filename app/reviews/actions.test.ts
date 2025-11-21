@@ -26,43 +26,41 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 type FormOverrides = Partial<{
-  name: string;
-  location: string;
-  visitMonth: string;
+  authorName: string;
+  authorLocation: string;
   rating: string;
-  story: string;
+  body: string;
   'h-captcha-response': string;
   photoUrls: string[];
+  agreeToPublish: string | null;
 }>;
 
 function createFormData(overrides: FormOverrides = {}) {
-  const defaults: Record<string, string> = {
-    name: 'Sarah W.',
-    location: 'Huntsville, AL',
-    visitMonth: '2025-06',
+  const defaults: Record<string, string | string[]> = {
+    authorName: 'Sarah W.',
+    authorLocation: 'Huntsville, AL',
     rating: '5',
-    story:
-      'Charlie came home healthy and happy. The breeder kept us updated the entire time and the pickup was so smooth.',
+    body: 'Charlie came home healthy and happy. The breeder kept us updated the entire time and the pickup was so smooth.',
     'h-captcha-response': 'captcha-token',
+    agreeToPublish: 'on',
+    photoUrls: [],
   };
 
-  const defaultPhotoUrls = [
-    'https://example.supabase.co/storage/v1/object/public/reviews/a.jpg',
-    'https://example.supabase.co/storage/v1/object/public/reviews/b.jpg',
-  ];
-
-  const { photoUrls, ...fieldOverrides } = overrides;
-
+  const entries = { ...defaults, ...overrides } as Record<
+    string,
+    string | string[] | null | undefined
+  >;
   const data = new FormData();
-  const entries = { ...defaults, ...fieldOverrides };
+
   Object.entries(entries).forEach(([key, value]) => {
-    if (value !== undefined) {
-      data.set(key, value);
+    if (value !== undefined && value !== null) {
+      if (Array.isArray(value)) {
+        value.forEach((v) => data.append(`${key}[]`, v));
+      } else {
+        data.set(key, value);
+      }
     }
   });
-
-  const photos = photoUrls !== undefined ? (photoUrls ?? []) : defaultPhotoUrls;
-  photos.forEach((url) => data.append('photoUrls', url));
 
   return data;
 }
@@ -94,6 +92,7 @@ describe('submitReview', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
     mockHeaders();
     mocks.verifyHCaptcha.mockResolvedValue({ ok: true, message: 'Captcha verified' });
     mocks.revalidatePath.mockResolvedValue(undefined);
@@ -104,18 +103,13 @@ describe('submitReview', () => {
     const result = await submitReview(
       { status: 'idle' },
       createFormData({
-        name: 'A',
-        location: '',
-        visitMonth: '2025',
+        authorName: 'A',
+        authorLocation: '',
         rating: '9',
-        story: 'Tiny',
+        body: 'Tiny',
         'h-captcha-response': '',
-        photoUrls: [
-          'https://example.supabase.co/storage/v1/object/public/reviews/1.jpg',
-          'https://example.supabase.co/storage/v1/object/public/reviews/2.jpg',
-          'https://example.supabase.co/storage/v1/object/public/reviews/3.jpg',
-          'https://example.supabase.co/storage/v1/object/public/reviews/4.jpg',
-        ],
+        agreeToPublish: null,
+        photoUrls: ['https://example.com/invalid.jpg'],
       }),
     );
 
@@ -123,13 +117,12 @@ describe('submitReview', () => {
     expect(result.message).toBe('Please correct the highlighted fields.');
     expect(result.fieldErrors).toEqual(
       expect.objectContaining({
-        name: expect.any(String),
-        location: expect.any(String),
-        visitMonth: expect.any(String),
+        authorName: expect.any(String),
         rating: expect.any(String),
-        story: expect.any(String),
+        body: expect.any(String),
         captcha: expect.any(String),
-        photos: expect.any(String),
+        agreeToPublish: expect.any(String),
+        photoUrls: expect.any(String),
       }),
     );
     expect(mocks.verifyHCaptcha).not.toHaveBeenCalled();
@@ -174,24 +167,21 @@ describe('submitReview', () => {
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
         author_name: 'Sarah W.',
-        location: 'Huntsville, AL',
-        visit_date: '2025-06-01',
+        author_location: 'Huntsville, AL',
         rating: 5,
-        story: expect.stringContaining('Charlie came home'),
-        photo_urls: [
-          'https://example.supabase.co/storage/v1/object/public/reviews/a.jpg',
-          'https://example.supabase.co/storage/v1/object/public/reviews/b.jpg',
-        ],
-        status: 'published',
-        source: 'form',
-        client_ip: '198.51.100.3',
+        body: expect.stringContaining('Charlie came home'),
+        photo_urls: null,
+        source: 'manual',
+        is_published: false,
+        is_featured: false,
       }),
     );
     expect(mocks.verifyHCaptcha).toHaveBeenCalledWith('captcha-token', '198.51.100.3');
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/reviews');
   });
 
-  it('skips persistence errors when Supabase client is unavailable outside production', async () => {
+  it('skips persistence when Supabase client is unavailable outside production', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
     mocks.createServiceRoleClient.mockImplementation(() => {
       throw new Error('missing env');
     });
@@ -199,6 +189,8 @@ describe('submitReview', () => {
     const result = await submitReview({ status: 'idle' }, createFormData());
 
     expect(result.status).toBe('success');
-    expect(consoleWarnSpy).toHaveBeenCalled();
+    expect(result.message).toContain('Thanks for sharing your story');
+
+    vi.unstubAllEnvs();
   });
 });

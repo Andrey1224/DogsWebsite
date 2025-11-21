@@ -51,6 +51,11 @@ vi.mock('@/lib/supabase/queries', () => ({
 
 vi.mock('@/lib/reviews/queries', () => ({
   getPublishedReviews: vi.fn(async () => []),
+  getFeaturedReviews: vi.fn(async () => []),
+  getAggregate: (reviews: Array<{ rating: number }>) => ({
+    averageRating: reviews.length === 0 ? 0 : 5,
+    reviewCount: reviews.length,
+  }),
 }));
 
 vi.mock('@/app/reviews/upload-actions', () => ({

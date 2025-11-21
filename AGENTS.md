@@ -65,6 +65,7 @@ Next.js routes live under `app/`, server actions stay alongside their routes (e.
 
 - Treat `lib/supabase/database.types.ts` as source of truth; do not re-run Supabase CLI or modify `.supabase` config.
 - When tasks require schema updates, coordinate with the maintainer for regeneration rather than invoking CLI commands yourself.
+- MCP tools available: Context7 for library docs, Playwright MCP for browser automation, and DevTools MCP for in-page inspection.
 
 ## Testing Guidelines
 

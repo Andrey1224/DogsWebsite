@@ -1,5 +1,14 @@
+/**
+ * Reviews Page Tests
+ *
+ * Tests the Reviews page rendering, accessibility, and structured data.
+ * Tests new dark UI with masonry grid and review form.
+ */
+
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+import { expectNoA11yViolations } from '@/tests/helpers/axe';
 
 const mocks = vi.hoisted(() => ({
   getPublishedReviews: vi.fn(),
@@ -7,6 +16,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/reviews/queries', () => ({
   getPublishedReviews: mocks.getPublishedReviews,
+  getAggregate: (reviews: Array<{ rating: number }>) => ({
+    averageRating:
+      reviews.length === 0
+        ? 0
+        : Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)),
+    reviewCount: reviews.length,
+  }),
 }));
 
 vi.mock('@/components/reviews/review-form', () => ({
@@ -24,100 +40,142 @@ describe('Reviews Page', () => {
     vi.clearAllMocks();
     mocks.getPublishedReviews.mockResolvedValue([
       {
-        id: 'community-1',
-        author: 'Taylor R.',
-        location: 'Atlanta, GA',
+        id: 'manual-1',
+        source: 'manual',
+        isPublished: true,
+        isFeatured: false,
+        authorName: 'Taylor R.',
+        authorLocation: 'Atlanta, GA',
+        rating: 4,
+        body: 'Great coordination and healthy puppy delivery.',
         visitDate: '2025-09-01',
-        rating: 5,
-        story: 'Amazing coordination and healthy puppy delivery.',
+        photoUrl: null,
+        sourceUrl: null,
         createdAt: '2025-09-15T00:00:00.000Z',
-        photoUrls: ['https://example.supabase.co/storage/v1/object/public/reviews/community-1.jpg'],
+        updatedAt: '2025-09-15T00:00:00.000Z',
+      },
+      {
+        id: 'fb-1',
+        source: 'facebook_manual',
+        isPublished: true,
+        isFeatured: true,
+        authorName: 'Sarah W.',
+        authorLocation: 'Huntsville, AL',
+        rating: 5,
+        body: 'Transparent process and healthy puppy.',
+        visitDate: '2025-06-18',
+        photoUrl: '/reviews/sarah-charlie.webp',
+        sourceUrl: 'https://facebook.com/review/1',
+        createdAt: '2025-06-19T00:00:00.000Z',
+        updatedAt: '2025-06-19T00:00:00.000Z',
       },
     ]);
   });
 
-  it('renders hero heading', async () => {
+  it('renders hero heading with gradient text', async () => {
     await renderReviewsPage();
 
     expect(
       screen.getByRole('heading', {
+        level: 1,
         name: /Families who chose Exotic Bulldog Legacy/i,
       }),
     ).toBeInTheDocument();
   });
 
-  it('renders hero description', async () => {
+  it('renders Verified Reviews badge', async () => {
+    await renderReviewsPage();
+
+    expect(screen.getByText(/Verified Reviews/i)).toBeInTheDocument();
+  });
+
+  it('renders description text', async () => {
     await renderReviewsPage();
 
     expect(
-      screen.getByText(/our team stays involved at every step of the adoption journey/i),
+      screen.getByText(/From first kennel visits to flight nanny hand-offs/i),
     ).toBeInTheDocument();
   });
 
-  it('displays community and featured reviews', async () => {
+  it('renders static stats', async () => {
+    await renderReviewsPage();
+
+    expect(screen.getByText(/Average Rating/i)).toBeInTheDocument();
+    expect(screen.getByText('5.0 / 5.0')).toBeInTheDocument();
+    expect(screen.getByText(/Happy Families/i)).toBeInTheDocument();
+    expect(screen.getByText('120+')).toBeInTheDocument();
+    expect(screen.getByText(/States Served/i)).toBeInTheDocument();
+    expect(screen.getByText('14')).toBeInTheDocument();
+  });
+
+  it('displays review cards without badges', async () => {
     await renderReviewsPage();
 
     expect(screen.getByText(/Taylor R\./i)).toBeInTheDocument();
     expect(screen.getByText(/Sarah W\./i)).toBeInTheDocument();
-    expect(screen.getByText(/Mark & Lisa P\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Great coordination and healthy puppy delivery./i)).toBeInTheDocument();
+    expect(screen.getByText(/Transparent process and healthy puppy./i)).toBeInTheDocument();
+
+    // Badges should not be present
+    expect(screen.queryByText(/From EBL Family/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/From Facebook review/i)).not.toBeInTheDocument();
   });
 
-  it('displays review locations', async () => {
-    await renderReviewsPage();
-
-    expect(screen.getAllByText(/Huntsville, AL/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Birmingham, AL/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Atlanta, GA/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Nashville, TN/i).length).toBeGreaterThan(0);
-  });
-
-  it('displays star ratings', async () => {
-    await renderReviewsPage();
-
-    // All reviews are 5-star, check for multiple instances of "5 out of 5 stars"
-    const ratingElements = screen.getAllByText(/5 out of 5 stars/i);
-    expect(ratingElements.length).toBeGreaterThan(0);
-  });
-
-  it('includes CTA to contact the team', async () => {
-    await renderReviewsPage();
-
-    expect(screen.getByText(/Ready to plan your bulldog match\?/i)).toBeInTheDocument();
-
-    const contactLink = screen.getByRole('link', { name: /Contact the team/i });
-    expect(contactLink).toBeInTheDocument();
-    expect(contactLink).toHaveAttribute('href', '/contact');
-  });
-
-  it('renders breadcrumbs navigation', async () => {
-    await renderReviewsPage();
-
-    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
-    expect(screen.getAllByText('Reviews').length).toBeGreaterThan(0);
-  });
-
-  it('displays visit dates in readable format', async () => {
-    await renderReviewsPage();
-
-    // Check for formatted dates
-    expect(screen.getByText(/Visited June 2025/i)).toBeInTheDocument();
-    const julyDates = screen.getAllByText(/Visited July 2025/i);
-    expect(julyDates.length).toBeGreaterThan(0);
-    const septemberDates = screen.getAllByText(/Visited September 2025/i);
-    expect(septemberDates.length).toBeGreaterThan(0);
-  });
-
-  it('renders review quotes', async () => {
-    await renderReviewsPage();
-
-    expect(screen.getByText(/We picked up our French Bulldog, Charlie/i)).toBeInTheDocument();
-    expect(screen.getByText(/Our English Bulldog Duke is doing amazing/i)).toBeInTheDocument();
-    expect(screen.getByText(/Amazing coordination/i)).toBeInTheDocument();
-  });
-
-  it('renders the submission form placeholder', async () => {
+  it('renders the submission form', async () => {
     await renderReviewsPage();
 
     expect(screen.getByTestId('review-form')).toBeInTheDocument();
+  });
+
+  it('shows empty state when no reviews', async () => {
+    mocks.getPublishedReviews.mockResolvedValueOnce([]);
+
+    await renderReviewsPage();
+
+    expect(screen.getByText(/No reviews published yet/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Once we approve the first story it will appear here/i),
+    ).toBeInTheDocument();
+  });
+
+  it('renders breadcrumbs (sr-only for SEO)', async () => {
+    await renderReviewsPage();
+
+    const nav = screen.getByRole('navigation', { name: /Breadcrumb/i });
+    expect(nav).toBeInTheDocument();
+
+    const homeLink = screen.getByRole('link', { name: /Home/i });
+    expect(homeLink).toHaveAttribute('href', '/');
+  });
+
+  it('has dark theme background', async () => {
+    const { container } = await renderReviewsPage();
+
+    const mainContainer = container.querySelector('.bg-\\[\\#0B1120\\]');
+    expect(mainContainer).toBeInTheDocument();
+  });
+
+  it('renders JSON-LD structured data', async () => {
+    const { container } = await renderReviewsPage();
+
+    const jsonLdScripts = container.querySelectorAll('script[type="application/ld+json"]');
+    expect(jsonLdScripts.length).toBeGreaterThan(0);
+
+    // Find the aggregate rating schema
+    const schemas = Array.from(jsonLdScripts).map((script) =>
+      JSON.parse(script.textContent || '{}'),
+    );
+    const aggregateSchema = schemas.find(
+      (schema) => schema['@type'] === 'Organization' && schema.aggregateRating,
+    );
+
+    expect(aggregateSchema).toBeTruthy();
+    expect(aggregateSchema?.aggregateRating['@type']).toBe('AggregateRating');
+  });
+
+  it('passes accessibility checks', async () => {
+    const { container } = await renderReviewsPage();
+    await expectNoA11yViolations(container);
+    expect(container).toBeTruthy();
   });
 });

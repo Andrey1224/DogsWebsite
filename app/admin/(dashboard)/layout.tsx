@@ -17,7 +17,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card px-6 py-4 shadow-sm">
           <div>
             <p className="text-xs uppercase tracking-wide text-muted">EBL Admin</p>
-            <h1 className="text-xl font-semibold text-text">Puppies Dashboard</h1>
+            <h1 className="text-xl font-semibold text-text">Dashboard</h1>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm text-muted">Signed in as {session.sub}</p>
