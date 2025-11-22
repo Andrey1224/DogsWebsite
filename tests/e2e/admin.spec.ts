@@ -100,14 +100,18 @@ test('admin can change puppy status and it reflects on public site', async ({ pa
   await statusSelect.selectOption(newStatus);
 
   // Wait for the status change to be saved
-  await page.waitForTimeout(2000); // Allow time for auto-save
+  await page.waitForTimeout(3000); // Allow time for auto-save
 
   // Step 5: Open the public site in a new page
   const publicPage = await context.newPage();
 
   // Check the puppies list page to verify changes are reflected
-  await publicPage.goto('/puppies');
+  // Add timestamp to bypass ISR cache (60s revalidation)
+  await publicPage.goto(`/puppies?_t=${Date.now()}`);
   await publicPage.waitForLoadState('networkidle');
+
+  // Reload to ensure fresh data (double-check bypass ISR cache)
+  await publicPage.reload({ waitUntil: 'networkidle' });
 
   // Verify puppies are displayed
   const puppyCards = publicPage.locator('[data-testid="puppy-card"]');
@@ -116,7 +120,8 @@ test('admin can change puppy status and it reflects on public site', async ({ pa
 
   // If we have a slug, check the detail page loads correctly
   if (puppySlug) {
-    await publicPage.goto(`/puppies/${puppySlug}`);
+    // Add timestamp to bypass ISR cache
+    await publicPage.goto(`/puppies/${puppySlug}?_t=${Date.now()}`);
     await publicPage.waitForLoadState('networkidle');
 
     // Verify the page loaded by checking for common elements
