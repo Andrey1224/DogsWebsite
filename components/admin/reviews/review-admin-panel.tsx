@@ -95,20 +95,20 @@ function ReviewEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-xl">
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-2xl rounded-2xl border border-slate-700/60 bg-[#0f172a] p-6 text-white shadow-2xl shadow-black/40">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wide text-muted">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               {mode === 'create' ? 'Add Facebook review' : 'Edit review'}
             </p>
-            <h3 className="text-xl font-semibold text-text">
+            <h3 className="text-xl font-semibold">
               {mode === 'create' ? 'New Facebook import' : review?.headline || review?.authorName}
             </h3>
           </div>
           <button
             type="button"
-            className="rounded-full border border-border px-3 py-1 text-sm font-semibold text-text hover:bg-hover"
+            className="rounded-full border border-slate-700 px-3 py-1 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
             onClick={onClose}
           >
             Close
@@ -118,21 +118,21 @@ function ReviewEditor({
         <form className="mt-4 grid gap-4" onSubmit={handleSubmit}>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold text-text">Name</label>
+              <label className="text-sm font-semibold text-slate-200">Name</label>
               <input
                 value={form.authorName}
                 onChange={(e) => handleChange('authorName', e.target.value)}
                 required
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 placeholder="Sarah W."
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-text">Location (optional)</label>
+              <label className="text-sm font-semibold text-slate-200">Location (optional)</label>
               <input
                 value={form.authorLocation}
                 onChange={(e) => handleChange('authorLocation', e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 placeholder="Huntsville, AL"
               />
             </div>
@@ -140,32 +140,32 @@ function ReviewEditor({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold text-text">Headline (optional)</label>
+              <label className="text-sm font-semibold text-slate-200">Headline (optional)</label>
               <input
                 value={form.headline}
                 onChange={(e) => handleChange('headline', e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 placeholder="Healthiest pup we have owned"
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-text">Visit date (optional)</label>
+              <label className="text-sm font-semibold text-slate-200">Visit date (optional)</label>
               <input
                 type="date"
                 value={form.visitDate}
                 onChange={(e) => handleChange('visitDate', e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
               />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold text-text">Rating</label>
+              <label className="text-sm font-semibold text-slate-200">Rating</label>
               <select
                 value={form.rating}
                 onChange={(e) => handleChange('rating', Number(e.target.value))}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
               >
                 {[1, 2, 3, 4, 5].map((value) => (
                   <option key={value} value={value}>
@@ -175,44 +175,44 @@ function ReviewEditor({
               </select>
             </div>
             <div>
-              <label className="text-sm font-semibold text-text">Source URL (optional)</label>
+              <label className="text-sm font-semibold text-slate-200">Source URL (optional)</label>
               <input
                 value={form.sourceUrl}
                 onChange={(e) => handleChange('sourceUrl', e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 placeholder="https://facebook.com/..."
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-text">Review body</label>
+            <label className="text-sm font-semibold text-slate-200">Review body</label>
             <textarea
               value={form.body}
               onChange={(e) => handleChange('body', e.target.value)}
               rows={4}
               required
-              className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+              className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
               placeholder="Paste the review text"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold text-text">Photo URL (optional)</label>
+              <label className="text-sm font-semibold text-slate-200">Photo URL (optional)</label>
               <input
                 value={form.photoUrl}
                 onChange={(e) => handleChange('photoUrl', e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 placeholder="https://.../reviews/image.webp"
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-text">Source</label>
+              <label className="text-sm font-semibold text-slate-200">Source</label>
               <select
                 value={form.source}
                 onChange={(e) => handleChange('source', e.target.value as ReviewSource)}
-                className="mt-2 w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 disabled={mode === 'create'}
               >
                 <option value="manual">Manual</option>
@@ -222,7 +222,7 @@ function ReviewEditor({
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <label className="inline-flex items-center gap-2 text-sm font-semibold text-text">
+            <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
               <input
                 type="checkbox"
                 checked={form.isPublished}
@@ -230,7 +230,7 @@ function ReviewEditor({
               />
               Published
             </label>
-            <label className="inline-flex items-center gap-2 text-sm font-semibold text-text">
+            <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
               <input
                 type="checkbox"
                 checked={form.isFeatured && form.isPublished}
@@ -244,14 +244,14 @@ function ReviewEditor({
           <div className="flex flex-wrap justify-end gap-3 pt-2">
             <button
               type="button"
-              className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-text hover:bg-hover"
+              className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-[color:var(--btn-bg)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text)] shadow-sm hover:brightness-105"
+              className="rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:from-orange-400 hover:to-orange-500"
             >
               {mode === 'create' ? 'Add review' : 'Save changes'}
             </button>
@@ -362,7 +362,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 text-white">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Review status filters">
           {[
@@ -378,8 +378,8 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
               onClick={() => setFilter(option.value as typeof filter)}
               className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                 filter === option.value
-                  ? 'border-accent bg-[color:color-mix(in_srgb,_var(--accent)_14%,_var(--bg))] text-text'
-                  : 'border-border bg-card text-muted hover:text-text'
+                  ? 'border-orange-500/30 bg-orange-500/10 text-orange-100'
+                  : 'border-slate-800 bg-[#1E293B]/60 text-slate-300 hover:text-white'
               }`}
             >
               {option.label}
@@ -391,7 +391,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value as 'all' | ReviewSource)}
-            className="rounded-xl border border-border bg-bg px-3 py-2 text-sm text-text"
+            className="rounded-xl border border-slate-700 bg-[#0B1120] px-3 py-2 text-sm text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
           >
             <option value="all">All sources</option>
             <option value="manual">EBL Family</option>
@@ -399,7 +399,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
           </select>
           <button
             type="button"
-            className="rounded-full bg-[color:var(--btn-bg)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text)] shadow-sm transition hover:brightness-105"
+            className="rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:from-orange-400 hover:to-orange-500"
             onClick={() => openEditor('create')}
           >
             Add Facebook review
@@ -408,44 +408,44 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
       </div>
 
       {message ? (
-        <div className="rounded-xl border border-accent/40 bg-[color:color-mix(in_srgb,_var(--accent)_12%,_var(--bg))] px-4 py-3 text-sm text-text">
+        <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-100">
           {message}
         </div>
       ) : null}
 
       {filteredReviews.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-bg/60 p-8 text-center">
-          <p className="text-lg font-semibold text-text">No reviews match this filter</p>
-          <p className="mt-2 text-sm text-muted">
+        <div className="rounded-2xl border border-dashed border-slate-800 bg-[#1E293B]/60 p-8 text-center">
+          <p className="text-lg font-semibold text-white">No reviews match this filter</p>
+          <p className="mt-2 text-sm text-slate-400">
             Adjust the status or source filters to see more results.
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border">
-          <div className="grid grid-cols-[2fr,1fr,1fr,1fr,auto] gap-4 border-b border-border bg-bg px-5 py-3 text-xs font-semibold uppercase tracking-wide text-muted max-md:hidden">
+        <div className="overflow-hidden rounded-2xl border border-slate-800/60 bg-[#1E293B]/60">
+          <div className="grid grid-cols-[2fr,1fr,1fr,1fr,auto] gap-4 border-b border-slate-800 bg-[#0f172a] px-5 py-3 text-[11px] font-bold uppercase tracking-wide text-slate-500 max-md:hidden">
             <span>Name</span>
             <span>Source</span>
             <span>Published</span>
             <span>Featured</span>
             <span className="text-right">Actions</span>
           </div>
-          <ul className="divide-y divide-border" data-testid="admin-review-list">
+          <ul className="divide-y divide-slate-800/60" data-testid="admin-review-list">
             {filteredReviews.map((review) => (
               <li
                 key={review.id}
                 className="grid items-center gap-4 px-5 py-4 max-md:grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,auto]"
               >
                 <div>
-                  <p className="text-sm font-semibold text-text">{review.authorName}</p>
-                  <p className="text-xs text-muted">
+                  <p className="text-sm font-semibold text-white">{review.authorName}</p>
+                  <p className="text-xs text-slate-400">
                     {review.authorLocation || 'Location not provided'} • {review.rating}★
                   </p>
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-slate-400">
                     {review.headline ? review.headline : review.body.slice(0, 90)}
                   </p>
                 </div>
-                <div className="text-sm font-semibold text-text">
-                  <span className="rounded-full bg-black/5 px-3 py-1 text-[11px] uppercase tracking-wide text-text/70 dark:bg-white/5">
+                <div className="text-sm font-semibold text-white">
+                  <span className="rounded-full border border-slate-700 bg-[#0B1120] px-3 py-1 text-[11px] uppercase tracking-wide text-slate-200">
                     {sourceLabels[review.source]}
                   </span>
                 </div>
@@ -453,10 +453,10 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
                   <button
                     type="button"
                     onClick={() => handlePublishToggle(review.id)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
                       review.isPublished
-                        ? 'bg-[color:color-mix(in_srgb,_var(--accent)_18%,_var(--bg))] text-text'
-                        : 'border border-dashed border-border text-muted'
+                        ? 'border border-green-500/30 bg-green-500/15 text-green-200'
+                        : 'border border-dashed border-slate-700 text-slate-400'
                     }`}
                   >
                     {review.isPublished ? 'Published' : 'Pending'}
@@ -466,26 +466,26 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
                   <button
                     type="button"
                     onClick={() => handleFeatureToggle(review.id)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
                       review.isFeatured
-                        ? 'bg-[color:color-mix(in_srgb,_var(--accent-aux)_18%,_var(--bg))] text-text'
-                        : 'border border-dashed border-border text-muted'
+                        ? 'border border-orange-500/30 bg-orange-500/15 text-orange-100'
+                        : 'border border-dashed border-slate-700 text-slate-400'
                     }`}
                   >
                     {review.isFeatured ? 'Featured' : 'Not featured'}
                   </button>
                 </div>
-                <div className="flex flex-wrap justify-end gap-2 text-sm font-semibold text-accent">
+                <div className="flex flex-wrap justify-end gap-2 text-sm font-semibold">
                   <button
                     type="button"
-                    className="rounded-lg border border-border px-3 py-1 text-text hover:bg-hover"
+                    className="rounded-lg border border-slate-700 px-3 py-1.5 text-slate-200 transition hover:bg-slate-800"
                     onClick={() => openEditor('edit', review)}
                   >
                     Edit
                   </button>
                   <button
                     type="button"
-                    className="rounded-lg border border-red-200 px-3 py-1 text-red-700 hover:bg-red-50"
+                    className="rounded-lg border border-red-500/40 px-3 py-1.5 text-red-200 transition hover:bg-red-500/10"
                     onClick={() => handleDelete(review.id)}
                   >
                     Delete
