@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { Activity, ArrowLeft, MapPin, Star, Weight } from 'lucide-react';
 import Link from 'next/link';
 
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { PuppyGallery } from '@/components/puppy-gallery';
 import { PuppyCard } from '@/components/puppy-card';
@@ -134,22 +133,11 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   const damQuote = damData?.description ?? 'Temperament notes coming soon.';
 
   return (
-    <div className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
-      {/* Breadcrumbs (SEO only) */}
-      <div className="sr-only">
-        <Breadcrumbs
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'Puppies', href: '/puppies' },
-            { label: puppy.name ?? 'Puppy', href: `/puppies/${slug}` },
-          ]}
-        />
-      </div>
-
+    <div className="min-h-screen bg-[#0B1120] pb-20 pt-24 font-sans text-white">
       <JsonLd id={`product-${puppy.id}`} data={productSchema} />
 
       {/* Breadcrumb Navigation */}
-      <div className="mx-auto flex max-w-7xl items-center gap-2 px-6 pb-8 pt-8 text-sm text-slate-400 md:px-12">
+      <div className="mx-auto mb-8 flex max-w-7xl items-center gap-2 px-6 pt-8 text-sm text-slate-400 md:px-12">
         <Link
           href="/puppies"
           className="flex items-center gap-1 transition-colors hover:text-white"
@@ -208,16 +196,19 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
           />
 
           {/* Description */}
-          <div className="mb-10">
-            <h3 className="mb-3 text-lg font-semibold text-white">Temperament & Notes</h3>
-            <p className="leading-relaxed text-slate-400">
+          <div className="mb-8">
+            <h3 className="mb-2 text-lg font-semibold text-white">Temperament & Notes</h3>
+            <p className="text-sm leading-relaxed text-slate-400">
               {puppy.description ??
                 'Raised in-home with daily enrichment and early neurological stimulation. Comes with vet health certificate, vaccination record, and lifetime breeder support.'}
             </p>
+          </div>
 
-            {/* Health Guarantee Badge */}
+          {/* Health Guarantee Badge */}
+          <div className="mb-8">
             <HealthBadge />
           </div>
+
           {/* Actions */}
           <ReserveButton
             puppySlug={puppy.slug || ''}
@@ -233,7 +224,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
 
       {/* Lineage Section */}
       <div className="mx-auto mt-24 max-w-7xl px-6 md:px-12">
-        <div className="mb-8 flex items-center gap-4">
+        <div className="mb-12 flex items-center gap-4">
           <div className="h-px flex-1 bg-slate-800"></div>
           <h2 className="text-center text-2xl font-bold uppercase tracking-widest text-white">
             Premium Lineage

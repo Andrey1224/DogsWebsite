@@ -135,15 +135,15 @@ export function ReserveButton({
         </button>
         <div className="flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
           ${depositLabel} deposit • Powered by
-          <Lock size={10} />
+          <Lock size={8} />
           <span className="font-semibold">Stripe</span>
         </div>
       </div>
 
-      <div className="space-y-2 rounded-2xl border border-slate-800 bg-[#151e32] p-4">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+      <div className="rounded-2xl border border-slate-800 bg-[#151e32] p-4">
+        <div className="mb-3 ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
           Or pay with
-        </p>
+        </div>
         {paypalConfigured ? (
           <PayPalButton
             clientId={paypalClientId}
@@ -155,6 +155,7 @@ export function ReserveButton({
               shape: 'pill',
               label: 'paypal',
               height: 48,
+              tagline: false,
             }}
             onProcessingChange={setIsPayPalProcessing}
             onError={handlePayPalError}
@@ -170,7 +171,9 @@ export function ReserveButton({
             <span className="italic font-bold text-[#009cde]">Pal</span>
           </button>
         )}
-        <p className="text-center text-[10px] text-slate-500">The safer, easier way to pay</p>
+        <div className="mt-2 text-center text-[10px] text-slate-500">
+          The safer, easier way to pay
+        </div>
       </div>
     </div>
   );
