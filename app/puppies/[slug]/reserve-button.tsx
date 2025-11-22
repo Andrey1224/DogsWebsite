@@ -79,6 +79,7 @@ export function ReserveButton({
   }, [puppySlug]);
 
   const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
+  const paypalConfigured = Boolean(paypalClientId);
 
   if (!canReserve) {
     if (reservationBlocked) {
@@ -143,21 +144,32 @@ export function ReserveButton({
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
           Or pay with
         </p>
-        <PayPalButton
-          clientId={paypalClientId}
-          puppySlug={puppySlug}
-          disabled={isStripeLoading || isPayPalProcessing}
-          buttonStyle={{
-            layout: 'horizontal',
-            color: 'gold',
-            shape: 'pill',
-            label: 'paypal',
-            height: 48,
-          }}
-          onProcessingChange={setIsPayPalProcessing}
-          onError={handlePayPalError}
-          onSuccess={handlePayPalSuccess}
-        />
+        {paypalConfigured ? (
+          <PayPalButton
+            clientId={paypalClientId}
+            puppySlug={puppySlug}
+            disabled={isStripeLoading || isPayPalProcessing}
+            buttonStyle={{
+              layout: 'horizontal',
+              color: 'gold',
+              shape: 'pill',
+              label: 'paypal',
+              height: 48,
+            }}
+            onProcessingChange={setIsPayPalProcessing}
+            onError={handlePayPalError}
+            onSuccess={handlePayPalSuccess}
+          />
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex w-full items-center justify-center gap-1 rounded-xl bg-[#FFC439] py-3 text-lg font-bold text-[#003087] shadow-sm"
+          >
+            <span className="italic font-bold">Pay</span>
+            <span className="italic font-bold text-[#009cde]">Pal</span>
+          </button>
+        )}
         <p className="text-center text-[10px] text-slate-500">The safer, easier way to pay</p>
       </div>
     </div>

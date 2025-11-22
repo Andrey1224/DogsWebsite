@@ -115,10 +115,9 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   const shareUrl = `${siteUrl}/puppies/${slug}`;
 
   const buildParentStats = (parent: typeof sireData) => {
-    if (!parent) return [];
-    const weight = parent.weight_lbs ? `${parent.weight_lbs} lbs` : 'Contact for details';
-    const color = parent.color ?? 'TBD';
-    const health = parent.health_clearances?.length
+    const weight = parent?.weight_lbs ? `${parent.weight_lbs} lbs` : 'Contact for details';
+    const color = parent?.color ?? 'Contact for details';
+    const health = parent?.health_clearances?.length
       ? parent.health_clearances.join(', ')
       : 'Health tested';
 
@@ -131,8 +130,8 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
 
   const sireStats = buildParentStats(sireData);
   const damStats = buildParentStats(damData);
-  const sireQuote = sireData?.description ?? null;
-  const damQuote = damData?.description ?? null;
+  const sireQuote = sireData?.description ?? 'Temperament notes coming soon.';
+  const damQuote = damData?.description ?? 'Temperament notes coming soon.';
 
   return (
     <div className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
