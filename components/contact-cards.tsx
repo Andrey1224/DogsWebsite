@@ -89,6 +89,7 @@ function ContactMethodCard({ card }: { card: ContactCard }) {
           aria-label="Copy to clipboard"
         >
           {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
+          <span className="sr-only">Copy contact info</span>
         </button>
       </div>
     </article>

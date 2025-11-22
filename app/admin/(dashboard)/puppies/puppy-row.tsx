@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
@@ -160,10 +161,13 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
       {/* Puppy Thumbnail */}
       <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
         {puppy.photo_urls && puppy.photo_urls.length > 0 ? (
-          <img
+          <Image
             src={puppy.photo_urls[0]}
             alt={puppy.name ?? 'Puppy'}
-            className="w-full h-full object-cover"
+            width={48}
+            height={48}
+            className="h-full w-full object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-600 text-xs">

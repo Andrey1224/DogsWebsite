@@ -35,9 +35,9 @@ export function FaqAccordion({ faqs }: FaqAccordionProps) {
               className="flex w-full items-center justify-between p-6 text-left"
               aria-expanded={isOpen}
             >
-              <h4 className={`text-lg font-semibold ${isOpen ? 'text-white' : 'text-slate-300'}`}>
+              <p className={`text-lg font-semibold ${isOpen ? 'text-white' : 'text-slate-300'}`}>
                 {faq.question}
-              </h4>
+              </p>
               <ChevronDown
                 className={`transition-transform duration-300 ${
                   isOpen ? 'rotate-180 text-orange-400' : 'text-slate-500'

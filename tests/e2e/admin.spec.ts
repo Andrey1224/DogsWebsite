@@ -14,7 +14,7 @@ function slugify(value: string) {
 test('admin dashboard loads with creation form toggle', async ({ page }) => {
   await page.goto('/admin/login');
 
-  await page.getByLabel('Login').fill(ADMIN_LOGIN);
+  await page.getByLabel(/email address/i).fill(ADMIN_LOGIN);
   await page.getByLabel('Password').fill(ADMIN_PASSWORD);
   await page.getByRole('button', { name: /sign in/i }).click();
 
@@ -49,7 +49,7 @@ test('admin dashboard loads with creation form toggle', async ({ page }) => {
 test('admin can change puppy status and it reflects on public site', async ({ page, context }) => {
   // Step 1: Login to admin
   await page.goto('/admin/login');
-  await page.getByLabel('Login').fill(ADMIN_LOGIN);
+  await page.getByLabel(/email address/i).fill(ADMIN_LOGIN);
   await page.getByLabel('Password').fill(ADMIN_PASSWORD);
   await page.getByRole('button', { name: /sign in/i }).click();
 

@@ -1,4 +1,5 @@
 import type { ElementType, ReactNode } from 'react';
+import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -95,9 +96,7 @@ function ActionLink({ href, children, variant = 'primary', className = '' }: Act
   );
 }
 
-export default async function Home() {
-  const featuredReviews = await getFeaturedReviews();
-
+export default function Home() {
   return (
     <>
       <link rel="preload" as="image" href="/hero/hero-1600.webp" type="image/webp" />
@@ -107,11 +106,19 @@ export default async function Home() {
         <HeroSection />
         <FeaturesSection />
         <FaqSection />
-        {featuredReviews.length > 0 ? <ReviewsSection reviews={featuredReviews} /> : null}
+        <Suspense fallback={null}>
+          <ReviewsSectionLoader />
+        </Suspense>
         <CallToAction />
       </main>
     </>
   );
+}
+
+async function ReviewsSectionLoader() {
+  const featuredReviews = await getFeaturedReviews();
+  if (!featuredReviews.length) return null;
+  return <ReviewsSection reviews={featuredReviews} />;
 }
 
 function HeroSection() {
@@ -126,7 +133,7 @@ function HeroSection() {
             Premium Breeder in Alabama
           </div>
           <h1 className="text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl">
-            Trusted bulldogs, <br /> raised with{' '}
+            Trusted French &amp; English bulldogs, <br /> raised with{' '}
             <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
               southern warmth
             </span>
@@ -183,9 +190,9 @@ function FeaturesSection() {
       <div className="mx-auto max-w-7xl px-6 md:px-20">
         <div className="mb-16 items-end justify-between md:flex">
           <div className="max-w-2xl">
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-orange-400">
+            <p className="mb-3 text-sm font-bold uppercase tracking-wider text-orange-400">
               About the breeder
-            </h3>
+            </p>
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
               A family-run program built on trust
             </h2>
@@ -231,9 +238,9 @@ function FaqSection() {
 
       <div className="mx-auto max-w-4xl px-6">
         <div className="mb-16 text-center">
-          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-orange-400">
+          <p className="mb-3 text-sm font-bold uppercase tracking-wider text-orange-400">
             Quick Answers
-          </h3>
+          </p>
           <h2 className="text-3xl font-bold md:text-4xl">Your questions, answered</h2>
         </div>
 

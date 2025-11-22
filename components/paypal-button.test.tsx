@@ -155,6 +155,7 @@ describe('PayPalButton', () => {
             color: 'gold',
             shape: 'pill',
             label: 'paypal',
+            height: 48,
           },
         }),
       );

@@ -27,7 +27,7 @@ export function FaqContent() {
   return (
     <>
       {/* --- Header & Search --- */}
-      <div className="relative mx-auto max-w-5xl px-6 pb-16 pt-32 md:px-12">
+      <section className="relative mx-auto max-w-5xl px-6 pb-16 pt-32 md:px-12">
         <div className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] -translate-y-1/2 rounded-full bg-orange-500/10 blur-[120px]" />
 
         <div className="relative z-10 mb-12 text-center">
@@ -58,10 +58,13 @@ export function FaqContent() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* --- FAQ Accordion --- */}
-      <div className="mx-auto max-w-3xl px-6 pb-24 md:px-12">
+      <section
+        className="mx-auto max-w-3xl px-6 pb-24 md:px-12"
+        aria-label="Frequently asked questions"
+      >
         {filteredData.length === 0 ? (
           <div className="py-12 text-center text-slate-500">
             No answers found for &quot;{searchTerm}&quot;. Try a different keyword.
@@ -131,10 +134,10 @@ export function FaqContent() {
             })}
           </div>
         )}
-      </div>
+      </section>
 
       {/* --- Contact Footer --- */}
-      <div className="mx-auto max-w-4xl px-6 md:px-12">
+      <section className="mx-auto max-w-4xl px-6 md:px-12" aria-label="Contact support">
         <div className="relative overflow-hidden rounded-[2rem] border border-slate-700/50 bg-gradient-to-r from-[#1E293B] to-[#1a2333] p-8 text-center md:p-12">
           {/* Decor */}
           <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-full bg-white/5 blur-3xl" />
@@ -160,7 +163,7 @@ export function FaqContent() {
             </Link>
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 }

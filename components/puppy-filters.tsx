@@ -83,6 +83,7 @@ export function PuppyFilters() {
         <div className="no-scrollbar flex w-full gap-3 overflow-x-auto pb-2 md:w-auto md:pb-0">
           <div className="relative group">
             <select
+              aria-label="Breed"
               value={breed}
               onChange={(e) => setParam('breed', e.target.value)}
               className="flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-slate-700 bg-[#1E293B] px-4 py-2.5 pr-8 text-sm font-medium text-slate-300 transition-all hover:bg-[#283548] focus:border-orange-500 focus:outline-none"
@@ -101,6 +102,7 @@ export function PuppyFilters() {
 
           <div className="relative group">
             <select
+              aria-label="Gender"
               value={sex}
               onChange={(e) => setParam('sex', e.target.value)}
               className="flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-slate-700 bg-[#1E293B] px-4 py-2.5 pr-8 text-sm font-medium text-slate-300 transition-all hover:bg-[#283548] focus:border-orange-500 focus:outline-none"
@@ -119,6 +121,7 @@ export function PuppyFilters() {
 
           <div className="relative group">
             <select
+              aria-label="Price Range"
               value={priceRange}
               onChange={(e) => setParam('price', e.target.value)}
               className="flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-slate-700 bg-[#1E293B] px-4 py-2.5 pr-8 text-sm font-medium text-slate-300 transition-all hover:bg-[#283548] focus:border-orange-500 focus:outline-none"
@@ -137,6 +140,7 @@ export function PuppyFilters() {
 
           <div className="relative group">
             <select
+              aria-label="Status"
               value={status}
               onChange={(e) => setParam('status', e.target.value)}
               className="flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-slate-700 bg-[#1E293B] px-4 py-2.5 pr-8 text-sm font-medium text-slate-300 transition-all hover:bg-[#283548] focus:border-orange-500 focus:outline-none"
