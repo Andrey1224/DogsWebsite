@@ -147,6 +147,13 @@ export function ReserveButton({
           clientId={paypalClientId}
           puppySlug={puppySlug}
           disabled={isStripeLoading || isPayPalProcessing}
+          buttonStyle={{
+            layout: 'horizontal',
+            color: 'gold',
+            shape: 'pill',
+            label: 'paypal',
+            height: 48,
+          }}
           onProcessingChange={setIsPayPalProcessing}
           onError={handlePayPalError}
           onSuccess={handlePayPalSuccess}
