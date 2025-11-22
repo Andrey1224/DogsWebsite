@@ -194,6 +194,11 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             <span className="text-3xl font-medium text-slate-200">
               {puppy.price_usd ? `$${puppy.price_usd.toLocaleString()}` : 'Contact'}
             </span>
+            {(puppy.status === 'sold' || puppy.status === 'reserved') && puppy.price_usd ? (
+              <span className="text-sm text-slate-500 line-through">
+                ${puppy.price_usd.toLocaleString()}
+              </span>
+            ) : null}
           </div>
           {/* Stats Grid */}
           <StatsGrid

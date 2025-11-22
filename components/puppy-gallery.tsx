@@ -68,7 +68,7 @@ export function PuppyGallery({ photos, videos = [], name, status, shareUrl }: Pu
       </div>
       {/* Thumbnails */}
       {media.length > 1 && (
-        <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+        <div className="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
           {media.map((url, index) => (
             <button
               key={url}
