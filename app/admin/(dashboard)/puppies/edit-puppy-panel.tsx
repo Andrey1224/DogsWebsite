@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef, useState, useTransition, type ReactNode } from 'react';
+import { AlertCircle, Calendar, Lock, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ParentPhotoUpload } from '@/components/admin/parent-photo-upload';
 import { useMediaUpload } from '@/lib/admin/hooks/use-media-upload';
@@ -66,6 +67,20 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
     initialUpdatePuppyState,
   );
   const [isTransitioning, startTransition] = useTransition();
+
+  // Derived values for display
+  const visibleSirePhotos = existingSirePhotoUrls.filter((url) => !deletedSirePhotos.has(url));
+  const visibleDamPhotos = existingDamPhotoUrls.filter((url) => !deletedDamPhotos.has(url));
+  const visiblePuppyPhotos = existingPuppyPhotoUrls.filter((url) => !deletedPuppyPhotos.has(url));
+  const galleryCount = visiblePuppyPhotos.length + puppyFiles.length;
+
+  const inputClasses =
+    'w-full rounded-xl border border-slate-800 bg-[#0F172A] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-60';
+  const labelClasses = 'text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400';
+  const helperTextClasses = 'text-xs text-slate-500';
+  const sectionHeadingClasses =
+    'flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400';
+  const busy = isPending || isTransitioning || isUploading;
 
   // Load puppy data on mount
   useEffect(() => {
@@ -159,18 +174,9 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
       }
 
       // Combine existing (not deleted) + new photos
-      const finalSirePhotos = [
-        ...existingSirePhotoUrls.filter((url) => !deletedSirePhotos.has(url)),
-        ...newSirePhotoUrls,
-      ];
-      const finalDamPhotos = [
-        ...existingDamPhotoUrls.filter((url) => !deletedDamPhotos.has(url)),
-        ...newDamPhotoUrls,
-      ];
-      const finalPuppyPhotos = [
-        ...existingPuppyPhotoUrls.filter((url) => !deletedPuppyPhotos.has(url)),
-        ...newPuppyPhotoUrls,
-      ];
+      const finalSirePhotos = [...visibleSirePhotos, ...newSirePhotoUrls];
+      const finalDamPhotos = [...visibleDamPhotos, ...newDamPhotoUrls];
+      const finalPuppyPhotos = [...visiblePuppyPhotos, ...newPuppyPhotoUrls];
 
       // Build FormData without File objects
       const rawFormData = new FormData(formElement);
@@ -222,269 +228,296 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
     }
   };
 
-  if (loadError) {
-    return (
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col bg-bg shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-text">Edit Puppy</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-muted transition hover:bg-hover hover:text-text"
-            aria-label="Close panel"
-          >
-            ✕
-          </button>
+  const panelHeader = (
+    <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-800 bg-[#0B1120]/90 px-6 py-4 backdrop-blur-xl">
+      <div className="space-y-1">
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-white">Edit Puppy</h2>
+          <span className="max-w-[240px] truncate rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-mono uppercase tracking-wide text-slate-300">
+            ID: {puppyId}
+          </span>
         </div>
-        <div className="flex flex-1 items-center justify-center p-6">
-          <p className="text-sm text-muted">{loadError}</p>
-        </div>
+        <p className="text-sm text-slate-400">Update details, pricing, and media.</p>
       </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-full border border-transparent bg-slate-800/70 p-2 text-slate-300 transition hover:border-slate-700 hover:bg-slate-700 hover:text-white"
+        aria-label="Close panel"
+      >
+        <X size={18} />
+      </button>
+    </div>
+  );
+
+  const renderShell = (body: ReactNode) => (
+    <div className="fixed inset-x-0 inset-y-10 z-50 flex justify-end sm:inset-x-4 sm:inset-y-12">
+      <div
+        className="absolute inset-0 rounded-2xl bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 flex h-full max-h-[calc(100vh-80px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-[#0B1120] shadow-2xl">
+        {panelHeader}
+        {body}
+      </div>
+    </div>
+  );
+
+  if (loadError) {
+    return renderShell(
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="space-y-3 rounded-2xl border border-slate-800 bg-[#0F172A] px-6 py-8 text-center text-white">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-300">
+            <AlertCircle size={24} />
+          </div>
+          <p className="text-sm text-slate-200">{loadError}</p>
+          <p className={helperTextClasses}>Close the panel and try again.</p>
+        </div>
+      </div>,
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col bg-bg shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-text">Edit Puppy</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-muted transition hover:bg-hover hover:text-text"
-            aria-label="Close panel"
-          >
-            ✕
-          </button>
+    return renderShell(
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-[#0F172A] px-5 py-4 text-slate-200">
+          <span className="h-3 w-3 animate-ping rounded-full bg-orange-500" />
+          <p className="text-sm">Loading puppy data...</p>
         </div>
-        <div className="flex flex-1 items-center justify-center p-6">
-          <p className="text-sm text-muted">Loading puppy data...</p>
-        </div>
-      </div>
+      </div>,
     );
   }
 
-  return (
-    <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col overflow-y-auto bg-bg shadow-2xl">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-bg px-6 py-4">
-        <h2 className="text-lg font-semibold text-text">Edit Puppy</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg p-2 text-muted transition hover:bg-hover hover:text-text"
-          aria-label="Close panel"
-        >
-          ✕
-        </button>
-      </div>
+  return renderShell(
+    <form ref={formRef} onSubmit={handleSubmit} className="flex h-full flex-col text-white">
+      <div className="flex-1 space-y-8 overflow-y-auto px-6 pb-8 pt-6">
+        {/* Core Details */}
+        <section className="space-y-5">
+          <p className={sectionHeadingClasses}>
+            <span className="h-px w-8 bg-orange-500" /> Core Details
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-semibold text-slate-100">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className={inputClasses}
+                aria-describedby={fieldError('name') ? 'name-error' : undefined}
+                aria-invalid={!!fieldError('name')}
+              />
+              {fieldError('name') ? (
+                <p id="name-error" className="text-[11px] text-red-400">
+                  {fieldError('name')}
+                </p>
+              ) : null}
+            </div>
 
-      <form ref={formRef} onSubmit={handleSubmit} className="flex-1 space-y-6 p-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Name */}
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-text">
-              Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              aria-describedby={fieldError('name') ? 'name-error' : undefined}
-              aria-invalid={!!fieldError('name')}
-            />
-            {fieldError('name') ? (
-              <p id="name-error" className="text-xs text-red-600">
-                {fieldError('name')}
+            <div className="space-y-2">
+              <label
+                htmlFor="slug"
+                className="flex items-center gap-2 text-sm font-semibold text-slate-300"
+              >
+                Slug (read-only) <Lock size={14} className="text-slate-500" />
+              </label>
+              <input
+                id="slug"
+                name="slug"
+                type="text"
+                value={slug}
+                readOnly
+                disabled
+                className="w-full cursor-not-allowed rounded-xl border border-slate-800 bg-[#111827] px-4 py-3 text-sm text-slate-500"
+                aria-describedby="slug-hint"
+              />
+              <p id="slug-hint" className={helperTextClasses}>
+                Slug cannot be changed after creation to prevent SEO issues.
               </p>
-            ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="status" className="text-sm font-semibold text-slate-100">
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className={`${inputClasses} cursor-pointer`}
+              >
+                {statusOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="priceUsd" className="text-sm font-semibold text-slate-100">
+                Price (USD)
+              </label>
+              <input
+                id="priceUsd"
+                name="priceUsd"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="3000"
+                value={priceUsd}
+                onChange={(e) => setPriceUsd(e.target.value)}
+                className={`${inputClasses} font-mono`}
+                aria-describedby={fieldError('priceUsd') ? 'priceUsd-error' : undefined}
+                aria-invalid={!!fieldError('priceUsd')}
+              />
+              {fieldError('priceUsd') ? (
+                <p id="priceUsd-error" className="text-[11px] text-red-400">
+                  {fieldError('priceUsd')}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <div className="h-px rounded-full bg-slate-800/70" />
+
+        {/* Physical Traits */}
+        <section className="space-y-4">
+          <p className={sectionHeadingClasses}>
+            <span className="h-px w-8 bg-blue-500" /> Physical Traits
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="md:col-span-2 space-y-2">
+              <label htmlFor="birthDate" className={labelClasses}>
+                Birth Date
+              </label>
+              <div className="relative">
+                <input
+                  id="birthDate"
+                  name="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className={`${inputClasses} pr-10`}
+                  aria-describedby={fieldError('birthDate') ? 'birthDate-error' : undefined}
+                  aria-invalid={!!fieldError('birthDate')}
+                />
+                <Calendar
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-3 text-slate-500"
+                />
+              </div>
+              {fieldError('birthDate') ? (
+                <p id="birthDate-error" className="text-[11px] text-red-400">
+                  {fieldError('birthDate')}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="md:col-span-2 space-y-2">
+              <label htmlFor="breed" className={labelClasses}>
+                Breed
+              </label>
+              <select
+                id="breed"
+                name="breed"
+                value={breed}
+                onChange={(e) => setBreed(e.target.value)}
+                className={`${inputClasses} cursor-pointer`}
+              >
+                <option value="">Select breed</option>
+                <option value="french_bulldog">French Bulldog</option>
+                <option value="english_bulldog">English Bulldog</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="sex" className={labelClasses}>
+                Sex
+              </label>
+              <select
+                id="sex"
+                name="sex"
+                value={sex}
+                onChange={(e) => setSex(e.target.value)}
+                className={`${inputClasses} cursor-pointer`}
+              >
+                <option value="">Select sex</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="color" className={labelClasses}>
+                Color
+              </label>
+              <input
+                id="color"
+                name="color"
+                type="text"
+                placeholder="Lilac, Blue, etc."
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className={inputClasses}
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-2">
+              <label htmlFor="weightOz" className={labelClasses}>
+                Weight (oz)
+              </label>
+              <input
+                id="weightOz"
+                name="weightOz"
+                type="number"
+                step="1"
+                min="0"
+                placeholder="24"
+                value={weightOz}
+                onChange={(e) => setWeightOz(e.target.value)}
+                className={inputClasses}
+              />
+            </div>
           </div>
 
-          {/* Slug - Read Only */}
           <div className="space-y-2">
-            <label htmlFor="slug" className="text-sm font-medium text-text">
-              Slug (read-only)
+            <label htmlFor="description" className={labelClasses}>
+              Description
             </label>
-            <input
-              id="slug"
-              name="slug"
-              type="text"
-              value={slug}
-              readOnly
-              disabled
-              className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted cursor-not-allowed"
-              aria-describedby="slug-hint"
+            <textarea
+              id="description"
+              name="description"
+              rows={4}
+              placeholder="Describe the puppy's personality, health, and features..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={`${inputClasses} min-h-[120px] resize-none leading-relaxed`}
             />
-            <p id="slug-hint" className="text-xs text-muted">
-              Slug cannot be changed after creation
-            </p>
           </div>
+        </section>
 
-          {/* Status */}
-          <div className="space-y-2">
-            <label htmlFor="status" className="text-sm font-medium text-text">
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              {statusOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Price */}
-          <div className="space-y-2">
-            <label htmlFor="priceUsd" className="text-sm font-medium text-text">
-              Price (USD)
-            </label>
-            <input
-              id="priceUsd"
-              name="priceUsd"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="3000"
-              value={priceUsd}
-              onChange={(e) => setPriceUsd(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              aria-describedby={fieldError('priceUsd') ? 'priceUsd-error' : undefined}
-              aria-invalid={!!fieldError('priceUsd')}
-            />
-            {fieldError('priceUsd') ? (
-              <p id="priceUsd-error" className="text-xs text-red-600">
-                {fieldError('priceUsd')}
-              </p>
-            ) : null}
-          </div>
-
-          {/* Birth Date */}
-          <div className="space-y-2">
-            <label htmlFor="birthDate" className="text-sm font-medium text-text">
-              Birth Date
-            </label>
-            <input
-              id="birthDate"
-              name="birthDate"
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              aria-describedby={fieldError('birthDate') ? 'birthDate-error' : undefined}
-              aria-invalid={!!fieldError('birthDate')}
-            />
-            {fieldError('birthDate') ? (
-              <p id="birthDate-error" className="text-xs text-red-600">
-                {fieldError('birthDate')}
-              </p>
-            ) : null}
-          </div>
-
-          {/* Breed */}
-          <div className="space-y-2">
-            <label htmlFor="breed" className="text-sm font-medium text-text">
-              Breed
-            </label>
-            <select
-              id="breed"
-              name="breed"
-              value={breed}
-              onChange={(e) => setBreed(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="">Select breed</option>
-              <option value="french_bulldog">French Bulldog</option>
-              <option value="english_bulldog">English Bulldog</option>
-            </select>
-          </div>
-
-          {/* Sex */}
-          <div className="space-y-2">
-            <label htmlFor="sex" className="text-sm font-medium text-text">
-              Sex
-            </label>
-            <select
-              id="sex"
-              name="sex"
-              value={sex}
-              onChange={(e) => setSex(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="">Select sex</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-
-          {/* Color */}
-          <div className="space-y-2">
-            <label htmlFor="color" className="text-sm font-medium text-text">
-              Color
-            </label>
-            <input
-              id="color"
-              name="color"
-              type="text"
-              placeholder="Lilac, Blue, etc."
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
-
-          {/* Weight */}
-          <div className="space-y-2">
-            <label htmlFor="weightOz" className="text-sm font-medium text-text">
-              Weight (oz)
-            </label>
-            <input
-              id="weightOz"
-              name="weightOz"
-              type="number"
-              step="1"
-              min="0"
-              placeholder="24"
-              value={weightOz}
-              onChange={(e) => setWeightOz(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <label htmlFor="description" className="text-sm font-medium text-text">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            rows={4}
-            placeholder="Describe the puppy's personality, health, and features..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-          />
-        </div>
+        <div className="h-px rounded-full bg-slate-800/70" />
 
         {/* Parent Information */}
-        <div className="space-y-4 border-t border-border pt-4">
-          <h3 className="text-sm font-semibold text-text">Parent Information</h3>
+        <section className="space-y-4">
+          <p className={sectionHeadingClasses}>
+            <span className="h-px w-8 bg-purple-500" /> Lineage & Parents
+          </p>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label htmlFor="sireName" className="text-sm font-medium text-text">
-                Sire Name
+              <label htmlFor="sireName" className={labelClasses}>
+                Sire Name (Dad)
               </label>
               <input
                 id="sireName"
@@ -493,13 +526,13 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
                 placeholder="Optional"
                 value={sireName}
                 onChange={(e) => setSireName(e.target.value)}
-                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className={inputClasses}
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="damName" className="text-sm font-medium text-text">
-                Dam Name
+              <label htmlFor="damName" className={labelClasses}>
+                Dam Name (Mom)
               </label>
               <input
                 id="damName"
@@ -508,64 +541,114 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
                 placeholder="Optional"
                 value={damName}
                 onChange={(e) => setDamName(e.target.value)}
-                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className={inputClasses}
               />
             </div>
           </div>
 
-          {/* Sire Photos */}
-          <ParentPhotoUpload
-            label="Sire Photos"
-            maxFiles={2}
-            existingPhotos={existingSirePhotoUrls.filter((url) => !deletedSirePhotos.has(url))}
-            onDeleteExisting={(url) => handleDeletePhoto(url, 'sire')}
-            files={sireFiles}
-            onFilesChange={setSireFiles}
-          />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-slate-800 bg-[#0F172A] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">Sire Photos</p>
+                  <p className={helperTextClasses}>Up to 2 photos</p>
+                </div>
+                <span className="text-xs text-slate-500">
+                  {visibleSirePhotos.length + sireFiles.length}/2
+                </span>
+              </div>
+              <ParentPhotoUpload
+                parentType="sire"
+                label=""
+                maxFiles={2}
+                existingPhotos={visibleSirePhotos}
+                onDeleteExisting={(url) => handleDeletePhoto(url, 'sire')}
+                files={sireFiles}
+                onFilesChange={setSireFiles}
+                disabled={busy}
+                isUploading={isUploading}
+              />
+            </div>
 
-          {/* Dam Photos */}
-          <ParentPhotoUpload
-            label="Dam Photos"
-            maxFiles={2}
-            existingPhotos={existingDamPhotoUrls.filter((url) => !deletedDamPhotos.has(url))}
-            onDeleteExisting={(url) => handleDeletePhoto(url, 'dam')}
-            files={damFiles}
-            onFilesChange={setDamFiles}
-          />
-        </div>
+            <div className="rounded-2xl border border-slate-800 bg-[#0F172A] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">Dam Photos</p>
+                  <p className={helperTextClasses}>Up to 2 photos</p>
+                </div>
+                <span className="text-xs text-slate-500">
+                  {visibleDamPhotos.length + damFiles.length}/2
+                </span>
+              </div>
+              <ParentPhotoUpload
+                parentType="dam"
+                label=""
+                maxFiles={2}
+                existingPhotos={visibleDamPhotos}
+                onDeleteExisting={(url) => handleDeletePhoto(url, 'dam')}
+                files={damFiles}
+                onFilesChange={setDamFiles}
+                disabled={busy}
+                isUploading={isUploading}
+              />
+            </div>
+          </div>
+        </section>
+
+        <div className="h-px rounded-full bg-slate-800/70" />
 
         {/* Puppy Gallery */}
-        <div className="space-y-4 border-t border-border pt-4">
-          <h3 className="text-sm font-semibold text-text">Puppy Gallery (max 3 photos)</h3>
-          <ParentPhotoUpload
-            label="Gallery Photos"
-            maxFiles={3}
-            existingPhotos={existingPuppyPhotoUrls.filter((url) => !deletedPuppyPhotos.has(url))}
-            onDeleteExisting={(url) => handleDeletePhoto(url, 'puppy')}
-            files={puppyFiles}
-            onFilesChange={setPuppyFiles}
-          />
-        </div>
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className={sectionHeadingClasses}>
+              <span className="h-px w-8 bg-orange-400" /> Puppy Gallery
+            </p>
+            <span className="text-xs text-slate-500">{galleryCount}/3 photos</span>
+          </div>
 
-        {/* Submit Buttons */}
-        <div className="sticky bottom-0 z-10 flex justify-end gap-3 border-t border-border bg-bg pt-4">
+          <div className="rounded-2xl border border-slate-800 bg-[#0F172A] p-4">
+            <ParentPhotoUpload
+              label=""
+              maxFiles={3}
+              existingPhotos={visiblePuppyPhotos}
+              onDeleteExisting={(url) => handleDeletePhoto(url, 'puppy')}
+              files={puppyFiles}
+              onFilesChange={setPuppyFiles}
+              disabled={busy}
+              isUploading={isUploading}
+            />
+            <div className="mt-4 flex items-start gap-3 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-2.5">
+              <AlertCircle size={16} className="mt-[2px] text-blue-300" />
+              <p className="text-xs text-blue-100/80">
+                Drag-and-drop ordering coming soon. The first photo becomes the main cover image.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="sticky bottom-0 z-20 border-t border-slate-800 bg-[#0B1120]/95 backdrop-blur-xl px-6 py-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            disabled={isPending || isTransitioning || isUploading}
-            className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text transition hover:bg-hover disabled:opacity-50"
+            disabled={busy}
+            className="w-full rounded-xl border border-slate-800 bg-slate-800/70 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-700 hover:bg-slate-700 sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isPending || isTransitioning || isUploading}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+            disabled={busy}
+            className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:from-purple-500 hover:to-orange-400 sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending || isTransitioning || isUploading ? 'Saving...' : 'Save Changes'}
+            <span className="flex items-center justify-center gap-2">
+              <Save size={16} />
+              {busy ? 'Saving...' : 'Save Changes'}
+            </span>
           </button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>,
   );
 }

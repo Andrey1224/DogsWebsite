@@ -88,6 +88,8 @@ export function ParentPhotoUpload({
     inputName ??
     (parentType === 'dam' ? 'damPhotoUrls' : parentType === 'sire' ? 'sirePhotoUrls' : 'photoUrls');
   const resolvedHelpText = helpText ?? 'Accepted formats: JPG, PNG, WebP. Maximum 3 photos.';
+  const showLabel = resolvedLabel.trim().length > 0;
+  const altLabel = showLabel ? resolvedLabel : fallbackLabel;
 
   // Clean up preview URLs on unmount
   useEffect(() => {
@@ -145,22 +147,27 @@ export function ParentPhotoUpload({
   const canAddMore = totalPhotos < maxFiles;
 
   return (
-    <div className="space-y-2">
-      <label htmlFor={`${resolvedInputName}-file`} className="block text-sm font-medium">
-        {resolvedLabel} {maxFiles ? `(${totalPhotos}/${maxFiles})` : null}
-      </label>
+    <div className="space-y-3 text-slate-100">
+      {showLabel ? (
+        <label
+          htmlFor={`${resolvedInputName}-file`}
+          className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400"
+        >
+          {resolvedLabel} {maxFiles ? `(${totalPhotos}/${maxFiles})` : null}
+        </label>
+      ) : null}
 
       {/* Existing photos section */}
       {existingPhotos.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-3">
           {existingPhotos.map((url) => (
             <div key={url} className="relative">
               <Image
                 src={url}
-                alt={`Existing ${resolvedLabel}`}
-                width={80}
-                height={80}
-                className="w-20 h-20 object-cover rounded border border-border"
+                alt={`Existing ${altLabel}`}
+                width={96}
+                height={96}
+                className="h-24 w-24 rounded-xl border border-slate-700 bg-slate-900 object-cover"
                 unoptimized
               />
               {onDeleteExisting && (
@@ -168,7 +175,7 @@ export function ParentPhotoUpload({
                   type="button"
                   onClick={() => onDeleteExisting(url)}
                   disabled={disabled}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 disabled:opacity-50"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] text-white shadow hover:bg-red-600 disabled:opacity-50"
                   aria-label="Delete existing photo"
                 >
                   ×
@@ -181,15 +188,15 @@ export function ParentPhotoUpload({
 
       {/* New files preview */}
       {displayImages.length > 0 && (
-        <div className="flex gap-2 flex-wrap mt-2">
+        <div className="mt-1 flex flex-wrap gap-3">
           {displayImages.map((imageUrl, index) => (
             <div key={imageUrl} className="relative">
               <Image
                 src={imageUrl}
-                alt={`${resolvedLabel} ${index + 1}`}
-                width={80}
-                height={80}
-                className="w-20 h-20 object-cover rounded border border-border"
+                alt={`${altLabel} ${index + 1}`}
+                width={96}
+                height={96}
+                className="h-24 w-24 rounded-xl border border-slate-700 bg-slate-900 object-cover"
                 unoptimized
               />
               {!isUploading && uploadedUrls.length === 0 && (
@@ -197,15 +204,15 @@ export function ParentPhotoUpload({
                   type="button"
                   onClick={() => handleRemove(index)}
                   disabled={disabled}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 disabled:opacity-50"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] text-white shadow hover:bg-red-600 disabled:opacity-50"
                   aria-label={`Remove photo ${index + 1}`}
                 >
                   ×
                 </button>
               )}
               {isUploading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 rounded flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 </div>
               )}
             </div>
@@ -215,9 +222,9 @@ export function ParentPhotoUpload({
 
       {/* Upload progress bar */}
       {showUploadProgress && (
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800/60">
           <div
-            className="bg-accent-gradient h-2 rounded-full transition-all duration-300"
+            className="h-full rounded-full bg-gradient-to-r from-orange-500 to-purple-500 transition-all duration-300"
             style={{ width: `${uploadProgress}%` }}
           />
         </div>
@@ -233,11 +240,11 @@ export function ParentPhotoUpload({
           multiple
           disabled={disabled || isUploading}
           onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-accent-gradient file:text-white hover:file:opacity-90 disabled:opacity-50"
+          className="block w-full cursor-pointer rounded-xl border border-dashed border-slate-700 bg-[#0B1120] px-4 py-3 text-sm text-slate-400 transition hover:border-orange-500 file:mr-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-orange-500 file:to-orange-600 file:px-4 file:py-2 file:text-white file:font-semibold file:shadow-orange-500/20 hover:file:from-orange-400 hover:file:to-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
         />
       )}
 
-      <p className="text-xs text-muted">{resolvedHelpText}</p>
+      <p className="text-xs text-slate-500">{resolvedHelpText}</p>
     </div>
   );
 }
