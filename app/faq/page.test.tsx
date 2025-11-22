@@ -2,7 +2,7 @@
  * FAQ Page Tests
  *
  * Tests the FAQ page rendering, accessibility, and structured data.
- * Ensures all FAQ items are displayed correctly and links are functional.
+ * Tests new dark UI with search, categories, and accordion.
  */
 
 import { render, screen } from '@testing-library/react';
@@ -41,83 +41,95 @@ function renderFaqPage() {
 }
 
 describe('FAQ Page', () => {
-  it('renders page heading and description', () => {
+  it('renders page heading', () => {
     renderFaqPage();
 
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /Frequently asked questions about our bulldog program/i,
+        name: /How can we help you/i,
       }),
     ).toBeInTheDocument();
+  });
+
+  it('renders Support Center badge', () => {
+    renderFaqPage();
+
+    expect(screen.getByText(/Support Center/i)).toBeInTheDocument();
+  });
+
+  it('renders description', () => {
+    renderFaqPage();
 
     expect(screen.getByText(/Explore the breeding standards/i)).toBeInTheDocument();
   });
 
-  it('renders all FAQ items', () => {
+  it('renders search input', () => {
     renderFaqPage();
 
-    // Check for specific FAQ questions
+    expect(screen.getByPlaceholderText(/Search for/i)).toBeInTheDocument();
+  });
+
+  it('renders category headings', () => {
+    renderFaqPage();
+
     expect(
-      screen.getByRole('heading', { level: 2, name: /How do I place a deposit?/i }),
+      screen.getByRole('heading', { level: 2, name: /Reservation & Payments/i }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole('heading', { level: 2, name: /Is the deposit refundable?/i }),
+      screen.getByRole('heading', { level: 2, name: /Pickup & Logistics/i }),
+    ).toBeInTheDocument();
+
+    expect(screen.getByRole('heading', { level: 2, name: /Health & Papers/i })).toBeInTheDocument();
+  });
+
+  it('renders FAQ questions as accordion buttons', () => {
+    renderFaqPage();
+
+    // Questions are h3 inside buttons
+    expect(
+      screen.getByRole('heading', { level: 3, name: /How do I place a deposit?/i }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole('heading', {
-        level: 2,
-        name: /What are the pickup and delivery options?/i,
-      }),
+      screen.getByRole('heading', { level: 3, name: /Is the deposit refundable?/i }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole('heading', { level: 2, name: /What documents come with the puppy?/i }),
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Can we visit before reserving?/i }),
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole('heading', { level: 2, name: /How do I know the site is legitimate?/i }),
+      screen.getByRole('heading', { level: 3, name: /What are the pickup and delivery options?/i }),
     ).toBeInTheDocument();
   });
 
-  it('renders FAQ answers with correct information', () => {
+  it('renders breadcrumbs (sr-only for SEO)', () => {
     renderFaqPage();
 
-    // Use partial text matches since text may be broken across elements
-    expect(screen.getByText(/Reserve with Stripe or PayPal/i)).toBeInTheDocument();
-
-    expect(screen.getByText(/Deposits are non-refundable/i)).toBeInTheDocument();
-
-    expect(screen.getByText(/You can pick up in Montgomery/i)).toBeInTheDocument();
-  });
-
-  it('renders breadcrumbs with correct links', () => {
-    renderFaqPage();
+    const nav = screen.getByRole('navigation', { name: /Breadcrumb/i });
+    expect(nav).toBeInTheDocument();
 
     const homeLink = screen.getByRole('link', { name: /Home/i });
     expect(homeLink).toHaveAttribute('href', '/');
-
-    // FAQ breadcrumb should be in navigation (current page)
-    const nav = screen.getByRole('navigation');
-    expect(nav).toHaveTextContent('FAQ');
   });
 
   it('renders contact CTA section', () => {
     renderFaqPage();
 
-    expect(screen.getByText(/Still have a question?/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Still have questions/i }),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/We love connecting with future bulldog families/i),
     ).toBeInTheDocument();
+  });
 
-    const contactLink = screen.getByRole('link', { name: /Contact us/i });
-    expect(contactLink).toHaveAttribute('href', '/contact');
+  it('renders contact action links', () => {
+    renderFaqPage();
+
+    const chatLink = screen.getByRole('link', { name: /Chat with us/i });
+    expect(chatLink).toHaveAttribute('href', '/contact');
+
+    const emailLink = screen.getByRole('link', { name: /Email Support/i });
+    expect(emailLink).toHaveAttribute('href', '/contact');
   });
 
   it('renders JSON-LD structured data script', () => {
@@ -126,7 +138,7 @@ describe('FAQ Page', () => {
     const jsonLdScripts = container.querySelectorAll('script[type="application/ld+json"]');
     expect(jsonLdScripts.length).toBeGreaterThan(0);
 
-    // Find the FAQPage schema (may have multiple schemas including BreadcrumbList)
+    // Find the FAQPage schema
     const schemas = Array.from(jsonLdScripts).map((script) =>
       JSON.parse(script.textContent || '{}'),
     );
@@ -144,21 +156,18 @@ describe('FAQ Page', () => {
     expect(container).toBeTruthy();
   });
 
-  it('renders all FAQ items with proper article structure', () => {
+  it('has dark theme background', () => {
     const { container } = renderFaqPage();
 
-    const articles = container.querySelectorAll('article');
-    expect(articles.length).toBe(6); // 6 FAQ items
+    const mainContainer = container.querySelector('.bg-\\[\\#0B1120\\]');
+    expect(mainContainer).toBeInTheDocument();
   });
 
-  it('has proper styling classes for cards', () => {
-    const { container } = renderFaqPage();
+  it('renders accordion buttons for FAQ items', () => {
+    renderFaqPage();
 
-    const articles = container.querySelectorAll('article');
-    articles.forEach((article) => {
-      expect(article.className).toContain('rounded-3xl');
-      expect(article.className).toContain('border');
-      expect(article.className).toContain('bg-card');
-    });
+    // 6 FAQ items as buttons
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBe(6);
   });
 });

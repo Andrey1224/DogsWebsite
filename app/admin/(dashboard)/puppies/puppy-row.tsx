@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
@@ -156,14 +157,40 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
   }
 
   return (
-    <li className="grid grid-cols-1 gap-6 px-6 py-5 text-sm text-text md:grid-cols-[2fr,1.4fr,1.4fr,1.2fr,auto] md:items-start">
+    <li className="group grid grid-cols-1 gap-6 px-6 py-5 text-sm text-white bg-[#1E293B]/40 border border-slate-800/50 rounded-xl shadow-lg shadow-black/10 transition-all duration-300 hover:border-slate-700 md:grid-cols-[auto,2fr,1.4fr,1.4fr,1.2fr,auto] md:items-start">
+      {/* Puppy Thumbnail */}
+      <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
+        {puppy.photo_urls && puppy.photo_urls.length > 0 ? (
+          <Image
+            src={puppy.photo_urls[0]}
+            alt={puppy.name ?? 'Puppy'}
+            width={48}
+            height={48}
+            className="h-full w-full object-cover"
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-slate-600 text-xs">
+            No image
+          </div>
+        )}
+      </div>
+
       <div className="space-y-1">
-        <p className="font-medium">{puppy.name ?? 'Untitled puppy'}</p>
-        <p className="break-all text-xs text-muted">{puppy.slug}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-bold text-white text-lg">{puppy.name ?? 'Untitled puppy'}</p>
+          {puppy.has_active_reservation && (
+            <span
+              className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"
+              title="Active Reservation"
+            />
+          )}
+        </div>
+        <p className="break-all text-xs text-slate-500">{puppy.slug}</p>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor={`status-${puppy.id}`} className="text-xs text-muted md:hidden">
+        <label htmlFor={`status-${puppy.id}`} className="text-xs text-slate-400 md:hidden">
           Status
         </label>
         <select
@@ -172,7 +199,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
           defaultValue={puppy.status}
           disabled={statusPending || sharedDisabled}
           onChange={(event) => handleStatusChange(event.target.value)}
-          className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed"
+          className="w-full rounded-xl border border-slate-700 bg-[#0B1120] px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -180,18 +207,18 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted md:hidden">Inline updates save instantly.</p>
+        <p className="text-xs text-slate-500 md:hidden">Inline updates save instantly.</p>
         {archiveBlocked && (
-          <p className="text-xs font-semibold text-orange-600">Reservation active</p>
+          <p className="text-xs font-semibold text-orange-300">Reservation active</p>
         )}
       </div>
 
       <div className="space-y-2">
-        <label htmlFor={`price-${puppy.id}`} className="text-xs text-muted md:hidden">
+        <label htmlFor={`price-${puppy.id}`} className="text-xs text-slate-400 md:hidden">
           Price (USD)
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-muted">$</span>
+          <span className="text-slate-500">$</span>
           <input
             id={`price-${puppy.id}`}
             name="price"
@@ -202,7 +229,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             value={priceValue}
             onChange={(event) => setPriceValue(event.target.value)}
             disabled={pricePending || sharedDisabled}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed"
+            className="w-full rounded-xl border border-slate-700 bg-[#0B1120] px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
           />
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -210,7 +237,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             type="button"
             onClick={handleSavePrice}
             disabled={!isPriceDirty || pricePending || sharedDisabled}
-            className="rounded-lg border border-border px-3 py-1 text-xs font-medium text-text transition hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-xs font-semibold text-white shadow-orange-500/20 transition hover:from-orange-400 hover:to-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pricePending ? 'Saving...' : 'Save'}
           </button>
@@ -218,7 +245,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
             type="button"
             onClick={() => setPriceValue(originalPrice)}
             disabled={!isPriceDirty || pricePending || sharedDisabled}
-            className="rounded-lg border border-transparent px-3 py-1 text-xs text-muted transition hover:border-border disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Reset
           </button>

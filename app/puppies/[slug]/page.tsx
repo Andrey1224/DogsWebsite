@@ -1,10 +1,13 @@
 import { notFound } from 'next/navigation';
+import { Activity, ArrowLeft, MapPin, Star, Weight } from 'lucide-react';
+import Link from 'next/link';
 
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { PuppyGallery } from '@/components/puppy-gallery';
-import { ParentPhotoCarousel } from '@/components/parent-photo-carousel';
 import { PuppyCard } from '@/components/puppy-card';
+import { StatsGrid } from '@/components/puppy-detail/stats-grid';
+import { ParentCard } from '@/components/puppy-detail/parent-card';
+import { HealthBadge } from '@/components/puppy-detail/health-badge';
 import { getPuppiesWithRelations, getPuppyBySlug } from '@/lib/supabase/queries';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getProductSchema } from '@/lib/seo/structured-data';
@@ -84,6 +87,8 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   // Prioritize direct metadata fields over parent records
   const sireName = puppy.sire_name ?? puppy.parents?.sire?.name;
   const damName = puppy.dam_name ?? puppy.parents?.dam?.name;
+  const sireData = puppy.parents?.sire;
+  const damData = puppy.parents?.dam;
   const sirePhotos =
     puppy.sire_photo_urls && puppy.sire_photo_urls.length > 0
       ? puppy.sire_photo_urls
@@ -96,99 +101,169 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
   const breedLabel =
     formatBreed(puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? '';
-  const sexLabel = puppy.sex ? puppy.sex.charAt(0).toUpperCase() + puppy.sex.slice(1) : '—';
-  const statusLabel = puppy.status
-    ? puppy.status.charAt(0).toUpperCase() + puppy.status.slice(1)
-    : 'Unknown';
   const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
   const paypalClientId = process.env.PAYPAL_CLIENT_ID ?? null;
 
+  // Prepare weight display
+  const weightDisplay = puppy.weight_oz
+    ? `${puppy.weight_oz} oz (Est. Adult: 50 lbs)`
+    : 'Contact for details';
+
+  // Get full URL for sharing
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://exoticbulldoglegacy.com';
+  const shareUrl = `${siteUrl}/puppies/${slug}`;
+
+  const buildParentStats = (parent: typeof sireData) => {
+    const weight = parent?.weight_lbs ? `${parent.weight_lbs} lbs` : 'Contact for details';
+    const color = parent?.color ?? 'Contact for details';
+    const health = parent?.health_clearances?.length
+      ? parent.health_clearances.join(', ')
+      : 'Health tested';
+
+    return [
+      { label: 'Weight', value: weight, icon: Weight },
+      { label: 'Color', value: color, icon: Star },
+      { label: 'Health', value: health, icon: Activity },
+    ];
+  };
+
+  const sireStats = buildParentStats(sireData);
+  const damStats = buildParentStats(damData);
+  const sireQuote = sireData?.description ?? 'Temperament notes coming soon.';
+  const damQuote = damData?.description ?? 'Temperament notes coming soon.';
+
   return (
-    <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Puppies', href: '/puppies' },
-          { label: puppy.name ?? 'Puppy', href: `/puppies/${slug}` },
-        ]}
-      />
+    <div className="min-h-screen bg-[#0B1120] pb-20 pt-24 font-sans text-white">
       <JsonLd id={`product-${puppy.id}`} data={productSchema} />
-      <div className="grid gap-10 lg:grid-cols-[1.1fr,1fr]">
-        <PuppyGallery photos={puppy.photo_urls ?? []} videos={puppy.video_urls} name={puppy.name} />
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">
+
+      {/* Breadcrumb Navigation */}
+      <div className="mx-auto mb-8 flex max-w-7xl items-center gap-2 px-6 pt-8 text-sm text-slate-400 md:px-12">
+        <Link
+          href="/puppies"
+          className="flex items-center gap-1 transition-colors hover:text-white"
+        >
+          <ArrowLeft size={16} /> Back to Puppies
+        </Link>
+        <span className="text-slate-700">/</span>
+        <span className="text-slate-500">{breedLabel || 'Bulldog'}</span>
+        <span className="text-slate-700">/</span>
+        <span className="font-medium text-white">{puppy.name}</span>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 md:px-12 lg:grid-cols-2 lg:gap-20">
+        {/* Left Column: Gallery */}
+        <PuppyGallery
+          photos={puppy.photo_urls ?? []}
+          videos={puppy.video_urls}
+          name={puppy.name}
+          status={puppy.status || 'unknown'}
+          shareUrl={shareUrl}
+        />
+
+        {/* Right Column: Details */}
+        <div className="flex flex-col justify-center">
+          {/* Breed Badge + Location */}
+          <div className="mb-2 flex items-center gap-2">
+            <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-orange-400">
               {breedLabel || 'Bulldog'}
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text">{puppy.name}</h1>
-            <p className="text-sm text-muted">
-              Born {puppy.birth_date ? new Date(puppy.birth_date).toLocaleDateString() : '—'} ·{' '}
-              {sexLabel}
+            </span>
+            <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
+              <MapPin size={12} /> Alabama
+            </span>
+          </div>
+
+          {/* Name */}
+          <h1 className="mb-2 text-5xl font-bold text-white md:text-6xl">{puppy.name}</h1>
+
+          {/* Price */}
+          <div className="mb-8 flex items-baseline gap-4">
+            <span className="text-3xl font-medium text-slate-200">
+              {puppy.price_usd ? `$${puppy.price_usd.toLocaleString()}` : 'Contact'}
+            </span>
+            {(puppy.status === 'sold' || puppy.status === 'reserved') && puppy.price_usd ? (
+              <span className="text-sm text-slate-500 line-through">
+                ${puppy.price_usd.toLocaleString()}
+              </span>
+            ) : null}
+          </div>
+          {/* Stats Grid */}
+          <StatsGrid
+            birthDate={puppy.birth_date}
+            gender={puppy.sex || 'unknown'}
+            color={puppy.color || 'TBD'}
+            weight={weightDisplay}
+          />
+
+          {/* Description */}
+          <div className="mb-8">
+            <h3 className="mb-2 text-lg font-semibold text-white">Temperament & Notes</h3>
+            <p className="text-sm leading-relaxed text-slate-400">
+              {puppy.description ??
+                'Raised in-home with daily enrichment and early neurological stimulation. Comes with vet health certificate, vaccination record, and lifetime breeder support.'}
             </p>
           </div>
-          <p className="text-base leading-relaxed text-muted">
-            {puppy.description ??
-              'Raised in-home with daily enrichment and early neurological stimulation. Comes with vet health certificate, vaccination record, and lifetime breeder support.'}
-          </p>
-          <div className="rounded-3xl border border-border bg-card p-6">
-            <p className="text-sm font-semibold text-muted">Details</p>
-            <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-muted">Status</dt>
-                <dd className="font-semibold capitalize text-text">{statusLabel}</dd>
-              </div>
-              <div>
-                <dt className="text-muted">Price</dt>
-                <dd className="font-semibold text-text">
-                  {puppy.price_usd ? `$${puppy.price_usd.toLocaleString()}` : 'Contact for pricing'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">Weight</dt>
-                <dd className="font-semibold text-text">
-                  {puppy.weight_oz ? `${puppy.weight_oz} oz` : '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">Coat</dt>
-                <dd className="font-semibold text-text">{puppy.color ?? '—'}</dd>
-              </div>
-            </dl>
+
+          {/* Health Guarantee Badge */}
+          <div className="mb-8">
+            <HealthBadge />
           </div>
+
+          {/* Actions */}
           <ReserveButton
             puppySlug={puppy.slug || ''}
+            puppyName={puppy.name}
             status={puppy.status || 'unknown'}
             canReserve={reservationState?.canReserve ?? false}
             reservationBlocked={reservationState?.reservationBlocked ?? false}
             depositAmount={depositAmount}
             paypalClientId={paypalClientId}
           />
-          <div className="rounded-3xl border border-border bg-card p-6 space-y-6">
-            <p className="text-sm font-semibold text-muted">Lineage</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
-              <li>
-                <span className="font-semibold text-text">Sire:</span> {sireName ?? 'TBD'}
-              </li>
-              <li>
-                <span className="font-semibold text-text">Dam:</span> {damName ?? 'TBD'}
-              </li>
-              <li>
-                <span className="font-semibold text-text">Litter:</span>{' '}
-                {puppy.litter?.name ?? 'Private'}
-              </li>
-            </ul>
-            <div className="grid gap-4 md:grid-cols-2">
-              <ParentPhotoCarousel title="Sire" parentName={sireName} photos={sirePhotos} />
-              <ParentPhotoCarousel title="Dam" parentName={damName} photos={damPhotos} />
-            </div>
-          </div>
         </div>
       </div>
 
+      {/* Lineage Section */}
+      <div className="mx-auto mt-24 max-w-7xl px-6 md:px-12">
+        <div className="mb-12 flex items-center gap-4">
+          <div className="h-px flex-1 bg-slate-800"></div>
+          <h2 className="text-center text-2xl font-bold uppercase tracking-widest text-white">
+            Premium Lineage
+          </h2>
+          <div className="h-px flex-1 bg-slate-800"></div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          {/* Sire Card */}
+          {sireName && (
+            <ParentCard
+              role="sire"
+              name={sireName}
+              photoUrl={sirePhotos?.[0] ?? null}
+              title="Grand Champion"
+              stats={sireStats}
+              quote={sireQuote}
+            />
+          )}
+
+          {/* Dam Card */}
+          {damName && (
+            <ParentCard
+              role="dam"
+              name={damName}
+              photoUrl={damPhotos?.[0] ?? null}
+              title="International Lineage"
+              stats={damStats}
+              quote={damQuote}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Related Puppies */}
       {related.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold tracking-tight text-text">You may also love</h2>
-          <div className="grid gap-6 md:grid-cols-3">
+        <section className="mx-auto mt-24 max-w-7xl space-y-8 px-6 md:px-12">
+          <h2 className="text-3xl font-bold text-white">You may also love</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {related.map((candidate) => (
               <PuppyCard key={candidate.id} puppy={candidate} />
             ))}

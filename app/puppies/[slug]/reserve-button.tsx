@@ -9,11 +9,14 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { Lock } from 'lucide-react';
+
 import { PayPalButton } from '@/components/paypal-button';
 import { createCheckoutSession } from './actions';
 
 interface ReserveButtonProps {
   puppySlug: string;
+  puppyName?: string | null;
   status: string;
   canReserve: boolean;
   reservationBlocked: boolean;
@@ -23,6 +26,7 @@ interface ReserveButtonProps {
 
 export function ReserveButton({
   puppySlug,
+  puppyName,
   status,
   canReserve,
   reservationBlocked,
@@ -74,15 +78,18 @@ export function ReserveButton({
     window.location.href = `/puppies/${puppySlug}/reserved?paypal=success`;
   }, [puppySlug]);
 
+  const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
+  const paypalConfigured = Boolean(paypalClientId);
+
   if (!canReserve) {
     if (reservationBlocked) {
       return (
-        <div className="space-y-3 rounded-3xl border border-border bg-card p-6">
-          <p className="text-sm font-semibold text-accent">Reservation in progress</p>
-          <p className="text-sm text-muted">
+        <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
+          <p className="text-sm font-semibold text-orange-400">Reservation in progress</p>
+          <p className="text-sm text-slate-400">
             Someone is currently completing a deposit for this puppy. Please check back in about 15
             minutes or{' '}
-            <a href="/contact" className="font-semibold text-accent hover:underline">
+            <a href="/contact" className="font-semibold text-orange-400 hover:underline">
               contact us
             </a>{' '}
             if you&apos;d like to be notified when it becomes available again.
@@ -92,15 +99,15 @@ export function ReserveButton({
     }
 
     return (
-      <div className="space-y-3 rounded-3xl border border-border bg-card p-6">
-        <p className="text-sm font-semibold text-muted">Status Update</p>
-        <p className="text-sm text-muted">
+      <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
+        <p className="text-sm font-semibold text-slate-300">Status Update</p>
+        <p className="text-sm text-slate-400">
           This puppy is currently <span className="font-semibold capitalize">{status}</span> and not
           available for reservation.
         </p>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-slate-400">
           Please check back later or{' '}
-          <a href="/contact" className="font-semibold text-accent hover:underline">
+          <a href="/contact" className="font-semibold text-orange-400 hover:underline">
             contact us
           </a>{' '}
           for more information.
@@ -110,43 +117,63 @@ export function ReserveButton({
   }
 
   return (
-    <div className="space-y-3 rounded-3xl border border-accent/40 bg-[color:color-mix(in srgb, var(--accent) 18%, var(--bg))] p-6">
-      <p className="text-sm font-semibold text-accent-aux">Ready to reserve?</p>
-      <p className="text-sm text-accent-aux/80">
-        Secure your puppy with a ${depositLabel} deposit. Choose Stripe or PayPal for secure payment
-        processing.
-      </p>
-
+    <div className="space-y-5">
       {error && (
         <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleReserve}
-        disabled={isStripeLoading || isPayPalProcessing}
-        className="w-full rounded-full bg-[color:var(--btn-bg)] px-6 py-3 text-sm font-semibold text-[color:var(--btn-text)] transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isStripeLoading ? 'Loading...' : `Reserve with $${depositLabel} Deposit (Stripe)`}
-      </button>
-
-      <p className="text-xs text-accent-aux/60">
-        Powered by <span className="font-semibold">Stripe</span>
-      </p>
-
-      <div className="relative space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4">
-        <p className="text-xs uppercase tracking-[0.25em] text-accent-aux/70">OR PAY WITH</p>
-        <PayPalButton
-          clientId={paypalClientId}
-          puppySlug={puppySlug}
+      <div>
+        <button
+          type="button"
+          onClick={handleReserve}
           disabled={isStripeLoading || isPayPalProcessing}
-          onProcessingChange={setIsPayPalProcessing}
-          onError={handlePayPalError}
-          onSuccess={handlePayPalSuccess}
-        />
-        <p className="text-xs text-accent-aux/60">Powered by PayPal</p>
+          className="mb-2 w-full rounded-2xl bg-[#F97316] py-4 text-lg font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] hover:bg-[#EA580C] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isStripeLoading ? 'Loading...' : `Reserve ${reserveLabel}`}
+        </button>
+        <div className="flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
+          ${depositLabel} deposit • Powered by
+          <Lock size={8} />
+          <span className="font-semibold">Stripe</span>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-[#151e32] p-4">
+        <div className="mb-3 ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          Or pay with
+        </div>
+        {paypalConfigured ? (
+          <PayPalButton
+            clientId={paypalClientId}
+            puppySlug={puppySlug}
+            disabled={isStripeLoading || isPayPalProcessing}
+            buttonStyle={{
+              layout: 'horizontal',
+              color: 'gold',
+              shape: 'pill',
+              label: 'paypal',
+              height: 48,
+              tagline: false,
+            }}
+            onProcessingChange={setIsPayPalProcessing}
+            onError={handlePayPalError}
+            onSuccess={handlePayPalSuccess}
+          />
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex w-full items-center justify-center gap-1 rounded-xl bg-[#FFC439] py-3 text-lg font-bold text-[#003087] shadow-sm"
+          >
+            <span className="italic font-bold">Pay</span>
+            <span className="italic font-bold text-[#009cde]">Pal</span>
+          </button>
+        )}
+        <div className="mt-2 text-center text-[10px] text-slate-500">
+          The safer, easier way to pay
+        </div>
       </div>
     </div>
   );

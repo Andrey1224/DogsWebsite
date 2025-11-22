@@ -1,62 +1,63 @@
+// New Sticky Action Bar with 5 contact channels and CTA button
 'use client';
 
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Phone, MessageCircle, Mail, Send } from 'lucide-react';
 
 import { useAnalytics } from '@/components/analytics-provider';
 import { CONTACT_CHANNELS } from '@/lib/config/contact';
 
-type Availability = 'online' | 'offline' | 'unknown';
+// Map contact channel IDs to lucide-react icons
+const channelIcons = {
+  call: Phone,
+  sms: MessageCircle,
+  whatsapp: MessageCircle,
+  telegram: Send,
+  email: Mail,
+};
 
 export function ContactBar() {
-  const [availability, setAvailability] = useState<Availability>('unknown');
   const pathname = usePathname();
   const { trackEvent } = useAnalytics();
 
-  useEffect(() => {
-    function handleAvailability(event: Event) {
-      const detail = (event as CustomEvent<{ status?: Availability }>).detail;
-      if (detail?.status) {
-        setAvailability(detail.status);
-      }
-    }
-
-    window.addEventListener('crisp:availability', handleAvailability as EventListener);
-
-    return () => {
-      window.removeEventListener('crisp:availability', handleAvailability as EventListener);
-    };
-  }, []);
-
-  const availabilityLabel =
-    availability === 'online'
-      ? 'Chat is live'
-      : availability === 'offline'
-        ? 'Chat is offline'
-        : 'Chat connecting…';
-
   return (
-    <aside className="fixed bottom-4 left-1/2 z-50 w-[92%] max-w-3xl -translate-x-1/2 rounded-full border border-border bg-card/95 p-2 shadow-lg backdrop-blur">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {CONTACT_CHANNELS.map((contact) => (
-          <a
-            key={contact.label}
-            href={contact.href}
-            className="rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-text transition-colors hover:border-border hover:bg-[color:var(--hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-aux"
-            onClick={() =>
-              trackEvent('contact_click', {
-                channel: contact.id,
-                href: contact.href,
-                context_path: pathname,
-              })
-            }
+    <aside className="fixed bottom-6 left-1/2 z-50 w-[90%] max-w-2xl -translate-x-1/2">
+      <div className="flex items-center justify-between rounded-full border border-slate-600/50 bg-[#1E293B]/80 p-2 pl-6 shadow-2xl backdrop-blur-xl">
+        <span className="hidden text-sm font-medium text-slate-300 sm:block">Questions?</span>
+
+        <div className="flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-end">
+          {CONTACT_CHANNELS.map((contact) => {
+            const Icon = channelIcons[contact.id as keyof typeof channelIcons];
+            const label = contact.label === 'SMS' ? 'Text' : contact.label;
+
+            return (
+              <a
+                key={contact.id}
+                href={contact.href}
+                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+                onClick={() =>
+                  trackEvent('contact_click', {
+                    channel: contact.id,
+                    href: contact.href,
+                    context_path: pathname,
+                  })
+                }
+                aria-label={contact.label}
+              >
+                {Icon && <Icon size={16} />}
+                <span className="hidden md:inline">{label}</span>
+              </a>
+            );
+          })}
+
+          <Link
+            href="/contact"
+            className="ml-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:shadow-lg hover:shadow-orange-500/20"
           >
-            {contact.label}
-          </a>
-        ))}
-        <span className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted sm:block">
-          {availabilityLabel}
-        </span>
+            Let&apos;s Connect
+          </Link>
+        </div>
       </div>
     </aside>
   );

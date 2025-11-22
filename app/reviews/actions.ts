@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 
 import { verifyHCaptcha } from '@/lib/captcha/hcaptcha';
-import { reviewSubmissionSchema } from '@/lib/reviews/schema';
+import { publicReviewSubmissionSchema } from '@/lib/reviews/schema';
 import { createServiceRoleClient } from '@/lib/supabase/client';
 
 export type ReviewFormState = {
@@ -15,10 +15,6 @@ export type ReviewFormState = {
 
 function asString(value: FormDataEntryValue | null): string | undefined {
   return typeof value === 'string' ? value : undefined;
-}
-
-function asStringArray(values: FormDataEntryValue[]): string[] {
-  return values.map((value) => (typeof value === 'string' ? value : '')).filter(Boolean);
 }
 
 type HeaderList = Awaited<ReturnType<typeof headers>>;
@@ -39,19 +35,18 @@ function extractFieldErrors(error: unknown): Partial<Record<string, string>> {
     error as { flatten: () => { fieldErrors?: Record<string, string[]> } }
   ).flatten();
   const allowedFields = new Set([
-    'name',
-    'location',
-    'visitMonth',
+    'authorName',
+    'authorLocation',
     'rating',
-    'story',
-    'captcha',
-    'photos',
+    'body',
+    'photoUrls',
+    'hcaptchaToken',
+    'agreeToPublish',
   ]);
 
   const entries = Object.entries(flattened.fieldErrors ?? {}).flatMap(([key, messages]) => {
-    const normalizedKey =
-      key === 'hcaptchaToken' ? 'captcha' : key === 'photoUrls' ? 'photos' : key;
-    if (!allowedFields.has(normalizedKey) || !Array.isArray(messages) || messages.length === 0) {
+    const normalizedKey = key === 'hcaptchaToken' ? 'captcha' : key;
+    if (!allowedFields.has(key) || !Array.isArray(messages) || messages.length === 0) {
       return [];
     }
     return [[normalizedKey, messages[0]]];
@@ -64,17 +59,22 @@ export async function submitReview(
   _prevState: ReviewFormState,
   formData: FormData,
 ): Promise<ReviewFormState> {
+  // Extract photo URLs array
+  const photoUrls = formData
+    .getAll('photoUrls[]')
+    .filter((v): v is string => typeof v === 'string');
+
   const fields = {
-    name: asString(formData.get('name')),
-    location: asString(formData.get('location')),
-    visitMonth: asString(formData.get('visitMonth')),
+    authorName: asString(formData.get('authorName')),
+    authorLocation: asString(formData.get('authorLocation')),
     rating: asString(formData.get('rating')),
-    story: asString(formData.get('story')),
-    photoUrls: asStringArray(formData.getAll('photoUrls')),
+    body: asString(formData.get('body')),
+    photoUrls,
     hcaptchaToken: asString(formData.get('h-captcha-response')),
+    agreeToPublish: asString(formData.get('agreeToPublish')),
   };
 
-  const parsed = reviewSubmissionSchema.safeParse(fields);
+  const parsed = publicReviewSubmissionSchema.safeParse(fields);
   if (!parsed.success) {
     return {
       status: 'error',
@@ -98,45 +98,52 @@ export async function submitReview(
     };
   }
 
-  try {
-    const supabase = createServiceRoleClient();
-    const { error } = await supabase.from('reviews').insert({
-      author_name: submission.name,
-      location: submission.location,
-      visit_date: submission.visitMonth,
-      rating: submission.rating,
-      story: submission.story,
-      photo_urls: submission.photoUrls,
-      status: 'published',
-      source: 'form',
-      client_ip: clientIp ?? null,
-    });
+  const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-    if (error) {
-      console.error('Failed to persist review', error);
-      return {
-        status: 'error',
-        message: "We couldn't save your review. Please try again shortly.",
-      };
+  if (hasServiceRole) {
+    try {
+      const supabase = createServiceRoleClient();
+      const { error } = await supabase.from('reviews').insert({
+        source: 'manual',
+        is_published: false,
+        is_featured: false,
+        author_name: submission.authorName,
+        author_location: submission.authorLocation,
+        rating: submission.rating,
+        body: submission.body,
+        photo_urls: submission.photoUrls.length > 0 ? submission.photoUrls : null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        visit_date: null,
+        source_url: null,
+      });
+
+      if (error) {
+        console.error('Failed to persist review', error);
+        return {
+          status: 'error',
+          message: "We couldn't save your review. Please try again shortly.",
+        };
+      }
+    } catch (clientError) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('Supabase service role client misconfigured.', clientError);
+        return {
+          status: 'error',
+          message: "We couldn't save your review. Please try again shortly.",
+        };
+      }
+      console.warn(
+        'Supabase service role client unavailable; skipping review persistence in non-production environment.',
+        clientError,
+      );
     }
-  } catch (clientError) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('Supabase service role client misconfigured.', clientError);
-      return {
-        status: 'error',
-        message: "We couldn't save your review. Please try again shortly.",
-      };
-    }
-    console.warn(
-      'Supabase service role client unavailable; skipping review persistence in non-production environment.',
-      clientError,
-    );
   }
 
   revalidatePath('/reviews');
 
   return {
     status: 'success',
-    message: 'Thanks for sharing your story! Your review is now live.',
+    message: 'Thanks for sharing your story! We will publish it after a quick review.',
   };
 }

@@ -15,7 +15,7 @@ import {
 } from './schema';
 
 const ADMIN_PUPPY_BASE_FIELDS =
-  'id,name,slug,status,price_usd,birth_date,litter_id,created_at,updated_at';
+  'id,name,slug,status,price_usd,birth_date,litter_id,photo_urls,created_at,updated_at';
 
 function getAdminPuppyFields(includeArchiveColumn: boolean) {
   return includeArchiveColumn ? `${ADMIN_PUPPY_BASE_FIELDS},is_archived` : ADMIN_PUPPY_BASE_FIELDS;
@@ -30,6 +30,7 @@ export type AdminPuppyRecord = Pick<
   | 'price_usd'
   | 'birth_date'
   | 'litter_id'
+  | 'photo_urls'
   | 'is_archived'
   | 'created_at'
   | 'updated_at'

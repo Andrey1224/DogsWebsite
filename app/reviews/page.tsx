@@ -1,290 +1,121 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import { Star, CheckCircle2, MapPin } from 'lucide-react';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
+import { ReviewCard } from '@/components/reviews/review-card';
 import { ReviewForm } from '@/components/reviews/review-form';
-import { getPublishedReviews } from '@/lib/reviews/queries';
+import { getAggregate, getPublishedReviews } from '@/lib/reviews/queries';
 import { buildMetadata } from '@/lib/seo/metadata';
-import { getLocalBusinessSchema } from '@/lib/seo/structured-data';
-
-type Review = {
-  id: string;
-  author: string;
-  location: string;
-  visitDate: string;
-  rating: number;
-  quote: string;
-  images?: Array<{
-    url: string;
-    alt: string;
-  }>;
-};
-
-const featuredReviews: Review[] = [
-  {
-    id: 'sarah-w',
-    author: 'Sarah W.',
-    location: 'Huntsville, AL',
-    visitDate: '2025-06-18',
-    rating: 5,
-    quote:
-      'We picked up our French Bulldog, Charlie, in June and he’s been the sweetest, healthiest puppy we’ve ever had. The whole process was transparent and stress-free — communication was excellent!',
-    images: [
-      {
-        url: '/reviews/sarah-charlie.webp',
-        alt: 'Sarah with French Bulldog Charlie',
-      },
-    ],
-  },
-  {
-    id: 'mark-lisa-p',
-    author: 'Mark & Lisa P.',
-    location: 'Birmingham, AL',
-    visitDate: '2025-07-03',
-    rating: 5,
-    quote:
-      'Our English Bulldog Duke is doing amazing! He was already socialized and mostly potty trained. The deposit and pickup process were super easy and professional.',
-    images: [
-      {
-        url: '/reviews/mark-lisa-duke.webp',
-        alt: 'Mark and Lisa with their English Bulldog Duke',
-      },
-    ],
-  },
-  {
-    id: 'jessica-m',
-    author: 'Jessica M.',
-    location: 'Nashville, TN',
-    visitDate: '2025-08-02',
-    rating: 5,
-    quote:
-      'I was nervous about buying online, but Exotic Bulldog Legacy made everything smooth. We received videos and updates right up until delivery day. Bella arrived happy, healthy, and ready to cuddle.',
-  },
-  {
-    id: 'anthony-d',
-    author: 'Anthony D.',
-    location: 'Montgomery, AL',
-    visitDate: '2025-05-27',
-    rating: 5,
-    quote:
-      'Top-notch breeder! You can tell they truly care for their dogs. My Frenchie, Tommy, settled in immediately and has the funniest personality.',
-    images: [
-      {
-        url: '/reviews/anthony-tommy.webp',
-        alt: 'Anthony with French Bulldog Tommy',
-      },
-    ],
-  },
-  {
-    id: 'rachel-k',
-    author: 'Rachel K.',
-    location: 'Atlanta, GA',
-    visitDate: '2025-07-22',
-    rating: 5,
-    quote:
-      'We drove from Georgia because the quality of their bulldogs is worth it. The one-year health guarantee gave us confidence, and our vet said our pup was in perfect condition.',
-  },
-  {
-    id: 'cameron-h',
-    author: 'Cameron H.',
-    location: 'Decatur, AL',
-    visitDate: '2025-09-05',
-    rating: 5,
-    quote:
-      'I loved how easy it was to reserve online. PayPal worked perfectly and the confirmation emails arrived instantly. Milo is already the star of our neighborhood!',
-    images: [
-      {
-        url: '/reviews/cameron-milo.webp',
-        alt: 'Cameron holding bulldog puppy Milo',
-      },
-    ],
-  },
-];
 
 export const metadata = buildMetadata({
   title: 'Reviews | Exotic Bulldog Legacy',
-  description:
-    'Read authentic reviews from Exotic Bulldog Legacy families across Alabama, Georgia, and Tennessee.',
+  description: 'Read authentic reviews from Exotic Bulldog Legacy families across the Southeast.',
   path: '/reviews',
 });
 
+type StatCardProps = {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+};
+
+function StatCard({ label, value, icon }: StatCardProps) {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-slate-700/50 bg-[#1E293B]/50 p-4 backdrop-blur-sm">
+      <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">{icon}</div>
+      <div>
+        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-xs uppercase tracking-wider text-slate-400">{label}</div>
+      </div>
+    </div>
+  );
+}
+
 export default async function ReviewsPage() {
-  const communityReviews = (await getPublishedReviews()).map<Review>((review) => ({
-    id: review.id,
-    author: review.author,
-    location: review.location,
-    visitDate: review.visitDate,
-    rating: review.rating,
-    quote: review.story,
-    images:
-      review.photoUrls.length > 0
-        ? review.photoUrls.slice(0, 3).map((url, index) => ({
-            url,
-            alt: `Photo ${index + 1} from ${review.author}`,
-          }))
-        : undefined,
-  }));
-
-  const allReviews = [...communityReviews, ...featuredReviews];
-
-  const localBusiness = getLocalBusinessSchema();
-  const businessId =
-    (localBusiness as { ['@id']?: string })['@id'] ??
-    `${localBusiness.url.replace(/\/$/, '')}#localbusiness`;
-
-  const averageRating =
-    allReviews.length > 0
-      ? (allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length).toFixed(1)
-      : '5.0';
-
-  const reviewSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    itemListElement: allReviews.map((review, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      item: {
-        '@type': 'Review',
-        author: {
-          '@type': 'Person',
-          name: review.author,
-        },
-        datePublished: review.visitDate,
-        reviewBody: review.quote,
-        ...(review.images && review.images.length > 0
-          ? { image: review.images.map((image) => image.url) }
-          : {}),
-        reviewRating: {
-          '@type': 'Rating',
-          ratingValue: review.rating,
-          bestRating: 5,
-        },
-        itemReviewed: {
-          '@id': businessId,
-        },
-      },
-    })),
-  };
+  const publishedReviews = await getPublishedReviews();
+  const aggregate = getAggregate(publishedReviews);
 
   const aggregateSchema = {
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    '@id': businessId,
-    name: localBusiness.name,
-    url: localBusiness.url,
+    '@type': 'Organization',
+    name: 'Exotic Bulldog Legacy',
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: averageRating,
-      reviewCount: allReviews.length,
+      ratingValue: aggregate.averageRating || 0,
+      reviewCount: aggregate.reviewCount,
     },
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Reviews', href: '/reviews' },
-        ]}
-      />
-      <JsonLd id="reviews-itemlist" data={reviewSchema} />
+    <main id="main-content" className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
+      {/* SEO - Hidden Breadcrumbs */}
+      <div className="sr-only">
+        <Breadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Reviews', href: '/reviews' },
+          ]}
+        />
+      </div>
       <JsonLd id="reviews-aggregate" data={aggregateSchema} />
 
-      <div className="space-y-3 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-accent-aux">Reviews</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-text">
-          Families who chose Exotic Bulldog Legacy
-        </h1>
-        <p className="mx-auto max-w-2xl text-sm text-muted">
-          From first kennel visits to flight nanny hand-offs, our team stays involved at every step
-          of the adoption journey. These stories highlight the transparent, health-first experience
-          we deliver across the Southeast.
-        </p>
-      </div>
+      {/* Header & Stats */}
+      <div className="relative px-6 pb-12 pt-32 md:px-12">
+        {/* Background Decor */}
+        <div className="pointer-events-none absolute left-1/4 top-0 h-[600px] w-[800px] -translate-y-1/2 rounded-full bg-indigo-900/20 blur-[120px]" />
 
-      <section className="grid gap-8 lg:grid-cols-2">
-        {allReviews.map((review) => (
-          <article
-            key={review.id}
-            className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-sm"
-          >
-            <div className="flex items-baseline justify-between gap-3">
-              <div>
-                <p className="text-base font-semibold text-text">{review.author}</p>
-                <p className="text-xs uppercase tracking-wide text-muted">{review.location}</p>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-accent-aux">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <span key={index} aria-hidden="true">
-                    {index < review.rating ? '★' : '☆'}
-                  </span>
-                ))}
-                <span className="sr-only">{review.rating} out of 5 stars</span>
-              </div>
-            </div>
-            <p className="text-sm leading-relaxed text-muted">“{review.quote}”</p>
-            {review.images && review.images.length > 0 ? (
-              <div
-                className={
-                  review.images.length === 1
-                    ? 'overflow-hidden rounded-2xl border border-border'
-                    : 'grid grid-cols-3 gap-3'
-                }
-              >
-                {review.images.slice(0, 3).map((image) => {
-                  const isSingleImage = review.images && review.images.length === 1;
-                  return (
-                    <div
-                      key={`${review.id}-${image.url}`}
-                      className={
-                        isSingleImage
-                          ? undefined
-                          : 'overflow-hidden rounded-2xl border border-border'
-                      }
-                    >
-                      <Image
-                        src={image.url}
-                        alt={image.alt}
-                        width={640}
-                        height={400}
-                        className={`${isSingleImage ? 'h-64' : 'h-32'} w-full object-cover`}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
-            <div className="text-xs text-muted">
-              Visited{' '}
-              {new Date(review.visitDate).toLocaleDateString('en-US', {
-                month: 'long',
-                year: 'numeric',
-              })}
-            </div>
-          </article>
-        ))}
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-[3fr,2fr]">
-        <ReviewForm />
-        <section className="rounded-3xl border border-border bg-card p-6 text-sm shadow-sm">
-          <p className="font-semibold text-text">Ready to plan your bulldog match?</p>
-          <p className="mt-2 text-muted">
-            Share your wish list and we’ll send temperament videos, health records, and timing
-            guidance tailored to your household.
-          </p>
-          <div className="mt-4">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--btn-bg)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text)] transition hover:brightness-105"
-            >
-              Contact the team
-            </Link>
+        <div className="relative z-10 mx-auto mb-16 max-w-3xl text-center">
+          <div className="mb-3 text-xs font-bold uppercase tracking-widest text-orange-400">
+            Verified Reviews
           </div>
-        </section>
+          <h1 className="mb-6 text-4xl font-bold leading-tight md:text-6xl">
+            Families who chose <br />
+            <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
+              Exotic Bulldog Legacy
+            </span>
+          </h1>
+          <p className="text-lg text-slate-400">
+            From first kennel visits to flight nanny hand-offs, our team stays involved at every
+            step. These stories highlight the transparent experience we deliver.
+          </p>
+        </div>
+
+        {/* Stats Row */}
+        <div className="mx-auto mb-20 grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-3">
+          <StatCard
+            label="Average Rating"
+            value="5.0 / 5.0"
+            icon={<Star className="fill-orange-400" />}
+          />
+          <StatCard label="Happy Families" value="120+" icon={<CheckCircle2 />} />
+          <StatCard label="States Served" value="14" icon={<MapPin />} />
+        </div>
       </div>
-    </div>
+
+      {/* Reviews Grid (Masonry) */}
+      {publishedReviews.length > 0 ? (
+        <div className="mx-auto mb-32 max-w-7xl px-6 md:px-12">
+          <div className="columns-1 gap-6 space-y-6 md:columns-2 lg:columns-3">
+            {publishedReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mx-auto mb-32 max-w-7xl px-6 md:px-12">
+          <div className="rounded-3xl border border-dashed border-slate-700 bg-[#151e32] p-12 text-center">
+            <p className="mb-2 text-xl font-bold text-white">No reviews published yet</p>
+            <p className="text-slate-400">
+              Once we approve the first story it will appear here. Share your experience below!
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Leave a Review Form Section */}
+      <div className="relative mx-auto max-w-4xl px-6 md:px-12">
+        <ReviewForm />
+      </div>
+    </main>
   );
 }

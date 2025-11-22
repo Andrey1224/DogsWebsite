@@ -19,6 +19,10 @@ interface CreatePuppyPanelProps {
 }
 
 export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
+  const inputClasses =
+    'w-full rounded-xl border border-slate-700 bg-[#0B1120] px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-60';
+  const labelClasses = 'text-sm font-semibold text-white';
+
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const processedSuccessRef = useRef(false);
@@ -147,17 +151,21 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-[2rem] border border-slate-800/50 bg-[#1E293B]/60 p-6 shadow-2xl">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-text">Add new puppy</p>
-          <p className="text-xs text-muted">
-            Create a listing with name, status, price, and optional birth date.
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+            Quick add
+          </p>
+          <p className="text-xl font-semibold text-white">Draft a new listing</p>
+          <p className="text-xs text-slate-400">
+            Create a profile, upload gallery, and parent photos.
           </p>
         </div>
         <button
           type="button"
-          className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text transition hover:bg-hover"
+          aria-expanded={isOpen}
+          className="rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:from-orange-400 hover:to-orange-500"
           onClick={() => setIsOpen((value) => !value)}
         >
           {isOpen ? 'Close form' : 'Add puppy'}
@@ -172,7 +180,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
           className="mt-6 grid gap-4 md:grid-cols-2"
         >
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-text">
+            <label htmlFor="name" className={labelClasses}>
               Name
             </label>
             <input
@@ -182,15 +190,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               onChange={(event) => setName(event.target.value)}
               required
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('name') ? (
-              <p className="text-xs text-red-500">{fieldError('name')}</p>
+              <p className="text-xs text-red-400">{fieldError('name')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="slug" className="text-sm font-medium text-text">
+            <label htmlFor="slug" className={labelClasses}>
               Slug
             </label>
             <input
@@ -203,15 +211,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               }}
               disabled={pending}
               required
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('slug') ? (
-              <p className="text-xs text-red-500">{fieldError('slug')}</p>
+              <p className="text-xs text-red-400">{fieldError('slug')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="status" className="text-sm font-medium text-text">
+            <label htmlFor="status" className={labelClasses}>
               Status
             </label>
             <select
@@ -220,7 +228,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               value={status}
               onChange={(event) => setStatus(event.target.value)}
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={`${inputClasses} cursor-pointer`}
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -229,48 +237,48 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               ))}
             </select>
             {fieldError('status') ? (
-              <p className="text-xs text-red-500">{fieldError('status')}</p>
+              <p className="text-xs text-red-400">{fieldError('status')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="breed" className="text-sm font-medium text-text">
+            <label htmlFor="breed" className={labelClasses}>
               Breed
             </label>
             <select
               id="breed"
               name="breed"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={`${inputClasses} cursor-pointer`}
             >
               <option value="">Select breed</option>
               <option value="french_bulldog">French Bulldog</option>
               <option value="english_bulldog">English Bulldog</option>
             </select>
             {fieldError('breed') ? (
-              <p className="text-xs text-red-500">{fieldError('breed')}</p>
+              <p className="text-xs text-red-400">{fieldError('breed')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="sex" className="text-sm font-medium text-text">
+            <label htmlFor="sex" className={labelClasses}>
               Sex
             </label>
             <select
               id="sex"
               name="sex"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={`${inputClasses} cursor-pointer`}
             >
               <option value="">Select sex</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
-            {fieldError('sex') ? <p className="text-xs text-red-500">{fieldError('sex')}</p> : null}
+            {fieldError('sex') ? <p className="text-xs text-red-400">{fieldError('sex')}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="color" className="text-sm font-medium text-text">
+            <label htmlFor="color" className={labelClasses}>
               Color
             </label>
             <input
@@ -278,15 +286,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               name="color"
               placeholder="e.g., Fawn, Brindle, Blue"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('color') ? (
-              <p className="text-xs text-red-500">{fieldError('color')}</p>
+              <p className="text-xs text-red-400">{fieldError('color')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="priceUsd" className="text-sm font-medium text-text">
+            <label htmlFor="priceUsd" className={labelClasses}>
               Price (USD)
             </label>
             <input
@@ -297,15 +305,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               step="100"
               placeholder="4200"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('priceUsd') ? (
-              <p className="text-xs text-red-500">{fieldError('priceUsd')}</p>
+              <p className="text-xs text-red-400">{fieldError('priceUsd')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="birthDate" className="text-sm font-medium text-text">
+            <label htmlFor="birthDate" className={labelClasses}>
               Birth date
             </label>
             <input
@@ -313,15 +321,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               name="birthDate"
               type="date"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={`${inputClasses} cursor-pointer`}
             />
             {fieldError('birthDate') ? (
-              <p className="text-xs text-red-500">{fieldError('birthDate')}</p>
+              <p className="text-xs text-red-400">{fieldError('birthDate')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="weightOz" className="text-sm font-medium text-text">
+            <label htmlFor="weightOz" className={labelClasses}>
               Weight (oz)
             </label>
             <input
@@ -332,15 +340,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               step="1"
               placeholder="e.g., 12"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('weightOz') ? (
-              <p className="text-xs text-red-500">{fieldError('weightOz')}</p>
+              <p className="text-xs text-red-400">{fieldError('weightOz')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="sireName" className="text-sm font-medium text-text">
+            <label htmlFor="sireName" className={labelClasses}>
               Sire / Father Name (optional)
             </label>
             <input
@@ -348,15 +356,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               name="sireName"
               placeholder="e.g., Pierre, Sir Winston"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('sireName') ? (
-              <p className="text-xs text-red-500">{fieldError('sireName')}</p>
+              <p className="text-xs text-red-400">{fieldError('sireName')}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="damName" className="text-sm font-medium text-text">
+            <label htmlFor="damName" className={labelClasses}>
               Dam / Mother Name (optional)
             </label>
             <input
@@ -364,10 +372,10 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               name="damName"
               placeholder="e.g., Colette, Lady Clementine"
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className={inputClasses}
             />
             {fieldError('damName') ? (
-              <p className="text-xs text-red-500">{fieldError('damName')}</p>
+              <p className="text-xs text-red-400">{fieldError('damName')}</p>
             ) : null}
           </div>
 
@@ -382,7 +390,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               isUploading={isUploading}
             />
             {fieldError('photoUrls') ? (
-              <p className="text-xs text-red-500">{fieldError('photoUrls')}</p>
+              <p className="text-xs text-red-400">{fieldError('photoUrls')}</p>
             ) : null}
           </div>
 
@@ -407,7 +415,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
           </div>
 
           <div className="col-span-full space-y-2">
-            <label htmlFor="description" className="text-sm font-medium text-text">
+            <label htmlFor="description" className={labelClasses}>
               Description (optional)
             </label>
             <textarea
@@ -416,15 +424,15 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
               rows={4}
               placeholder="Enter puppy description, temperament, special features, etc."
               disabled={pending}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent resize-y"
+              className={`${inputClasses} resize-y`}
             />
             {fieldError('description') ? (
-              <p className="text-xs text-red-500">{fieldError('description')}</p>
+              <p className="text-xs text-red-400">{fieldError('description')}</p>
             ) : null}
           </div>
 
           {state.formError ? (
-            <div className="col-span-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <div className="col-span-full rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
               {state.formError}
             </div>
           ) : null}
@@ -433,7 +441,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
             <button
               type="submit"
               disabled={pending || isUploading}
-              className="rounded-lg bg-[color:var(--btn-bg,#0D1A44)] px-4 py-2 text-sm font-semibold text-[color:var(--btn-text,#FFFFFF)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:from-orange-400 hover:to-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isUploading ? 'Uploading photos...' : pending ? 'Saving...' : 'Create puppy'}
             </button>
@@ -443,7 +451,7 @@ export function CreatePuppyPanel({ statusOptions }: CreatePuppyPanelProps) {
                 if (pending) return;
                 setIsOpen(false);
               }}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text transition hover:bg-hover"
+              className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-800"
             >
               Cancel
             </button>

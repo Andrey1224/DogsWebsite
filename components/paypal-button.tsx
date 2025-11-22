@@ -12,6 +12,7 @@ interface PayPalButtonProps {
   clientId: string | null;
   puppySlug: string;
   disabled?: boolean;
+  buttonStyle?: PayPalButtonsComponentOptions['style'];
   onProcessingChange?: (isProcessing: boolean) => void;
   onError?: (message: string | null) => void;
   onSuccess?: (captureId?: string) => void;
@@ -21,6 +22,7 @@ export function PayPalButton({
   clientId,
   puppySlug,
   disabled = false,
+  buttonStyle,
   onProcessingChange,
   onError,
   onSuccess,
@@ -72,6 +74,8 @@ export function PayPalButton({
             color: 'gold',
             shape: 'pill',
             label: 'paypal',
+            height: 48,
+            ...(buttonStyle ?? {}),
           },
           createOrder: async () => {
             onError?.(null);
@@ -170,7 +174,7 @@ export function PayPalButton({
       paypalRef.current = null;
       buttonRef.current = null;
     };
-  }, [clientId, puppySlug, onError, onProcessingChange, onSuccess]);
+  }, [clientId, puppySlug, onError, onProcessingChange, onSuccess, buttonStyle]);
 
   return (
     <div className={`w-full ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
