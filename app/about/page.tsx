@@ -168,8 +168,8 @@ export default function AboutPage() {
           <div className="relative order-2 lg:order-1">
             <div className="aspect-square rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 transition-transform duration-500 hover:rotate-0">
               <Image
-                src="/about/puppy-play.webp"
-                alt="French Bulldog"
+                src="/about/french-bulldog-spotlight.jpg"
+                alt="French Bulldog puppy sitting on a bed"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -291,8 +291,8 @@ export default function AboutPage() {
           <div className="relative">
             <div className="aspect-square -rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-black/50 transition-transform duration-500 hover:rotate-0">
               <Image
-                src="/about/nursery.webp"
-                alt="English Bulldog"
+                src="/about/english-bulldog-spotlight.jpg"
+                alt="English Bulldog puppy running on grass"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
