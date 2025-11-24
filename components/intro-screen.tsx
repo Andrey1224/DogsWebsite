@@ -75,6 +75,7 @@ export function IntroScreen({ onComplete }: IntroScreenProps) {
       {/* Background (bright image) */}
       <div className="absolute inset-0 z-0">
         {/* Use native img to avoid remote host config; this is a cinematic backdrop */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80"
           alt="Puppy Hidden"
