@@ -56,7 +56,8 @@ test('submits contact inquiry with captcha bypass', async ({ page }) => {
 
   await page.getByRole('button', { name: /share my inquiry/i }).click();
 
-  await expect(page.locator('form').getByText(/Thanks for reaching out!/i)).toBeVisible({
+  // Dark variant shows "Inquiry Received!" and replaces the entire form
+  await expect(page.getByText(/Inquiry Received!/i)).toBeVisible({
     timeout: 15_000,
   });
 });
