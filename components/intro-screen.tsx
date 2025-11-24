@@ -2,6 +2,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import { ArrowRight, ChevronRight, PawPrint, Sparkles } from 'lucide-react';
 
 type IntroScreenProps = {
@@ -74,10 +75,13 @@ export function IntroScreen({ onComplete }: IntroScreenProps) {
     >
       {/* Background (bright image) */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80"
-          className="h-full w-full scale-105 object-cover animate-slowPanV2 filter brightness-110 contrast-125"
           alt="Puppy Hidden"
+          fill
+          priority
+          className="h-full w-full scale-105 object-cover animate-slowPanV2 filter brightness-110 contrast-125"
+          sizes="100vw"
         />
       </div>
 
