@@ -14,6 +14,7 @@ import {
 
 import { FaqAccordion } from '@/components/home/faq-accordion';
 import { FeaturedReviewsCarousel } from '@/components/home/featured-reviews';
+import { IntroShell } from '@/components/intro-shell';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getFeaturedReviews } from '@/lib/reviews/queries';
 import type { Review } from '@/lib/reviews/types';
@@ -98,20 +99,22 @@ function ActionLink({ href, children, variant = 'primary', className = '' }: Act
 
 export default function Home() {
   return (
-    <>
-      <link rel="preload" as="image" href="/hero/hero-1600.webp" type="image/webp" />
-      <link rel="preload" as="image" href="/hero/hero-1600.avif" type="image/avif" />
+    <IntroShell>
+      <>
+        <link rel="preload" as="image" href="/hero/hero-1600.webp" type="image/webp" />
+        <link rel="preload" as="image" href="/hero/hero-1600.avif" type="image/avif" />
 
-      <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
-        <HeroSection />
-        <FeaturesSection />
-        <FaqSection />
-        <Suspense fallback={null}>
-          <ReviewsSectionLoader />
-        </Suspense>
-        <CallToAction />
-      </main>
-    </>
+        <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
+          <HeroSection />
+          <FeaturesSection />
+          <FaqSection />
+          <Suspense fallback={null}>
+            <ReviewsSectionLoader />
+          </Suspense>
+          <CallToAction />
+        </main>
+      </>
+    </IntroShell>
   );
 }
 
@@ -156,7 +159,7 @@ function HeroSection() {
           <div className="relative overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-orange-900/20 transition-transform duration-700 hover:rotate-0 rotate-2">
             <div className="relative h-[500px] w-full">
               <Image
-                src="/hero/hero-1600.webp"
+                src="/hero/puppy-play.png"
                 alt="Healthy French and English bulldog puppies"
                 fill
                 priority
