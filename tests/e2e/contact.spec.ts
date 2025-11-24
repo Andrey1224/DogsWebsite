@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 test('filters puppies by status and breed', async ({ page }) => {
   await page.goto('/puppies');
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
 
   const statusSelect = page.getByLabel(/Status/i);
   await statusSelect.waitFor({ state: 'visible', timeout: 15_000 });
