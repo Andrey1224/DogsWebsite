@@ -48,7 +48,7 @@ test('submits contact inquiry with captcha bypass', async ({ page }) => {
 
   await page.getByLabel(/Your name/i).fill('Playwright Tester');
   const uniqueEmail = `playwright+${randomUUID()}@example.com`;
-  await page.getByLabel(/^Email$/i).fill(uniqueEmail);
+  await page.getByRole('textbox', { name: /Email/i }).fill(uniqueEmail);
   await page.getByLabel(/Phone/i).fill('+1 205 555 9999');
   await page
     .getByLabel(/How can we help\?/i)
