@@ -8,10 +8,14 @@ test('filters puppies by status and breed', async ({ page }) => {
   const statusSelect = page.getByLabel(/Status/i);
   await statusSelect.waitFor({ state: 'visible', timeout: 15_000 });
   await statusSelect.selectOption('available');
+  // Wait for URL to update after status selection (client-side routing with polling)
+  await expect.poll(async () => page.url(), { timeout: 5_000 }).toMatch(/status=available/);
 
   const breedSelect = page.getByLabel(/Breed/i);
   await breedSelect.waitFor({ state: 'visible', timeout: 15_000 });
   await breedSelect.selectOption('french_bulldog');
+  // Wait for URL to update after breed selection (client-side routing with polling)
+  await expect.poll(async () => page.url(), { timeout: 5_000 }).toMatch(/breed=french_bulldog/);
 
   await expect(breedSelect).toHaveValue('french_bulldog');
   await expect(page).toHaveURL(/breed=french_bulldog/);

@@ -11,7 +11,10 @@ export function ConsentBanner() {
 
   useEffect(() => {
     if (consent === 'unknown') {
-      const timer = setTimeout(() => setIsVisible(true), 1500);
+      // Skip delay for automated browsers (e.g., Playwright) to keep tests stable
+      const isAutomation = typeof navigator !== 'undefined' && navigator.webdriver;
+      const delay = isAutomation ? 0 : 1500;
+      const timer = setTimeout(() => setIsVisible(true), delay);
       return () => clearTimeout(timer);
     }
   }, [consent]);

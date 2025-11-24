@@ -13,7 +13,12 @@ async function getStoredConsent(page: Page) {
 
 async function acceptConsent(page: Page) {
   const button = consentButton(page);
-  if (!(await button.isVisible())) {
+
+  // Wait for button to be visible (with timeout for already-accepted case)
+  try {
+    await button.waitFor({ state: 'visible', timeout: 5_000 });
+  } catch {
+    // Button not visible within timeout, consent likely already granted
     return;
   }
 

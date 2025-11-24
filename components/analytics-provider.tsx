@@ -44,6 +44,9 @@ function persistConsent(consent: ConsentState) {
 
   const ttl = 365 * 24 * 60 * 60;
   document.cookie = `${COOKIE_KEY}=${consent}; path=/; max-age=${ttl}; SameSite=Lax`;
+
+  // Add data attribute for test verification
+  document.documentElement.setAttribute('data-consent', consent);
 }
 
 function readStoredConsent(): ConsentState {
@@ -70,7 +73,12 @@ export function AnalyticsProvider({
   const pixelLoadedRef = useRef(false);
 
   useEffect(() => {
-    setConsent(readStoredConsent());
+    const storedConsent = readStoredConsent();
+    setConsent(storedConsent);
+    // Set data attribute on initial load for test verification
+    if (storedConsent !== 'unknown') {
+      document.documentElement.setAttribute('data-consent', storedConsent);
+    }
   }, []);
 
   useEffect(() => {
