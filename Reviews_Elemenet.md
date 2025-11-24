@@ -46,6 +46,7 @@ setCurrentIndex((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
 };
 
 return (
+
 <div className="min-h-screen bg-[#1a2238] text-white py-20 overflow-hidden font-sans">
 <div className="max-w-6xl mx-auto px-4">
 
