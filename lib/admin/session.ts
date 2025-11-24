@@ -39,14 +39,10 @@ function decodeSession(token: string | undefined): AdminSessionPayload | null {
 
   if (!base || !signature) return null;
 
-  const expected = createHmac('sha256', secret).update(base).digest();
+  const expectedSignature = createHmac('sha256', secret).update(base).digest('base64url');
 
-  let provided: Buffer;
-  try {
-    provided = Buffer.from(signature, 'base64url');
-  } catch {
-    return null;
-  }
+  const expected = Buffer.from(expectedSignature);
+  const provided = Buffer.from(signature);
 
   if (expected.length !== provided.length) {
     return null;

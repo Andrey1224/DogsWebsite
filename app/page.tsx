@@ -101,8 +101,7 @@ export default function Home() {
   return (
     <IntroShell>
       <>
-        <link rel="preload" as="image" href="/hero/hero-1600.webp" type="image/webp" />
-        <link rel="preload" as="image" href="/hero/hero-1600.avif" type="image/avif" />
+        <link rel="preload" as="image" href="/hero/french-bulldog-hero.png" type="image/png" />
 
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
@@ -159,8 +158,8 @@ function HeroSection() {
           <div className="relative overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-orange-900/20 transition-transform duration-700 hover:rotate-0 rotate-2">
             <div className="relative h-[500px] w-full">
               <Image
-                src="/hero/puppy-play.png"
-                alt="Healthy French and English bulldog puppies"
+                src="/hero/french-bulldog-hero.png"
+                alt="Premium French Bulldog from Exotic Bulldog Legacy"
                 fill
                 priority
                 placeholder="blur"

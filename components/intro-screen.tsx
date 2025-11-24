@@ -119,8 +119,12 @@ export function IntroScreen({ onComplete }: IntroScreenProps) {
         <h1 className="text-5xl font-bold tracking-tight mb-3 drop-shadow-2xl text-white">
           Welcome Home
         </h1>
-        <p className="text-slate-200 text-base mb-12 leading-relaxed font-medium drop-shadow-md">
-          Reveal the legacy in the dark. <br /> Slide below to enter.
+        <p className="text-slate-200 text-base leading-relaxed font-medium drop-shadow-md">
+          “Happiness can be found, even in the darkest of times, if one only remembers to turn on
+          the light.”
+        </p>
+        <p className="text-slate-400 text-sm mb-12 leading-relaxed font-medium drop-shadow-md">
+          — Albus Dumbledore (Harry Potter)
         </p>
 
         <div
