@@ -15,6 +15,10 @@ import { BUSINESS_PROFILE } from '@/lib/config/business';
 
 const locationHours = BUSINESS_PROFILE.hours;
 const mapSrc = BUSINESS_PROFILE.mapEmbedUrl;
+const cityState = `${BUSINESS_PROFILE.address.addressLocality}, ${BUSINESS_PROFILE.address.addressRegion}`;
+const publicCityState = `${cityState} (by appointment)`;
+const phoneDisplay = CONTACT_DETAILS.phone.display;
+const phoneHref = `tel:${CONTACT_DETAILS.phone.e164}`;
 
 function formatTimeTo12Hour(value: string) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -180,22 +184,27 @@ export function SiteFooter() {
                 <MapPin size={20} />
               </div>
               <div>
-                <h4 className="font-bold text-white">
-                  {BUSINESS_PROFILE.address.addressLocality},{' '}
-                  {BUSINESS_PROFILE.address.addressRegion}
-                </h4>
-                <p className="mb-3 mt-1 text-xs text-slate-400">
-                  {BUSINESS_PROFILE.coordinates.latitude.toFixed(6)}°N{' '}
-                  {Math.abs(BUSINESS_PROFILE.coordinates.longitude).toFixed(6)}°W
+                <h4 className="font-bold text-white">Exotic Bulldog Legacy</h4>
+                <p className="mt-1 text-xs text-slate-300">{publicCityState}</p>
+                <p className="mt-2 text-xs text-slate-400">
+                  <Link href={phoneHref} className="font-semibold text-orange-300 hover:underline">
+                    Call: {phoneDisplay}
+                  </Link>
                 </p>
-                <Link
-                  href={BUSINESS_PROFILE.directionsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1 text-xs font-bold text-orange-400 hover:underline"
-                >
-                  Get Directions <Navigation size={10} />
-                </Link>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Street address shared after deposit for safety. Pickup in {cityState}; vetted
+                  delivery available.
+                </p>
+                <div className="mt-3 flex items-center gap-1 text-xs font-bold text-orange-400">
+                  <Link
+                    href={BUSINESS_PROFILE.directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 hover:underline"
+                  >
+                    Get directions to pickup <Navigation size={10} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

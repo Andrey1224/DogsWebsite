@@ -10,6 +10,8 @@ import {
   PlayCircle,
   Star,
   ShieldCheck,
+  CreditCard,
+  MapPin,
 } from 'lucide-react';
 
 import { FaqAccordion } from '@/components/home/faq-accordion';
@@ -20,9 +22,9 @@ import { getFeaturedReviews } from '@/lib/reviews/queries';
 import type { Review } from '@/lib/reviews/types';
 
 export const metadata = buildMetadata({
-  title: 'Premium Bulldog Breeder in Alabama | Exotic Bulldog Legacy',
+  title: 'Bulldog Puppies in Alabama | Exotic Bulldog Legacy',
   description:
-    'Discover French and English bulldog puppies raised with health-first standards, transparent pedigrees, and concierge ownership support in Montgomery, Alabama.',
+    'French and English bulldog puppies available in Alabama with secure deposits, Montgomery pickup, and vetted delivery options from Exotic Bulldog Legacy.',
   path: '/',
   image: 'https://images.exoticbulldog.dev/hero/english-bulldog.jpg',
 });
@@ -101,11 +103,12 @@ export default function Home() {
   return (
     <IntroShell>
       <>
-        <link rel="preload" as="image" href="/hero/french-bulldog-hero.png" type="image/png" />
+        <link rel="preload" as="image" href="/hero/french-bulldog-hero.webp" type="image/webp" />
 
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
           <FeaturesSection />
+          <LogisticsSection />
           <FaqSection />
           <Suspense fallback={null}>
             <ReviewsSectionLoader />
@@ -132,17 +135,18 @@ function HeroSection() {
         <div className="space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-orange-400">
             <Star size={12} className="fill-orange-400" />
-            Premium Breeder in Alabama
+            Bulldog puppies available in Alabama
           </div>
           <h1 className="text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl">
-            Trusted French &amp; English bulldogs, <br /> raised with{' '}
+            French &amp; English bulldog puppies <br /> available in{' '}
             <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-              southern warmth
+              Falkville, Alabama
             </span>
           </h1>
           <p className="max-w-lg text-lg leading-relaxed text-slate-400 md:text-xl">
-            Discover a curated catalog of champion-line bulldogs bred for health, temperament, and
-            lifelong companionship.
+            Reserve your puppy with a secure $300 deposit, then choose appointment pickup in
+            Falkville or vetted courier delivery. Health-first pedigrees and transparent updates at
+            every step.
           </p>
           <div className="flex flex-wrap gap-4">
             <ActionLink href="/puppies" variant="primary">
@@ -158,7 +162,7 @@ function HeroSection() {
           <div className="relative overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-orange-900/20 transition-transform duration-700 hover:rotate-0 rotate-2">
             <div className="relative h-[500px] w-full">
               <Image
-                src="/hero/french-bulldog-hero.png"
+                src="/hero/french-bulldog-hero.webp"
                 alt="Premium French Bulldog from Exotic Bulldog Legacy"
                 fill
                 priority
@@ -233,6 +237,105 @@ function FeaturesSection() {
   );
 }
 
+function LogisticsSection() {
+  return (
+    <section className="bg-[#0B1120] py-20">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 md:px-20 lg:grid-cols-2">
+        <div className="space-y-5">
+          <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-orange-400">
+            Reserve &amp; pickup made simple
+          </div>
+          <h2 className="text-3xl font-bold md:text-4xl">
+            How our puppy deposit and pickup options work
+          </h2>
+          <p className="text-lg leading-relaxed text-slate-400">
+            Every available puppy can be reserved instantly with a $300 deposit. We confirm your
+            match, lock availability, and guide you to pickup in Falkville, Alabama (by appointment)
+            or coordinate trusted delivery to your door. Prefer to meet first? Book a kennel visit
+            or video call before placing your deposit.
+          </p>
+          <div className="space-y-4 rounded-3xl border border-slate-800 bg-[#0f1629] p-6">
+            <div className="flex gap-4">
+              <div className="mt-1 rounded-xl bg-green-500/15 p-3 text-green-300">
+                <CreditCard size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Secure deposit</h3>
+                <p className="text-sm text-slate-400">
+                  Stripe or PayPal checkout marks your bulldog puppy as reserved immediately and we
+                  send the contract next.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="mt-1 rounded-xl bg-blue-500/15 p-3 text-blue-300">
+                <MapPin size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Pickup or delivery</h3>
+                <p className="text-sm text-slate-400">
+                  Meet us by appointment in Montgomery or request vetted courier/flight nanny
+                  delivery. We share transport quotes upfront.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 text-sm text-slate-400">
+              <CheckCircle2 size={18} className="text-orange-400" />
+              <span>
+                Health records, microchip, and post-pickup support included with every puppy.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6 rounded-[2rem] border border-slate-800 bg-gradient-to-b from-[#1a2333] to-[#0f1629] p-8 shadow-2xl">
+          <div className="rounded-2xl border border-slate-700/60 bg-[#0B1120]/60 p-6">
+            <p className="text-sm font-bold uppercase tracking-widest text-orange-400">
+              Quick steps to reserve
+            </p>
+            <ol className="mt-4 space-y-3 text-slate-300">
+              <li className="flex gap-3">
+                <span className="mt-0.5 text-xs font-bold text-orange-400">1</span>
+                <span>
+                  Browse{' '}
+                  <Link href="/puppies" className="text-orange-300 underline">
+                    available puppies
+                  </Link>{' '}
+                  and open a profile.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 text-xs font-bold text-orange-400">2</span>
+                <span>
+                  Select <strong>Reserve with Stripe or PayPal</strong> to place your $300 deposit.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 text-xs font-bold text-orange-400">3</span>
+                <span>Confirm pickup in Falkville, AL or request a delivery quote.</span>
+              </li>
+            </ol>
+          </div>
+          <div className="flex flex-col gap-3 rounded-2xl border border-orange-500/20 bg-orange-500/5 p-6 text-sm text-slate-200">
+            <div className="flex items-center gap-2 text-orange-300">
+              <ShieldCheck size={18} />
+              <span>Health guarantee + lifetime support on every placement.</span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <ActionLink href="/puppies" variant="primary">
+                View available puppies
+              </ActionLink>
+              <ActionLink href="/contact" variant="secondary">
+                Ask about delivery
+              </ActionLink>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FaqSection() {
   return (
     <section className="relative overflow-hidden bg-[#0B1120] py-24">
@@ -243,7 +346,9 @@ function FaqSection() {
           <p className="mb-3 text-sm font-bold uppercase tracking-wider text-orange-400">
             Quick Answers
           </p>
-          <h2 className="text-3xl font-bold md:text-4xl">Your questions, answered</h2>
+          <h2 className="text-3xl font-bold md:text-4xl">
+            Deposit, pickup, and puppy care questions answered
+          </h2>
         </div>
 
         <FaqAccordion faqs={faqs} />

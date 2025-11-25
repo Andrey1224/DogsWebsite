@@ -8,13 +8,13 @@ describe('Home', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: /trusted french & english bulldogs, raised with southern warmth/i,
+        name: /french & english bulldog puppies available in falkville, alabama/i,
       }),
     ).toBeInTheDocument();
 
     expect(screen.getByText(/akC pedigrees, OFA screenings/i)).toBeVisible();
     const primaryCtas = screen.getAllByRole('link', { name: /view available puppies/i });
-    expect(primaryCtas).toHaveLength(2);
+    expect(primaryCtas).toHaveLength(3);
     primaryCtas.forEach((cta) => expect(cta).toBeVisible());
   });
 });

@@ -5,7 +5,7 @@ test('home page highlights core pillars', async ({ page }) => {
 
   await expect(
     page.getByRole('heading', {
-      name: /trusted french & english bulldogs, raised with southern warmth/i,
+      name: /french & english bulldog puppies available in falkville, alabama/i,
     }),
   ).toBeVisible();
 
