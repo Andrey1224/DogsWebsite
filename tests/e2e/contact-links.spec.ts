@@ -1,15 +1,11 @@
 import { test, expect } from '@playwright/test';
 import './types';
+import { acceptConsent } from './helpers/consent';
 
 test.describe('Contact Links', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-
-    // Accept consent banner if visible
-    const accept = page.getByRole('button', { name: /accept & continue/i });
-    if (await accept.isVisible()) {
-      await accept.click();
-    }
+    await acceptConsent(page);
   });
 
   test('displays all 5 contact channels in ContactBar', async ({ page }) => {

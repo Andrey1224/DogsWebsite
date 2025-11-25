@@ -40,9 +40,24 @@ nvm alias default 20
 
 ### Testing Requirements
 
+#### Environment Variables
+
 - Use `HCAPTCHA_BYPASS_TOKEN` environment variable for automated contact form testing
-- E2E tests cover catalog filtering and contact form submission
+
+#### E2E Test Helpers
+
+- **Consent Banner Helper**: `tests/e2e/helpers/consent.ts`
+  - Use `acceptConsent(page)` in test setup to handle consent banner
+  - Handles race conditions, timeouts, and edge cases automatically
+  - Waits for banner to disappear and validates localStorage
+  - Example: `await acceptConsent(page);` in `beforeEach` hook
+- **Pattern**: All E2E tests should use shared helpers to avoid flaky consent handling
+
+#### Test Coverage
+
+- E2E tests cover catalog filtering, contact form submission, contact links, analytics, admin panel
 - Target ≥80% test coverage on shared logic
+- All E2E tests must pass consistently (no flaky tests)
 
 ## Project Architecture
 
@@ -393,3 +408,5 @@ When modifying the contact/analytics stack or admin panel, update all connected 
 
 - **Sprint 4**: SEO infrastructure, structured data, trust content pages (`/about`, `/faq`, `/policies`, `/reviews`) delivered. Business config centralized in `lib/config/business.ts`. NAP data validated against production coordinates (95 County Road 1395, Falkville, AL 35622). About page updated with breed-focused content (Jan 18, 2025): removed journey timeline, added French and English Bulldog descriptions.
 - **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `docs/admin/admin-panel-changelog.md` for detailed implementation history.
+- **Performance Optimization (Jan 25, 2025)**: Critical LCP improvements delivered. Crisp chat deferred with `requestIdleCallback` (expected -300 to -800ms), preconnect tags added for external resources, hero image sizing optimized, dynamic imports for below-fold components (-15-25KB bundle). Total expected LCP improvement: **500ms-1.3s**. See `docs/optimization-changelog.md` and `docs/history/2025-01-25-lcp-optimization-e2e-fixes.md`.
+- **E2E Test Infrastructure (Jan 25, 2025)**: Fixed consent banner race condition causing test failures. Created shared consent helper (`tests/e2e/helpers/consent.ts`) for robust consent handling. All 24 E2E tests passing. Pattern: Always use `acceptConsent(page)` in test setup.

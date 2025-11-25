@@ -1,5 +1,6 @@
 import type { ElementType, ReactNode } from 'react';
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -14,12 +15,29 @@ import {
   MapPin,
 } from 'lucide-react';
 
-import { FaqAccordion } from '@/components/home/faq-accordion';
-import { FeaturedReviewsCarousel } from '@/components/home/featured-reviews';
 import { IntroShell } from '@/components/intro-shell';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getFeaturedReviews } from '@/lib/reviews/queries';
 import type { Review } from '@/lib/reviews/types';
+
+// Dynamic imports for below-the-fold components to reduce initial bundle size
+// These components load in a separate chunk, improving Time to Interactive (TTI)
+const FaqAccordion = dynamic(
+  () => import('@/components/home/faq-accordion').then((mod) => ({ default: mod.FaqAccordion })),
+  {
+    loading: () => null,
+  },
+);
+
+const FeaturedReviewsCarousel = dynamic(
+  () =>
+    import('@/components/home/featured-reviews').then((mod) => ({
+      default: mod.FeaturedReviewsCarousel,
+    })),
+  {
+    loading: () => null,
+  },
+);
 
 export const metadata = buildMetadata({
   title: 'Bulldog Puppies in Alabama | Exotic Bulldog Legacy',
@@ -168,7 +186,7 @@ function HeroSection() {
                 priority
                 placeholder="blur"
                 blurDataURL={HERO_BLUR_DATA_URL}
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 60vw, 36rem"
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 32rem"
                 className="object-cover"
               />
             </div>

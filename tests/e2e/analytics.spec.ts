@@ -1,36 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import './types';
-
-const CONSENT_STORAGE_KEY = 'exoticbulldoglegacy-consent';
-
-function consentButton(page: Page) {
-  return page.getByRole('button', { name: /accept & continue/i }).first();
-}
-
-async function getStoredConsent(page: Page) {
-  return page.evaluate((key) => window.localStorage.getItem(key), CONSENT_STORAGE_KEY);
-}
-
-async function acceptConsent(page: Page) {
-  const button = consentButton(page);
-
-  // Wait for button to be visible (with timeout for already-accepted case)
-  try {
-    await button.waitFor({ state: 'visible', timeout: 5_000 });
-  } catch {
-    // Button not visible within timeout, consent likely already granted
-    return;
-  }
-
-  await button.click();
-  await expect(button).toBeHidden({ timeout: 15_000 });
-  await expect
-    .poll(async () => getStoredConsent(page), {
-      timeout: 15_000,
-      message: 'Consent should persist to localStorage',
-    })
-    .toBe('granted');
-}
+import { acceptConsent, getConsentButton, getStoredConsent } from './helpers/consent';
 
 test.describe('Analytics & Consent Management', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -42,7 +12,7 @@ test.describe('Analytics & Consent Management', () => {
   });
 
   test('shows consent banner on first visit', async ({ page }) => {
-    const consentBanner = consentButton(page);
+    const consentBanner = getConsentButton(page);
     await expect(consentBanner).toBeVisible();
   });
 
@@ -60,13 +30,13 @@ test.describe('Analytics & Consent Management', () => {
 
     // Navigate to different pages
     await page.goto('/puppies');
-    await expect(consentButton(page)).toBeHidden({ timeout: 15_000 });
+    await expect(getConsentButton(page)).toBeHidden({ timeout: 15_000 });
     await page.goto('/contact');
-    await expect(consentButton(page)).toBeHidden({ timeout: 15_000 });
+    await expect(getConsentButton(page)).toBeHidden({ timeout: 15_000 });
     await page.goto('/');
 
     // Consent banner should not reappear
-    await expect(consentButton(page)).toBeHidden({ timeout: 15_000 });
+    await expect(getConsentButton(page)).toBeHidden({ timeout: 15_000 });
   });
 
   test('analytics scripts do not load without consent', async ({ page }) => {

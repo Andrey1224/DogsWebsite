@@ -25,64 +25,71 @@ export function CrispChat() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!CRISP_WEBSITE_ID) {
-      return;
-    }
-
-    if (loadedRef.current) {
-      return;
-    }
+    if (!CRISP_WEBSITE_ID) return;
+    if (loadedRef.current) return;
 
     loadedRef.current = true;
 
+    // Setup Crisp queue BEFORE loading script
     type CrispCommand = [string, ...unknown[]];
     const crispQueue: CrispCommand[] = Array.isArray(window.$crisp) ? window.$crisp : [];
     window.$crisp = crispQueue;
+    window.CRISP_WEBSITE_ID = CRISP_WEBSITE_ID;
 
     const pushCommand = (...command: CrispCommand) => {
       window.$crisp?.push(command);
     };
-    window.CRISP_WEBSITE_ID = CRISP_WEBSITE_ID;
 
-    const script = injectScript();
+    // DEFERRED SCRIPT LOADING - key optimization for LCP
+    const loadCrispScript = () => {
+      const script = injectScript();
 
-    const welcomeMessage = CONTACT_COPY.crisp.welcome;
-    const offlineMessage = CONTACT_COPY.crisp.offline;
+      const welcomeMessage = CONTACT_COPY.crisp.welcome;
+      const offlineMessage = CONTACT_COPY.crisp.offline;
 
-    const sessionHandler = () => {
-      pushCommand('do', 'message:show', ['text', welcomeMessage]);
-      window.dispatchEvent(new CustomEvent('crisp:session', { detail: { status: 'ready' } }));
-    };
+      const sessionHandler = () => {
+        pushCommand('do', 'message:show', ['text', welcomeMessage]);
+        window.dispatchEvent(new CustomEvent('crisp:session', { detail: { status: 'ready' } }));
+      };
 
-    const availabilityHandler = (availability: 'online' | 'offline') => {
-      window.dispatchEvent(
-        new CustomEvent('crisp:availability', { detail: { status: availability } }),
-      );
-      if (availability === 'offline' && !availabilityNotifiedRef.current) {
-        availabilityNotifiedRef.current = true;
-        if (offlineMessage) {
-          const message = WHATSAPP_LINK ? `${offlineMessage} ${WHATSAPP_LINK}` : offlineMessage;
-          pushCommand('do', 'message:show', ['text', message]);
+      const availabilityHandler = (availability: 'online' | 'offline') => {
+        window.dispatchEvent(
+          new CustomEvent('crisp:availability', { detail: { status: availability } }),
+        );
+        if (availability === 'offline' && !availabilityNotifiedRef.current) {
+          availabilityNotifiedRef.current = true;
+          if (offlineMessage) {
+            const message = WHATSAPP_LINK ? `${offlineMessage} ${WHATSAPP_LINK}` : offlineMessage;
+            pushCommand('do', 'message:show', ['text', message]);
+          }
         }
-      }
+      };
+
+      const chatOpenedHandler = () => {
+        trackEvent('chat_open', { context_path: pathname });
+      };
+
+      pushCommand('on', 'session:loaded', sessionHandler);
+      pushCommand('on', 'website:availability:changed', availabilityHandler);
+      pushCommand('on', 'chat:opened', chatOpenedHandler);
+
+      return () => {
+        pushCommand('off', 'session:loaded', sessionHandler);
+        pushCommand('off', 'website:availability:changed', availabilityHandler);
+        pushCommand('off', 'chat:opened', chatOpenedHandler);
+        script.remove();
+      };
     };
 
-    const chatOpenedHandler = () => {
-      trackEvent('chat_open', {
-        context_path: pathname,
-      });
-    };
-
-    pushCommand('on', 'session:loaded', sessionHandler);
-    pushCommand('on', 'website:availability:changed', availabilityHandler);
-    pushCommand('on', 'chat:opened', chatOpenedHandler);
-
-    return () => {
-      pushCommand('off', 'session:loaded', sessionHandler);
-      pushCommand('off', 'website:availability:changed', availabilityHandler);
-      pushCommand('off', 'chat:opened', chatOpenedHandler);
-      script.remove();
-    };
+    // Use requestIdleCallback to defer script loading until browser is idle
+    // This removes Crisp from the critical rendering path, improving LCP
+    if ('requestIdleCallback' in window) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).requestIdleCallback(loadCrispScript, { timeout: 4000 });
+    } else {
+      // Fallback for Safari/older browsers
+      setTimeout(loadCrispScript, 4000);
+    }
   }, [pathname, trackEvent]);
 
   return null;
