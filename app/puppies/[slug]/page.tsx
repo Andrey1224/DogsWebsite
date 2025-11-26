@@ -87,8 +87,6 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   // Prioritize direct metadata fields over parent records
   const sireName = puppy.sire_name ?? puppy.parents?.sire?.name;
   const damName = puppy.dam_name ?? puppy.parents?.dam?.name;
-  const sireData = puppy.parents?.sire;
-  const damData = puppy.parents?.dam;
   const sirePhotos =
     puppy.sire_photo_urls && puppy.sire_photo_urls.length > 0
       ? puppy.sire_photo_urls

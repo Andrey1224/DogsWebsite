@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
+import { acceptConsent } from './helpers/consent';
 
 test('filters puppies by status and breed', async ({ page }) => {
   await page.goto('/puppies');
   await page.waitForLoadState('networkidle');
+  await acceptConsent(page);
 
   const statusSelect = page.getByLabel(/Status/i);
   await statusSelect.waitFor({ state: 'visible', timeout: 15_000 });
@@ -40,11 +42,7 @@ test('submits contact inquiry with captcha bypass', async ({ page }) => {
 
   await page.goto('/contact');
   await page.waitForLoadState('domcontentloaded');
-
-  const accept = page.getByRole('button', { name: /accept & continue/i });
-  if (await accept.isVisible()) {
-    await accept.click();
-  }
+  await acceptConsent(page);
 
   await page.getByLabel(/Your name/i).fill('Playwright Tester');
   const uniqueEmail = `playwright+${randomUUID()}@example.com`;
