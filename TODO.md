@@ -143,6 +143,7 @@ ChatGPT said:Thought for 34sОтлично, теперь всё, что надо
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 return (
+
 <html lang="en">
 <body>
 {/_ ... _/}
