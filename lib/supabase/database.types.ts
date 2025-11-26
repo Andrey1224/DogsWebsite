@@ -6,31 +6,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: '13.0.5';
   };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       inquiries: {
@@ -188,9 +163,13 @@ export type Database = {
           breed: string | null;
           color: string | null;
           created_at: string | null;
+          dam_color_notes: string | null;
+          dam_health_notes: string | null;
           dam_id: string | null;
           dam_name: string | null;
           dam_photo_urls: string[] | null;
+          dam_temperament_notes: string | null;
+          dam_weight_notes: string | null;
           description: string | null;
           id: string;
           is_archived: boolean;
@@ -200,9 +179,13 @@ export type Database = {
           photo_urls: string[] | null;
           price_usd: number | null;
           sex: string | null;
+          sire_color_notes: string | null;
+          sire_health_notes: string | null;
           sire_id: string | null;
           sire_name: string | null;
           sire_photo_urls: string[] | null;
+          sire_temperament_notes: string | null;
+          sire_weight_notes: string | null;
           slug: string | null;
           sold_at: string | null;
           status: string;
@@ -216,9 +199,13 @@ export type Database = {
           breed?: string | null;
           color?: string | null;
           created_at?: string | null;
+          dam_color_notes?: string | null;
+          dam_health_notes?: string | null;
           dam_id?: string | null;
           dam_name?: string | null;
           dam_photo_urls?: string[] | null;
+          dam_temperament_notes?: string | null;
+          dam_weight_notes?: string | null;
           description?: string | null;
           id?: string;
           is_archived?: boolean;
@@ -228,9 +215,13 @@ export type Database = {
           photo_urls?: string[] | null;
           price_usd?: number | null;
           sex?: string | null;
+          sire_color_notes?: string | null;
+          sire_health_notes?: string | null;
           sire_id?: string | null;
           sire_name?: string | null;
           sire_photo_urls?: string[] | null;
+          sire_temperament_notes?: string | null;
+          sire_weight_notes?: string | null;
           slug?: string | null;
           sold_at?: string | null;
           status?: string;
@@ -244,9 +235,13 @@ export type Database = {
           breed?: string | null;
           color?: string | null;
           created_at?: string | null;
+          dam_color_notes?: string | null;
+          dam_health_notes?: string | null;
           dam_id?: string | null;
           dam_name?: string | null;
           dam_photo_urls?: string[] | null;
+          dam_temperament_notes?: string | null;
+          dam_weight_notes?: string | null;
           description?: string | null;
           id?: string;
           is_archived?: boolean;
@@ -256,9 +251,13 @@ export type Database = {
           photo_urls?: string[] | null;
           price_usd?: number | null;
           sex?: string | null;
+          sire_color_notes?: string | null;
+          sire_health_notes?: string | null;
           sire_id?: string | null;
           sire_name?: string | null;
           sire_photo_urls?: string[] | null;
+          sire_temperament_notes?: string | null;
+          sire_weight_notes?: string | null;
           slug?: string | null;
           sold_at?: string | null;
           status?: string;
@@ -472,6 +471,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      archive_sold_puppies_after_30_days: { Args: never; Returns: number };
       create_reservation_transaction: {
         Args: {
           p_amount: number;
@@ -656,9 +656,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

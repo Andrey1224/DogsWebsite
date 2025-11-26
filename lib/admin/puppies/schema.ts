@@ -120,6 +120,23 @@ const breedSchema = z.preprocess(
   z.enum(['french_bulldog', 'english_bulldog']).optional(),
 );
 
+// Parent notes schemas with character limits
+const parentShortNoteSchema = z.preprocess((value) => {
+  if (value === null || typeof value === 'undefined') {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.string().max(200, 'Note must be 200 characters or fewer').optional());
+
+const parentLongNoteSchema = z.preprocess((value) => {
+  if (value === null || typeof value === 'undefined') {
+    return undefined;
+  }
+  const stringValue = String(value).trim();
+  return stringValue.length === 0 ? undefined : stringValue;
+}, z.string().max(500, 'Note must be 500 characters or fewer').optional());
+
 const photoUrlsSchema = z
   .array(z.string().url('Photo URL must be a valid URL'))
   .max(3, 'Select up to 3 photos')
@@ -141,6 +158,14 @@ export const createPuppySchema = z.object({
   weightOz: weightOzSchema,
   description: descriptionSchema,
   photoUrls: photoUrlsSchema,
+  sireWeightNotes: parentShortNoteSchema,
+  sireColorNotes: parentShortNoteSchema,
+  sireHealthNotes: parentShortNoteSchema,
+  sireTemperamentNotes: parentLongNoteSchema,
+  damWeightNotes: parentShortNoteSchema,
+  damColorNotes: parentShortNoteSchema,
+  damHealthNotes: parentShortNoteSchema,
+  damTemperamentNotes: parentLongNoteSchema,
 });
 
 export const updatePuppyStatusSchema = z.object({
@@ -195,6 +220,14 @@ export const updatePuppySchema = z.object({
   videoUrls: z.array(z.string().url()).max(2).optional().nullable(),
   stripePaymentLink: z.string().url().optional().nullable(),
   paypalEnabled: z.boolean().optional().nullable(),
+  sireWeightNotes: z.string().max(200).optional().nullable(),
+  sireColorNotes: z.string().max(200).optional().nullable(),
+  sireHealthNotes: z.string().max(200).optional().nullable(),
+  sireTemperamentNotes: z.string().max(500).optional().nullable(),
+  damWeightNotes: z.string().max(200).optional().nullable(),
+  damColorNotes: z.string().max(200).optional().nullable(),
+  damHealthNotes: z.string().max(200).optional().nullable(),
+  damTemperamentNotes: z.string().max(500).optional().nullable(),
 });
 
 export type CreatePuppyInput = z.infer<typeof createPuppySchema>;

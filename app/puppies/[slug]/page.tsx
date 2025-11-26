@@ -113,24 +113,45 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://exoticbulldoglegacy.com';
   const shareUrl = `${siteUrl}/puppies/${slug}`;
 
-  const buildParentStats = (parent: typeof sireData) => {
-    const weight = parent?.weight_lbs ? `${parent.weight_lbs} lbs` : 'Contact for details';
-    const color = parent?.color ?? 'Contact for details';
-    const health = parent?.health_clearances?.length
-      ? parent.health_clearances.join(', ')
-      : 'Health tested';
+  // Direct puppy field access (no parent table fallback)
+  const sireStats = [
+    {
+      label: 'Weight',
+      value: puppy.sire_weight_notes || 'Contact for details',
+      icon: Weight,
+    },
+    {
+      label: 'Color',
+      value: puppy.sire_color_notes || 'Contact for details',
+      icon: Star,
+    },
+    {
+      label: 'Health',
+      value: puppy.sire_health_notes || 'Health tested',
+      icon: Activity,
+    },
+  ];
 
-    return [
-      { label: 'Weight', value: weight, icon: Weight },
-      { label: 'Color', value: color, icon: Star },
-      { label: 'Health', value: health, icon: Activity },
-    ];
-  };
+  const damStats = [
+    {
+      label: 'Weight',
+      value: puppy.dam_weight_notes || 'Contact for details',
+      icon: Weight,
+    },
+    {
+      label: 'Color',
+      value: puppy.dam_color_notes || 'Contact for details',
+      icon: Star,
+    },
+    {
+      label: 'Health',
+      value: puppy.dam_health_notes || 'Health tested',
+      icon: Activity,
+    },
+  ];
 
-  const sireStats = buildParentStats(sireData);
-  const damStats = buildParentStats(damData);
-  const sireQuote = sireData?.description ?? 'Temperament notes coming soon.';
-  const damQuote = damData?.description ?? 'Temperament notes coming soon.';
+  const sireQuote = puppy.sire_temperament_notes || 'Temperament notes coming soon.';
+  const damQuote = puppy.dam_temperament_notes || 'Temperament notes coming soon.';
 
   return (
     <div className="min-h-screen bg-[#0B1120] pb-20 pt-24 font-sans text-white">
@@ -239,7 +260,6 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
               role="sire"
               name={sireName}
               photoUrl={sirePhotos?.[0] ?? null}
-              title="Grand Champion"
               stats={sireStats}
               quote={sireQuote}
             />
@@ -251,7 +271,6 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
               role="dam"
               name={damName}
               photoUrl={damPhotos?.[0] ?? null}
-              title="International Lineage"
               stats={damStats}
               quote={damQuote}
             />

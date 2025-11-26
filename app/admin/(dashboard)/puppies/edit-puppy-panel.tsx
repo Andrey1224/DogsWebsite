@@ -43,6 +43,16 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
   const [sireName, setSireName] = useState('');
   const [damName, setDamName] = useState('');
 
+  // Parent notes state
+  const [sireWeightNotes, setSireWeightNotes] = useState('');
+  const [sireColorNotes, setSireColorNotes] = useState('');
+  const [sireHealthNotes, setSireHealthNotes] = useState('');
+  const [sireTemperamentNotes, setSireTemperamentNotes] = useState('');
+  const [damWeightNotes, setDamWeightNotes] = useState('');
+  const [damColorNotes, setDamColorNotes] = useState('');
+  const [damHealthNotes, setDamHealthNotes] = useState('');
+  const [damTemperamentNotes, setDamTemperamentNotes] = useState('');
+
   // File upload state
   const { uploadFiles, isUploading } = useMediaUpload();
 
@@ -111,6 +121,16 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
         setDescription(puppy.description || '');
         setSireName(puppy.sire_name || '');
         setDamName(puppy.dam_name || '');
+
+        // Load parent notes
+        setSireWeightNotes(puppy.sire_weight_notes || '');
+        setSireColorNotes(puppy.sire_color_notes || '');
+        setSireHealthNotes(puppy.sire_health_notes || '');
+        setSireTemperamentNotes(puppy.sire_temperament_notes || '');
+        setDamWeightNotes(puppy.dam_weight_notes || '');
+        setDamColorNotes(puppy.dam_color_notes || '');
+        setDamHealthNotes(puppy.dam_health_notes || '');
+        setDamTemperamentNotes(puppy.dam_temperament_notes || '');
 
         // Set existing photos
         setExistingSirePhotoUrls(puppy.sire_photo_urls || []);
@@ -591,6 +611,166 @@ export function EditPuppyPanel({ puppyId, statusOptions, onClose }: EditPuppyPan
                 disabled={busy}
                 isUploading={isUploading}
               />
+            </div>
+          </div>
+
+          {/* Sire Notes Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white">Sire / Father Details</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="sireWeightNotes" className={labelClasses}>
+                  Weight Notes (optional)
+                </label>
+                <input
+                  id="sireWeightNotes"
+                  name="sireWeightNotes"
+                  type="text"
+                  maxLength={200}
+                  value={sireWeightNotes}
+                  onChange={(e) => setSireWeightNotes(e.target.value)}
+                  placeholder="e.g., 28 lbs, compact build"
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">{sireWeightNotes.length}/200 characters</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="sireColorNotes" className={labelClasses}>
+                  Color Notes (optional)
+                </label>
+                <input
+                  id="sireColorNotes"
+                  name="sireColorNotes"
+                  type="text"
+                  maxLength={200}
+                  value={sireColorNotes}
+                  onChange={(e) => setSireColorNotes(e.target.value)}
+                  placeholder="e.g., Blue fawn with black mask"
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">{sireColorNotes.length}/200 characters</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="sireHealthNotes" className={labelClasses}>
+                  Health Notes (optional)
+                </label>
+                <input
+                  id="sireHealthNotes"
+                  name="sireHealthNotes"
+                  type="text"
+                  maxLength={200}
+                  value={sireHealthNotes}
+                  onChange={(e) => setSireHealthNotes(e.target.value)}
+                  placeholder="e.g., OFA hips, heart tested"
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">{sireHealthNotes.length}/200 characters</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="sireTemperamentNotes" className={labelClasses}>
+                  Temperament Notes (optional)
+                </label>
+                <textarea
+                  id="sireTemperamentNotes"
+                  name="sireTemperamentNotes"
+                  maxLength={500}
+                  rows={3}
+                  value={sireTemperamentNotes}
+                  onChange={(e) => setSireTemperamentNotes(e.target.value)}
+                  placeholder="e.g., Calm, affectionate, great with kids..."
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">
+                  {sireTemperamentNotes.length}/500 characters
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Dam Notes Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white">Dam / Mother Details</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="damWeightNotes" className={labelClasses}>
+                  Weight Notes (optional)
+                </label>
+                <input
+                  id="damWeightNotes"
+                  name="damWeightNotes"
+                  type="text"
+                  maxLength={200}
+                  value={damWeightNotes}
+                  onChange={(e) => setDamWeightNotes(e.target.value)}
+                  placeholder="e.g., 24 lbs, petite frame"
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">{damWeightNotes.length}/200 characters</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="damColorNotes" className={labelClasses}>
+                  Color Notes (optional)
+                </label>
+                <input
+                  id="damColorNotes"
+                  name="damColorNotes"
+                  type="text"
+                  maxLength={200}
+                  value={damColorNotes}
+                  onChange={(e) => setDamColorNotes(e.target.value)}
+                  placeholder="e.g., Cream with dark points"
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">{damColorNotes.length}/200 characters</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="damHealthNotes" className={labelClasses}>
+                  Health Notes (optional)
+                </label>
+                <input
+                  id="damHealthNotes"
+                  name="damHealthNotes"
+                  type="text"
+                  maxLength={200}
+                  value={damHealthNotes}
+                  onChange={(e) => setDamHealthNotes(e.target.value)}
+                  placeholder="e.g., DNA health tested clear"
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">{damHealthNotes.length}/200 characters</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="damTemperamentNotes" className={labelClasses}>
+                  Temperament Notes (optional)
+                </label>
+                <textarea
+                  id="damTemperamentNotes"
+                  name="damTemperamentNotes"
+                  maxLength={500}
+                  rows={3}
+                  value={damTemperamentNotes}
+                  onChange={(e) => setDamTemperamentNotes(e.target.value)}
+                  placeholder="e.g., Sweet, playful, excellent mother..."
+                  disabled={busy}
+                  className={inputClasses}
+                />
+                <p className="text-xs text-slate-500">
+                  {damTemperamentNotes.length}/500 characters
+                </p>
+              </div>
             </div>
           </div>
         </section>

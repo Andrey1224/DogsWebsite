@@ -10,16 +10,7 @@ type IntroShellProps = {
 };
 
 export function IntroShell({ children }: IntroShellProps) {
-  // Avoid flashing intro if already seen; skip entirely for automated browsers
-  const [showIntro, setShowIntro] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    const isAutomation = typeof navigator !== 'undefined' && navigator.webdriver;
-    if (isAutomation) {
-      sessionStorage.setItem('ebl_intro_complete', 'true');
-      return false;
-    }
-    return !sessionStorage.getItem('ebl_intro_complete');
-  });
+  const [showIntro, setShowIntro] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -33,7 +24,7 @@ export function IntroShell({ children }: IntroShellProps) {
     }
 
     const hasSeen = sessionStorage.getItem('ebl_intro_complete');
-    if (!hasSeen) setShowIntro(true);
+    setShowIntro(!hasSeen);
   }, []);
 
   useEffect(() => {
