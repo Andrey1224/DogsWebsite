@@ -1,26 +1,34 @@
 # SEO Progress Log
 
-Date: 2025-02-04
+Date: 2025-02-10
 
 ## Snapshot
 
-- Audit focus: page weight (images), titles/H1 keywords for "bulldog puppies"/"available", local NAP visibility, analytics/pixel wiring, inline styles/iframes, backlinks/social.
-- Media hotspots addressed: hero/about originals were multi-MB; converted to WebP/AVIF (hero ~205KB, about spotlights ~218KB/~96KB).
+- Focus: LCP/Speed Index on mobile, image weight, below-the-fold JS, Crisp loading, preconnects, schema/NAP completeness.
+- Media hotspots addressed: hero/about already WebP/AVIF (hero ~205 KB); kept compression targets ≤400 KB.
 
 ## Task Tracker
 
-- [x] Review audit + identify heavy assets and SEO gaps.
+- [x] Review audit + confirm heavy assets/SEO gaps.
 - [x] Update home metadata/H1/H2 to emphasize available bulldog puppies, deposits, pickup/delivery.
 - [x] Add visible NAP block (name, address, phone) aligned with LocalBusiness schema.
 - [x] Wire/verify analytics env values (GA4/Meta Pixel) via existing `AnalyticsProvider`.
 - [x] Optimize large images to WebP/AVIF and swap hero/spotlight sources to compressed variants.
-- [x] Re-run quick manual checks (lint clean; awaiting Lighthouse/PSI after deploy/refresh).
+- [x] Dynamic-import below-the-fold blocks (FAQ, Reviews), defer Crisp via idle + client-only loader.
+- [x] Remove redundant hero preload; confirm preconnects (crisp, transparenttextures).
+- [x] Re-run Lighthouse/PSI (mobile) after deploy refresh.
 
-## Updates (2025-02-04)
+## Updates (2025-02-10)
 
-- Home page: metadata title/description now emphasize bulldog puppies in Alabama, deposit/pickup options; added logistics section (deposit + pickup/delivery) with keyworded H2 and CTAs; FAQ headline mentions deposit/pickup.
-- Footer: map overlay now shows name + city/state (keeps street private for visitors) with tel link; LocalBusiness schema still uses full address from env for SEO.
-- Images: ran `npm run optimize-images`; swapped hero image to `/hero/french-bulldog-hero.webp`; about spotlights now use compressed `.webp` versions.
-- Analytics: set `NEXT_PUBLIC_GA_MEASUREMENT_ID` and `META_PIXEL_ID` in `.env.local`; activation via consent + `AnalyticsProvider`.
-- Logistics copy now notes you can schedule a visit/video call before placing a deposit.
-- Next: optional PSI/Lighthouse run against deployed build once updated; verify map pin reflects Falkville coordinates.
+- Dynamic imports: `FaqAccordion`, `FeaturedReviewsCarousel`, Crisp loader moved client-only; initial bundle trimmed by ~100–200 KB JS.
+- Hero: kept `priority` `next/image` with `fill`/`sizes`; removed manual `<link rel="preload">` to rely on Next preload; blur placeholder intact.
+- Preconnects verified: `client.crisp.chat`, `transparenttextures.com` in `<head>`.
+- Performance (PageSpeed mobile): 84 → 90; LCP 4.1s → 3.3s; Speed Index 4.5s → 1.7s; TBT/CLS unchanged good; SEO 100.
+- Analytics: GA4 + Meta Pixel live with consent gating; server-side GA4 still gated on `GA4_API_SECRET` if/when provided.
+- SEO structure: title/H1/H2/CTA aligned to “bulldog puppies / available / deposit / pickup”; NAP + LocalBusiness/Organization/Product/FAQ JSON-LD intact.
+- Images: WebP/AVIF compression maintained; no oversized assets on hero/about.
+
+## Next (optional)
+
+- Infra: add `GA4_API_SECRET`/`META_CONVERSION_API_TOKEN` when ready for server-side events; add SPF TXT in DNS (out of repo) for mail.
+- Perf (nice-to-have): tune browserslist to drop legacy polyfills (~12 KB), consider AVIF everywhere and critical CSS only if chasing 95–98 score.

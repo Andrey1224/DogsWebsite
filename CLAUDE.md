@@ -350,6 +350,9 @@ Track these events via `useAnalytics().trackEvent`:
 - **Performance Optimizations**:
   - **Font Loading**: Google Fonts use `display: 'swap'` to prevent FOIT (Flash of Invisible Text)
   - **Code Splitting**: PayPal button dynamically imported to reduce initial bundle size
+  - **Dynamic Imports**: Use `next/dynamic` for below-fold components (FAQ, reviews carousel). **CRITICAL**: Do NOT use `ssr: false` option in Server Components (Next.js 15 restriction). Components are SSR'd by default for better SEO.
+  - **Crisp Chat**: Deferred loading with `requestIdleCallback` API (4s timeout fallback for Safari) removes 3rd-party script from critical rendering path
+  - **Resource Hints**: Preconnect tags for external domains (`client.crisp.chat`, `transparenttextures.com`) reduce DNS/TLS handshake latency
   - **Accessibility**: Removed duplicate `<header>` landmarks from content pages (Contact, FAQ, Policies, Reviews)
   - Lighthouse targets: ≥90 for SEO, Accessibility, Performance
   - Core Web Vitals: LCP ≤2.5s, CLS ≤0.1, INP ≤200ms
