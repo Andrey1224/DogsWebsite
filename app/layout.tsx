@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { AnalyticsProvider } from '@/components/analytics-provider';
 import { ContactBar } from '@/components/contact-bar';
 import { ConsentBanner } from '@/components/consent-banner';
-import { CrispChat } from '@/components/crisp-chat';
+import { CrispChatLoader } from '@/components/crisp-chat-loader';
 import { JsonLd } from '@/components/json-ld';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
@@ -102,7 +102,7 @@ export default function RootLayout({
               <SiteFooter />
             </div>
             <ContactBar />
-            <CrispChat />
+            <CrispChatLoader />
             <ConsentBanner />
           </AnalyticsProvider>
         </ThemeProvider>

@@ -121,8 +121,6 @@ export default function Home() {
   return (
     <IntroShell>
       <>
-        <link rel="preload" as="image" href="/hero/french-bulldog-hero.webp" type="image/webp" />
-
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
           <FeaturesSection />
