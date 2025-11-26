@@ -118,12 +118,40 @@ export async function fetchAdminPuppies(
     return normalizedRows;
   }
 
-  const rowsWithState = await Promise.all(
-    normalizedRows.map(async (row) => ({
-      ...row,
-      has_active_reservation: await hasActiveReservations(row.id),
-    })),
-  );
+  // Early return if no puppies
+  if (normalizedRows.length === 0) {
+    return [];
+  }
+
+  // Batch query all reservations for these puppies in one round-trip
+  const { data: reservationData } = await supabase
+    .from('reservations')
+    .select('puppy_id, status, expires_at')
+    .in(
+      'puppy_id',
+      normalizedRows.map((row) => row.id),
+    )
+    .in('status', ['pending', 'paid']);
+
+  // Build lookup map for O(1) access
+  const now = new Date();
+  const reservationMap = new Map<string, boolean>();
+
+  if (reservationData) {
+    for (const reservation of reservationData) {
+      // Only count as active if not expired
+      const isExpired = reservation.expires_at && new Date(reservation.expires_at) < now;
+      if (!isExpired) {
+        reservationMap.set(reservation.puppy_id, true);
+      }
+    }
+  }
+
+  // Map results in single pass (O(n) instead of O(n²))
+  const rowsWithState = normalizedRows.map((row) => ({
+    ...row,
+    has_active_reservation: reservationMap.get(row.id) ?? false,
+  }));
 
   return rowsWithState;
 }
