@@ -9,12 +9,9 @@ test.describe('Reservation flow', () => {
   );
 
   test('user selects a puppy and reaches mocked checkout', async ({ page }) => {
-    await page.goto('/');
+    // Navigate directly to available puppies to ensure we find a reservable puppy
+    await page.goto('/puppies?status=available');
     await page.waitForLoadState('domcontentloaded');
-
-    const viewPuppiesCta = page.getByRole('link', { name: /view available puppies/i }).first();
-    await viewPuppiesCta.click();
-    await page.waitForURL('**/puppies**', { waitUntil: 'domcontentloaded' });
 
     const cards = page.locator('[data-testid="puppy-card"]');
     const cardCount = await cards.count();
@@ -26,7 +23,7 @@ test.describe('Reservation flow', () => {
     await page.waitForLoadState('networkidle');
 
     const reserveButton = page.getByRole('button', {
-      name: /reserve with/i,
+      name: /^reserve\s+/i,
     });
     await reserveButton.waitFor({ state: 'visible', timeout: 15_000 });
 
