@@ -19,7 +19,10 @@ type PuppyCardProps = {
 };
 
 export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
-  const coverImage = resolveLocalImage(puppy.photo_urls?.[0], '/reviews/mark-lisa-duke.webp');
+  const coverImage = resolveLocalImage(
+    puppy.photo_urls?.[0],
+    '/images/reviews/mark-lisa-duke.webp',
+  );
   const statusClass =
     statusStyles[puppy.status] ?? 'bg-slate-500/20 text-slate-400 border-slate-500/30';
 
@@ -75,10 +78,10 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
           <div className="absolute bottom-4 right-4 translate-y-12 transition-transform duration-300 group-hover:translate-y-0">
             <Link
               href={`/puppies/${puppy.slug}`}
-              className="flex items-center justify-center rounded-full bg-white p-3 text-black shadow-lg transition-colors hover:bg-orange-400 hover:text-white"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white shadow-lg shadow-black/30 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-orange-400/60 hover:text-orange-300"
               aria-label={`View details for ${puppy.name}`}
             >
-              <ArrowUpRight size={20} />
+              <ArrowUpRight size={18} />
             </Link>
           </div>
         )}

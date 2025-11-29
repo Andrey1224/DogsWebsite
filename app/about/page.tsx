@@ -114,7 +114,7 @@ export default function AboutPage() {
             <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-r from-orange-500 to-purple-600 opacity-20 blur-2xl" />
             <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] border border-slate-700/50 shadow-2xl">
               <Image
-                src="/about/family-bulldogs.webp"
+                src="/images/about/family-bulldogs.webp"
                 alt="Breeder holding puppy"
                 fill
                 className="object-cover transition-transform duration-700 hover:scale-105"
@@ -168,7 +168,7 @@ export default function AboutPage() {
           <div className="relative order-2 lg:order-1">
             <div className="aspect-square rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 transition-transform duration-500 hover:rotate-0">
               <Image
-                src="/about/french-bulldog-spotlight.webp"
+                src="/images/about/french-bulldog-spotlight.webp"
                 alt="French Bulldog puppy sitting on a bed"
                 fill
                 className="object-cover"
@@ -291,7 +291,7 @@ export default function AboutPage() {
           <div className="relative">
             <div className="aspect-square -rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-black/50 transition-transform duration-500 hover:rotate-0">
               <Image
-                src="/about/english-bulldog-spotlight.webp"
+                src="/images/about/english-bulldog-spotlight.webp"
                 alt="English Bulldog puppy running on grass"
                 fill
                 className="object-cover"

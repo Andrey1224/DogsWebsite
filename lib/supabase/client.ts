@@ -17,11 +17,11 @@ export function createSupabaseClient() {
 
 export function createServiceRoleClient() {
   const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE;
 
   if (!url || !serviceKey) {
     throw new Error(
-      'Supabase service role client misconfigured: SUPABASE_URL or SUPABASE_SERVICE_ROLE missing',
+      'Supabase service role client misconfigured: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing',
     );
   }
 

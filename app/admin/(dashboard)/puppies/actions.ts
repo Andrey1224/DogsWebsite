@@ -238,11 +238,20 @@ export async function updatePuppyAction(
     const emptyToNull = (value: FormDataEntryValue | null) =>
       typeof value === 'string' && value.trim() === '' ? null : value;
 
+    // Helper to convert string to number or null
+    const toNumberOrNull = (value: FormDataEntryValue | null) => {
+      if (value === null || (typeof value === 'string' && value.trim() === '')) {
+        return null;
+      }
+      const num = Number(value);
+      return isNaN(num) ? null : num;
+    };
+
     const submission = {
       id: puppyId,
       name: formData.get('name'),
       status: formData.get('status'),
-      priceUsd: formData.get('priceUsd'),
+      priceUsd: toNumberOrNull(formData.get('priceUsd')),
       birthDate: formData.get('birthDate'),
       breed: formData.get('breed'),
       sireId: formData.get('sireId'),
@@ -251,7 +260,7 @@ export async function updatePuppyAction(
       damName: formData.get('damName'),
       sex: formData.get('sex'),
       color: formData.get('color'),
-      weightOz: emptyToNull(formData.get('weightOz')),
+      weightOz: toNumberOrNull(formData.get('weightOz')),
       description: emptyToNull(formData.get('description')),
       stripePaymentLink: formData.get('stripePaymentLink'),
       paypalEnabled: formData.get('paypalEnabled'),
@@ -259,6 +268,14 @@ export async function updatePuppyAction(
       sirePhotoUrls: sirePhotoUrls.length > 0 ? sirePhotoUrls : undefined,
       damPhotoUrls: damPhotoUrls.length > 0 ? damPhotoUrls : undefined,
       videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
+      sireWeightNotes: formData.get('sireWeightNotes'),
+      sireColorNotes: formData.get('sireColorNotes'),
+      sireHealthNotes: formData.get('sireHealthNotes'),
+      sireTemperamentNotes: formData.get('sireTemperamentNotes'),
+      damWeightNotes: formData.get('damWeightNotes'),
+      damColorNotes: formData.get('damColorNotes'),
+      damHealthNotes: formData.get('damHealthNotes'),
+      damTemperamentNotes: formData.get('damTemperamentNotes'),
     };
 
     const parsed = updatePuppySchema.safeParse(submission);

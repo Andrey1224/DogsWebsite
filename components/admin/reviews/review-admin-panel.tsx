@@ -1,12 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import type { Review, ReviewSource } from '@/lib/reviews/types';
+import {
+  updateReviewStatusAction,
+  updateReviewFeaturedAction,
+  deleteReviewAction,
+  updateReviewAction,
+} from '@/app/admin/(dashboard)/reviews/actions';
 
 const sourceLabels: Record<ReviewSource, string> = {
   manual: 'EBL Family',
   facebook_manual: 'Facebook',
+  form: 'Form',
 };
 
 type EditorMode = 'create' | 'edit';
@@ -24,7 +31,7 @@ type ReviewEditorForm = {
   body: string;
   headline: string;
   visitDate: string;
-  photoUrl: string;
+  photoUrls: string[];
   sourceUrl: string;
   source: ReviewSource;
   isPublished: boolean;
@@ -44,7 +51,7 @@ function buildDefaultForm(mode: EditorMode, review?: Review): ReviewEditorForm {
       body: review.body,
       headline: review.headline ?? '',
       visitDate: review.visitDate ?? '',
-      photoUrl: review.photoUrl ?? '',
+      photoUrls: review.photoUrls ?? [],
       sourceUrl: review.sourceUrl ?? '',
       source: review.source,
       isPublished: review.isPublished,
@@ -59,7 +66,7 @@ function buildDefaultForm(mode: EditorMode, review?: Review): ReviewEditorForm {
     body: '',
     headline: '',
     visitDate: '',
-    photoUrl: '',
+    photoUrls: [],
     sourceUrl: '',
     source: 'facebook_manual',
     isPublished: true,
@@ -80,7 +87,10 @@ function ReviewEditor({
 }) {
   const [form, setForm] = useState<ReviewEditorForm>(buildDefaultForm(mode, review));
 
-  const handleChange = (key: keyof ReviewEditorForm, value: string | number | boolean) => {
+  const handleChange = (
+    key: keyof ReviewEditorForm,
+    value: string | number | boolean | string[],
+  ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -199,12 +209,20 @@ function ReviewEditor({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold text-slate-200">Photo URL (optional)</label>
-              <input
-                value={form.photoUrl}
-                onChange={(e) => handleChange('photoUrl', e.target.value)}
+              <label className="text-sm font-semibold text-slate-200">
+                Photo URLs (optional, one per line)
+              </label>
+              <textarea
+                value={form.photoUrls.join('\n')}
+                onChange={(e) =>
+                  handleChange(
+                    'photoUrls',
+                    e.target.value.split('\n').filter((url) => url.trim()),
+                  )
+                }
+                rows={3}
                 className="mt-2 w-full rounded-2xl border border-slate-700 bg-[#0B1120] px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-                placeholder="https://.../reviews/image.webp"
+                placeholder="https://.../reviews/image1.webp&#10;https://.../reviews/image2.webp"
               />
             </div>
             <div>
@@ -268,6 +286,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
   const [sourceFilter, setSourceFilter] = useState<'all' | ReviewSource>('all');
   const [message, setMessage] = useState<string | null>(null);
   const [editor, setEditor] = useState<EditorState>({ open: false, mode: 'create' });
+  const [isPending, startTransition] = useTransition();
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((review) => {
@@ -282,16 +301,39 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
     setReviews((prev) => prev.map((review) => (review.id === id ? updater(review) : review)));
   };
 
-  const handlePublishToggle = (id: string) => {
-    updateReview(id, (review) => ({
-      ...review,
-      isPublished: !review.isPublished,
-      isFeatured: review.isPublished ? false : review.isFeatured,
+  const handlePublishToggle = async (id: string) => {
+    const review = reviews.find((r) => r.id === id);
+    if (!review) return;
+
+    const newStatus = review.isPublished ? 'pending' : 'published';
+
+    // Optimistic update
+    updateReview(id, (r) => ({
+      ...r,
+      isPublished: !r.isPublished,
+      isFeatured: r.isPublished ? false : r.isFeatured,
       updatedAt: new Date().toISOString(),
     }));
+
+    startTransition(async () => {
+      const result = await updateReviewStatusAction(id, newStatus);
+      if (!result.success) {
+        // Revert on error
+        updateReview(id, (r) => ({
+          ...r,
+          isPublished: review.isPublished,
+          isFeatured: review.isFeatured,
+        }));
+        setMessage(`Error: ${result.error}`);
+      } else {
+        setMessage(
+          `Review ${newStatus === 'published' ? 'published' : 'unpublished'} successfully`,
+        );
+      }
+    });
   };
 
-  const handleFeatureToggle = (id: string) => {
+  const handleFeatureToggle = async (id: string) => {
     const review = reviews.find((item) => item.id === id);
     if (!review) return;
     if (!review.isPublished) {
@@ -299,43 +341,96 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
       return;
     }
 
+    const newFeatured = !review.isFeatured;
+
+    // Optimistic update
     updateReview(id, (r) => ({
       ...r,
-      isFeatured: !r.isFeatured,
+      isFeatured: newFeatured,
       updatedAt: new Date().toISOString(),
     }));
+
+    startTransition(async () => {
+      const result = await updateReviewFeaturedAction(id, newFeatured);
+      if (!result.success) {
+        // Revert on error
+        updateReview(id, (r) => ({
+          ...r,
+          isFeatured: review.isFeatured,
+        }));
+        setMessage(`Error: ${result.error}`);
+      } else {
+        setMessage(`Review ${newFeatured ? 'featured' : 'unfeatured'} successfully`);
+      }
+    });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this review? This cannot be undone.')) {
+      return;
+    }
+
+    // Optimistic update
     setReviews((prev) => prev.filter((review) => review.id !== id));
-    setMessage('Review deleted (mock).');
+
+    startTransition(async () => {
+      const result = await deleteReviewAction(id);
+      if (!result.success) {
+        // Revert on error - refetch from initial reviews
+        setReviews(initialReviews);
+        setMessage(`Error: ${result.error}`);
+      } else {
+        setMessage('Review deleted successfully');
+      }
+    });
   };
 
   const openEditor = (mode: EditorMode, review?: Review) => {
     setEditor({ open: true, mode, review });
   };
 
-  const handleSave = (payload: ReviewEditorForm) => {
+  const handleSave = async (payload: ReviewEditorForm) => {
     if (editor.mode === 'edit' && editor.review) {
+      // Optimistic update
+      const updatedReview = {
+        ...editor.review,
+        ...payload,
+        authorLocation: payload.authorLocation || null,
+        headline: payload.headline || null,
+        visitDate: payload.visitDate || null,
+        photoUrls: payload.photoUrls,
+        sourceUrl: payload.sourceUrl || null,
+        isFeatured: payload.isPublished ? payload.isFeatured : false,
+        isPublished: payload.isPublished,
+        updatedAt: new Date().toISOString(),
+      };
+
       setReviews((prev) =>
-        prev.map((item) =>
-          item.id === editor.review?.id
-            ? {
-                ...item,
-                ...payload,
-                authorLocation: payload.authorLocation || null,
-                headline: payload.headline || null,
-                visitDate: payload.visitDate || null,
-                photoUrl: payload.photoUrl || null,
-                sourceUrl: payload.sourceUrl || null,
-                isFeatured: payload.isPublished ? payload.isFeatured : false,
-                isPublished: payload.isPublished,
-                updatedAt: new Date().toISOString(),
-              }
-            : item,
-        ),
+        prev.map((item) => (item.id === editor.review?.id ? updatedReview : item)),
       );
-      setMessage('Review updated (mock).');
+
+      // Save to database
+      const result = await updateReviewAction(editor.review.id, {
+        authorName: payload.authorName,
+        authorLocation: payload.authorLocation || null,
+        rating: payload.rating,
+        body: payload.body,
+        visitDate: payload.visitDate || null,
+        photoUrls: payload.photoUrls,
+        status: payload.isPublished ? 'published' : 'pending',
+        featured: payload.isPublished ? payload.isFeatured : false,
+      });
+
+      if (!result.success) {
+        // Revert optimistic update on error
+        setReviews((prev) =>
+          prev.map((item) => (item.id === editor.review?.id ? editor.review : item)),
+        );
+        setMessage(`Error: ${result.error}`);
+        return;
+      }
+
+      setMessage('Review updated successfully!');
     } else {
       const now = new Date().toISOString();
       const newReview: Review = {
@@ -349,7 +444,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
         body: payload.body,
         headline: payload.headline || null,
         visitDate: payload.visitDate || null,
-        photoUrl: payload.photoUrl || null,
+        photoUrls: payload.photoUrls,
         sourceUrl: payload.sourceUrl || null,
         createdAt: now,
         updatedAt: now,
@@ -396,6 +491,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
             <option value="all">All sources</option>
             <option value="manual">EBL Family</option>
             <option value="facebook_manual">Facebook</option>
+            <option value="form">Form</option>
           </select>
           <button
             type="button"

@@ -49,6 +49,7 @@ export function ReviewForm() {
   const nameId = useId();
   const locationId = useId();
   const storyId = useId();
+  const agreeId = useId();
   const [captchaToken, setCaptchaToken] = useState<string | null>(HC_BYPASS_TOKEN ?? null);
   const [formValues, setFormValues] = useState({
     authorName: '',
@@ -369,6 +370,29 @@ export function ReviewForm() {
         )}
         <input type="hidden" name="h-captcha-response" value={captchaToken ?? ''} />
         {renderError('captcha')}
+      </div>
+
+      <div className="mb-6 space-y-2">
+        <div className="flex items-start gap-3 rounded-xl border border-slate-700 bg-[#0B1120] px-4 py-3">
+          <input
+            id={agreeId}
+            name="agreeToPublish"
+            type="checkbox"
+            value="on"
+            required
+            defaultChecked={formValues.agreeToPublish}
+            onChange={(event) =>
+              setFormValues((prev) => ({ ...prev, agreeToPublish: event.target.checked }))
+            }
+            className="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-900 text-orange-500 focus:ring-orange-500"
+            aria-invalid={fieldErrors.agreeToPublish ? 'true' : 'false'}
+          />
+          <label htmlFor={agreeId} className="text-sm text-slate-300">
+            I agree that my review and photos may be published on Exotic Bulldog Legacy and used in
+            marketing communications.
+          </label>
+        </div>
+        {renderError('agreeToPublish')}
       </div>
 
       {/* Submit Button */}

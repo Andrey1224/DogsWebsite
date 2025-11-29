@@ -1,7 +1,6 @@
 import type { ElementType, ReactNode } from 'react';
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -14,6 +13,8 @@ import {
   CreditCard,
   MapPin,
 } from 'lucide-react';
+
+import { HeroCarousel } from '@/components/hero-carousel';
 
 import { IntroShell } from '@/components/intro-shell';
 import { buildMetadata } from '@/lib/seo/metadata';
@@ -91,9 +92,6 @@ const faqs = [
       'You can pick up in Montgomery by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.',
   },
 ];
-
-const HERO_BLUR_DATA_URL =
-  'data:image/webp;base64,UklGRlQBAABXRUJQVlA4IEgBAAAQCACdASooABsAPmUqj0WkIqEarfwAQAZEtgBOnKCp3vin0kYHgND/YJATZuuDAGkuJRRwYyXqy2jw6H5CcGwiBicy17fTEcAAAP6ilW9OHLZNo2xQNS0RM4xaI/dxLyfhpPwjpfHpuczC9xEeg8rQ464DYWkL2Xx3th+VF1+Debr9jE+tWvm51DfnwboUnlYOWCnm6oNpElxn5bEoN5DbSjsItcfeh7NzZFhJFl9WY5uwFGNM0vmT0x4ztGsqy01xzHIy4GZWGAJMIsHW5MdUJxsYRy86+qgyTZC4VjvQLScmuGePccUbroCFPwDLa5HbMEf1g4BOjjNONgvP/VptLpNlEi9CVQAz/OYUhstkcOJ8ndQsV59jOGjabqM7vOgYw6GyfbrM2dTr0JIz2X+loBgD1eOyng452NFz8BptkoiqU4GZcAAA';
 
 type ActionLinkProps = {
   href: string;
@@ -175,31 +173,7 @@ function HeroSection() {
         </div>
 
         <div className="relative">
-          <div className="relative overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-orange-900/20 transition-transform duration-700 hover:rotate-0 rotate-2">
-            <div className="relative h-[500px] w-full">
-              <Image
-                src="/hero/french-bulldog-hero.webp"
-                alt="Premium French Bulldog from Exotic Bulldog Legacy"
-                fill
-                priority
-                placeholder="blur"
-                blurDataURL={HERO_BLUR_DATA_URL}
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 32rem"
-                className="object-cover"
-              />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/80 via-transparent to-transparent" />
-
-            <div className="absolute bottom-8 left-8 flex max-w-xs items-center gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-4 backdrop-blur-md">
-              <div className="rounded-full bg-green-500/20 p-2">
-                <ShieldCheck className="text-green-400" size={24} />
-              </div>
-              <div>
-                <p className="text-sm font-bold">Health Guarantee</p>
-                <p className="text-xs text-slate-400">Vet-checked & vaccinated</p>
-              </div>
-            </div>
-          </div>
+          <HeroCarousel />
         </div>
       </div>
     </header>

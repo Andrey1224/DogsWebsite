@@ -98,24 +98,24 @@ export async function submitReview(
     };
   }
 
-  const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const hasServiceRole = Boolean(
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE,
+  );
 
   if (hasServiceRole) {
     try {
       const supabase = createServiceRoleClient();
+      const today = new Date().toISOString().slice(0, 10);
       const { error } = await supabase.from('reviews').insert({
-        source: 'manual',
-        is_published: false,
-        is_featured: false,
+        source: 'form',
+        status: 'pending',
         author_name: submission.authorName,
-        author_location: submission.authorLocation,
+        location: submission.authorLocation ?? 'Not provided',
         rating: submission.rating,
-        body: submission.body,
-        photo_urls: submission.photoUrls.length > 0 ? submission.photoUrls : null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        visit_date: null,
-        source_url: null,
+        story: submission.body,
+        photo_urls: submission.photoUrls,
+        visit_date: today,
+        client_ip: clientIp,
       });
 
       if (error) {

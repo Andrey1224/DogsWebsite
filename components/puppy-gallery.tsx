@@ -16,7 +16,7 @@ type PuppyGalleryProps = {
   shareUrl: string;
 };
 
-const placeholder = '/reviews/cameron-milo.webp';
+const placeholder = '/images/reviews/cameron-milo.webp';
 
 export function PuppyGallery({ photos, videos = [], name, status, shareUrl }: PuppyGalleryProps) {
   const media = (photos.length ? photos : [placeholder]).map((url) =>

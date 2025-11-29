@@ -1,7 +1,9 @@
 import { ReviewAdminPanel } from '@/components/admin/reviews/review-admin-panel';
-import { mockReviews } from '@/lib/reviews/mock-data';
+import { getReviewsForAdmin } from '@/lib/reviews/admin-queries';
 
-export default function AdminReviewsPage() {
+export default async function AdminReviewsPage() {
+  const reviews = await getReviewsForAdmin();
+
   return (
     <div className="space-y-8 text-white">
       <div className="space-y-2">
@@ -16,7 +18,7 @@ export default function AdminReviewsPage() {
         </div>
       </div>
 
-      <ReviewAdminPanel initialReviews={mockReviews} />
+      <ReviewAdminPanel initialReviews={reviews} />
     </div>
   );
 }

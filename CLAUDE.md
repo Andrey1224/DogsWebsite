@@ -92,6 +92,7 @@ nvm alias default 20
 - **Layout Components**: `SiteHeader`, `SiteFooter`, `ContactBar` (sticky)
 - **Provider Chain**: `ThemeProvider` → `AnalyticsProvider` → page content
 - **Shared Components**: `PuppyCard`, `PuppyGallery`, `ContactForm`, `PuppyFilters`, `Breadcrumbs`, `JsonLd`
+- **Hero Carousel**: `HeroCarousel` - Auto-rotating image carousel on homepage (3 images, 3.5s interval, SSR-safe with hydration protection)
 - **Analytics Integration**: All tracking events use `useAnalytics().trackEvent`
 - **SEO Components**: `JsonLd` wrapper for structured data, `Breadcrumbs` with automatic JSON-LD
 
@@ -117,8 +118,9 @@ The contact system spans multiple interconnected files:
 - **File Uploads**: Client-side direct uploads to Supabase Storage via signed URLs (bypasses 1MB Server Action limit)
 - **Parent Metadata**: Supports direct text input + photo uploads (no parent records required)
 - **Breed Field**: Direct `breed` field on puppies table (french_bulldog | english_bulldog) with priority over parent breed
+- **Reviews Moderation**: `/admin/reviews` with publish/unpublish, feature, and delete operations
 
-**Key Files**:
+**Key Files (Puppies)**:
 
 - `lib/admin/session.ts` - Session cookie encoding/decoding
 - `lib/admin/supabase.ts` - Admin Supabase client (service role)
@@ -130,13 +132,33 @@ The contact system spans multiple interconnected files:
 - `app/admin/(dashboard)/puppies/edit-puppy-panel.tsx` - Edit drawer component with photo management
 - `lib/admin/hooks/use-media-upload.ts` - Client-side upload hook with progress tracking
 
-**Important Implementation Notes**:
+**Key Files (Reviews)**:
+
+- `app/admin/(dashboard)/reviews/page.tsx` - Reviews admin page (fetches all reviews via service role)
+- `app/admin/(dashboard)/reviews/actions.ts` - Server Actions for review moderation (`updateReviewStatusAction`, `updateReviewFeaturedAction`, `deleteReviewAction`)
+- `components/admin/reviews/review-admin-panel.tsx` - Reviews moderation UI with filtering and status management
+- `lib/reviews/admin-queries.ts` - Admin review queries (fetches all reviews regardless of status)
+- `lib/reviews/queries.ts` - Public review queries (only fetches published reviews)
+- `lib/reviews/types.ts` - Review type definitions
+
+**Important Implementation Notes (Puppies)**:
 
 - **File Uploads**: Files are uploaded client-side directly to Supabase Storage using signed URLs (60s validity). Server Actions only receive URLs (< 1KB payload) to avoid the 1MB Server Action limit.
 - **Edit Mode**: Existing photos are displayed with delete buttons. New photos can be added while preserving existing ones. Deleted photos are tracked separately and filtered out on submit.
 - **Slug Protection**: Slug field is read-only in edit mode (displayed but disabled). Slugs cannot change after puppy creation to preserve public URLs and SEO.
 - **Breed Priority**: Always use `puppy.breed` field first, fallback to `puppy.parents.sire.breed` or `puppy.parents.dam.breed` for backward compatibility. This applies to filtering (`lib/supabase/queries.ts`), display (`components/puppy-card.tsx`), and detail pages (`app/puppies/[slug]/page.tsx`).
-- **Parent Metadata**: Puppies can have direct `sire_name`, `dam_name`, `sire_photo_urls[]`, `dam_photo_urls[]` fields without requiring parent records in `parents` table.
+- **Parent Metadata**: Puppies can have direct `sire_name`, `dam_name`, `sire_photo_urls[]`, `dam_photo_urls[]`, and 8 parent notes fields (`sire_weight_notes`, `sire_color_notes`, `sire_health_notes`, `sire_temperament_notes`, `dam_weight_notes`, `dam_color_notes`, `dam_health_notes`, `dam_temperament_notes`) without requiring parent records in `parents` table.
+- **FormData Type Conversion**: Server Actions use `toNumberOrNull()` helper to convert FormData string values to numbers for `priceUsd` and `weightOz` fields before validation. This prevents validation errors when submitting numeric fields (fixed Nov 27, 2025).
+
+**Important Implementation Notes (Reviews)**:
+
+- **Service Role Required**: Admin panel requires `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SERVICE_ROLE` env var to bypass RLS and view all reviews (pending + published). Without it, falls back to mock data.
+- **Publish/Unpublish**: Toggles review `status` between `'published'` and `'pending'`. Only published reviews appear on `/reviews` page.
+- **Featured Toggle**: Marks reviews as featured (requires review to be published first). Featured reviews can be displayed prominently on homepage or special sections.
+- **Delete Confirmation**: Delete action shows browser confirmation dialog before permanently removing review from database.
+- **Optimistic UI**: All actions (publish, feature, delete) update UI immediately, then sync with database. On error, changes are reverted and error message is shown.
+- **Auto-Revalidation**: All moderation actions automatically revalidate both `/admin/reviews` and `/reviews` pages via `revalidatePath()`.
+- **RLS Policies**: Public users can only SELECT reviews where `status = 'published'`. Service role has full access for admin operations.
 
 ### Environment Configuration
 
@@ -237,8 +259,9 @@ NEXT_PUBLIC_SITE_URL=
 ### Key Relationships
 
 - `puppies` → `litters` → `parents` (sire/dam) - **Optional for backward compatibility**
-- `puppies` can have direct parent metadata (sire_name, dam_name, photo URLs) without parent records
+- `puppies` can have direct parent metadata (sire_name, dam_name, photo URLs, parent notes) without parent records
 - `puppies` have direct `breed` field (priority over parent breed)
+- `puppies` have 8 parent notes fields (sire/dam weight, color, health, temperament notes) displayed on detail pages
 - `reservations` → `puppies` (deposit tracking)
 - `inquiries` → `puppies` (lead source attribution)
 
@@ -246,9 +269,11 @@ NEXT_PUBLIC_SITE_URL=
 
 - Initial schema: `supabase/migrations/20241007T000000Z_initial_schema.sql`
 - Parent metadata: `supabase/migrations/20250812T000000Z_add_parent_metadata_to_puppies.sql`
+- Parent notes: `supabase/migrations/20250126T000000Z_add_parent_notes_to_puppies.sql` (8 text fields for sire/dam weight, color, health, temperament notes)
 - Breed field: `supabase/migrations/20250109T180000Z_add_breed_to_puppies.sql`
 - Soft delete: `supabase/migrations/20251111T223757Z_add_soft_delete_to_puppies.sql`
 - Reviews table: `supabase/migrations/20251222T120000Z_create_reviews_table.sql` (applied Jan 18, 2025)
+- Reviews featured column: `supabase/migrations/add_featured_to_reviews.sql` (added Nov 28, 2025 - adds `featured BOOLEAN DEFAULT false` and performance index)
 - Sample data: `supabase/seeds/initial_seed.sql`
 - Client IP tracking: `supabase/migrations/20250216T120000Z_add_client_ip_to_inquiries.sql`
 
@@ -413,3 +438,4 @@ When modifying the contact/analytics stack or admin panel, update all connected 
 - **Admin Panel**: Production-ready with breed selection, parent metadata, client-side file uploads. See `docs/admin/admin-panel-changelog.md` for detailed implementation history.
 - **Performance Optimization (Jan 25, 2025)**: Critical LCP improvements delivered. Crisp chat deferred with `requestIdleCallback` (expected -300 to -800ms), preconnect tags added for external resources, hero image sizing optimized, dynamic imports for below-fold components (-15-25KB bundle). Total expected LCP improvement: **500ms-1.3s**. See `docs/optimization-changelog.md` and `docs/history/2025-01-25-lcp-optimization-e2e-fixes.md`.
 - **E2E Test Infrastructure (Jan 25, 2025)**: Fixed consent banner race condition causing test failures. Created shared consent helper (`tests/e2e/helpers/consent.ts`) for robust consent handling. All 24 E2E tests passing. Pattern: Always use `acceptConsent(page)` in test setup.
+- **Hero Carousel (Nov 27, 2025)**: Replaced static hero image with auto-rotating carousel (`components/hero-carousel.tsx`). Features 5 curated bulldog images with 3.5s interval, smooth fade transitions (1.5s), and SSR hydration protection using `mounted` state flag and `suppressHydrationWarning`. All images optimized to WebP/AVIF formats (58-329KB). Maintains all original styling and overlays with proper border-radius handling during transitions.

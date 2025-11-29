@@ -47,17 +47,21 @@ export function ReviewCard({ review, variant = 'full' }: ReviewCardProps) {
         &ldquo;{review.body}&rdquo;
       </p>
 
-      {/* Photo */}
-      {review.photoUrl ? (
-        <div className="relative mb-6 aspect-video overflow-hidden rounded-2xl">
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
-          <Image
-            src={review.photoUrl}
-            alt={`Review from ${review.authorName}`}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+      {/* Photos */}
+      {review.photoUrls.length > 0 ? (
+        <div className="mb-6 space-y-3">
+          {review.photoUrls.map((photoUrl, index) => (
+            <div key={index} className="relative aspect-video overflow-hidden rounded-2xl">
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
+              <Image
+                src={photoUrl}
+                alt={`Review from ${review.authorName} - Photo ${index + 1}`}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+            </div>
+          ))}
         </div>
       ) : null}
 

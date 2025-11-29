@@ -753,5 +753,129 @@ Manual state management (Option A) or extensive debugging to understand why `for
 
 ---
 
+## ✅ RESOLUTION (2025-11-27)
+
+### Root Cause Discovered
+
+The issue was **NOT** related to React 19's `useActionState` or file upload patterns. The actual root cause was a **validation error** that silently failed the entire update operation.
+
+**The Real Problem:**
+
+- FormData always returns **strings** for form field values
+- The validation schema expected **numbers** for `priceUsd` and `weightOz` fields
+- When these fields contained values (e.g., `"12"` as a string), validation failed with:
+  ```
+  fieldErrors: { weightOz: ['Invalid input: expected number, received string'] }
+  ```
+- This validation failure rejected **ALL changes**, including parent notes
+- The error was returned with HTTP 200 but `status: 'error'`, preventing success toast and panel close
+
+### The Fix
+
+**File**: `app/admin/(dashboard)/puppies/actions.ts`
+
+Added a helper function to convert string values to numbers:
+
+```typescript
+// Helper to convert string to number or null
+const toNumberOrNull = (value: FormDataEntryValue | null) => {
+  if (value === null || (typeof value === 'string' && value.trim() === '')) {
+    return null;
+  }
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+};
+```
+
+Applied to numeric fields in submission object:
+
+```typescript
+const submission = {
+  // ... other fields ...
+  priceUsd: toNumberOrNull(formData.get('priceUsd')), // Was: formData.get('priceUsd')
+  weightOz: toNumberOrNull(formData.get('weightOz')), // Was: emptyToNull(formData.get('weightOz'))
+  // ... parent notes fields ...
+};
+```
+
+### Secondary Issue: Parent Notes Not Persisting
+
+During investigation, discovered that parent notes fields were not being saved even when validation passed. This required three additional fixes:
+
+1. **Added parent notes extraction from FormData** (lines 271-278):
+
+   ```typescript
+   sireWeightNotes: formData.get('sireWeightNotes'),
+   sireColorNotes: formData.get('sireColorNotes'),
+   sireHealthNotes: formData.get('sireHealthNotes'),
+   sireTemperamentNotes: formData.get('sireTemperamentNotes'),
+   damWeightNotes: formData.get('damWeightNotes'),
+   damColorNotes: formData.get('damColorNotes'),
+   damHealthNotes: formData.get('damHealthNotes'),
+   damTemperamentNotes: formData.get('damTemperamentNotes'),
+   ```
+
+2. **Updated `UpdatePuppyPayload` type** in `lib/admin/puppies/queries.ts` (lines 478-485):
+
+   ```typescript
+   sireWeightNotes?: string | null;
+   sireColorNotes?: string | null;
+   sireHealthNotes?: string | null;
+   sireTemperamentNotes?: string | null;
+   damWeightNotes?: string | null;
+   damColorNotes?: string | null;
+   damHealthNotes?: string | null;
+   damTemperamentNotes?: string | null;
+   ```
+
+3. **Added field mappings in `mapUpdatePayload`** (lines 513-520):
+   ```typescript
+   if (input.sireWeightNotes !== undefined) payload.sire_weight_notes = input.sireWeightNotes;
+   if (input.sireColorNotes !== undefined) payload.sire_color_notes = input.sireColorNotes;
+   if (input.sireHealthNotes !== undefined) payload.sire_health_notes = input.sireHealthNotes;
+   if (input.sireTemperamentNotes !== undefined)
+     payload.sire_temperament_notes = input.sireTemperamentNotes;
+   if (input.damWeightNotes !== undefined) payload.dam_weight_notes = input.damWeightNotes;
+   if (input.damColorNotes !== undefined) payload.dam_color_notes = input.damColorNotes;
+   if (input.damHealthNotes !== undefined) payload.dam_health_notes = input.damHealthNotes;
+   if (input.damTemperamentNotes !== undefined)
+     payload.dam_temperament_notes = input.damTemperamentNotes;
+   ```
+
+### Verification
+
+Tested with puppy "Duddy" (slug: `duddy`):
+
+**Before Fix:**
+
+- Parent notes: Default values ("Contact for details", "Temperament notes coming soon.")
+- Validation failing on `weightOz` field
+
+**After Fix:**
+
+- Parent notes successfully saved:
+  - Sire: weight="25", color="Blue fawn", health="All tests passed", temperament="Very friendly and playful"
+  - Dam: weight="22", color="Cream", health="Exelent health", temperament="Calm and loving"
+- Success toast appears
+- Edit panel closes
+- Cache revalidated
+- Data persists in database
+
+### Lessons Learned
+
+1. **FormData Type Coercion**: Always convert FormData values to appropriate types before validation
+2. **Silent Validation Failures**: Validation errors can return HTTP 200 with `status: 'error'`, making them hard to debug
+3. **Debug Logging Critical**: Adding console.logs at each step (submission → validation → database) quickly identified the issue
+4. **Complete Field Mapping**: When adding new database fields, ensure they flow through the entire pipeline:
+   - Form → FormData extraction → Validation schema → TypeScript types → Database mapping
+
+### Files Modified
+
+- `app/admin/(dashboard)/puppies/actions.ts` - Added `toNumberOrNull` helper, fixed numeric field conversion, added parent notes extraction
+- `lib/admin/puppies/queries.ts` - Added parent notes to `UpdatePuppyPayload` type and `mapUpdatePayload` function
+
+---
+
 **Report Generated**: 2025-01-16
-**Status**: Issue Unresolved - Requires Further Investigation
+**Issue Resolved**: 2025-11-27
+**Status**: ✅ **RESOLVED** - All edit functionality working correctly

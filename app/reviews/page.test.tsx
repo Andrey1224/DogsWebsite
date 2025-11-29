@@ -64,7 +64,7 @@ describe('Reviews Page', () => {
         rating: 5,
         body: 'Transparent process and healthy puppy.',
         visitDate: '2025-06-18',
-        photoUrl: '/reviews/sarah-charlie.webp',
+        photoUrl: '/images/reviews/sarah-charlie.webp',
         sourceUrl: 'https://facebook.com/review/1',
         createdAt: '2025-06-19T00:00:00.000Z',
         updatedAt: '2025-06-19T00:00:00.000Z',

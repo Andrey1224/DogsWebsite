@@ -475,6 +475,14 @@ type UpdatePuppyPayload = {
   videoUrls?: string[] | null;
   stripePaymentLink?: string | null;
   paypalEnabled?: boolean | null;
+  sireWeightNotes?: string | null;
+  sireColorNotes?: string | null;
+  sireHealthNotes?: string | null;
+  sireTemperamentNotes?: string | null;
+  damWeightNotes?: string | null;
+  damColorNotes?: string | null;
+  damHealthNotes?: string | null;
+  damTemperamentNotes?: string | null;
 };
 
 function mapUpdatePayload(input: UpdatePuppyPayload) {
@@ -502,6 +510,16 @@ function mapUpdatePayload(input: UpdatePuppyPayload) {
   if (input.videoUrls !== undefined) payload.video_urls = input.videoUrls;
   if (input.stripePaymentLink !== undefined) payload.stripe_payment_link = input.stripePaymentLink;
   if (input.paypalEnabled !== undefined) payload.paypal_enabled = input.paypalEnabled;
+  if (input.sireWeightNotes !== undefined) payload.sire_weight_notes = input.sireWeightNotes;
+  if (input.sireColorNotes !== undefined) payload.sire_color_notes = input.sireColorNotes;
+  if (input.sireHealthNotes !== undefined) payload.sire_health_notes = input.sireHealthNotes;
+  if (input.sireTemperamentNotes !== undefined)
+    payload.sire_temperament_notes = input.sireTemperamentNotes;
+  if (input.damWeightNotes !== undefined) payload.dam_weight_notes = input.damWeightNotes;
+  if (input.damColorNotes !== undefined) payload.dam_color_notes = input.damColorNotes;
+  if (input.damHealthNotes !== undefined) payload.dam_health_notes = input.damHealthNotes;
+  if (input.damTemperamentNotes !== undefined)
+    payload.dam_temperament_notes = input.damTemperamentNotes;
 
   return payload;
 }

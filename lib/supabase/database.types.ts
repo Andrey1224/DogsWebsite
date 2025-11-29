@@ -373,6 +373,7 @@ export type Database = {
           author_name: string;
           client_ip: unknown;
           created_at: string;
+          featured: boolean;
           id: string;
           location: string;
           photo_urls: string[];
@@ -386,6 +387,7 @@ export type Database = {
           author_name: string;
           client_ip?: unknown;
           created_at?: string;
+          featured?: boolean;
           id?: string;
           location: string;
           photo_urls?: string[];
@@ -399,6 +401,7 @@ export type Database = {
           author_name?: string;
           client_ip?: unknown;
           created_at?: string;
+          featured?: boolean;
           id?: string;
           location?: string;
           photo_urls?: string[];

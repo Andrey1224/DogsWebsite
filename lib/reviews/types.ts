@@ -1,4 +1,4 @@
-export type ReviewSource = 'manual' | 'facebook_manual';
+export type ReviewSource = 'manual' | 'facebook_manual' | 'form';
 
 export type Review = {
   id: string;
@@ -11,7 +11,7 @@ export type Review = {
   body: string;
   headline?: string | null;
   visitDate?: string | null;
-  photoUrl?: string | null;
+  photoUrls: string[];
   sourceUrl?: string | null;
   createdAt: string;
   updatedAt: string;

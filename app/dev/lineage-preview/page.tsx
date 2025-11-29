@@ -2,8 +2,12 @@ import { notFound } from 'next/navigation';
 
 import { ParentPhotoCarousel } from '@/components/parent-photo-carousel';
 
-const sirePhotos = ['/about/family-bulldogs.webp', '/about/puppy-play.webp', '/about/nursery.webp'];
-const damPhotos = ['/about/puppy-play.webp', '/about/nursery.webp'];
+const sirePhotos = [
+  '/images/about/family-bulldogs.webp',
+  '/images/about/puppy-play.webp',
+  '/images/about/nursery.webp',
+];
+const damPhotos = ['/images/about/puppy-play.webp', '/images/about/nursery.webp'];
 
 export default function LineagePreviewPage() {
   if (process.env.NODE_ENV === 'production') {
