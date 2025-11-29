@@ -62,8 +62,8 @@ describe('About Page', () => {
   it('renders stats section', () => {
     renderAboutPage();
 
-    expect(screen.getByText('35+')).toBeInTheDocument();
-    expect(screen.getByText('400+')).toBeInTheDocument();
+    expect(screen.getByText('10+')).toBeInTheDocument();
+    expect(screen.getByText('100+')).toBeInTheDocument();
     expect(screen.getByText('100%')).toBeInTheDocument();
     expect(screen.getByText(/Years with bulldogs/i)).toBeInTheDocument();
   });

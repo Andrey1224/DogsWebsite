@@ -51,7 +51,7 @@ export function FeaturedReviewsCarousel({ reviews }: FeaturedReviewsCarouselProp
   };
 
   return (
-    <div className="relative h-[450px]">
+    <div className="relative min-h-[520px] md:min-h-[500px] lg:min-h-[480px]">
       <div className="absolute -top-16 right-0 z-30 flex gap-3">
         <button
           type="button"
@@ -95,7 +95,7 @@ export function FeaturedReviewsCarousel({ reviews }: FeaturedReviewsCarouselProp
           return (
             <div
               key={review.id}
-              className={`absolute flex h-full min-h-[380px] w-[90%] flex-col justify-between rounded-3xl p-8 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] md:w-[550px] ${
+              className={`absolute flex h-full min-h-[380px] w-[90%] flex-col justify-between rounded-3xl p-8 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] md:w-[620px] ${
                 isActive
                   ? 'translate-x-0 scale-100 border border-slate-700/50 bg-[#1E293B] opacity-100 shadow-2xl shadow-orange-500/10 z-20'
                   : 'pointer-events-none border border-transparent bg-[#111827] opacity-40 blur-[1px] z-10'

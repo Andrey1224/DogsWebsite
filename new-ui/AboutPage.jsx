@@ -16,8 +16,8 @@ import {
 
 // --- Content Data ---
 const stats = [
-  { value: '35+', label: 'Years with bulldogs' },
-  { value: '400+', label: 'Healthy placements' },
+  { value: '10+', label: 'Years with bulldogs' },
+  { value: '100+', label: 'Healthy placements' },
   { value: '100%', label: 'Lifetime support' },
 ];
 
@@ -57,9 +57,15 @@ export default function AboutPage() {
               </span>
             </h1>
             <p className="text-slate-400 text-lg leading-relaxed max-w-xl">
-              We are a small family breeder in Alabama, and our story starts in the 1980s when a
-              little French Bulldog named Roman stole our hearts. What began as a personal passion
-              quickly grew into a program grounded in ethics, health, and lifelong devotion.
+              We are a small family breeder in Alabama, founded in 2019 with one goal in mind:
+              raising healthy, confident, and well-balanced Bulldogs. What began with a single
+              puppy who stole our hearts grew into a program shaped by intention, responsibility,
+              and genuine care.
+            </p>
+            <p className="text-slate-400 text-lg leading-relaxed max-w-xl">
+              Every pairing, every pregnancy, and every puppy is raised as if they were our own. No
+              shortcuts. No guesswork. Just honest communication, ethical practices, and a
+              commitment to giving each pup the strongest possible start.
             </p>
 
             {/* Stats Grid */}
