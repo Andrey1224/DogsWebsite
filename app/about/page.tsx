@@ -1,6 +1,7 @@
 // New dark About page with breed spotlights
 import Image from 'next/image';
 import Link from 'next/link';
+import { AboutBreedCarousel } from '@/components/about-breed-carousel';
 import {
   Shield,
   Sparkles,
@@ -29,8 +30,8 @@ export const metadata = buildMetadata({
 });
 
 const stats = [
-  { value: '35+', label: 'Years with bulldogs' },
-  { value: '400+', label: 'Healthy placements' },
+  { value: '10+', label: 'Years with bulldogs' },
+  { value: '100+', label: 'Healthy placements' },
   { value: '100%', label: 'Lifetime support' },
 ];
 
@@ -84,9 +85,15 @@ export default function AboutPage() {
               </span>
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-slate-400">
-              We are a small family breeder in Alabama, and our story starts in the 1980s when a
-              little French Bulldog named Roman stole our hearts. What began as a personal passion
-              quickly grew into a program grounded in ethics, health, and lifelong devotion.
+              We are a small family breeder in Alabama, founded in 2019 with one goal in mind:
+              raising healthy, confident, and well-balanced Bulldogs. What began with a single puppy
+              who stole our hearts grew into a program shaped by intention, responsibility, and
+              genuine care.
+            </p>
+            <p className="max-w-xl text-lg leading-relaxed text-slate-400">
+              Every pairing, every pregnancy, and every puppy is raised as if they were our own. No
+              shortcuts. No guesswork. Just honest communication, ethical practices, and a
+              commitment to giving each pup the strongest possible start.
             </p>
 
             {/* Stats Grid */}
@@ -166,15 +173,31 @@ export default function AboutPage() {
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:px-12 lg:grid-cols-2">
           {/* Image Side */}
           <div className="relative order-2 lg:order-1">
-            <div className="aspect-square rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 transition-transform duration-500 hover:rotate-0">
-              <Image
-                src="/images/about/french-bulldog-spotlight.webp"
-                alt="French Bulldog puppy sitting on a bed"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
+            <AboutBreedCarousel
+              breedName="french"
+              images={[
+                {
+                  src: '/images/about/carousel/french-1.webp',
+                  alt: 'French Bulldog puppy',
+                },
+                {
+                  src: '/images/about/carousel/AboutFrienchie.webp',
+                  alt: 'French Bulldog portrait',
+                },
+                {
+                  src: '/images/about/carousel/AboutHappyFrienchie.webp',
+                  alt: 'Happy French Bulldog',
+                },
+                {
+                  src: '/images/about/carousel/AboutFunnyFrienchie.webp',
+                  alt: 'Playful French Bulldog',
+                },
+                {
+                  src: '/images/about/carousel/KussakaAbout.webp',
+                  alt: 'French Bulldog Kussaka',
+                },
+              ]}
+            />
           </div>
 
           {/* Content Side */}
@@ -289,15 +312,16 @@ export default function AboutPage() {
 
           {/* Image Side */}
           <div className="relative">
-            <div className="aspect-square -rotate-2 overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-black/50 transition-transform duration-500 hover:rotate-0">
-              <Image
-                src="/images/about/english-bulldog-spotlight.webp"
-                alt="English Bulldog puppy running on grass"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
+            <AboutBreedCarousel
+              breedName="english"
+              images={[
+                {
+                  src: '/images/about/carousel/english-1.webp',
+                  alt: 'English Bulldog puppy',
+                },
+                // User will add more images later
+              ]}
+            />
             <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-orange-500 opacity-20 blur-3xl" />
           </div>
         </div>

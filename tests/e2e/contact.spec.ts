@@ -17,11 +17,13 @@ test('filters puppies by status and breed', async ({ page }) => {
   // Wait for URL to update after status selection (client-side routing with polling)
   await expect.poll(async () => page.url(), { timeout: 10_000 }).toMatch(/status=available/);
 
+  // Wait for component to fully re-render after status change
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(500);
+
+  // Re-fetch breed select after status filter update to get fresh locator
   const breedSelect = page.getByLabel(/Breed/i);
   await breedSelect.waitFor({ state: 'visible', timeout: 15_000 });
-
-  // Wait a bit after first filter for state to settle
-  await page.waitForTimeout(500);
 
   await breedSelect.selectOption('french_bulldog');
   // Wait for URL to update after breed selection (client-side routing with polling)
