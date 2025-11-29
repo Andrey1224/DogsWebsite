@@ -135,11 +135,12 @@ The contact system spans multiple interconnected files:
 **Key Files (Reviews)**:
 
 - `app/admin/(dashboard)/reviews/page.tsx` - Reviews admin page (fetches all reviews via service role)
-- `app/admin/(dashboard)/reviews/actions.ts` - Server Actions for review moderation (`updateReviewStatusAction`, `updateReviewFeaturedAction`, `deleteReviewAction`)
-- `components/admin/reviews/review-admin-panel.tsx` - Reviews moderation UI with filtering and status management
+- `app/admin/(dashboard)/reviews/actions.ts` - Server Actions for review moderation (`updateReviewAction`, `updateReviewStatusAction`, `updateReviewFeaturedAction`, `deleteReviewAction`)
+- `components/admin/reviews/review-admin-panel.tsx` - Reviews moderation UI with filtering, editing, and status management
 - `lib/reviews/admin-queries.ts` - Admin review queries (fetches all reviews regardless of status)
 - `lib/reviews/queries.ts` - Public review queries (only fetches published reviews)
-- `lib/reviews/types.ts` - Review type definitions
+- `lib/reviews/types.ts` - Review type definitions (supports multiple photos via `photoUrls: string[]`)
+- `components/reviews/review-card.tsx` - Public review card component (displays all photos from array)
 
 **Important Implementation Notes (Puppies)**:
 
@@ -153,10 +154,21 @@ The contact system spans multiple interconnected files:
 **Important Implementation Notes (Reviews)**:
 
 - **Service Role Required**: Admin panel requires `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SERVICE_ROLE` env var to bypass RLS and view all reviews (pending + published). Without it, falls back to mock data.
+- **Full CRUD Operations**: Admin panel supports Create (mock), Read, Update (full edit), and Delete operations.
+- **Edit Functionality**: Complete review editing including author name, location, rating, body text, visit date, and multiple photo URLs. Photos input via textarea (one URL per line). Fixed Nov 28, 2025 - was previously mock, now persists to database.
+- **Multiple Photos Support**: Reviews support up to 3 photos via `photoUrls: string[]` array. TypeScript type and all queries updated Nov 28, 2025. Public page displays all photos stacked vertically.
+- **Database Field Mapping**:
+  - `authorName` → `author_name`
+  - `authorLocation` → `location` (NOT `author_location`)
+  - `body` → `story` (NOT `body`)
+  - `photoUrls[]` → `photo_urls[]` array
+  - `isPublished` → `status` ('published' | 'pending')
+  - `isFeatured` → `featured`
+  - Note: `headline` and `sourceUrl` fields exist in TypeScript but not in database (always null)
 - **Publish/Unpublish**: Toggles review `status` between `'published'` and `'pending'`. Only published reviews appear on `/reviews` page.
 - **Featured Toggle**: Marks reviews as featured (requires review to be published first). Featured reviews can be displayed prominently on homepage or special sections.
 - **Delete Confirmation**: Delete action shows browser confirmation dialog before permanently removing review from database.
-- **Optimistic UI**: All actions (publish, feature, delete) update UI immediately, then sync with database. On error, changes are reverted and error message is shown.
+- **Optimistic UI**: All actions (edit, publish, feature, delete) update UI immediately, then sync with database. On error, changes are reverted and error message is shown.
 - **Auto-Revalidation**: All moderation actions automatically revalidate both `/admin/reviews` and `/reviews` pages via `revalidatePath()`.
 - **RLS Policies**: Public users can only SELECT reviews where `status = 'published'`. Service role has full access for admin operations.
 

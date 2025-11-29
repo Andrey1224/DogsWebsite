@@ -2,6 +2,7 @@
 
 | Date       | Phase                                    | Status      | Notes                                                                                                                                                                                              |
 | ---------- | ---------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2025-11-28 | Bugfix — Reviews Edit + Multi-Photos     | ✅ Complete | Fixed Edit function (was mock, now saves to DB). Added multiple photos support (`photoUrls[]`). Fixed DB field mapping. Cleaned 23 unused images. Fixed About page image paths.                    |
 | 2025-11-28 | Feature — Reviews Moderation             | ✅ Complete | Added `/admin/reviews` panel with publish/unpublish, featured toggle, and delete operations. Server Actions persist all changes to database with optimistic UI. Added `featured` column migration. |
 | 2025-11-27 | Bugfix — Parent Notes Not Saving         | ✅ Complete | Fixed validation error preventing ALL updates. FormData returned strings but schema expected numbers for priceUsd/weightOz. Added toNumberOrNull() helper + parent notes field mapping.            |
 | 2025-11-16 | Bugfix — Description Not Saving          | ✅ Complete | Fixed Zod validation error preventing description updates. Empty weightOz field caused validation failure, blocking entire update. Added emptyToNull() helper.                                     |
@@ -25,6 +26,156 @@
 | 2024-11-24 | P3 — Puppies Index UI                    | ✅ Complete | Added data-driven `/admin/puppies` table with responsive layout, disabled inline controls, and action placeholders; previewed in browser via Playwright MCP session.                               |
 | 2024-11-24 | P2 — Data Layer                          | ✅ Complete | Added admin Supabase helper, puppy CRUD Zod schemas, slug utilities, and server-only query wrappers to unblock UI + Server Actions.                                                                |
 | 2024-11-24 | P1 — Auth Foundations                    | ✅ Complete | Delivered env template updates, signed session cookies, login form/action, middleware guard, and dashboard shell with sign-out.                                                                    |
+
+---
+
+## Bugfix — Reviews Edit + Multi-Photos (2025-11-28) ✅
+
+### Problems
+
+1. **Edit Function Not Persisting**: Edit button in admin reviews panel opened form and allowed edits, but changes were only saved to React local state (mock). On page refresh, all edits were lost.
+2. **Single Photo Limitation**: Database supported `photo_urls TEXT[]` array, but TypeScript type limited reviews to single photo (`photoUrl?: string | null`), preventing multiple photo uploads.
+3. **Incorrect DB Field Mapping**: Server action used wrong column names (`author_location`, `body`, `photo_url`) causing database errors.
+4. **Unused Images**: 23 image files (sources, duplicates, dev-only) cluttered project.
+5. **Broken Image Paths**: About page referenced `/about/...` but files were in `/images/about/`.
+
+### Solutions
+
+#### 1. Fixed Edit Function to Persist to Database
+
+**Created Real Server Action** (`app/admin/(dashboard)/reviews/actions.ts`):
+
+```typescript
+export async function updateReviewAction(
+  reviewId: string,
+  data: {
+    authorName: string;
+    authorLocation?: string | null;
+    rating: number;
+    body: string;
+    visitDate?: string | null;
+    photoUrls: string[];
+    status: 'published' | 'pending';
+    featured: boolean;
+  },
+);
+```
+
+**Correct Database Field Mapping**:
+
+- `authorName` → `author_name`
+- `authorLocation` → `location` (NOT `author_location`)
+- `body` → `story` (NOT `body`)
+- `photoUrls[]` → `photo_urls[]` array
+- `visitDate` → `visit_date`
+- `isPublished` → `status`
+- `isFeatured` → `featured`
+
+**Optimistic UI with Error Handling**:
+
+- Updates local state immediately for instant feedback
+- Calls server action to persist to database
+- On error: reverts local state and shows error message
+- Auto-revalidates `/admin/reviews`, `/reviews`, and `/` pages
+
+#### 2. Added Multiple Photos Support
+
+**Updated TypeScript Type** (`lib/reviews/types.ts`):
+
+```typescript
+export type Review = {
+  // ... other fields
+  photoUrls: string[]; // Changed from photoUrl?: string | null
+};
+```
+
+**Updated All Queries**:
+
+- `lib/reviews/queries.ts`: `photoUrls: Array.isArray(row.photo_urls) ? row.photo_urls : []`
+- `lib/reviews/admin-queries.ts`: Same mapping for admin queries
+- `lib/reviews/mock-data.ts`: All mock reviews use `photoUrls: [...]` arrays
+
+**Updated UI Components**:
+
+- `components/reviews/review-card.tsx`: Now displays ALL photos from array (stacked vertically)
+- `components/admin/reviews/review-admin-panel.tsx`: Textarea input for multiple URLs (one per line)
+
+**Admin Panel UX**:
+
+```
+Photo URLs (optional, one per line):
+https://example.com/photo1.webp
+https://example.com/photo2.webp
+https://example.com/photo3.webp
+```
+
+#### 3. Image Cleanup & Path Fixes
+
+**Deleted 23 Unused Files**:
+
+- 8 root files (source JPGs: `PuppyAtack.jpg`, `TestPhoto.png`, etc.)
+- 3 vet-check files (not used)
+- 6 duplicate formats (AVIF/JPG, kept only WebP)
+- 6 dev-only files (nursery, puppy-play)
+
+**Fixed About Page Paths**:
+
+```diff
+- src="/about/family-bulldogs.webp"
++ src="/images/about/family-bulldogs.webp"
+```
+
+**Final Structure** (12 optimized WebP files):
+
+```
+public/images/
+├── about/ (3 files)
+├── home/hero/ (5 files)
+└── reviews/ (4 files)
+```
+
+**Added `.prettierignore`**:
+
+```
+new-ui/
+```
+
+Prevents Prettier from failing on HTML prototype files with `.jsx` extension.
+
+### Files Changed
+
+**Core Changes**:
+
+- `lib/reviews/types.ts` - Updated `Review` type
+- `lib/reviews/queries.ts` - Updated mapping to use `photoUrls` array
+- `lib/reviews/admin-queries.ts` - Updated admin mapping
+- `lib/reviews/mock-data.ts` - Updated all mock data
+- `app/admin/(dashboard)/reviews/actions.ts` - Created `updateReviewAction`
+- `components/admin/reviews/review-admin-panel.tsx` - Fixed `handleSave`, updated form UI
+- `components/reviews/review-card.tsx` - Display multiple photos
+- `app/about/page.tsx` - Fixed image paths
+
+**Cleanup**:
+
+- Deleted 23 unused image files
+- Created `.prettierignore`
+
+### Testing
+
+✅ TypeScript compilation passes
+✅ All lint checks pass
+✅ Pre-commit hooks pass
+✅ Edit function saves to database
+✅ Multiple photos display on `/reviews`
+✅ Image paths on `/about` work correctly
+
+### Impact
+
+- **Admin Panel**: Edit function now fully operational (was previously non-functional)
+- **Public Site**: Reviews can display up to 3 photos per review
+- **Database**: All review edits persist correctly with proper field mapping
+- **Performance**: Removed 23 unused files, cleaner codebase
+- **Developer Experience**: Fixed Prettier errors with `.prettierignore`
 
 ---
 
