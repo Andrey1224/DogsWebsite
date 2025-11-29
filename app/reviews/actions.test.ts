@@ -167,13 +167,14 @@ describe('submitReview', () => {
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
         author_name: 'Sarah W.',
-        author_location: 'Huntsville, AL',
+        location: 'Huntsville, AL',
         rating: 5,
-        body: expect.stringContaining('Charlie came home'),
-        photo_urls: null,
-        source: 'manual',
-        is_published: false,
-        is_featured: false,
+        story: expect.stringContaining('Charlie came home'),
+        photo_urls: [],
+        source: 'form',
+        status: 'pending',
+        client_ip: '198.51.100.3',
+        visit_date: expect.any(String),
       }),
     );
     expect(mocks.verifyHCaptcha).toHaveBeenCalledWith('captcha-token', '198.51.100.3');

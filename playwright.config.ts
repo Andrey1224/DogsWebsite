@@ -24,8 +24,9 @@ export default defineConfig({
       // Disable Crisp chat in E2E tests to prevent DOM interference
       NEXT_PUBLIC_CRISP_WEBSITE_ID: '',
       // Preserve existing test environment variables
-      NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN: process.env.NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN || '',
-      HCAPTCHA_BYPASS_TOKEN: process.env.HCAPTCHA_BYPASS_TOKEN || '',
+      NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN:
+        process.env.NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN || 'dev-bypass-token',
+      HCAPTCHA_BYPASS_TOKEN: process.env.HCAPTCHA_BYPASS_TOKEN || 'dev-bypass-token',
     },
   },
   projects: [

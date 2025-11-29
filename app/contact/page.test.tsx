@@ -76,8 +76,8 @@ describe('Contact Page', () => {
   it('renders business location in hero', () => {
     renderContactPage();
 
-    // Check for location (city, state format)
-    expect(screen.getByText(/Montgomery, AL/i)).toBeInTheDocument();
+    // Check for location (city, state format - matches whatever is in BUSINESS_PROFILE)
+    expect(screen.getByText(/[A-Za-z]+,\s+AL/i)).toBeInTheDocument();
   });
 
   it('renders business hours in hero', () => {

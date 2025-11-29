@@ -286,7 +286,7 @@ export function ReviewAdminPanel({ initialReviews }: ReviewAdminPanelProps) {
   const [sourceFilter, setSourceFilter] = useState<'all' | ReviewSource>('all');
   const [message, setMessage] = useState<string | null>(null);
   const [editor, setEditor] = useState<EditorState>({ open: false, mode: 'create' });
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((review) => {
