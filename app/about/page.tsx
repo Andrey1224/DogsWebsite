@@ -316,10 +316,25 @@ export default function AboutPage() {
               breedName="english"
               images={[
                 {
-                  src: '/images/about/carousel/english-1.webp',
-                  alt: 'English Bulldog puppy',
+                  src: '/images/about/carousel/english-zevaet.webp',
+                  alt: 'English Bulldog Zevaet',
                 },
-                // User will add more images later
+                {
+                  src: '/images/about/carousel/english-biting.webp',
+                  alt: 'English Bulldog playing',
+                },
+                {
+                  src: '/images/about/carousel/english-lizi.webp',
+                  alt: 'English Bulldog Lizi',
+                },
+                {
+                  src: '/images/about/carousel/english-lizi-edgar.webp',
+                  alt: 'English Bulldog Lizi and Edgar',
+                },
+                {
+                  src: '/images/about/carousel/english-play.webp',
+                  alt: 'English Bulldog at play',
+                },
               ]}
             />
             <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-orange-500 opacity-20 blur-3xl" />
