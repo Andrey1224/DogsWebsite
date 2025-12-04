@@ -1,10 +1,12 @@
-# Gemini Project Analysis: PuppyWebsite
+# Gemini Project Context
+
+This file serves as the primary instructional context for Gemini agents working on this repository. It consolidates the project overview, architecture, development commands, and coding standards.
 
 ## Project Overview
 
-This project is a full-stack web application for **Exotic Bulldog Legacy**, a premium bulldog breeder. It's built with a modern tech stack, focusing on a rich user experience, secure payments, and a comprehensive admin system.
+**Exotic Bulldog Legacy** is a full-stack web application for a premium bulldog breeder. The project is designed to provide a rich user experience, secure payment processing, and a robust administration system.
 
-The application serves as a digital catalog for available puppies, allowing potential buyers to browse, view details, and make deposits. It integrates with multiple third-party services for payments, analytics, communication, and security.
+The application acts as a digital catalog for available puppies, enabling potential buyers to browse listings, view detailed information, and place deposits securely. It integrates with several third-party services for payments, analytics, communication, and security.
 
 ### Core Technologies
 
@@ -20,94 +22,84 @@ The application serves as a digital catalog for available puppies, allowing pote
 - **Email**: [Resend](https://resend.com/)
 - **Security**: [hCaptcha](https://www.hcaptcha.com/)
 
-### Architecture
-
-The project follows a feature-driven structure within the `app/` directory. Key architectural patterns include:
-
-- **Server Components by default**, with Client Components (`"use client"`) used for interactive UI.
-- **API Routes** in `app/api/` for handling webhooks (Stripe, PayPal) and other server-to-server communication.
-- **Server Actions** for mutations like form submissions and creating payment sessions.
-- **Service modules** in the `lib/` directory for encapsulating business logic (e.g., `lib/reservations`, `lib/stripe`, `lib/supabase`).
-- **Middleware** (`middleware.ts`) for protecting admin routes.
-- **Environment-based configuration** using `.env.local` for sensitive keys and settings.
+---
 
 ## Building and Running
 
 ### Prerequisites
 
-- Node.js (v20+)
-- npm (v10+)
-
-### Initial Setup
-
-1.  **Copy Environment Variables**:
-    ```bash
-    cp .env.example .env.local
-    ```
-2.  **Populate `.env.local`**: Fill in the required API keys and secrets for Supabase, Stripe, PayPal, etc., as detailed in the `README.md`.
-3.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
-
-### Development
-
-To run the local development server:
+- **Node.js**: v20.x LTS or higher
+- **npm**: v10+
 
 ```bash
-npm run dev
+# Check Node version
+node --version
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+### Development Commands
 
-### Quality Gates & Testing
+- `npm run dev`: Start the development server on `http://localhost:3000`.
+- `npm run build`: Build the production application. This automatically runs image optimization and mirrors the Vercel deployment process.
+- `npm run start`: Start the production server.
+- `npm run lint`: Run ESLint with Tailwind-aware rules.
+- `npm run typecheck`: Run the TypeScript compiler in strict mode.
+- `npm run test`: Run Vitest unit and component tests.
+- `npm run test:watch`: Run Vitest in watch mode.
+- `npm run e2e`: Run Playwright end-to-end tests (requires the dev server to be running).
+- `npm run optimize-images`: Optimize static images in `/public`.
+- `npm run verify`: Run all quality checks (lint, typecheck, test, e2e).
+- `npm run validate-deployment`: Validate production deployment health.
 
-This project has a comprehensive set of quality checks.
-
-- **Run all checks (lint, types, tests)**:
-  ```bash
-  npm run verify
-  ```
-- **Linting**:
-  ```bash
-  npm run lint
-  ```
-- **Type Checking**:
-  ```bash
-  npm run typecheck
-  ```
-- **Unit & Component Tests**:
-  ```bash
-  npm run test
-  ```
-- **End-to-End Tests** (requires the dev server to be running):
-  ```bash
-  npm run e2e
-  ```
-
-### Production
-
-- **Build**:
-  ```bash
-  npm run build
-  ```
-- **Start Server**:
-  ```bash
-  npm run start
-  ```
+---
 
 ## Development Conventions
 
-- **Styling**: Use Tailwind CSS utility classes. Custom global styles and CSS variables for theming are located in `app/globals.css`.
-- **Components**: Reusable components are located in the `components/` directory. Page-specific components can be co-located with their routes.
-- **Database**: Interact with Supabase using the clients provided in `lib/supabase/`. Server-side logic should use the admin client from `lib/admin/supabase.ts`.
-- **State Management**: Primarily managed via URL state and React state (e.g., `useState`, `useReducer`). There is no global state management library like Redux or Zustand.
-- **SEO**: Metadata is generated dynamically using the `generateMetadata` export in page components. Helper functions for this are in `lib/seo/`.
-- **Security**:
-  - Admin routes are protected via middleware.
-  - Webhook endpoints verify incoming request signatures.
-  - User input is validated using Zod.
-- **Testing**:
-  - Write Vitest tests for components, utility functions, and server-side logic.
-  - Place test files alongside the source files, with a `.test.ts` or `.test.tsx` extension.
-  - Write Playwright E2E tests for critical user flows in the `tests/e2e/` directory.
+### Project Architecture
+
+#### Directory Structure
+
+- `app/`: Next.js App Router pages and API routes.
+- `components/`: Shared React components.
+- `lib/`: Utilities, Supabase clients, and business logic modules.
+- `lib/admin/`: Admin-specific utilities and queries.
+- `supabase/`: Database migrations and seeds.
+- `tests/`: Unit tests and E2E specs.
+
+#### Data Flow & State
+
+- **Data Fetching**: Primarily uses Server Components.
+- **Mutations**: Uses Server Actions for form submissions and data updates.
+- **State**: Managed via URL state and React state (`useState`, `useReducer`). No global state library (Redux/Zustand) is used.
+
+### Coding Standards
+
+- **TypeScript**: Strict mode is enabled. Avoid `any` and unnecessary casting.
+- **Styling**: Use Tailwind CSS utility classes. Define custom colors and design tokens in `app/globals.css`.
+- **Naming**:
+  - Components: `PascalCase`
+  - Hooks: `useCamelCase`
+  - Utilities: `camelCase.ts`
+  - Migrations: `snake_case.sql`
+
+### Testing Guidelines
+
+- **Unit/Component Tests**: Use Vitest + React Testing Library. Place test files alongside source files (e.g., `foo.test.tsx`).
+- **E2E Tests**: Use Playwright. Tests are located in `tests/e2e/`. Use shared helpers (like `acceptConsent(page)`) to handle common UI elements.
+- **Coverage**: Aim for ≥80% coverage on shared logic.
+
+### Git & Contribution
+
+- **Commit Messages**: Follow Conventional Commits (e.g., `feat(app): add sticky contact bar`).
+- **PR Requirements**: concise description, screenshots for UI changes, and confirmation that `npm run verify` passes.
+- **Secrets**: Store secrets in `.env.local`. Never commit keys to the repository.
+
+---
+
+## Key Architectural Patterns
+
+- **Admin Panel**: Protected by middleware. Supports full CRUD for puppies and reviews. Uses client-side direct uploads to Supabase Storage.
+- **Payment Processing**: Integration with Stripe Checkout Sessions and PayPal Smart Buttons. Uses webhooks for fulfillment and `ReservationCreationService` for atomic updates.
+- **SEO**: Dynamic `robots.txt` and `sitemap.xml`. JSON-LD structured data for Organization, LocalBusiness, and Products.
+- **Performance**: Image optimization via `next/image` and build scripts. Dynamic imports for below-fold components. Crisp chat loaded via `requestIdleCallback`.
+
+For more detailed documentation on specific subsystems, refer to the `docs/` directory.
