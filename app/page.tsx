@@ -16,6 +16,7 @@ import {
 
 import { HeroCarousel } from '@/components/hero-carousel';
 
+import { PromoGate } from '@/components/home/promo-gate';
 import { IntroShell } from '@/components/intro-shell';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getFeaturedReviews } from '@/lib/reviews/queries';
@@ -119,6 +120,7 @@ export default function Home() {
   return (
     <IntroShell>
       <>
+        <PromoGate />
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
           <FeaturesSection />
