@@ -28,6 +28,22 @@ npx playwright test tests/e2e/foo.spec.ts     # Single E2E test file
 
 **Node.js 20+ required** (jsdom and @vitejs/plugin-react dependencies).
 
+## Git Workflow
+
+**Branch Strategy:**
+
+- `main` — Production-ready code. Protected branch for stable releases only.
+- `dev` — Active development branch. All work happens here.
+
+**Development Process:**
+
+1. Work in the `dev` branch for all changes
+2. Commit and push to `dev` regularly: `git push`
+3. When ready for production, create a Pull Request from `dev` → `main`
+4. After PR approval and merge, pull latest changes: `git pull origin main`
+
+**Important:** Never commit directly to `main`. Always work in `dev` and merge via PR.
+
 ## Architecture Overview
 
 ### Data Flow
