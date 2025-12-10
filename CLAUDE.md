@@ -39,8 +39,9 @@ npx playwright test tests/e2e/foo.spec.ts     # Single E2E test file
 
 1. Work in the `dev` branch for all changes
 2. Commit and push to `dev` regularly: `git push`
-3. When ready for production, create a Pull Request from `dev` → `main`
-4. After PR approval and merge, pull latest changes: `git pull origin main`
+3. CI checks run automatically on every push to `dev`
+4. When ready for production, create a Pull Request from `dev` → `main`
+5. After PR approval and merge, pull latest changes: `git pull origin main`
 
 **Important:** Never commit directly to `main`. Always work in `dev` and merge via PR.
 
