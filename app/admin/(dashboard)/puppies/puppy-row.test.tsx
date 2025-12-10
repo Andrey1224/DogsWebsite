@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { AdminPuppyRecordWithState } from '@/lib/admin/puppies/queries';
 import { PuppyRow } from './puppy-row';
 import * as actions from './actions';
 
@@ -41,7 +42,7 @@ vi.mock('./edit-puppy-panel', () => ({
 }));
 
 describe('PuppyRow', () => {
-  const mockPuppy = {
+  const mockPuppy: AdminPuppyRecordWithState = {
     id: 'puppy-123',
     slug: 'duddy-the-bulldog',
     name: 'Duddy',
@@ -50,13 +51,10 @@ describe('PuppyRow', () => {
     birth_date: '2024-01-01',
     photo_urls: ['/img1.jpg'],
     has_active_reservation: false,
-    breed_id: 'breed-1',
-    description: 'Cute puppy',
-    gender: 'Male',
     litter_id: null,
-    color: 'Blue',
     created_at: '2024-01-01',
     updated_at: '2024-01-01',
+    is_archived: false,
   };
 
   const statusOptions = [
