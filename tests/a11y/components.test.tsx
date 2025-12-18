@@ -8,6 +8,7 @@ import { ContactForm } from '@/components/contact-form';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { ContactBar } from '@/components/contact-bar';
+import { CONTACT_CHANNELS } from '@/lib/config/contact';
 
 // Mock dependencies
 vi.mock('next/navigation', () => ({
@@ -157,13 +158,13 @@ describe('Component Accessibility Tests', () => {
 
   describe('ContactBar', () => {
     it('should not have accessibility violations', async () => {
-      const { container } = await renderWithAct(<ContactBar />);
+      const { container } = await renderWithAct(<ContactBar channels={CONTACT_CHANNELS} />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     it('should have accessible contact buttons', async () => {
-      const { container } = await renderWithAct(<ContactBar />);
+      const { container } = await renderWithAct(<ContactBar channels={CONTACT_CHANNELS} />);
       const buttons = container.querySelectorAll('a, button');
 
       // All interactive elements should have accessible names
@@ -179,7 +180,7 @@ describe('Component Accessibility Tests', () => {
     });
 
     it('should be keyboard accessible', async () => {
-      const { container } = await renderWithAct(<ContactBar />);
+      const { container } = await renderWithAct(<ContactBar channels={CONTACT_CHANNELS} />);
       const interactiveElements = container.querySelectorAll('a, button');
 
       interactiveElements.forEach((element: Element) => {

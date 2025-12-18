@@ -93,7 +93,7 @@ export function SiteFooter() {
               <SocialButton
                 icon={Instagram}
                 label="Instagram"
-                href="https://instagram.com/exoticbulldoglevel"
+                href={CONTACT_DETAILS.instagram.link}
               />
               <SocialButton icon={Send} label="Telegram" href={CONTACT_DETAILS.telegram.link} />
               <SocialButton

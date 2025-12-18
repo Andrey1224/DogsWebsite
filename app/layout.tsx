@@ -13,6 +13,7 @@ import {
 } from '@/lib/env-validation';
 import { getDefaultMetadata } from '@/lib/seo/metadata';
 import { getLocalBusinessSchema, getOrganizationSchema } from '@/lib/seo/structured-data';
+import { CONTACT_CHANNELS } from '@/lib/config/contact';
 import './globals.css';
 
 const geistSans = Geist({
@@ -101,7 +102,7 @@ export default function RootLayout({
               </main>
               <SiteFooter />
             </div>
-            <ContactBar />
+            <ContactBar channels={CONTACT_CHANNELS} />
             <CrispChatLoader />
             <ConsentBanner />
           </AnalyticsProvider>

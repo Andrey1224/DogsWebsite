@@ -55,20 +55,47 @@ function buildTelegramLink(
   };
 }
 
+function buildInstagramLink(raw?: string, fallback?: string): string | undefined {
+  if (!raw) return fallback;
+  const trimmed = raw.trim();
+  if (!trimmed) return fallback;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  const handle = trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+  return `https://instagram.com/${handle}`;
+}
+
+function normalizeInstagramHandle(raw?: string, fallback?: string): string | undefined {
+  if (!raw) return fallback;
+  const trimmed = raw.trim();
+  if (!trimmed) return fallback;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    const withoutProtocol = trimmed.replace(/^https?:\/\/(www\.)?/i, '');
+    const handle = withoutProtocol.replace(/^instagram\.com\//i, '').replace(/\/+$/, '');
+    return handle || fallback;
+  }
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+}
+
 const DEFAULTS = {
   phone: {
-    display: '+1 (205) 555-1234',
-    e164: '+12055551234',
+    display: '+1 (772) 404-4470',
+    e164: '+17724044470',
   },
   email: {
-    address: 'hello@exoticbulldoglegacy.com',
+    address: 'mosss73@myyahoo.com',
   },
   whatsapp: {
-    link: 'https://wa.me/12055551234',
+    link: 'https://wa.me/17724044470',
   },
   telegram: {
     handle: 'exoticbulldoglevel',
     link: 'https://t.me/exoticbulldoglevel',
+  },
+  instagram: {
+    handle: 'exoticbuldoglevel',
+    link: 'https://instagram.com/exoticbuldoglevel',
   },
 } as const;
 
@@ -83,6 +110,9 @@ const telegramDetails = buildTelegramLink(
   readEnv('NEXT_PUBLIC_TELEGRAM_USERNAME'),
   DEFAULTS.telegram.link,
 );
+const instagramRaw = readEnv('NEXT_PUBLIC_INSTAGRAM_USERNAME');
+const instagramLink = buildInstagramLink(instagramRaw, DEFAULTS.instagram.link);
+const instagramHandle = normalizeInstagramHandle(instagramRaw, DEFAULTS.instagram.handle);
 
 export const CONTACT_DETAILS = {
   phone: {
@@ -98,6 +128,10 @@ export const CONTACT_DETAILS = {
   telegram: {
     handle: telegramDetails.handle ?? DEFAULTS.telegram.handle,
     link: telegramDetails.link ?? DEFAULTS.telegram.link,
+  },
+  instagram: {
+    handle: instagramHandle ?? DEFAULTS.instagram.handle,
+    link: instagramLink ?? DEFAULTS.instagram.link,
   },
 } as const;
 
