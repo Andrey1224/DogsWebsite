@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Phone, MessageCircle, Mail, Send } from 'lucide-react';
 
 import { useAnalytics } from '@/components/analytics-provider';
-import { CONTACT_CHANNELS } from '@/lib/config/contact';
+import type { ContactChannel } from '@/lib/config/contact';
 
 // Map contact channel IDs to lucide-react icons
 const channelIcons = {
@@ -17,7 +17,11 @@ const channelIcons = {
   email: Mail,
 };
 
-export function ContactBar() {
+type ContactBarProps = {
+  channels: ContactChannel[];
+};
+
+export function ContactBar({ channels }: ContactBarProps) {
   const pathname = usePathname();
   const { trackEvent } = useAnalytics();
 
@@ -27,7 +31,7 @@ export function ContactBar() {
         <span className="hidden text-sm font-medium text-slate-300 sm:block">Questions?</span>
 
         <div className="flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-end">
-          {CONTACT_CHANNELS.map((contact) => {
+          {channels.map((contact) => {
             const Icon = channelIcons[contact.id as keyof typeof channelIcons];
             const label = contact.label === 'SMS' ? 'Text' : contact.label;
 

@@ -78,6 +78,10 @@ vi.mock('@/lib/config/contact', () => ({
       handle: 'exoticbulldoglevel',
       link: 'https://t.me/exoticbulldoglevel',
     },
+    instagram: {
+      handle: 'exoticbuldoglevel',
+      link: 'https://instagram.com/exoticbuldoglevel',
+    },
   },
 }));
 
@@ -116,7 +120,7 @@ describe('SEO Structured Data', () => {
 
       expect(schema.sameAs).toContain('https://wa.me/12055551234');
       expect(schema.sameAs).toContain('https://t.me/exoticbulldoglevel');
-      expect(schema.sameAs).toContain('https://instagram.com/exoticbulldoglevel');
+      expect(schema.sameAs).toContain('https://instagram.com/exoticbuldoglevel');
       expect(schema.sameAs).toContain('https://exoticbulldoglegacy.com');
     });
 

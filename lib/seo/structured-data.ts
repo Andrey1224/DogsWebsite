@@ -52,7 +52,7 @@ export function getOrganizationSchema() {
     sameAs: [
       CONTACT_DETAILS.whatsapp.link,
       CONTACT_DETAILS.telegram.link,
-      'https://instagram.com/exoticbulldoglevel',
+      CONTACT_DETAILS.instagram.link,
       siteUrl,
     ].filter(Boolean),
   };
@@ -96,7 +96,7 @@ export function getLocalBusinessSchema() {
     sameAs: [
       CONTACT_DETAILS.whatsapp.link,
       CONTACT_DETAILS.telegram.link,
-      'https://instagram.com/exoticbulldoglevel',
+      CONTACT_DETAILS.instagram.link,
     ].filter(Boolean),
   };
 }

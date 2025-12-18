@@ -16,6 +16,7 @@ import {
 
 import { HeroCarousel } from '@/components/hero-carousel';
 
+import { PromoGate } from '@/components/home/promo-gate';
 import { IntroShell } from '@/components/intro-shell';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getFeaturedReviews } from '@/lib/reviews/queries';
@@ -79,7 +80,7 @@ const faqs = [
   {
     question: 'How do I place a deposit?',
     answer:
-      "Open the puppy's detail page and tap Reserve with Stripe or PayPal. The $300 deposit immediately marks the puppy as reserved while we finalize your contract and pickup timeline.",
+      "First, contact us to schedule a visit or video call to meet your future puppy. Once you've chosen your match, you can place a $300 deposit online (via Stripe or PayPal) or in person. The deposit immediately marks the puppy as reserved while we finalize your contract and pickup timeline.",
   },
   {
     question: 'Is the deposit refundable?',
@@ -119,6 +120,7 @@ export default function Home() {
   return (
     <IntroShell>
       <>
+        <PromoGate />
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
           <FeaturesSection />
@@ -158,9 +160,9 @@ function HeroSection() {
             </span>
           </h1>
           <p className="max-w-lg text-lg leading-relaxed text-slate-400 md:text-xl">
-            Reserve your puppy with a secure $300 deposit, then choose appointment pickup in
-            Falkville or vetted courier delivery. Health-first pedigrees and transparent updates at
-            every step.
+            Contact us to meet your future puppy, then secure your reservation with a $300 deposit.
+            Choose appointment pickup in Falkville or vetted courier delivery. Health-first
+            pedigrees and transparent updates at every step.
           </p>
           <div className="flex flex-wrap gap-4">
             <ActionLink href="/puppies" variant="primary">
@@ -239,10 +241,11 @@ function LogisticsSection() {
             How our puppy deposit and pickup options work
           </h2>
           <p className="text-lg leading-relaxed text-slate-400">
-            Every available puppy can be reserved instantly with a $300 deposit. We confirm your
-            match, lock availability, and guide you to pickup in Falkville, Alabama (by appointment)
-            or coordinate trusted delivery to your door. Prefer to meet first? Book a kennel visit
-            or video call before placing your deposit.
+            We encourage you to contact us first to discuss your needs, schedule a kennel visit, or
+            arrange a video call to meet your future puppy. Once you&apos;ve found your perfect
+            match, you can secure your puppy with a $300 deposit (online or in person). We&apos;ll
+            then confirm your reservation, lock availability, and coordinate pickup in Falkville,
+            Alabama (by appointment) or arrange trusted delivery to your door.
           </p>
           <div className="space-y-4 rounded-3xl border border-slate-800 bg-[#0f1629] p-6">
             <div className="flex gap-4">
@@ -291,7 +294,11 @@ function LogisticsSection() {
                   <Link href="/puppies" className="text-orange-300 underline">
                     available puppies
                   </Link>{' '}
-                  and open a profile.
+                  and{' '}
+                  <Link href="/contact" className="text-orange-300 underline">
+                    contact us
+                  </Link>{' '}
+                  to schedule a visit or video call.
                 </span>
               </li>
               <li className="flex gap-3">
