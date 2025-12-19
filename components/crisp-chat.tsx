@@ -13,15 +13,7 @@ const WHATSAPP_LINK = CONTACT_CHANNELS.find((channel) => channel.id === 'whatsap
 const MOBILE_MAX = 640;
 function isMobile() {
   if (typeof window === 'undefined') return false;
-  return window.matchMedia(`(max-width: ${MOBILE_MAX}px)`).matches;
-}
-
-declare global {
-  interface Window {
-    $crisp?: unknown[];
-    CRISP_WEBSITE_ID?: string;
-    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-  }
+  return window.matchMedia(`(max-width: ${MOBILE_MAX}px}`).matches;
 }
 
 export function CrispChat() {
@@ -42,8 +34,8 @@ export function CrispChat() {
     window.CRISP_WEBSITE_ID = CRISP_WEBSITE_ID;
 
     // Helper to push commands
-    const pushCommand = (...command: unknown[]) => {
-      window.$crisp?.push(command);
+    const pushCommand = (action: string, ...args: unknown[]) => {
+      window.$crisp?.push([action, ...args]);
     };
 
     // Prepare handlers
