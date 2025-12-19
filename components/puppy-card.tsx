@@ -75,7 +75,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
 
         {/* Floating Action Button (hover, Available only) */}
         {isAvailable && (
-          <div className="absolute bottom-4 right-4 translate-y-12 transition-transform duration-300 group-hover:translate-y-0">
+          <div className="absolute bottom-4 right-4 translate-y-0 md:translate-y-12 transition-transform duration-300 md:group-hover:translate-y-0">
             <Link
               href={`/puppies/${puppy.slug}`}
               className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white shadow-lg shadow-black/30 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-orange-400/60 hover:text-orange-300"

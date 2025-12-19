@@ -70,6 +70,7 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 ## Media Guidelines
 
 - Store hero and gallery assets under `public/` (e.g., `public/about/*`).
+- Promo waitlist modal assets live in `public/promo/` (WebP/AVIF/PNG variants). Carousel config is in `components/home/promo-modal.tsx`, which opens after the intro gate; update slide metadata there when swapping photos.
 - Optimize imagery to WebP and AVIF between 1600–1920px on the longest edge and keep each file ≤400 KB.
 - Strip EXIF metadata before committing; use descriptive `alt` text and supply blur placeholders for Next.js `<Image>` components.
 
