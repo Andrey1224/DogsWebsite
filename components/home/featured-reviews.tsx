@@ -113,7 +113,7 @@ export function FeaturedReviewsCarousel({ reviews }: FeaturedReviewsCarouselProp
                 <h3 className="mb-4 text-2xl font-bold leading-snug text-white">
                   {review.headline ?? 'Happy bulldog family'}
                 </h3>
-                <p className="text-base leading-relaxed text-slate-300">
+                <p className="text-base leading-relaxed text-slate-300 line-clamp-10">
                   &ldquo;{review.body}&rdquo;
                 </p>
               </div>

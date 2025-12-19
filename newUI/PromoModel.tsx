@@ -152,18 +152,18 @@ export default function PromoModal() {
         }`}
       >
         {/* Glass Panel */}
-        <div className="relative bg-[#141923]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[500px]">
+        <div className="relative bg-[#141923]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row md:min-h-[500px]">
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 z-20 bg-white/10 hover:bg-white/20 p-2 rounded-full text-white transition border border-white/5"
+            className="absolute top-3 md:top-4 right-3 md:right-4 z-20 bg-white/10 hover:bg-white/20 p-2 rounded-full text-white transition border border-white/5"
           >
             <X size={20} />
           </button>
 
           {/* LEFT SIDE: Embla Carousel */}
           <div className="w-full md:w-5/12 relative bg-gray-900 group">
-            <div className="overflow-hidden h-64 md:h-full relative" ref={emblaRef}>
+            <div className="overflow-hidden h-44 md:h-full relative" ref={emblaRef}>
               <div className="flex h-full">
                 {PUPPY_SLIDES.map((slide) => (
                   <div className="flex-[0_0_100%] min-w-0 relative h-full" key={slide.id}>
@@ -176,13 +176,13 @@ export default function PromoModal() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-transparent to-transparent opacity-90" />
 
                     {/* Content on Image */}
-                    <div className="absolute top-4 left-4">
+                    <div className="absolute top-3 md:top-4 left-3 md:left-4">
                       <span className="bg-[#FF6B00] text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg tracking-wider uppercase">
                         {slide.badge}
                       </span>
                     </div>
 
-                    <div className="absolute bottom-6 left-6 right-6">
+                    <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6">
                       <h4 className="text-white font-bold text-lg leading-tight">{slide.title}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="h-0.5 w-full bg-[#FF6B00] rounded-full" />
@@ -212,35 +212,35 @@ export default function PromoModal() {
           </div>
 
           {/* RIGHT SIDE: Content & Form */}
-          <div className="w-full md:w-7/12 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-br from-white/[0.02] to-transparent">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="w-full md:w-7/12 p-6 md:p-12 flex flex-col justify-center bg-gradient-to-br from-white/[0.02] to-transparent">
+            <div className="flex items-center gap-2 mb-2 md:mb-3">
               <PawPrint className="text-[#FF6B00]" size={16} />
               <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">
                 VIP Access
               </span>
             </div>
 
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+            <h3 className="text-2xl md:text-4xl font-bold text-white mb-3 md:mb-4 leading-tight">
               Don&apos;t miss the <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E40]">
                 Perfect Puppy
               </span>
             </h3>
 
-            <p className="text-gray-400 mb-8 leading-relaxed font-light">
+            <p className="text-gray-400 mb-6 md:mb-8 leading-relaxed font-light text-sm md:text-base">
               Our litters are often reserved before they are publicly listed. Join the
               <strong className="text-gray-200"> Priority Waitlist</strong> to receive photos and
               pricing 24 hours before everyone else.
             </p>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
               <div className="relative">
                 <input
                   type="email"
                   name="email"
                   required
                   placeholder="name@example.com"
-                  className="w-full bg-white/5 border border-white/10 text-white px-5 py-4 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] placeholder-gray-600 transition disabled:opacity-50"
+                  className="w-full bg-white/5 border border-white/10 text-white px-5 py-3 md:py-4 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] placeholder-gray-600 transition disabled:opacity-50"
                   disabled={isSubmitting}
                 />
               </div>
@@ -249,7 +249,7 @@ export default function PromoModal() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold px-6 py-4 rounded-xl transition shadow-lg shadow-orange-900/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold px-6 py-3 md:py-4 rounded-xl transition shadow-lg shadow-orange-900/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -260,14 +260,14 @@ export default function PromoModal() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-6 py-4 rounded-xl font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition"
+                  className="px-6 py-3 md:py-4 rounded-xl font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition"
                 >
                   Maybe later
                 </button>
               </div>
             </form>
 
-            <p className="text-[11px] text-gray-500 mt-6 flex items-center gap-1.5">
+            <p className="text-[11px] text-gray-500 mt-4 md:mt-6 flex items-center gap-1.5">
               <Lock size={12} />
               Secured by HCaptcha. No spam guaranteed.
             </p>

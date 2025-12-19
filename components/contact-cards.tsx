@@ -71,7 +71,7 @@ function ContactMethodCard({ card }: { card: ContactCard }) {
       </div>
 
       <p className="mb-2 text-sm font-bold uppercase tracking-wider text-slate-400">{card.label}</p>
-      <div className="mb-2 text-2xl font-bold text-white">{card.value}</div>
+      <div className="mb-2 text-2xl font-bold text-white break-words">{card.value}</div>
       <p className="mb-8 text-sm leading-relaxed text-slate-500">{card.description}</p>
 
       <div className="flex gap-3">
