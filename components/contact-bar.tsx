@@ -21,12 +21,6 @@ type ContactBarProps = {
   channels: ContactChannel[];
 };
 
-declare global {
-  interface Window {
-    $crisp?: unknown[];
-  }
-}
-
 export function ContactBar({ channels }: ContactBarProps) {
   const pathname = usePathname();
   const { trackEvent } = useAnalytics();
