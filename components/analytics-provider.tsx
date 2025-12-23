@@ -124,32 +124,19 @@ export function AnalyticsProvider({
         console.log('📊 Analytics: Meta Pixel consent granted', { metaPixelId });
       }
 
-      let fbq = window.fbq;
-
-      if (!fbq) {
+      // Initialize placeholder if fbq doesn't exist
+      if (!window.fbq) {
         const placeholder: FacebookPixel = ((...args: FbqCommand) => {
           (placeholder.queue ||= []).push(args);
         }) as FacebookPixel;
         placeholder.queue = [];
         placeholder.loaded = false;
         placeholder.version = '2.0';
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-        document.head.appendChild(script);
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📊 Analytics: Meta Pixel script loaded');
-        }
-
         window.fbq = placeholder;
-        fbq = placeholder;
       }
 
-      fbq?.('init', metaPixelId);
-      fbq?.('consent', 'grant');
-      fbq?.('track', 'PageView');
-      pixelLoadedRef.current = true;
+      // The actual script will be loaded by next/script below
+      // We just initialize here after the script loads via onLoad callback
     }
 
     if (consent === 'denied' && pixelLoadedRef.current) {
@@ -203,7 +190,7 @@ export function AnalyticsProvider({
           <Script
             id="ga-gtag"
             src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             onLoad={() => {
               if (process.env.NODE_ENV === 'development') {
                 console.log('📊 Analytics: GA4 script loaded successfully', { gaMeasurementId });
@@ -212,7 +199,7 @@ export function AnalyticsProvider({
           />
           <Script
             id="ga-init"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{
               __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaMeasurementId}', { send_page_view: false });`,
             }}
@@ -225,16 +212,33 @@ export function AnalyticsProvider({
         </>
       ) : null}
       {consent === 'granted' && metaPixelId ? (
-        <noscript>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            height="1"
-            width="1"
-            style={{ display: 'none' }}
-            src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
-            alt=""
+        <>
+          <Script
+            id="fb-pixel"
+            src="https://connect.facebook.net/en_US/fbevents.js"
+            strategy="lazyOnload"
+            onLoad={() => {
+              if (process.env.NODE_ENV === 'development') {
+                console.log('📊 Analytics: Meta Pixel script loaded');
+              }
+              // Initialize Meta Pixel after script loads
+              window.fbq?.('init', metaPixelId);
+              window.fbq?.('consent', 'grant');
+              window.fbq?.('track', 'PageView');
+              pixelLoadedRef.current = true;
+            }}
           />
-        </noscript>
+          <noscript>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              height="1"
+              width="1"
+              style={{ display: 'none' }}
+              src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
+              alt=""
+            />
+          </noscript>
+        </>
       ) : null}
       {children}
     </AnalyticsContext.Provider>

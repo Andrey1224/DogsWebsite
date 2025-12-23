@@ -110,6 +110,7 @@ describe('createCheckoutSession', () => {
           puppy_id: mockPuppyId,
           puppy_slug: mockPuppySlug,
           puppy_name: 'Bella',
+          customer_email: 'collected_at_checkout',
           channel: 'site',
         },
         success_url: `https://exoticbulldoglegacy.com/puppies/${mockPuppySlug}/reserved?session_id={CHECKOUT_SESSION_ID}`,

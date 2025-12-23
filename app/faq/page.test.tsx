@@ -78,10 +78,20 @@ describe('FAQ Page', () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole('heading', { level: 2, name: /Pickup & Logistics/i }),
+      screen.getByRole('heading', { level: 2, name: /Pickup & Delivery/i }),
     ).toBeInTheDocument();
 
-    expect(screen.getByRole('heading', { level: 2, name: /Health & Papers/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Health & Veterinary/i }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Breeding Program/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /AKC Registration/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /Ongoing Support/i })).toBeInTheDocument();
   });
 
   it('renders FAQ questions as accordion buttons', () => {
@@ -166,8 +176,8 @@ describe('FAQ Page', () => {
   it('renders accordion buttons for FAQ items', () => {
     renderFaqPage();
 
-    // 6 FAQ items as buttons
+    // FAQ items are rendered as buttons
     const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBe(6);
+    expect(buttons.length).toBe(25);
   });
 });

@@ -78,6 +78,32 @@ export default function RootLayout({
           </>
         )}
 
+        {/* Preconnect for analytics (GA4/GTM) - only if consent granted */}
+        {gaMeasurementId && (
+          <>
+            <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+            <link
+              rel="preconnect"
+              href="https://www.googletagmanager.com"
+              crossOrigin="anonymous"
+            />
+            <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+            <link
+              rel="preconnect"
+              href="https://www.google-analytics.com"
+              crossOrigin="anonymous"
+            />
+          </>
+        )}
+
+        {/* Preconnect for Facebook Pixel - only if configured */}
+        {metaPixelId && (
+          <>
+            <link rel="dns-prefetch" href="https://connect.facebook.net" />
+            <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
+          </>
+        )}
+
         {/* Preconnect for Crisp Chat - reduces DNS/TLS handshake time */}
         <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
 

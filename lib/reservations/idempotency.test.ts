@@ -5,6 +5,10 @@ vi.mock('@/lib/supabase/client', () => ({
     from: vi.fn(),
     rpc: vi.fn(),
   }),
+  createServiceRoleClient: () => ({
+    from: vi.fn(),
+    rpc: vi.fn(),
+  }),
 }));
 
 import {

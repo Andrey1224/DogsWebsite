@@ -8,10 +8,9 @@
 
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Lock } from 'lucide-react';
 
-import { PayPalButton } from '@/components/paypal-button';
 import { createCheckoutSession } from './actions';
 
 interface ReserveButtonProps {
@@ -34,7 +33,7 @@ export function ReserveButton({
   paypalClientId,
 }: ReserveButtonProps) {
   const [isStripeLoading, setIsStripeLoading] = useState(false);
-  const [isPayPalProcessing, setIsPayPalProcessing] = useState(false);
+  const isPayPalProcessing = false;
   const [error, setError] = useState<string | null>(null);
   const depositLabel = depositAmount.toLocaleString('en-US', {
     minimumFractionDigits: depositAmount % 1 === 0 ? 0 : 2,
@@ -69,14 +68,6 @@ export function ReserveButton({
       setIsStripeLoading(false);
     }
   };
-
-  const handlePayPalError = useCallback((message: string | null) => {
-    setError(message);
-  }, []);
-
-  const handlePayPalSuccess = useCallback(() => {
-    window.location.href = `/puppies/${puppySlug}/reserved?paypal=success`;
-  }, [puppySlug]);
 
   const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
   const paypalConfigured = Boolean(paypalClientId);
@@ -145,22 +136,18 @@ export function ReserveButton({
           Or pay with
         </div>
         {paypalConfigured ? (
-          <PayPalButton
-            clientId={paypalClientId}
-            puppySlug={puppySlug}
-            disabled={isStripeLoading || isPayPalProcessing}
-            buttonStyle={{
-              layout: 'horizontal',
-              color: 'gold',
-              shape: 'pill',
-              label: 'paypal',
-              height: 48,
-              tagline: false,
-            }}
-            onProcessingChange={setIsPayPalProcessing}
-            onError={handlePayPalError}
-            onSuccess={handlePayPalSuccess}
-          />
+          <div className="space-y-2 rounded-xl border border-slate-700/60 bg-slate-900/40 p-3 text-center text-sm text-slate-400">
+            <div className="font-semibold text-slate-200">PayPal temporarily disabled</div>
+            <div>We&apos;re finalizing PayPal testing. Please use Stripe for now.</div>
+            <button
+              type="button"
+              disabled
+              className="flex w-full items-center justify-center gap-1 rounded-xl bg-[#FFC439]/60 py-3 text-lg font-bold text-[#003087]/70 opacity-70"
+            >
+              <span className="italic font-bold">Pay</span>
+              <span className="italic font-bold text-[#009cde]">Pal</span>
+            </button>
+          </div>
         ) : (
           <button
             type="button"
