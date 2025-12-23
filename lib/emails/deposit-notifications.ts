@@ -40,7 +40,7 @@ function escapeHtml(text: string | undefined): string {
   return text.replace(/[&<>"'/]/g, (char) => map[char]);
 }
 
-interface DepositData {
+export interface DepositData {
   customerName: string;
   customerEmail: string;
   puppyName: string;
@@ -55,7 +55,7 @@ interface DepositData {
 /**
  * Generate owner notification email for deposit payment
  */
-function generateOwnerDepositEmail(data: DepositData): string {
+export function generateOwnerDepositEmail(data: DepositData): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const safeName = escapeHtml(data.customerName);
   const safeEmail = escapeHtml(data.customerEmail);
@@ -157,7 +157,7 @@ function generateOwnerDepositEmail(data: DepositData): string {
 /**
  * Generate customer confirmation email for deposit payment
  */
-function generateCustomerDepositEmail(data: DepositData): string {
+export function generateCustomerDepositEmail(data: DepositData): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const safeName = escapeHtml(data.customerName);
   const safePuppyName = escapeHtml(data.puppyName);

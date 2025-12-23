@@ -5,7 +5,7 @@
  * safe retry mechanisms for payment operations.
  */
 
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { createServiceRoleClient } from '@/lib/supabase/client';
 import type {
   PaymentProvider,
   IdempotencyCheckResult,
@@ -61,7 +61,7 @@ export class IdempotencyKeyGenerator {
  * Idempotency management class
  */
 export class IdempotencyManager {
-  private supabase = createSupabaseClient();
+  private supabase = createServiceRoleClient();
 
   /**
    * Check if a webhook event has already been processed

@@ -96,7 +96,7 @@ export async function createCheckoutSession(
       puppySlug: puppy.slug || '',
       puppyName: puppy.name || 'Bulldog Puppy',
       amountCents: depositAmount * 100, // Convert to cents
-      customerEmail: '', // Will be collected in Checkout
+      customerEmail: 'collected_at_checkout', // Stripe collects and returns actual email
       successUrl: `${siteUrl}/puppies/${puppySlug}/reserved?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${siteUrl}/puppies/${puppySlug}`,
     };
@@ -125,6 +125,7 @@ export async function createCheckoutSession(
         puppy_id: params.puppyId,
         puppy_slug: params.puppySlug,
         puppy_name: params.puppyName,
+        customer_email: params.customerEmail,
         channel: 'site',
       },
       payment_intent_data: {

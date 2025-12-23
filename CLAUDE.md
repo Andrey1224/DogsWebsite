@@ -41,7 +41,16 @@ npx playwright test tests/e2e/foo.spec.ts     # Single E2E test file
 2. Commit and push to `dev` regularly: `git push`
 3. CI checks run automatically on every push to `dev`
 4. When ready for production, create a Pull Request from `dev` → `main`
-5. After PR approval and merge, pull latest changes: `git pull origin main`
+5. After PR approval and merge:
+   - Sync `dev` with `main`: `git checkout dev && git merge main && git push`
+   - This pulls merge commits back into `dev` to keep branches aligned
+
+**Pre-commit Hooks:**
+
+- Husky + lint-staged run automatically on `git commit`
+- Auto-formats TypeScript/JavaScript files with Prettier
+- Runs ESLint with `--fix` on staged files
+- Formats JSON, Markdown, and CSS files
 
 **Important:** Never commit directly to `main`. Always work in `dev` and merge via PR.
 
@@ -84,6 +93,7 @@ Protected by `middleware.ts` with session-based auth (`lib/admin/session.ts`).
 - **Stripe**: Checkout Sessions in `app/puppies/[slug]/actions.ts` → webhook fulfillment via `lib/stripe/webhook-handler.ts`
 - **PayPal**: Smart Buttons → `/api/paypal/create-order` and `/api/paypal/capture`
 - **Reservation**: `ReservationCreationService` with atomic operations and race condition protection
+- **Expiry**: Pending reservations auto-expire after 15 minutes via Supabase `pg_cron` (no external cron needed)
 - Email notifications sent on successful deposit
 
 ### Database Schema
@@ -128,6 +138,26 @@ Theme tokens in `app/globals.css`. Use `useTheme()` hook and Tailwind utilities 
 - Components: `PascalCase`, hooks: `useCamelCase`, utilities: `camelCase.ts`, migrations: `snake_case.sql`
 - Conventional Commits: `feat(scope): message`
 - Secrets in `.env.local`, update `.env.example` when adding new vars
+
+## Environment Variables
+
+**Email Configuration:**
+
+- `OWNER_EMAIL` — Private email where notifications are SENT TO (inquiry alerts, deposit notifications)
+- `NEXT_PUBLIC_CONTACT_EMAIL` — Public email that customers SEE (shown on site, in email templates)
+- `RESEND_FROM_EMAIL` — From address for outgoing emails (must be verified in Resend)
+
+**Contact Information:**
+
+- All `NEXT_PUBLIC_CONTACT_*` variables are visible in browser (public)
+- Phone format: E.164 (`+12055551234`)
+- WhatsApp: digits only, no + (`12055551234`)
+- Telegram: username without @ (`exoticbulldoglegacy`)
+
+**Testing:**
+
+- `HCAPTCHA_BYPASS_TOKEN` / `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` — Bypass captcha in E2E tests
+- `PLAYWRIGHT_MOCK_RESERVATION=true` — Mock payment flows for E2E tests
 
 ## Important Caveats
 

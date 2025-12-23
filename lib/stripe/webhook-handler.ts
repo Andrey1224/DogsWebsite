@@ -25,6 +25,7 @@ import {
 } from '@/lib/emails/deposit-notifications';
 import { sendAsyncPaymentFailedEmail } from '@/lib/emails/async-payment-failed';
 import { createServiceRoleClient } from '@/lib/supabase/client';
+import { ReservationQueries } from '@/lib/reservations/queries';
 import type { Json } from '@/lib/supabase/database.types';
 import type {
   WebhookProcessingResult,
@@ -79,25 +80,45 @@ function normalizeMetadataValue(value?: string | null): string | undefined {
   return value && value.length > 0 ? value : undefined;
 }
 
-function getCheckoutMetadata(session: Stripe.Checkout.Session): StripeCheckoutMetadata | null {
+function getCheckoutMetadata(session: Stripe.Checkout.Session): {
+  metadata: StripeCheckoutMetadata | null;
+  missing: string[];
+} {
   const metadata = session.metadata as Record<string, string> | null;
-  if (!metadata) {
-    return null;
-  }
+  const normalized = {
+    puppy_id: metadata?.puppy_id,
+    puppy_slug: metadata?.puppy_slug,
+    puppy_name: metadata?.puppy_name,
+    customer_email: metadata?.customer_email || session.customer_details?.email,
+    customer_name:
+      normalizeMetadataValue(metadata?.customer_name) || session.customer_details?.name,
+    customer_phone:
+      normalizeMetadataValue(metadata?.customer_phone) || session.customer_details?.phone,
+    channel: normalizeMetadataValue(metadata?.channel),
+  };
 
-  if (REQUIRED_METADATA_FIELDS.some((field) => !metadata[field])) {
-    return null;
+  const missing = REQUIRED_METADATA_FIELDS.filter(
+    (field) => !normalized[field as keyof StripeCheckoutMetadata],
+  );
+
+  if (missing.length > 0) {
+    return { metadata: null, missing };
   }
 
   return {
-    puppy_id: metadata.puppy_id,
-    puppy_slug: metadata.puppy_slug,
-    puppy_name: metadata.puppy_name,
-    customer_email: metadata.customer_email,
-    customer_name: normalizeMetadataValue(metadata.customer_name),
-    customer_phone: normalizeMetadataValue(metadata.customer_phone),
-    channel: normalizeMetadataValue(metadata.channel),
+    metadata: normalized as StripeCheckoutMetadata,
+    missing,
   };
+}
+
+function isUniqueExternalPaymentError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes('unique_external_payment_per_provider') ||
+    normalized.includes('duplicate key value') ||
+    normalized.includes('external_payment_id')
+  );
 }
 
 /**
@@ -167,13 +188,18 @@ export class StripeWebhookHandler {
     eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
-    const metadata = getCheckoutMetadata(session);
+    const { metadata, missing } = getCheckoutMetadata(session);
     if (!metadata) {
-      console.error('[Stripe Webhook] Missing required metadata on checkout.session.completed');
+      console.warn(
+        `[Stripe Webhook] Missing required metadata on checkout.session.completed (missing: ${missing.join(
+          ', ',
+        )})`,
+      );
       return {
-        success: false,
+        success: true,
         eventType: 'checkout.session.completed',
         error: 'Missing required session metadata',
+        skipped: true,
       };
     }
 
@@ -187,15 +213,18 @@ export class StripeWebhookHandler {
       };
     }
 
-    // Check for duplicate event
+    // Check for duplicate by payment intent (idempotency)
+    const paymentDedupeKey = `stripe:${paymentIntentId}`;
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
-      eventId,
-      paymentIntentId,
+      paymentDedupeKey,
+      paymentDedupeKey,
     );
 
     if (idempotencyCheck.exists) {
-      console.log(`[Stripe Webhook] Duplicate event detected: ${eventId}`);
+      console.log(
+        `[Stripe Webhook] Duplicate event detected for payment_intent ${paymentIntentId}; skipping`,
+      );
       return {
         success: true,
         eventType: 'checkout.session.completed',
@@ -248,15 +277,18 @@ export class StripeWebhookHandler {
     eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
-    const metadata = getCheckoutMetadata(session);
+    const { metadata, missing } = getCheckoutMetadata(session);
     if (!metadata) {
-      console.error(
-        '[Stripe Webhook] Missing required metadata on checkout.session.async_payment_succeeded',
+      console.warn(
+        `[Stripe Webhook] Missing required metadata on checkout.session.async_payment_succeeded (missing: ${missing.join(
+          ', ',
+        )})`,
       );
       return {
-        success: false,
+        success: true,
         eventType: 'checkout.session.async_payment_succeeded',
         error: 'Missing required session metadata',
+        skipped: true,
       };
     }
 
@@ -272,15 +304,18 @@ export class StripeWebhookHandler {
       };
     }
 
-    // Check for duplicate event
+    // Check for duplicate by payment intent (idempotency)
+    const paymentDedupeKey = `stripe:${paymentIntentId}`;
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
-      eventId,
-      paymentIntentId,
+      paymentDedupeKey,
+      paymentDedupeKey,
     );
 
     if (idempotencyCheck.exists) {
-      console.log(`[Stripe Webhook] Duplicate event detected: ${eventId}`);
+      console.log(
+        `[Stripe Webhook] Duplicate event detected for payment_intent ${paymentIntentId}; skipping`,
+      );
       return {
         success: true,
         eventType: 'checkout.session.async_payment_succeeded',
@@ -313,13 +348,18 @@ export class StripeWebhookHandler {
     eventId: string,
   ): Promise<WebhookProcessingResult> {
     const session = event.data.object as TypedCheckoutSession;
-    const metadata = getCheckoutMetadata(session);
+    const { metadata, missing } = getCheckoutMetadata(session);
     if (!metadata) {
-      console.error('[Stripe Webhook] Missing required metadata on async_payment_failed');
+      console.warn(
+        `[Stripe Webhook] Missing required metadata on async_payment_failed (missing: ${missing.join(
+          ', ',
+        )})`,
+      );
       return {
-        success: false,
+        success: true,
         eventType: 'checkout.session.async_payment_failed',
         error: 'Missing required session metadata',
+        skipped: true,
       };
     }
 
@@ -424,6 +464,30 @@ export class StripeWebhookHandler {
     metadata: StripeCheckoutMetadata,
     paymentIntentId: string,
   ): Promise<WebhookProcessingResult> {
+    // Early duplicate check by payment intent in reservations table
+    const existingReservation = await ReservationQueries.getByPayment(
+      'stripe',
+      paymentIntentId,
+    ).catch((error) => {
+      console.error('[Stripe Webhook] Failed to check existing reservation by payment:', error);
+      return null;
+    });
+
+    if (existingReservation?.id) {
+      console.log(
+        `[Stripe Webhook] Payment intent ${paymentIntentId} already has reservation ${existingReservation.id}, skipping`,
+      );
+      return {
+        success: true,
+        eventType,
+        paymentIntentId,
+        duplicate: true,
+        skipped: true,
+        reservationId: existingReservation.id,
+        error: 'Reservation already exists for payment intent',
+      };
+    }
+
     if (typeof session.amount_total !== 'number' || session.amount_total <= 0) {
       console.error('[Stripe Webhook] Invalid checkout amount:', session.amount_total);
       return {
@@ -535,6 +599,15 @@ export class StripeWebhookHandler {
         transactionId: paymentIntentId,
       };
 
+      console.info('[Stripe Webhook] Sending deposit emails', {
+        reservationId,
+        paymentIntentId,
+        customerEmail: emailData.customerEmail,
+        ownerEmail: process.env.OWNER_EMAIL,
+        depositAmount: emailData.depositAmount,
+        currency: emailData.currency,
+      });
+
       void Promise.all([
         sendOwnerDepositNotification(emailData),
         sendCustomerDepositConfirmation(emailData),
@@ -560,6 +633,24 @@ export class StripeWebhookHandler {
           };
         }
 
+        if (error.code === 'DATABASE_ERROR' && isUniqueExternalPaymentError(error)) {
+          console.info(
+            '[Stripe Webhook] Duplicate payment detected via unique constraint, skipping',
+            {
+              paymentIntentId,
+              reservationId: metadata.puppy_id,
+            },
+          );
+          return {
+            success: true,
+            eventType,
+            paymentIntentId,
+            duplicate: true,
+            skipped: true,
+            error: 'Duplicate external payment id',
+          };
+        }
+
         return {
           success: false,
           eventType,
@@ -570,6 +661,21 @@ export class StripeWebhookHandler {
       }
 
       console.error('[Stripe Webhook] Failed to create reservation:', error);
+
+      if (isUniqueExternalPaymentError(error)) {
+        console.info('[Stripe Webhook] Duplicate payment detected via DB constraint, skipping', {
+          paymentIntentId,
+          reservationId: metadata.puppy_id,
+        });
+        return {
+          success: true,
+          eventType,
+          paymentIntentId,
+          duplicate: true,
+          skipped: true,
+          error: 'Duplicate external payment id',
+        };
+      }
 
       return {
         success: false,

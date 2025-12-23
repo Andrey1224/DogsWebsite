@@ -88,4 +88,6 @@ export interface WebhookProcessingResult {
   duplicate?: boolean;
   /** Error code for failure scenarios */
   errorCode?: ReservationCreationErrorCode;
+  /** Event skipped without processing (e.g., missing metadata) */
+  skipped?: boolean;
 }

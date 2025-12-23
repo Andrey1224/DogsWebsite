@@ -25,6 +25,12 @@ vi.mock('@/lib/reservations/idempotency', () => ({
   },
 }));
 
+vi.mock('@/lib/reservations/queries', () => ({
+  ReservationQueries: {
+    getByPayment: vi.fn().mockResolvedValue(null),
+  },
+}));
+
 vi.mock('@/lib/emails/async-payment-failed', () => ({
   sendAsyncPaymentFailedEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
@@ -174,7 +180,8 @@ describe('StripeWebhookHandler', () => {
 
       const result = await StripeWebhookHandler.processEvent(event);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
       expect(result.error).toContain('Missing required session metadata');
     });
 

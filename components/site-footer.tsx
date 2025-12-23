@@ -50,6 +50,22 @@ const footerLinks = [
       { label: 'Flight Nanny Info', href: '/policies#delivery' },
     ],
   },
+  {
+    title: 'Contact',
+    items: [
+      { label: phoneDisplay, href: phoneHref, isExternal: true },
+      {
+        label: BUSINESS_PROFILE.email,
+        href: `mailto:${BUSINESS_PROFILE.email}`,
+        isExternal: true,
+      },
+      {
+        label: `${BUSINESS_PROFILE.address.addressLocality}, ${BUSINESS_PROFILE.address.addressRegion} ${BUSINESS_PROFILE.address.postalCode}`,
+        href: BUSINESS_PROFILE.directionsUrl,
+        isExternal: true,
+      },
+    ],
+  },
 ];
 
 const SocialButton = ({
@@ -82,8 +98,8 @@ export function SiteFooter() {
 
       <div className="mx-auto max-w-7xl px-6 md:px-12">
         <div className="mb-20 grid grid-cols-1 gap-12 lg:grid-cols-12">
-          {/* Brand Column (4 cols) */}
-          <div className="space-y-6 lg:col-span-4">
+          {/* Brand Column (3 cols) */}
+          <div className="space-y-6 lg:col-span-3">
             <h2 className="text-2xl font-bold tracking-tight">Exotic Bulldog Legacy</h2>
             <p className="max-w-sm leading-relaxed text-slate-400">
               Responsible French & English bulldog breeding in Alabama with health-first practices,
@@ -111,23 +127,32 @@ export function SiteFooter() {
                 {section.title}
               </h3>
               <ul className="space-y-4">
-                {section.items.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
-                    >
-                      <span className="h-1 w-1 rounded-full bg-slate-600 transition-colors group-hover:bg-orange-500"></span>
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+                {section.items.map((item) => {
+                  const isExternal = 'isExternal' in item && item.isExternal;
+                  const LinkComponent = isExternal ? 'a' : Link;
+                  const extraProps = isExternal
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {};
+
+                  return (
+                    <li key={item.label}>
+                      <LinkComponent
+                        href={item.href}
+                        className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
+                        {...extraProps}
+                      >
+                        <span className="h-1 w-1 rounded-full bg-slate-600 transition-colors group-hover:bg-orange-500"></span>
+                        {item.label}
+                      </LinkComponent>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
 
-          {/* Hours & Visit (4 cols) */}
-          <div className="relative overflow-hidden rounded-3xl border border-slate-800/50 bg-[#151e32] p-6 lg:col-span-4">
+          {/* Hours & Visit (3 cols) */}
+          <div className="relative overflow-hidden rounded-3xl border border-slate-800/50 bg-[#151e32] p-6 lg:col-span-3">
             <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-orange-500/10 blur-2xl" />
 
             <div className="mb-6 flex items-center gap-2">
@@ -192,8 +217,11 @@ export function SiteFooter() {
                   </Link>
                 </p>
                 <p className="mt-1 text-[11px] text-slate-500">
-                  Street address shared after deposit for safety. Pickup in {cityState}; vetted
-                  delivery available.
+                  Street address shared after deposit for safety. Pickup in {cityState}.
+                </p>
+                <p className="mt-2 text-[11px] text-slate-400">
+                  <span className="font-semibold text-slate-300">Delivery available:</span>{' '}
+                  {BUSINESS_PROFILE.areaServed.join(', ')}
                 </p>
                 <div className="mt-3 flex items-center gap-1 text-xs font-bold text-orange-400">
                   <Link

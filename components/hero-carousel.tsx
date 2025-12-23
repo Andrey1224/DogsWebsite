@@ -49,22 +49,33 @@ export function HeroCarousel() {
         className="relative h-[500px] w-full overflow-hidden rounded-[3rem]"
         suppressHydrationWarning
       >
-        {carouselImages.map((image, index) => (
-          <Image
-            key={image.src}
-            src={image.src}
-            alt={image.alt}
-            fill
-            priority={index === 0}
-            placeholder={index === 0 ? 'blur' : undefined}
-            blurDataURL={index === 0 ? HERO_BLUR_DATA_URL : undefined}
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 32rem"
-            suppressHydrationWarning
-            className={`object-cover absolute inset-0 transition-opacity duration-1500 ease-in-out ${
-              mounted && currentIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
-          />
-        ))}
+        {carouselImages.map((image, index) => {
+          const isLCP = index === 0;
+          const isActive = mounted && currentIndex === index;
+
+          return (
+            <Image
+              key={image.src}
+              src={image.src}
+              alt={image.alt}
+              fill
+              priority={isLCP}
+              fetchPriority={isLCP ? 'high' : undefined}
+              placeholder={isLCP ? 'blur' : undefined}
+              blurDataURL={isLCP ? HERO_BLUR_DATA_URL : undefined}
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 32rem"
+              suppressHydrationWarning
+              className={`object-cover absolute inset-0 ${
+                // First image (LCP): instant display, no transition on mount
+                isLCP && !mounted
+                  ? 'opacity-100 z-10'
+                  : isLCP && mounted
+                    ? `transition-opacity duration-500 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`
+                    : `transition-opacity duration-1500 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`
+              }`}
+            />
+          );
+        })}
       </div>
 
       {/* Gradient overlay */}
