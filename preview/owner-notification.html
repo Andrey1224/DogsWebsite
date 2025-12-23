@@ -1,88 +1,140 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New Deposit Received - Exotic Bulldog Legacy</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #28a745; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .section { margin-bottom: 20px; }
-        .field { margin-bottom: 10px; }
-        .label { font-weight: bold; color: #555; }
-        .value { color: #333; }
-        .amount { font-size: 24px; font-weight: bold; color: #28a745; }
-        .puppy-info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .actions { margin-top: 20px; }
-        .btn { display: inline-block; padding: 10px 20px; margin-right: 10px; margin-bottom: 10px;
-                border-radius: 5px; text-decoration: none; color: white; font-weight: bold; }
-        .btn-email { background: #007bff; }
-        .btn-view { background: #6c757d; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;
-                 font-size: 12px; color: #666; }
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background: #28a745;
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .field {
+        margin-bottom: 10px;
+      }
+      .label {
+        font-weight: bold;
+        color: #555;
+      }
+      .value {
+        color: #333;
+      }
+      .amount {
+        font-size: 24px;
+        font-weight: bold;
+        color: #28a745;
+      }
+      .puppy-info {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .actions {
+        margin-top: 20px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+      }
+      .btn-email {
+        background: #007bff;
+      }
+      .btn-view {
+        background: #6c757d;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+        color: #666;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>💰 New Deposit Received!</h1>
-            <p>A customer has successfully paid a deposit</p>
-        </div>
+      <div class="header">
+        <h1>💰 New Deposit Received!</h1>
+        <p>A customer has successfully paid a deposit</p>
+      </div>
 
-        <div class="section">
-            <div class="amount">$300.00 USD</div>
-            <p style="color: #666;">Payment via Stripe</p>
-        </div>
+      <div class="section">
+        <div class="amount">$300.00 USD</div>
+        <p style="color: #666">Payment via Stripe</p>
+      </div>
 
-        <div class="puppy-info">
-            <h2>Puppy Information</h2>
-            <div class="field">
-                <span class="label">Puppy:</span>
-                <span class="value">Bella</span>
-            </div>
-            <div class="field">
-                <a href="http://localhost:3000/puppies/bella-french-bulldog-2024" class="btn btn-view">View Puppy Listing</a>
-            </div>
+      <div class="puppy-info">
+        <h2>Puppy Information</h2>
+        <div class="field">
+          <span class="label">Puppy:</span>
+          <span class="value">Bella</span>
         </div>
+        <div class="field">
+          <a href="http://localhost:3000/puppies/bella-french-bulldog-2024" class="btn btn-view"
+            >View Puppy Listing</a
+          >
+        </div>
+      </div>
 
-        <div class="section">
-            <h2>Customer Information</h2>
-            <div class="field">
-                <span class="label">Name:</span>
-                <span class="value">John Doe</span>
-            </div>
-            <div class="field">
-                <span class="label">Email:</span>
-                <a href="mailto:john@example.com" style="color: #007bff;">john@example.com</a>
-            </div>
+      <div class="section">
+        <h2>Customer Information</h2>
+        <div class="field">
+          <span class="label">Name:</span>
+          <span class="value">John Doe</span>
         </div>
+        <div class="field">
+          <span class="label">Email:</span>
+          <a href="mailto:john@example.com" style="color: #007bff">john@example.com</a>
+        </div>
+      </div>
 
-        <div class="section">
-            <h2>Transaction Details</h2>
-            <div class="field">
-                <span class="label">Reservation ID:</span>
-                <span class="value">#res_test123</span>
-            </div>
-            <div class="field">
-                <span class="label">Transaction ID:</span>
-                <span class="value">txn_test456</span>
-            </div>
-            <div class="field">
-                <span class="label">Payment Provider:</span>
-                <span class="value">Stripe</span>
-            </div>
+      <div class="section">
+        <h2>Transaction Details</h2>
+        <div class="field">
+          <span class="label">Reservation ID:</span>
+          <span class="value">#res_test123</span>
         </div>
+        <div class="field">
+          <span class="label">Transaction ID:</span>
+          <span class="value">txn_test456</span>
+        </div>
+        <div class="field">
+          <span class="label">Payment Provider:</span>
+          <span class="value">Stripe</span>
+        </div>
+      </div>
 
-        <div class="actions">
-            <a href="mailto:john@example.com" class="btn btn-email">Reply to Customer</a>
-        </div>
+      <div class="actions">
+        <a href="mailto:john@example.com" class="btn btn-email">Reply to Customer</a>
+      </div>
 
-        <div class="footer">
-            <p>This is an automated notification from Exotic Bulldog Legacy</p>
-            <p>Transaction Date: 12/22/2025, 5:48:53 PM</p>
-        </div>
+      <div class="footer">
+        <p>This is an automated notification from Exotic Bulldog Legacy</p>
+        <p>Transaction Date: 12/22/2025, 5:48:53 PM</p>
+      </div>
     </div>
-</body>
+  </body>
 </html>
