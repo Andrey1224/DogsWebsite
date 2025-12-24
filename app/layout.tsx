@@ -29,6 +29,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = getDefaultMetadata();
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 // Environment validation
 if (process.env.NODE_ENV === 'development') {

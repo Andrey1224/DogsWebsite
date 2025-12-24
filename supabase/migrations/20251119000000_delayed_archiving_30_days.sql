@@ -109,12 +109,24 @@ GRANT EXECUTE ON FUNCTION archive_sold_puppies_after_30_days() TO service_role;
 -- ============================================================================
 -- STEP 8: Schedule pg_cron job to run daily at 2 AM UTC
 -- ============================================================================
+-- Note: pg_cron is only available in Supabase production, not in local dev
+-- This block will silently skip if cron schema doesn't exist (local dev)
 
-SELECT cron.schedule(
-  'archive-sold-puppies-after-30-days',  -- Job name
-  '0 2 * * *',                            -- Daily at 2 AM UTC
-  'SELECT archive_sold_puppies_after_30_days();'
-);
+DO $$
+BEGIN
+  -- Check if pg_cron extension is available
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    -- Schedule the job
+    PERFORM cron.schedule(
+      'archive-sold-puppies-after-30-days',  -- Job name
+      '0 2 * * *',                            -- Daily at 2 AM UTC
+      'SELECT archive_sold_puppies_after_30_days();'
+    );
+    RAISE NOTICE 'pg_cron job scheduled successfully';
+  ELSE
+    RAISE NOTICE 'pg_cron extension not found - skipping job scheduling (expected in local dev)';
+  END IF;
+END $$;
 
 -- ============================================================================
 -- VERIFICATION QUERIES (Run these manually to verify the migration)

@@ -84,7 +84,7 @@ export function HeroCarousel() {
       {/* Health Guarantee Badge */}
       <div className="absolute top-8 right-8 flex max-w-xs items-center gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-4 backdrop-blur-md z-30">
         <div className="rounded-full bg-green-500/20 p-2">
-          <ShieldCheck className="text-green-400" size={24} />
+          <ShieldCheck className="text-green-400" size={24} aria-hidden="true" />
         </div>
         <div>
           <p className="text-sm font-bold">Health Guarantee</p>
