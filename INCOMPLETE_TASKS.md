@@ -290,14 +290,18 @@
   - Файл: `tests/e2e/admin.spec.ts`
   - Сценарий: Изменение статуса щенка в админке → проверка на публичном сайте
 
-- [x] **L2.4.1 Интеграционные тесты для платежных API (Stripe)** — ✅ Завершено (2025-12-22)
+- [x] **L2.4.1 Интеграционные тесты для платежных API (Stripe)** — ✅ Run (24 Dec 2025)
   - Тест: `tests/integration/stripe-webhook.integration.test.ts`
   - Охват: `checkout.session.completed`, idempotency, bad signature, `checkout.session.expired`
   - Требует: Supabase local + ключи окружения
+  - Required env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, `STRIPE_WEBHOOK_SECRET`
+  - Optional env: `SUPABASE_ANON_KEY`, `STRIPE_SECRET_KEY` (если не делаем Stripe API calls)
+  - Ports: API `54321`, DB `54322`
+  - Why: Postgres падал на `COALESCE(NEW.id, 0)` из-за `uuid` vs `integer`. Исправлено новой миграцией с UUID placeholder.
   - Запуск:
     - `supabase start`
-    - `supabase db reset`
-    - `SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_ANON_KEY=... SUPABASE_SERVICE_ROLE_KEY=... SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres STRIPE_SECRET_KEY=... STRIPE_WEBHOOK_SECRET=... npm run test -- tests/integration/stripe-webhook.integration.test.ts`
+    - `npx supabase db reset`
+    - `SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY=... SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres STRIPE_WEBHOOK_SECRET=... npm run test -- tests/integration/stripe-webhook.integration.test.ts`
 
 **Источник:** `docs/planning/QUALITY_PLAN.md`
 

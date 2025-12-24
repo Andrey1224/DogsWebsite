@@ -239,12 +239,10 @@ describeOrSkip('Stripe webhook integration (offline)', () => {
     });
 
     const payload = JSON.stringify(event);
-    const request = createSignedRequest(payload, TEST_ENV.stripeWebhookSecret!);
-
-    const firstResponse = await POST(request);
+    const firstResponse = await POST(createSignedRequest(payload, TEST_ENV.stripeWebhookSecret!));
     expect(firstResponse.status).toBe(200);
 
-    const secondResponse = await POST(request);
+    const secondResponse = await POST(createSignedRequest(payload, TEST_ENV.stripeWebhookSecret!));
     const secondData = await secondResponse.json();
     expect(secondResponse.status).toBe(200);
     expect(secondData.duplicate).toBe(true);
