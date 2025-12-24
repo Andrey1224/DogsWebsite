@@ -19,6 +19,9 @@ export function FaqAccordion({ faqs }: FaqAccordionProps) {
     <div className="space-y-4">
       {faqs.map((faq, index) => {
         const isOpen = index === openIndex;
+        const accordionId = `faq-accordion-${index}`;
+        const buttonId = `${accordionId}-button`;
+        const panelId = `${accordionId}-panel`;
 
         return (
           <div
@@ -34,6 +37,8 @@ export function FaqAccordion({ faqs }: FaqAccordionProps) {
               onClick={() => setOpenIndex(isOpen ? -1 : index)}
               className="flex w-full items-center justify-between p-6 text-left"
               aria-expanded={isOpen}
+              aria-controls={panelId}
+              id={buttonId}
             >
               <p className={`text-lg font-semibold ${isOpen ? 'text-white' : 'text-slate-300'}`}>
                 {faq.question}
@@ -42,10 +47,15 @@ export function FaqAccordion({ faqs }: FaqAccordionProps) {
                 className={`transition-transform duration-300 ${
                   isOpen ? 'rotate-180 text-orange-400' : 'text-slate-500'
                 }`}
+                aria-hidden="true"
               />
             </button>
             <div
               className={`px-6 pb-6 text-slate-400 leading-relaxed ${isOpen ? 'block' : 'hidden'}`}
+              id={panelId}
+              role="region"
+              aria-labelledby={buttonId}
+              aria-hidden={!isOpen}
             >
               {faq.answer}
             </div>

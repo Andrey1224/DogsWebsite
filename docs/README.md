@@ -7,7 +7,7 @@
 - [`README.md`](../README.md) - Project setup, quick start, tech stack
 - [`CLAUDE.md`](../CLAUDE.md) - AI agent operating manual, architecture overview, commands
 - [`AGENTS.md`](../AGENTS.md) - Contributor practices and coding guidelines
-- [`Spec1.md`](../Spec1.md) - Product requirements document (PRD)
+- [`PRD.md`](planning/PRD.md) - Product requirements document (PRD)
 - [`SPRINT_PLAN.md`](../SPRINT_PLAN.md) - Master execution roadmap
 - [`GEMINI.md`](../GEMINI.md) - Google Gemini AI context and project overview
 
@@ -101,7 +101,7 @@ These files are kept for historical reference but superseded by current ADRs.
 
 When making changes, keep these synchronized:
 
-- Core docs (README, CLAUDE, AGENTS, Spec1, SPRINT_PLAN)
+- Core docs (README, CLAUDE, AGENTS, PRD, SPRINT_PLAN)
 - Admin changelog when adding features
 - Create new ADRs for significant architectural decisions
 - Update sprint reports at sprint completion

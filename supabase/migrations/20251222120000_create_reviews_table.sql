@@ -45,20 +45,16 @@ COMMENT ON COLUMN reviews.client_ip IS 'Captured client IP for spam mitigation/a
 COMMENT ON COLUMN reviews.created_at IS 'When the review was stored.';
 
 -- Storage bucket for review photos (public read)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM storage.buckets WHERE id = 'reviews'
-  ) THEN
-    PERFORM storage.create_bucket(
-      bucket_id := 'reviews',
-      name := 'reviews',
-      public := true,
-      file_size_limit := 5242880 -- 5MB
-    );
-  END IF;
-END;
-$$;
+-- Using INSERT for compatibility with local Supabase (storage.create_bucket has different signatures)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'reviews',
+  'reviews',
+  true,
+  5242880, -- 5MB limit
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'] -- Only allow images
+)
+ON CONFLICT (id) DO NOTHING;
 
 CREATE POLICY "Public read access for review photos"
 ON storage.objects

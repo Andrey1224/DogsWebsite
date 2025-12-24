@@ -1,7 +1,7 @@
 // New dark navigation UI - scroll-aware with fullscreen mobile menu
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import Link from 'next/link';
 import { Menu, X, PawPrint, ChevronRight } from 'lucide-react';
 
@@ -17,6 +17,14 @@ const navLinks = [
 export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const didMountRef = useRef(false);
+
+  const focusableSelector = useMemo(
+    () => 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    [],
+  );
 
   // Handle scroll effect
   useEffect(() => {
@@ -26,6 +34,52 @@ export function SiteHeader() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+
+    if (mobileMenuOpen) {
+      const focusable = mobileMenuRef.current?.querySelectorAll<HTMLElement>(focusableSelector);
+      const first = focusable?.[0] ?? mobileMenuRef.current;
+      first?.focus();
+    } else {
+      mobileMenuButtonRef.current?.focus();
+    }
+  }, [mobileMenuOpen, focusableSelector]);
+
+  const handleMobileMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!mobileMenuOpen) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setMobileMenuOpen(false);
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const focusable = Array.from(
+      mobileMenuRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
+    );
+
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const isShift = event.shiftKey;
+    const activeElement = document.activeElement as HTMLElement | null;
+
+    if (isShift && activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!isShift && activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
 
   return (
     <>
@@ -44,7 +98,11 @@ export function SiteHeader() {
           {/* Logo Area */}
           <Link href="/" className="group flex cursor-pointer items-center gap-2">
             <div className="rounded-xl bg-orange-500/10 p-2 transition-colors duration-300 group-hover:bg-orange-500">
-              <PawPrint className="text-orange-500 group-hover:text-white" size={24} />
+              <PawPrint
+                className="text-orange-500 group-hover:text-white"
+                size={24}
+                aria-hidden="true"
+              />
             </div>
             <div className="text-xl font-bold tracking-tight text-white">
               Exotic <span className="font-light text-slate-400">Bulldog Legacy</span>
@@ -73,7 +131,7 @@ export function SiteHeader() {
               href="/puppies"
               className="flex items-center gap-2 rounded-full border border-slate-700 bg-transparent px-5 py-2.5 text-sm font-bold text-slate-300 transition-all hover:border-orange-500 hover:text-orange-400"
             >
-              Find a Puppy <ChevronRight size={16} />
+              Find a Puppy <ChevronRight size={16} aria-hidden="true" />
             </Link>
           </div>
 
@@ -84,8 +142,10 @@ export function SiteHeader() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
             aria-label="Open navigation menu"
+            aria-haspopup="dialog"
+            ref={mobileMenuButtonRef}
           >
-            <Menu size={28} />
+            <Menu size={28} aria-hidden="true" />
           </button>
         </div>
       </nav>
@@ -93,21 +153,29 @@ export function SiteHeader() {
       {/* Mobile Menu Overlay */}
       <div
         id="mobile-menu"
+        ref={mobileMenuRef}
         className={`
           fixed inset-0 z-[60] bg-[#0B1120] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
           ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
         aria-hidden={!mobileMenuOpen}
+        aria-modal="true"
+        aria-labelledby="mobile-menu-title"
+        role="dialog"
+        tabIndex={-1}
+        onKeyDown={handleMobileMenuKeyDown}
       >
         {/* Mobile Header */}
         <div className="flex items-center justify-between border-b border-slate-800 p-6">
-          <div className="text-xl font-bold text-white">Menu</div>
+          <div className="text-xl font-bold text-white" id="mobile-menu-title">
+            Menu
+          </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="rounded-full bg-[#1E293B] p-2 text-slate-400 hover:text-white"
             aria-label="Close navigation menu"
           >
-            <X size={24} />
+            <X size={24} aria-hidden="true" />
           </button>
         </div>
 
@@ -124,6 +192,7 @@ export function SiteHeader() {
               <ChevronRight
                 className="translate-x-0 text-orange-500 opacity-0 transition-all duration-300 group-hover:-translate-x-4 group-hover:opacity-100"
                 size={24}
+                aria-hidden="true"
               />
             </Link>
           ))}

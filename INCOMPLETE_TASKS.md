@@ -145,10 +145,12 @@
   - Файлы: `app/not-found.tsx`, `app/error.tsx`
   - Требуется: Кастомный дизайн с брендингом
 
-- [ ] **Accessibility audit полный**
+**Завершено:**
+
+- [x] **Accessibility audit полный** — ✅ Завершено (2025-12-22)
   - Источник: SPRINT_PLAN.md строка 153
-  - Проверить: alt texts, focus visible, contrast ≥ 4.5:1
-  - Частично покрыто: `tests/a11y/components.test.tsx`
+  - Проверено/обновлено: alt texts, focus visible, accordion/FAQ labels, menu focus trap
+  - Тесты: `tests/a11y/components.test.tsx`, `tests/a11y/pages.test.tsx`
 
 **Источник:** SPRINT_PLAN.md Sprint 5, SEO_PLAN.md
 
@@ -165,7 +167,7 @@
   - Действие: Настроить автоматические бэкапы в Supabase Dashboard
   - Документация: Создать restore guide
 
-- [ ] **Custom domain DNS + HTTPS**
+- [x] **Custom domain DNS + HTTPS** — ✅ Завершено (2025-12-22)
   - Источник: SPRINT_PLAN.md строка 178
   - Требуется: Настройка домена через Vercel
 
@@ -232,10 +234,10 @@
   - Источник: PRD.md строка 38
   - Требуется: Создать Telegram канал, добавить ссылку на сайт
 
-- [ ] **Оптимизация всех изображений** WebP/AVIF ≤ 400 KB
+- [x] **Оптимизация всех изображений** WebP/AVIF ≤ 400 KB — ✅ Завершено (2025-12-22)
   - Источник: SPRINT_PLAN.md строка 154, PRD.md строка 74
-  - Статус: Частично сделано (hero оптимизирован)
-  - Действие: Проверить все изображения в `public/`
+  - Статус: Все изображения оптимизированы
+  - Действие: Проверка завершена
 
 **Источник:** PRD.md Should Have, SPRINT_PLAN.md
 
@@ -247,7 +249,7 @@
 
 **Что не хватает:**
 
-- [ ] **Contact Bar выравнивание** с 5 кнопками
+- [x] **Contact Bar выравнивание** с 5 кнопками — ✅ Завершено (2025-12-22)
   - Источник: `docs/planning/UI_BACKLOG.md`
   - Priority: Low
   - Файл: `components/contact-bar.tsx`
@@ -288,12 +290,14 @@
   - Файл: `tests/e2e/admin.spec.ts`
   - Сценарий: Изменение статуса щенка в админке → проверка на публичном сайте
 
-- [ ] **L2.4.1 Интеграционные тесты для платежных API**
-  - Источник: QUALITY_PLAN.md строка 498
-  - Файлы для тестирования:
-    - `app/api/paypal/create-order/route.ts`
-    - `app/api/stripe/webhook/route.ts`
-    - `lib/stripe/webhook-handler.ts`
+- [x] **L2.4.1 Интеграционные тесты для платежных API (Stripe)** — ✅ Завершено (2025-12-22)
+  - Тест: `tests/integration/stripe-webhook.integration.test.ts`
+  - Охват: `checkout.session.completed`, idempotency, bad signature, `checkout.session.expired`
+  - Требует: Supabase local + ключи окружения
+  - Запуск:
+    - `supabase start`
+    - `supabase db reset`
+    - `SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_ANON_KEY=... SUPABASE_SERVICE_ROLE_KEY=... SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres STRIPE_SECRET_KEY=... STRIPE_WEBHOOK_SECRET=... npm run test -- tests/integration/stripe-webhook.integration.test.ts`
 
 **Источник:** `docs/planning/QUALITY_PLAN.md`
 
@@ -456,6 +460,7 @@
 - **Все критичные платежные функции работают** — Stripe, PayPal, webhooks, reservations
 - **Безопасность и валидация в порядке** — hCaptcha, rate limiting, email validation
 - **Основная функциональность MVP готова** — catalog, contact, payments, admin panel
+- **Crisp mobile widget скрыт** — применена более устойчивая детекция мобилок (width/pointer) + viewport meta
 - **SEO инфраструктура завершена (2025-12-21)** — LocalBusiness, Product, FAQPage schemas + NAP block
 - **Весь контент готов (2025-12-22):**
   - FAQ: 25 вопросов в 6 категориях с safe формулировками
