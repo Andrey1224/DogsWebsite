@@ -63,6 +63,56 @@ const hasRequiredEnv =
 
 const describeOrSkip = hasRequiredEnv ? describe : describe.skip;
 
+type TestCheckoutSessionBase = {
+  id: string;
+  object: 'checkout.session';
+};
+
+type TestCheckoutSessionCompletedEvent = {
+  id: string;
+  object: 'event';
+  api_version: string;
+  created: number;
+  livemode: boolean;
+  pending_webhooks: number;
+  request: null;
+  type: 'checkout.session.completed';
+  data: {
+    object: TestCheckoutSessionBase & {
+      payment_status: 'paid';
+      payment_intent: string;
+      amount_total: number;
+      currency: 'usd';
+      customer_details: {
+        email: string;
+        name: string;
+        phone: string;
+      };
+      metadata: {
+        puppy_id: string;
+        puppy_slug: string;
+        puppy_name: string;
+        customer_email: string;
+        channel: string;
+      };
+    };
+  };
+};
+
+type TestCheckoutSessionExpiredEvent = {
+  id: string;
+  object: 'event';
+  api_version: string;
+  created: number;
+  livemode: boolean;
+  pending_webhooks: number;
+  request: null;
+  type: 'checkout.session.expired';
+  data: {
+    object: TestCheckoutSessionBase;
+  };
+};
+
 describeOrSkip('Stripe webhook integration (offline)', () => {
   let pool: Pool;
   let stripe: Stripe;
@@ -123,13 +173,15 @@ describeOrSkip('Stripe webhook integration (offline)', () => {
     puppySlug: string;
     puppyName: string;
     amountTotal: number;
-  }): Stripe.Event {
+  }): TestCheckoutSessionCompletedEvent {
     return {
       id: params.eventId,
       object: 'event',
       api_version: '2025-10-29.clover',
       created: Math.floor(Date.now() / 1000),
       livemode: false,
+      pending_webhooks: 1,
+      request: null,
       type: 'checkout.session.completed',
       data: {
         object: {
@@ -153,16 +205,21 @@ describeOrSkip('Stripe webhook integration (offline)', () => {
           },
         },
       },
-    } as Stripe.Event;
+    };
   }
 
-  function buildExpiredEvent(params: { eventId: string; sessionId: string }): Stripe.Event {
+  function buildExpiredEvent(params: {
+    eventId: string;
+    sessionId: string;
+  }): TestCheckoutSessionExpiredEvent {
     return {
       id: params.eventId,
       object: 'event',
       api_version: '2025-10-29.clover',
       created: Math.floor(Date.now() / 1000),
       livemode: false,
+      pending_webhooks: 1,
+      request: null,
       type: 'checkout.session.expired',
       data: {
         object: {
@@ -170,7 +227,7 @@ describeOrSkip('Stripe webhook integration (offline)', () => {
           object: 'checkout.session',
         },
       },
-    } as Stripe.Event;
+    };
   }
 
   function createSignedRequest(payload: string, secret: string) {

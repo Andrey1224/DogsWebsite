@@ -140,20 +140,12 @@ export function CrispChat() {
     };
     const mediaQuery = window.matchMedia(MOBILE_QUERY);
     window.addEventListener('resize', onVisibilityChange);
-    if ('addEventListener' in mediaQuery) {
-      mediaQuery.addEventListener('change', onVisibilityChange);
-    } else {
-      mediaQuery.addListener(onVisibilityChange);
-    }
+    mediaQuery.addEventListener('change', onVisibilityChange);
 
     return () => {
       window.removeEventListener('crisp:open', onForceOpen);
       window.removeEventListener('resize', onVisibilityChange);
-      if ('removeEventListener' in mediaQuery) {
-        mediaQuery.removeEventListener('change', onVisibilityChange);
-      } else {
-        mediaQuery.removeListener(onVisibilityChange);
-      }
+      mediaQuery.removeEventListener('change', onVisibilityChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, trackEvent]); // loadCrisp and openChat are stable via refs
