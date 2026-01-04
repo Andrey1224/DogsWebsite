@@ -16,7 +16,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#0d1a44] px-4 py-16 text-white selection:bg-[#ffb84d] selection:text-[#0d1a44]">
+    <main className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#0d1a44] px-4 py-16 text-white selection:bg-[#ffb84d] selection:text-[#0d1a44]">
       <div className="pointer-events-none absolute inset-0 opacity-5">
         <PawPrint className="absolute left-[5%] top-[10%] rotate-[120deg] text-white" size={140} />
         <PawPrint className="absolute right-[10%] top-[40%] rotate-[-60deg] text-white" size={90} />
@@ -77,6 +77,6 @@ export default function Error({
       </div>
 
       <div className="absolute bottom-8 text-sm text-slate-500">Exotic Bulldog Legacy System</div>
-    </div>
+    </main>
   );
 }

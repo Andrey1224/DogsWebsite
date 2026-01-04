@@ -6,8 +6,8 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { usePathname } from 'next/navigation';
 import { Check, Send } from 'lucide-react';
 
-import { submitContactInquiry } from '@/app/contact/actions';
-import type { ContactFormState } from '@/app/contact/actions';
+import { submitContactInquiry } from '@/app/(site)/(chrome)/contact/actions';
+import type { ContactFormState } from '@/app/(site)/(chrome)/contact/actions';
 import { useAnalytics } from '@/components/analytics-provider';
 
 const HC_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;

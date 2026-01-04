@@ -56,6 +56,7 @@ export function IntroScreen({ onComplete }: IntroScreenProps) {
     setIsExiting(true);
     try {
       sessionStorage.setItem('ebl_intro_complete', 'true');
+      localStorage.setItem('ebl_intro_seen', 'true');
     } catch {
       // ignore
     }

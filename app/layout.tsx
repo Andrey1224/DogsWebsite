@@ -1,11 +1,8 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AnalyticsProvider } from '@/components/analytics-provider';
-import { ContactBar } from '@/components/contact-bar';
 import { ConsentBanner } from '@/components/consent-banner';
 import { CrispChatLoader } from '@/components/crisp-chat-loader';
 import { JsonLd } from '@/components/json-ld';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
 import { ThemeProvider } from '@/components/theme-provider';
 import {
   validateDevelopmentEnvironment,
@@ -13,7 +10,6 @@ import {
 } from '@/lib/env-validation';
 import { getDefaultMetadata } from '@/lib/seo/metadata';
 import { getLocalBusinessSchema, getOrganizationSchema } from '@/lib/seo/structured-data';
-import { CONTACT_CHANNELS } from '@/lib/config/contact';
 import './globals.css';
 
 const geistSans = Geist({
@@ -118,21 +114,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <a href="#main-content" className="skip-link">
-          Skip to content
-        </a>
         <JsonLd id="organization-schema" data={organizationSchema} />
         <JsonLd id="localbusiness-schema" data={localBusinessSchema} />
         <ThemeProvider>
           <AnalyticsProvider gaMeasurementId={gaMeasurementId} metaPixelId={metaPixelId}>
-            <div className="flex min-h-screen flex-col">
-              <SiteHeader />
-              <main id="main-content" className="flex-1 bg-bg">
-                {children}
-              </main>
-              <SiteFooter />
-            </div>
-            <ContactBar channels={CONTACT_CHANNELS} />
+            {children}
             <CrispChatLoader />
             <ConsentBanner />
           </AnalyticsProvider>
