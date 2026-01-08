@@ -7,6 +7,7 @@
 
 import { ReservationCreationError, ReservationCreationService } from '@/lib/reservations/create';
 import { idempotencyManager } from '@/lib/reservations/idempotency';
+import { ReservationQueries } from '@/lib/reservations/queries';
 import type { ReservationChannel } from '@/lib/reservations/types';
 import { trackDepositPaid } from '@/lib/analytics/server-events';
 import {
@@ -212,6 +213,21 @@ export class PayPalWebhookHandler {
       console.log(
         `[PayPal Webhook] Reservation created for capture ${captureId}, reservation ID ${reservationId}`,
       );
+
+      // CRITICAL FIX: Update reservation status to 'paid'
+      try {
+        const updatedReservation = await ReservationQueries.updateStatus(reservationId, 'paid');
+        if (!updatedReservation) {
+          console.error(
+            `[PayPal Webhook] Failed to update reservation ${reservationId} to paid status`,
+          );
+        } else {
+          console.log(`[PayPal Webhook] Reservation ${reservationId} marked as paid`);
+        }
+      } catch (statusUpdateError) {
+        console.error(`[PayPal Webhook] Error updating reservation status:`, statusUpdateError);
+        // Non-fatal - reservation exists, emails will still be sent
+      }
 
       await trackDepositPaid({
         value: amountValue,

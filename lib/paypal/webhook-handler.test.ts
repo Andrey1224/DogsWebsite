@@ -11,12 +11,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PayPalWebhookHandler } from './webhook-handler';
+import { ReservationQueries } from '@/lib/reservations/queries';
 import type { PayPalWebhookEvent } from './types';
 
 vi.mock('@/lib/reservations/idempotency', () => ({
   idempotencyManager: {
     checkWebhookEvent: vi.fn(),
     createWebhookEvent: vi.fn(),
+  },
+}));
+
+vi.mock('@/lib/reservations/queries', () => ({
+  ReservationQueries: {
+    updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
   },
 }));
 
@@ -117,6 +124,9 @@ describe('PayPalWebhookHandler', () => {
         eventType: 'PAYMENT.CAPTURE.COMPLETED',
       }),
     );
+
+    // Verify reservation status is updated to 'paid'
+    expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('res_123', 'paid');
   });
 
   it('detects duplicate events via idempotency manager', async () => {

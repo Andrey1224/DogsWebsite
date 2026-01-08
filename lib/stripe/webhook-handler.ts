@@ -559,6 +559,21 @@ export class StripeWebhookHandler {
 
       console.log(`[Stripe Webhook] Successfully created reservation ID: ${reservationId}`);
 
+      // CRITICAL FIX: Update reservation status to 'paid'
+      try {
+        const updatedReservation = await ReservationQueries.updateStatus(reservationId, 'paid');
+        if (!updatedReservation) {
+          console.error(
+            `[Stripe Webhook] Failed to update reservation ${reservationId} to paid status`,
+          );
+        } else {
+          console.log(`[Stripe Webhook] Reservation ${reservationId} marked as paid`);
+        }
+      } catch (statusUpdateError) {
+        console.error(`[Stripe Webhook] Error updating reservation status:`, statusUpdateError);
+        // Non-fatal - reservation exists, emails will still be sent
+      }
+
       if (metadata.puppy_slug) {
         revalidatePath(`/puppies/${metadata.puppy_slug}`);
       }

@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StripeWebhookHandler } from './webhook-handler';
+import { ReservationQueries } from '@/lib/reservations/queries';
 import type Stripe from 'stripe';
 import type { TypedCheckoutSession } from './types';
 
@@ -28,6 +29,7 @@ vi.mock('@/lib/reservations/idempotency', () => ({
 vi.mock('@/lib/reservations/queries', () => ({
   ReservationQueries: {
     getByPayment: vi.fn().mockResolvedValue(null),
+    updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
   },
 }));
 
@@ -143,6 +145,9 @@ describe('StripeWebhookHandler', () => {
         channel: 'site',
         notes: `Stripe Checkout Session: ${mockSessionId}`,
       });
+
+      // Verify reservation status is updated to 'paid'
+      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('res_123', 'paid');
     });
 
     it('should detect duplicate events via idempotency check', async () => {
@@ -286,6 +291,9 @@ describe('StripeWebhookHandler', () => {
       expect(result.eventType).toBe('checkout.session.async_payment_succeeded');
       expect(result.reservationId).toBe('res_123');
       expect(ReservationCreationService.createReservation).toHaveBeenCalled();
+
+      // Verify reservation status is updated to 'paid'
+      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('res_123', 'paid');
     });
 
     it('should detect duplicate async payment events', async () => {
