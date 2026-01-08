@@ -23,6 +23,10 @@ import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
 } from '@/lib/emails/deposit-notifications';
+import {
+  sendOwnerRefundNotification,
+  sendCustomerRefundNotification,
+} from '@/lib/emails/refund-notifications';
 import { sendAsyncPaymentFailedEmail } from '@/lib/emails/async-payment-failed';
 import { createServiceRoleClient } from '@/lib/supabase/client';
 import { ReservationQueries } from '@/lib/reservations/queries';
@@ -161,6 +165,9 @@ export class StripeWebhookHandler {
 
       case 'checkout.session.expired':
         return this.handleSessionExpired(event, eventId);
+
+      case 'charge.refunded':
+        return this.handleChargeRefunded(event, eventId);
 
       default:
         console.log(`[Stripe Webhook] Unhandled event type: ${type}`);
@@ -699,5 +706,132 @@ export class StripeWebhookHandler {
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
+  }
+
+  /**
+   * Handle charge.refunded event
+   *
+   * Triggered when a charge is refunded (full or partial).
+   * Updates reservation status to 'refunded' and sends email notifications.
+   */
+  private static async handleChargeRefunded(
+    event: Stripe.Event,
+    eventId: string,
+  ): Promise<WebhookProcessingResult> {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId =
+      typeof charge.payment_intent === 'string'
+        ? charge.payment_intent
+        : charge.payment_intent?.id || null;
+
+    if (!paymentIntentId) {
+      console.error('[Stripe Webhook] Missing payment_intent on charge.refunded');
+      return {
+        success: false,
+        eventType: 'charge.refunded',
+        error: 'Missing payment_intent',
+      };
+    }
+
+    console.log(`[Stripe Webhook] Processing refund for payment_intent: ${paymentIntentId}`);
+
+    // Find reservation by payment intent
+    const reservation = await ReservationQueries.getByPayment('stripe', paymentIntentId).catch(
+      (error) => {
+        console.error('[Stripe Webhook] Failed to find reservation for refund:', error);
+        return null;
+      },
+    );
+
+    if (!reservation) {
+      console.warn(`[Stripe Webhook] No reservation found for payment_intent: ${paymentIntentId}`);
+      return {
+        success: false,
+        eventType: 'charge.refunded',
+        paymentIntentId,
+        error: 'Reservation not found',
+      };
+    }
+
+    console.log(`[Stripe Webhook] Found reservation ${reservation.id} for refund`);
+
+    // Extract refund information
+    const refund = charge.refunds?.data?.[0];
+    const refundId = refund?.id || charge.id;
+    const refundAmount = charge.amount_refunded / 100; // Convert from cents
+    const refundReason = refund?.reason || 'Unknown';
+
+    // Update reservation status to 'refunded'
+    try {
+      const refundNote = `[Stripe Refund ${new Date().toISOString()}] Amount: $${refundAmount} ${charge.currency?.toUpperCase() || 'USD'}, Reason: ${refundReason}, Refund ID: ${refundId}`;
+      const existingNotes = reservation.notes || '';
+      const updatedNotes = existingNotes ? `${existingNotes}\n\n${refundNote}` : refundNote;
+
+      await ReservationQueries.update(reservation.id, {
+        status: 'refunded',
+        notes: updatedNotes,
+      });
+
+      console.log(`[Stripe Webhook] Reservation ${reservation.id} marked as refunded`);
+    } catch (error) {
+      console.error(`[Stripe Webhook] Error updating reservation status to refunded:`, error);
+      return {
+        success: false,
+        eventType: 'charge.refunded',
+        paymentIntentId,
+        reservationId: reservation.id,
+        error: 'Failed to update reservation status',
+      };
+    }
+
+    // Get puppy details for email
+    const supabase = supabaseAdminClient || createServiceRoleClient();
+    const { data: puppy } = await supabase
+      .from('puppies')
+      .select('name, slug')
+      .eq('id', reservation.puppy_id)
+      .single();
+
+    if (!puppy) {
+      console.warn(`[Stripe Webhook] Puppy not found for reservation ${reservation.id}`);
+    }
+
+    // Send refund notification emails
+    const emailData = {
+      customerName: reservation.customer_name || 'Valued Customer',
+      customerEmail: reservation.customer_email || 'customer@example.com',
+      puppyName: puppy?.name || 'Puppy',
+      puppySlug: puppy?.slug || '',
+      refundAmount,
+      currency: charge.currency?.toUpperCase() || 'USD',
+      paymentProvider: 'stripe' as const,
+      reservationId: reservation.id,
+      refundId,
+      reason: refundReason,
+    };
+
+    void Promise.all([
+      sendOwnerRefundNotification(emailData),
+      sendCustomerRefundNotification(emailData),
+    ]).catch((error) => {
+      console.error('[Stripe Webhook] Failed to send refund email notifications:', error);
+    });
+
+    // Store webhook event for audit trail
+    await idempotencyManager.createWebhookEvent({
+      provider: 'stripe',
+      eventId,
+      eventType: 'charge.refunded',
+      idempotencyKey: `stripe:${paymentIntentId}:refunded`,
+      payload: serializeStripeEvent(event),
+      reservationId: reservation.id,
+    });
+
+    return {
+      success: true,
+      eventType: 'charge.refunded',
+      paymentIntentId,
+      reservationId: reservation.id,
+    };
   }
 }
