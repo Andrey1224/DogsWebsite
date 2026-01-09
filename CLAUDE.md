@@ -90,21 +90,47 @@ Protected by `middleware.ts` with session-based auth (`lib/admin/session.ts`).
 
 ### Payments
 
+**Payment Flow:**
+
 - **Stripe**: Checkout Sessions in `app/puppies/[slug]/actions.ts` → webhook fulfillment via `lib/stripe/webhook-handler.ts`
-- **PayPal**: Smart Buttons → `/api/paypal/create-order` and `/api/paypal/capture`
-- **Reservation**: `ReservationCreationService` with atomic operations and race condition protection
+  - Handles: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `charge.refunded`
+- **PayPal**: Smart Buttons → `/api/paypal/create-order` and `/api/paypal/capture` → webhook fulfillment via `lib/paypal/webhook-handler.ts`
+  - Handles: `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED`
+- **Reservation**: `ReservationCreationService` in `lib/reservations/create.ts` with atomic operations and race condition protection
+- **Status Updates**: Webhooks automatically transition reservations from `'pending'` → `'paid'` via `ReservationQueries.updateStatus()` immediately after creation
+- **Refunds**: Both Stripe and PayPal webhook handlers process refund events, update reservation status to `'refunded'`, and send email notifications via `lib/emails/refund-notifications.ts`
 - **Expiry**: Pending reservations auto-expire after 15 minutes via Supabase `pg_cron` (no external cron needed)
-- Email notifications sent on successful deposit
+- **Idempotency**: Multi-layer protection via `lib/reservations/idempotency.ts` using `webhook_events` table
+
+**Admin Reservations Dashboard** (`/admin/reservations`):
+
+- Key files: `lib/reservations/queries.ts`, `app/admin/(dashboard)/reservations/actions.ts`
+- View all reservations with filtering by status, payment provider, date range
+- Detect payment status mismatches (stuck in pending with payment IDs)
+- Manual status updates with audit logging via `ReservationQueries.adminUpdateStatus()`
+- Protected by admin session auth
 
 ### Database Schema
 
 **Core tables**: `puppies` (catalog), `reservations` (deposits), `inquiries` (leads), `reviews` (testimonials), `webhook_events` (audit)
 
+**Reservation Status Lifecycle**:
+
+- `'pending'` → Initial state after payment intent created (expires in 15 minutes)
+- `'paid'` → Webhook confirmed payment and updated status
+- `'refunded'` → Payment refunded by admin or customer request
+- `'cancelled'` → Manually cancelled by admin
+- `'expired'` → Auto-expired by pg_cron after 15 minutes
+
 **Key patterns**:
 
 - `puppies.breed` takes priority over parent breed for filtering/display
+- `reservations.external_payment_id` stores Stripe Payment Intent ID or PayPal Capture ID
+- `reservations.payment_provider` is `'stripe'` or `'paypal'`
+- `webhook_events` table prevents duplicate processing via unique constraint on `(provider, event_id)`
 - Migrations in `supabase/migrations/`, seed data in `supabase/seeds/`
 - Treat `lib/supabase/database.types.ts` as source of truth for types
+- Type definitions in `lib/reservations/types.ts` for reservation domain logic
 
 ## File Organization
 
@@ -127,6 +153,12 @@ supabase/               # Migrations & seeds
 - **E2E consent handling**: Use `acceptConsent(page)` helper from `tests/e2e/helpers/consent.ts`
 - **hCaptcha bypass**: Set `HCAPTCHA_BYPASS_TOKEN` env var for automated tests
 - **Playwright mock mode**: `PLAYWRIGHT_MOCK_RESERVATION=true` for payment flow tests without real gateways
+- **Webhook handler tests**: Mock patterns in `lib/stripe/webhook-handler.test.ts` and `lib/paypal/webhook-handler.test.ts`:
+  - Use chainable Supabase query builder mocks (supports multiple `.eq()` calls and `.maybeSingle()`)
+  - Mock email notification functions from `lib/emails/*`
+  - Mock `ReservationQueries` methods: `getByPayment()`, `updateStatus()`, `update()`
+  - Mock `ReservationCreationService.createReservation()` with success/error scenarios
+  - Use `vi.fn().mockResolvedValue()` for async operations, `vi.fn().mockRejectedValue()` for error cases
 
 ## Theming
 
