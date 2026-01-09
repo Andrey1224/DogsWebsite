@@ -522,15 +522,20 @@ describe('StripeWebhookHandler', () => {
       ...overrides,
     });
 
-    const createRefundEvent = (charge: any) => ({
-      id: mockEventId,
-      object: 'event',
-      type: 'charge.refunded',
-      created: Math.floor(Date.now() / 1000),
-      data: {
-        object: charge,
-      },
-    });
+    const createRefundEvent = (charge: any): Stripe.Event =>
+      ({
+        id: mockEventId,
+        object: 'event',
+        type: 'charge.refunded',
+        created: Math.floor(Date.now() / 1000),
+        data: {
+          object: charge,
+        },
+        api_version: '2023-10-16',
+        livemode: false,
+        pending_webhooks: 0,
+        request: null,
+      }) as Stripe.Event;
 
     beforeEach(() => {
       vi.clearAllMocks();

@@ -304,6 +304,7 @@ describe('PayPalWebhookHandler', () => {
     const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
       id: mockEventId,
       event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource_type: 'capture',
       resource: {
         id: mockCaptureId,
         status: 'REFUNDED',
@@ -347,6 +348,7 @@ describe('PayPalWebhookHandler', () => {
     const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
       id: mockEventId,
       event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource_type: 'capture',
       resource: {
         id: mockCaptureId,
         status: 'REFUNDED',
@@ -368,6 +370,7 @@ describe('PayPalWebhookHandler', () => {
     const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
       id: mockEventId,
       event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource_type: 'capture',
       resource: {
         invalid: 'data',
       },
@@ -396,6 +399,7 @@ describe('PayPalWebhookHandler', () => {
     const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
       id: mockEventId,
       event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource_type: 'capture',
       resource: {
         id: mockCaptureId,
         status: 'REFUNDED',
