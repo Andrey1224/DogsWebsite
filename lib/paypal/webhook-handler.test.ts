@@ -24,6 +24,8 @@ vi.mock('@/lib/reservations/idempotency', () => ({
 vi.mock('@/lib/reservations/queries', () => ({
   ReservationQueries: {
     updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
+    getByPayment: vi.fn().mockResolvedValue(null),
+    update: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'refunded' }),
   },
 }));
 
@@ -48,6 +50,42 @@ vi.mock('@/lib/reservations/create', () => {
 vi.mock('./client', () => ({
   getPayPalOrder: vi.fn(),
 }));
+
+vi.mock('@/lib/emails/refund-notifications', () => ({
+  sendOwnerRefundNotification: vi.fn().mockResolvedValue({ success: true }),
+  sendCustomerRefundNotification: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('@/lib/supabase/client', () => {
+  const createMockQueryBuilder = () => {
+    const mockQueryBuilder: any = {
+      select: vi.fn(() => mockQueryBuilder),
+      eq: vi.fn(() => mockQueryBuilder),
+      single: vi.fn(() =>
+        Promise.resolve({
+          data: { name: 'Test Puppy', slug: 'test-puppy' },
+          error: null,
+        }),
+      ),
+      maybeSingle: vi.fn(() =>
+        Promise.resolve({
+          data: null,
+          error: null,
+        }),
+      ),
+    };
+    return mockQueryBuilder;
+  };
+
+  return {
+    createServiceRoleClient: vi.fn(() => ({
+      from: vi.fn(() => createMockQueryBuilder()),
+    })),
+    createSupabaseClient: vi.fn(() => ({
+      from: vi.fn(() => createMockQueryBuilder()),
+    })),
+  };
+});
 
 describe('PayPalWebhookHandler', () => {
   const mockEventId = 'WH-TEST-123';
@@ -233,5 +271,145 @@ describe('PayPalWebhookHandler', () => {
     expect(result.success).toBe(false);
     expect(result.error).toBe('Database error');
     expect(result.errorCode).toBe('DATABASE_ERROR');
+  });
+
+  it('processes PAYMENT.CAPTURE.REFUNDED successfully', async () => {
+    const mockReservationId = 'res_456';
+
+    const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+
+    (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+      exists: false,
+    });
+
+    (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+      success: true,
+    });
+
+    (ReservationQueries.getByPayment as any).mockResolvedValue({
+      id: mockReservationId,
+      puppy_id: mockPuppyId,
+      status: 'paid',
+      customer_name: 'Test Customer',
+      customer_email: mockEmail,
+      deposit_amount: 300,
+      notes: 'Original payment',
+    });
+
+    (ReservationQueries.update as any).mockResolvedValue({
+      id: mockReservationId,
+      status: 'refunded',
+    });
+
+    const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
+      id: mockEventId,
+      event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource: {
+        id: mockCaptureId,
+        status: 'REFUNDED',
+        amount: {
+          value: '300.00',
+          currency_code: 'USD',
+        },
+        custom_id: JSON.stringify({
+          puppy_id: mockPuppyId,
+          puppy_slug: 'test-puppy',
+          puppy_name: 'Test Puppy',
+          channel: 'site',
+        }),
+      },
+      create_time: new Date().toISOString(),
+    };
+
+    const result = await PayPalWebhookHandler.processEvent(refundEvent);
+
+    expect(result.success).toBe(true);
+    expect(result.eventType).toBe('PAYMENT.CAPTURE.REFUNDED');
+    expect(result.captureId).toBe(mockCaptureId);
+    expect(result.reservationId).toBe(mockReservationId);
+
+    // Verify reservation was found by capture ID
+    expect(ReservationQueries.getByPayment).toHaveBeenCalledWith('paypal', mockCaptureId);
+
+    // Verify status was updated to refunded
+    expect(ReservationQueries.update).toHaveBeenCalledWith(
+      mockReservationId,
+      expect.objectContaining({
+        status: 'refunded',
+        notes: expect.stringContaining('PayPal Refund'),
+      }),
+    );
+  });
+
+  it('handles PAYMENT.CAPTURE.REFUNDED with missing reservation', async () => {
+    (ReservationQueries.getByPayment as any).mockResolvedValue(null);
+
+    const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
+      id: mockEventId,
+      event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource: {
+        id: mockCaptureId,
+        status: 'REFUNDED',
+        amount: {
+          value: '300.00',
+          currency_code: 'USD',
+        },
+      },
+      create_time: new Date().toISOString(),
+    };
+
+    const result = await PayPalWebhookHandler.processEvent(refundEvent);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Reservation not found');
+  });
+
+  it('handles PAYMENT.CAPTURE.REFUNDED with invalid resource', async () => {
+    const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
+      id: mockEventId,
+      event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource: {
+        invalid: 'data',
+      },
+      create_time: new Date().toISOString(),
+    };
+
+    const result = await PayPalWebhookHandler.processEvent(refundEvent);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid capture resource');
+  });
+
+  it('handles PAYMENT.CAPTURE.REFUNDED update failure', async () => {
+    const mockReservationId = 'res_456';
+
+    (ReservationQueries.getByPayment as any).mockResolvedValue({
+      id: mockReservationId,
+      puppy_id: mockPuppyId,
+      status: 'paid',
+      customer_name: 'Test Customer',
+      customer_email: mockEmail,
+    });
+
+    (ReservationQueries.update as any).mockRejectedValue(new Error('Database error'));
+
+    const refundEvent: PayPalWebhookEvent<Record<string, unknown>> = {
+      id: mockEventId,
+      event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource: {
+        id: mockCaptureId,
+        status: 'REFUNDED',
+        amount: {
+          value: '300.00',
+          currency_code: 'USD',
+        },
+      },
+      create_time: new Date().toISOString(),
+    };
+
+    const result = await PayPalWebhookHandler.processEvent(refundEvent);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to update reservation status');
   });
 });

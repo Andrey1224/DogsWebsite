@@ -30,12 +30,49 @@ vi.mock('@/lib/reservations/queries', () => ({
   ReservationQueries: {
     getByPayment: vi.fn().mockResolvedValue(null),
     updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
+    update: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'refunded' }),
   },
 }));
 
 vi.mock('@/lib/emails/async-payment-failed', () => ({
   sendAsyncPaymentFailedEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
+
+vi.mock('@/lib/emails/refund-notifications', () => ({
+  sendOwnerRefundNotification: vi.fn().mockResolvedValue({ success: true }),
+  sendCustomerRefundNotification: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('@/lib/supabase/client', () => {
+  const createMockQueryBuilder = () => {
+    const mockQueryBuilder: any = {
+      select: vi.fn(() => mockQueryBuilder),
+      eq: vi.fn(() => mockQueryBuilder),
+      single: vi.fn(() =>
+        Promise.resolve({
+          data: { name: 'Test Puppy', slug: 'test-puppy' },
+          error: null,
+        }),
+      ),
+      maybeSingle: vi.fn(() =>
+        Promise.resolve({
+          data: null,
+          error: null,
+        }),
+      ),
+    };
+    return mockQueryBuilder;
+  };
+
+  return {
+    createServiceRoleClient: vi.fn(() => ({
+      from: vi.fn(() => createMockQueryBuilder()),
+    })),
+    createSupabaseClient: vi.fn(() => ({
+      from: vi.fn(() => createMockQueryBuilder()),
+    })),
+  };
+});
 
 vi.mock('@/lib/reservations/create', () => {
   class ReservationCreationError extends Error {
@@ -458,6 +495,168 @@ describe('StripeWebhookHandler', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database connection failed');
       expect(result.errorCode).toBe('DATABASE_ERROR');
+    });
+  });
+
+  describe('charge.refunded', () => {
+    const mockChargeId = 'ch_test123';
+    const mockRefundId = 're_test123';
+    const mockReservationId = 'res_123';
+
+    const createMockCharge = (overrides?: any) => ({
+      id: mockChargeId,
+      object: 'charge',
+      amount: 30000, // $300.00
+      amount_refunded: 30000,
+      currency: 'usd',
+      payment_intent: mockPaymentIntentId,
+      refunds: {
+        data: [
+          {
+            id: mockRefundId,
+            amount: 30000,
+            reason: 'requested_by_customer',
+          },
+        ],
+      },
+      ...overrides,
+    });
+
+    const createRefundEvent = (charge: any) => ({
+      id: mockEventId,
+      object: 'event',
+      type: 'charge.refunded',
+      created: Math.floor(Date.now() / 1000),
+      data: {
+        object: charge,
+      },
+    });
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      (ReservationQueries.getByPayment as any).mockResolvedValue({
+        id: mockReservationId,
+        puppy_id: mockPuppyId,
+        status: 'paid',
+        customer_name: 'Test Customer',
+        customer_email: 'test@example.com',
+        deposit_amount: 300,
+        notes: 'Original payment',
+      });
+      (ReservationQueries.update as any).mockResolvedValue({
+        id: mockReservationId,
+        status: 'refunded',
+      });
+    });
+
+    it('should successfully process refund event', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
+
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+      });
+
+      const charge = createMockCharge();
+      const event = createRefundEvent(charge);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(true);
+      expect(result.eventType).toBe('charge.refunded');
+      expect(result.paymentIntentId).toBe(mockPaymentIntentId);
+      expect(result.reservationId).toBe(mockReservationId);
+
+      // Verify reservation was found by payment intent
+      expect(ReservationQueries.getByPayment).toHaveBeenCalledWith('stripe', mockPaymentIntentId);
+
+      // Verify status was updated to refunded
+      expect(ReservationQueries.update).toHaveBeenCalledWith(
+        mockReservationId,
+        expect.objectContaining({
+          status: 'refunded',
+          notes: expect.stringContaining('Stripe Refund'),
+        }),
+      );
+    });
+
+    it('should handle missing payment intent', async () => {
+      const charge = createMockCharge({ payment_intent: null });
+      const event = createRefundEvent(charge);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Missing payment_intent');
+    });
+
+    it('should handle reservation not found', async () => {
+      (ReservationQueries.getByPayment as any).mockResolvedValue(null);
+
+      const charge = createMockCharge();
+      const event = createRefundEvent(charge);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Reservation not found');
+    });
+
+    it('should handle reservation update failure', async () => {
+      (ReservationQueries.update as any).mockRejectedValue(new Error('Database error'));
+
+      const charge = createMockCharge();
+      const event = createRefundEvent(charge);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to update reservation status');
+    });
+
+    it('should include refund details in notes', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
+
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+      });
+
+      const charge = createMockCharge();
+      const event = createRefundEvent(charge);
+
+      await StripeWebhookHandler.processEvent(event);
+
+      expect(ReservationQueries.update).toHaveBeenCalledWith(
+        mockReservationId,
+        expect.objectContaining({
+          notes: expect.stringMatching(/Amount: \$300.*USD/),
+        }),
+      );
+
+      expect(ReservationQueries.update).toHaveBeenCalledWith(
+        mockReservationId,
+        expect.objectContaining({
+          notes: expect.stringMatching(/Reason: requested_by_customer/),
+        }),
+      );
+
+      expect(ReservationQueries.update).toHaveBeenCalledWith(
+        mockReservationId,
+        expect.objectContaining({
+          notes: expect.stringMatching(/Refund ID: re_test123/),
+        }),
+      );
     });
   });
 });
