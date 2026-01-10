@@ -1,44 +1,54 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-**For full context, see [docs/llms.txt](docs/llms.txt) and [AGENTS.md](AGENTS.md).**
 
-## Memory Bank workflow (required)
+## Read First (Required Order)
 
-At the start of any coding session:
+1. **[memory-bank/activeContext.md](memory-bank/activeContext.md)** — Current goal, status, and next steps
+2. **[memory-bank/systemPatterns.md](memory-bank/systemPatterns.md)** — Architecture patterns and conventions
+3. **[docs/llms.txt](docs/llms.txt)** — Documentation map (source of truth for all docs)
+4. **[AGENTS.md](AGENTS.md)** — Repository guidelines and workflows
 
-1. Read `memory-bank/activeContext.md`
-2. Read `memory-bank/systemPatterns.md`
-3. Use `docs/llms.txt` as the doc map
+For deep dives, see:
 
-Before opening a PR / finishing a task:
+- **[docs/history/README.md](docs/history/README.md)** — Project history and navigation
+- **[docs/payments/payments-architecture.md](docs/payments/payments-architecture.md)** — Payment flows (Stripe/PayPal)
+- **[REPORT_STRIPE_WEBHOOKS.md](REPORT_STRIPE_WEBHOOKS.md)** — Webhook deduplication deep dive
 
-- Update `memory-bank/activeContext.md` (what changed + next steps)
-- Update `memory-bank/progress.md` if a milestone moved
-- Update `memory-bank/systemPatterns.md` if a new rule/decision emerged
-
-### Tech Stack
+## Tech Stack
 
 Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Supabase (PostgreSQL + Storage) · Stripe & PayPal · Vitest + Playwright · GA4/Meta Pixel · Resend email · hCaptcha
 
-## Build & Development Commands
+## Working Style
+
+- **Small Diffs**: Make minimal, focused changes. Avoid refactoring unless requested.
+- **Unified Patches**: Prefer unified diff format for changes when communicating.
+- **Context First**: Always read files before modifying them.
+- **Memory Bank**: Update at end of session (see Definition of Done below).
+
+## Essential Commands
 
 ```bash
+# Development
 npm run dev          # Start dev server at localhost:3000
 npm run build        # Production build (auto-runs image optimization)
+
+# Quality Checks (run before committing)
+npm run verify       # Run all: lint + typecheck + test + e2e
+
+# Individual checks
 npm run lint         # ESLint (zero warnings policy)
 npm run typecheck    # TypeScript strict mode
 npm run test         # Vitest unit/component tests
 npm run test:watch   # Vitest watch mode
 npm run e2e          # Playwright E2E (requires dev server running)
-npm run verify       # Run all checks: lint + typecheck + test + e2e
-```
 
-**Run a single test:**
+# Documentation
+npm run check:links  # Verify markdown links in docs/ and memory-bank/
 
-```bash
-npx vitest run path/to/file.test.ts           # Single unit test file
-npx playwright test tests/e2e/foo.spec.ts     # Single E2E test file
+# Single test execution
+npx vitest run path/to/file.test.ts           # Single unit test
+npx playwright test tests/e2e/foo.spec.ts     # Single E2E test
 ```
 
 **Node.js 20+ required** (jsdom and @vitejs/plugin-react dependencies).
@@ -58,7 +68,6 @@ npx playwright test tests/e2e/foo.spec.ts     # Single E2E test file
 4. When ready for production, create a Pull Request from `dev` → `main`
 5. After PR approval and merge:
    - Sync `dev` with `main`: `git checkout dev && git merge main && git push`
-   - This pulls merge commits back into `dev` to keep branches aligned
 
 **Pre-commit Hooks:**
 
@@ -69,101 +78,7 @@ npx playwright test tests/e2e/foo.spec.ts     # Single E2E test file
 
 **Important:** Never commit directly to `main`. Always work in `dev` and merge via PR.
 
-## Architecture Overview
-
-### Data Flow
-
-- **Catalog**: `/puppies`, `/puppies/[slug]` — ISR with 60s revalidation
-- **Static Pages**: `/about`, `/faq`, `/policies`, `/reviews` — static generation with JSON-LD schemas
-- **Contact**: `components/contact-form.tsx` → `app/contact/actions.ts` → Supabase `inquiries` table (Zod validation, rate limiting, hCaptcha)
-- **Analytics**: Consent-gated GA4/Meta Pixel via `useAnalytics().trackEvent`
-
-### Key Components
-
-- **Layout**: `SiteHeader`, `SiteFooter`, `ContactBar` (sticky)
-- **Providers**: `ThemeProvider` → `AnalyticsProvider` → page content
-- **Puppy Display**: `PuppyCard`, `PuppyGallery`, `PuppyFilters`
-- **SEO**: `JsonLd`, `Breadcrumbs` (auto JSON-LD), dynamic `robots.ts`/`sitemap.ts`
-
-### Admin Panel (`/admin/*`)
-
-Protected by `middleware.ts` with session-based auth (`lib/admin/session.ts`).
-
-**Puppies CRUD** (`/admin/puppies`):
-
-- Key files: `lib/admin/puppies/queries.ts`, `app/admin/(dashboard)/puppies/actions.ts`
-- File uploads: Client-side direct uploads via signed URLs (60s validity) to bypass 1MB Server Action limit
-- Slug protection: Read-only after creation to preserve URLs
-- Breed priority: Use `puppy.breed` first, fallback to parent breed for backward compatibility
-- Parent metadata: Direct fields (`sire_name`, `dam_name`, 8 parent notes) without parent records
-
-**Reviews Moderation** (`/admin/reviews`):
-
-- Key files: `lib/reviews/admin-queries.ts`, `app/admin/(dashboard)/reviews/actions.ts`
-- Database field mapping: `authorName`→`author_name`, `body`→`story`, `authorLocation`→`location`
-- Requires `SUPABASE_SERVICE_ROLE` to bypass RLS and view pending reviews
-
-### Payments
-
-**Payment Flow:**
-
-- **Stripe**: Checkout Sessions in `app/puppies/[slug]/actions.ts` → webhook fulfillment via `lib/stripe/webhook-handler.ts`
-  - Handles: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `charge.refunded`
-- **PayPal**: Smart Buttons → `/api/paypal/create-order` and `/api/paypal/capture` → webhook fulfillment via `lib/paypal/webhook-handler.ts`
-  - Handles: `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED`
-- **Reservation**: `ReservationCreationService` in `lib/reservations/create.ts` with atomic operations and race condition protection
-- **Status Updates**: Webhooks automatically transition reservations from `'pending'` → `'paid'` via `ReservationQueries.updateStatus()` immediately after creation
-- **Refunds**: Both Stripe and PayPal webhook handlers process refund events, update reservation status to `'refunded'`, and send email notifications via `lib/emails/refund-notifications.ts`
-- **Expiry**: Pending reservations auto-expire after 15 minutes via Supabase `pg_cron` (no external cron needed)
-- **Idempotency**: Multi-layer protection via `lib/reservations/idempotency.ts` using `webhook_events` table
-
-**Admin Reservations Dashboard** (`/admin/reservations`):
-
-- Key files: `lib/reservations/queries.ts`, `app/admin/(dashboard)/reservations/actions.ts`
-- View all reservations with filtering by status, payment provider, date range
-- Detect payment status mismatches (stuck in pending with payment IDs)
-- Manual status updates with audit logging via `ReservationQueries.adminUpdateStatus()`
-- Protected by admin session auth
-
-### Database Schema
-
-**Core tables**: `puppies` (catalog), `reservations` (deposits), `inquiries` (leads), `reviews` (testimonials), `webhook_events` (audit)
-
-**Reservation Status Lifecycle**:
-
-- `'pending'` → Initial state after payment intent created (expires in 15 minutes)
-- `'paid'` → Webhook confirmed payment and updated status
-- `'refunded'` → Payment refunded by admin or customer request
-- `'cancelled'` → Manually cancelled by admin
-- `'expired'` → Auto-expired by pg_cron after 15 minutes
-
-**Key patterns**:
-
-- `puppies.breed` takes priority over parent breed for filtering/display
-- `reservations.external_payment_id` stores Stripe Payment Intent ID or PayPal Capture ID
-- `reservations.payment_provider` is `'stripe'` or `'paypal'`
-- `webhook_events` table prevents duplicate processing via unique constraint on `(provider, event_id)`
-- Migrations in `supabase/migrations/`, seed data in `supabase/seeds/`
-- Treat `lib/supabase/database.types.ts` as source of truth for types
-- Type definitions in `lib/reservations/types.ts` for reservation domain logic
-
-## File Organization
-
-```
-app/                    # Next.js App Router pages & API routes
-  admin/(dashboard)/    # Protected admin routes
-  api/                  # Webhooks, health checks
-  puppies/[slug]/       # Puppy detail pages
-components/             # Shared React components
-lib/                    # Business logic & utilities
-  admin/                # Admin-specific queries
-  supabase/             # DB client, queries, types
-  seo/                  # Metadata, structured data
-tests/                  # Unit & E2E tests
-supabase/               # Migrations & seeds
-```
-
-## Testing Notes
+## Testing Configuration
 
 - **E2E consent handling**: Use `acceptConsent(page)` helper from `tests/e2e/helpers/consent.ts`
 - **hCaptcha bypass**: Set `HCAPTCHA_BYPASS_TOKEN` env var for automated tests
@@ -175,39 +90,19 @@ supabase/               # Migrations & seeds
   - Mock `ReservationCreationService.createReservation()` with success/error scenarios
   - Use `vi.fn().mockResolvedValue()` for async operations, `vi.fn().mockRejectedValue()` for error cases
 
-## Theming
+## Important Restrictions
 
-Theme tokens in `app/globals.css`. Use `useTheme()` hook and Tailwind utilities (`bg-bg`, `bg-card`, `text-muted`, `border-border`). No hard-coded hex values.
+- **Next.js 15**: Do NOT use `ssr: false` with `next/dynamic` in Server Components
+- **Supabase**: Do NOT re-run Supabase CLI or modify `.supabase` config — coordinate schema updates with maintainer
+- **Secrets**: Service-role keys (`SUPABASE_SERVICE_ROLE`) only for server-side code
+- **Zero Warnings**: ESLint must pass with zero warnings (enforced in CI)
 
-## Coding Conventions
+## Definition of Done
 
-- TypeScript strict mode; avoid `any`
-- Components: `PascalCase`, hooks: `useCamelCase`, utilities: `camelCase.ts`, migrations: `snake_case.sql`
-- Conventional Commits: `feat(scope): message`
-- Secrets in `.env.local`, update `.env.example` when adding new vars
+Before opening a PR or finishing a task:
 
-## Environment Variables
-
-**Email Configuration:**
-
-- `OWNER_EMAIL` — Private email where notifications are SENT TO (inquiry alerts, deposit notifications)
-- `NEXT_PUBLIC_CONTACT_EMAIL` — Public email that customers SEE (shown on site, in email templates)
-- `RESEND_FROM_EMAIL` — From address for outgoing emails (must be verified in Resend)
-
-**Contact Information:**
-
-- All `NEXT_PUBLIC_CONTACT_*` variables are visible in browser (public)
-- Phone format: E.164 (`+12055551234`)
-- WhatsApp: digits only, no + (`12055551234`)
-- Telegram: username without @ (`exoticbulldoglegacy`)
-
-**Testing:**
-
-- `HCAPTCHA_BYPASS_TOKEN` / `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN` — Bypass captcha in E2E tests
-- `PLAYWRIGHT_MOCK_RESERVATION=true` — Mock payment flows for E2E tests
-
-## Important Caveats
-
-- Do NOT use `ssr: false` with `next/dynamic` in Server Components (Next.js 15 restriction)
-- Do NOT re-run Supabase CLI or modify `.supabase` config — coordinate schema updates with maintainer
-- Service-role keys (`SUPABASE_SERVICE_ROLE`) only for server-side code
+1. Run `npm run verify` — all checks must pass
+2. Update `memory-bank/activeContext.md` (what changed + next steps)
+3. Update `memory-bank/progress.md` if a milestone moved
+4. Update `memory-bank/systemPatterns.md` if a new rule/decision emerged
+5. If documentation changed, run `npm run check:links` to verify links

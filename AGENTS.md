@@ -1,5 +1,21 @@
 # Repository Guidelines
 
+## Codex Instructions
+
+Codex reads `AGENTS.md` before working in this repo.
+
+Read first (in order):
+
+1. `docs/llms.txt`
+2. `memory-bank/activeContext.md`
+3. `memory-bank/systemPatterns.md`
+4. `docs/history/README.md`
+
+Definition of Done:
+
+- Update `memory-bank/activeContext.md` (and related Memory Bank files as needed).
+- Run `npm run verify` (or note why it was not run).
+
 ## Project Structure & Module Organization
 
 - Next.js app router lives in `app/` (routes, server actions, metadata); shared styling in `app/globals.css`.
