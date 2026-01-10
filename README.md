@@ -8,6 +8,16 @@ Sprint workspace for Exotic Bulldog Legacy. Sprint 1 delivered the Supabase-driv
 - npm 10+
 - Optional: Playwright browsers (`npx playwright install`)
 
+## Documentation Entrypoints
+
+- **[AI Context Map](docs/llms.txt)**: Source of truth for all documentation links.
+- **[Project History](docs/history/README.md)**: Changelogs, sprints, and deep dives.
+- **[Agent Guidelines](AGENTS.md)**: Rules, conventions, and Memory Bank workflows.
+- **[Active Context](memory-bank/activeContext.md)**: Current focus and status.
+- **[Public Index](public/llms.txt)**: Published version of the documentation map.
+
+---
+
 ## Setup
 
 1. Copy `.env.example` to `.env.local` and populate the following keys:

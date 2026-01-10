@@ -1,0 +1,29 @@
+# Active Context
+
+## Current Goal
+
+- **P0**: Adopt Memory Bank standards for AI context persistence.
+- **P1**: Unify documentation entry points to reduce duplication.
+- **P2**: Automate documentation integrity (link checking).
+
+## Current Status
+
+- **Recent Fix**: Critical Stripe webhook early return bug fixed (Jan 10, 2026).
+- **Docs**: Refactored `docs/history` structure and created `docs/llms.txt`.
+- **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
+
+## Active Workstream
+
+- Implementing "AI Docs Optimization" plan.
+- Integrating `markdown-link-check` into CI verify pipeline.
+
+## Risks & Issues
+
+- **Docs Drift**: Manual updates to `llms.txt` and `CHANGELOG.md` required until automation is built.
+- **Complexity**: Payment flows (atomic reservations + idempotency) are complex; rely on `REPORT_STRIPE_WEBHOOKS.md` for context.
+
+## Next Steps
+
+1. Install `markdown-link-check`.
+2. Verify all markdown links in `docs/` and `memory-bank/`.
+3. Plan auto-generation for `docs/llms.txt`.

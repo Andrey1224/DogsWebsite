@@ -1,6 +1,21 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**For full context, see [docs/llms.txt](docs/llms.txt) and [AGENTS.md](AGENTS.md).**
+
+## Memory Bank workflow (required)
+
+At the start of any coding session:
+
+1. Read `memory-bank/activeContext.md`
+2. Read `memory-bank/systemPatterns.md`
+3. Use `docs/llms.txt` as the doc map
+
+Before opening a PR / finishing a task:
+
+- Update `memory-bank/activeContext.md` (what changed + next steps)
+- Update `memory-bank/progress.md` if a milestone moved
+- Update `memory-bank/systemPatterns.md` if a new rule/decision emerged
 
 ### Tech Stack
 

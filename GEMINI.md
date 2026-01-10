@@ -1,6 +1,21 @@
 # Gemini Project Context
 
 This file serves as the primary instructional context for Gemini agents working on this repository. It consolidates the project overview, architecture, development commands, and coding standards.
+**Refer to [docs/llms.txt](docs/llms.txt) for the complete documentation index and [AGENTS.md](AGENTS.md) for workflows.**
+
+## Memory Bank workflow (required)
+
+At the start of any coding session:
+
+1. Read `memory-bank/activeContext.md`
+2. Read `memory-bank/systemPatterns.md`
+3. Use `docs/llms.txt` as the doc map
+
+Before opening a PR / finishing a task:
+
+- Update `memory-bank/activeContext.md` (what changed + next steps)
+- Update `memory-bank/progress.md` if a milestone moved
+- Update `memory-bank/systemPatterns.md` if a new rule/decision emerged
 
 ## Project Overview
 

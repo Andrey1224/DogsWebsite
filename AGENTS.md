@@ -38,3 +38,32 @@
 - PRs: include a short summary, linked issue, screenshots for UI changes, and note any env/secret additions; request review for changes touching payments/Supabase.
 - Ensure CI-equivalent checks pass locally (`lint`, `typecheck`, `test`, `e2e`, `build`) and update docs (`README.md`, `SPRINT_PLAN.md`) when behavior shifts.
 - Never commit secrets; keep `.env.local` local and refresh keys before recording videos or screenshots.
+
+## Memory Bank & Context
+
+We use a **Memory Bank** to persist context across sessions.
+
+- **Location**: `memory-bank/`
+- **Files**:
+  - `activeContext.md`: Current goal, recent changes, next steps. **Update this at start/end of session.**
+  - `progress.md`: Completed milestones and overall status.
+  - `systemPatterns.md`: Architectural decisions and standards.
+
+## Documentation Entrypoints
+
+- **`docs/llms.txt`**: The master index of all documentation.
+- **`docs/history/CHANGELOG.md`**: Record significant features/fixes here.
+
+## Memory Bank workflow (required)
+
+At the start of any coding session:
+
+1. Read `memory-bank/activeContext.md`
+2. Read `memory-bank/systemPatterns.md`
+3. Use `docs/llms.txt` as the doc map
+
+Before opening a PR / finishing a task:
+
+- Update `memory-bank/activeContext.md` (what changed + next steps)
+- Update `memory-bank/progress.md` if a milestone moved
+- Update `memory-bank/systemPatterns.md` if a new rule/decision emerged
