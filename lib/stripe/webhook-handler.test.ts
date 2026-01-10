@@ -9,7 +9,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StripeWebhookHandler } from './webhook-handler';
-import { ReservationQueries } from '@/lib/reservations/queries';
 import type Stripe from 'stripe';
 import type { TypedCheckoutSession } from './types';
 
@@ -23,12 +22,22 @@ vi.mock('@/lib/reservations/idempotency', () => ({
   idempotencyManager: {
     checkWebhookEvent: vi.fn(),
     createWebhookEvent: vi.fn(),
+    markAsProcessed: vi.fn().mockResolvedValue(true),
   },
 }));
 
-vi.mock('@/lib/reservations/queries', () => ({
-  ReservationQueries: {
+vi.mock('@/lib/webhooks/webhook-events-server', () => ({
+  WebhookEventsServer: {
+    markProcessing: vi.fn().mockResolvedValue(undefined),
+    markProcessed: vi.fn().mockResolvedValue(undefined),
+    markFailed: vi.fn().mockResolvedValue(true),
+  },
+}));
+
+vi.mock('@/lib/reservations/server-queries', () => ({
+  ReservationServerQueries: {
     getByPayment: vi.fn().mockResolvedValue(null),
+    markPaid: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
     updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
     update: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'refunded' }),
   },
@@ -159,6 +168,21 @@ describe('StripeWebhookHandler', () => {
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 123,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.completed',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}`,
+          reservation_id: 'res_123',
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const session = createMockSession();
@@ -183,8 +207,21 @@ describe('StripeWebhookHandler', () => {
         notes: `Stripe Checkout Session: ${mockSessionId}`,
       });
 
-      // Verify reservation status is updated to 'paid'
-      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('res_123', 'paid');
+      // Verify reservation is marked as paid with service role
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      expect(ReservationServerQueries.markPaid).toHaveBeenCalledWith({
+        reservationId: 'res_123',
+        provider: 'stripe',
+        externalPaymentId: mockPaymentIntentId,
+      });
+
+      // Verify webhook event is marked as processed (using service role)
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+      });
     });
 
     it('should detect duplicate events via idempotency check', async () => {
@@ -204,6 +241,96 @@ describe('StripeWebhookHandler', () => {
       expect(result.success).toBe(true);
       expect(result.duplicate).toBe(true);
       expect(result.paymentIntentId).toBe(mockPaymentIntentId);
+    });
+
+    it('should mark existing pending reservation as paid', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
+
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+        webhookEvent: {
+          id: 456,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.completed',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}`,
+          reservation_id: null,
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+      // Mock existing pending reservation
+      (ReservationServerQueries.getByPayment as any).mockResolvedValueOnce({
+        id: 'existing-res-123',
+        status: 'pending',
+        puppy_id: mockPuppyId,
+        customer_email: 'test@example.com',
+        external_payment_id: mockPaymentIntentId,
+        payment_provider: 'stripe',
+      });
+
+      (ReservationServerQueries.markPaid as any).mockResolvedValue({
+        id: 'existing-res-123',
+        status: 'paid',
+      });
+
+      const session = createMockSession();
+      const event = createMockEvent('checkout.session.completed', session);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(true);
+      expect(result.duplicate).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.reservationId).toBe('existing-res-123');
+
+      // Verify webhook event was created and marked as processing
+      expect(idempotencyManager.createWebhookEvent).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        eventType: 'checkout.session.completed',
+        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+        payload: expect.objectContaining({
+          event_id: mockEventId,
+          session_id: mockSessionId,
+          payment_intent: mockPaymentIntentId,
+        }),
+      });
+
+      expect(WebhookEventsServer.markProcessing).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+        eventType: 'checkout.session.completed',
+      });
+
+      // Verify existing reservation was marked as paid
+      expect(ReservationServerQueries.markPaid).toHaveBeenCalledWith({
+        reservationId: 'existing-res-123',
+        provider: 'stripe',
+        externalPaymentId: mockPaymentIntentId,
+      });
+
+      // Verify webhook event was marked as processed
+      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+      });
     });
 
     it('should handle missing metadata gracefully', async () => {
@@ -272,6 +399,38 @@ describe('StripeWebhookHandler', () => {
       expect(ReservationCreationService.createReservation).not.toHaveBeenCalled();
     });
 
+    it('should fail if reservation status update fails', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationCreationService } = await import('@/lib/reservations/create');
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
+
+      (ReservationCreationService.createReservation as any).mockResolvedValue({
+        reservationId: 'res_123',
+      });
+
+      // Mock markPaid failure
+      (ReservationServerQueries.markPaid as any).mockResolvedValue(null);
+
+      const session = createMockSession();
+      const event = createMockEvent('checkout.session.completed', session);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to mark reservation as paid');
+      expect(result.reservationId).toBe('res_123');
+
+      // Verify webhook event was NOT marked as processed (since it failed)
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      expect(WebhookEventsServer.markProcessed).not.toHaveBeenCalled();
+    });
+
     it('should handle race condition errors gracefully', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
       const { ReservationCreationService } = await import('@/lib/reservations/create');
@@ -315,8 +474,30 @@ describe('StripeWebhookHandler', () => {
         reservationId: 'res_123',
       });
 
+      // Ensure markPaid succeeds
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      (ReservationServerQueries.markPaid as any).mockResolvedValue({
+        id: 'res_123',
+        status: 'paid',
+      });
+
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 456,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.async_payment_succeeded',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}`,
+          reservation_id: 'res_123',
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const session = createMockSession();
@@ -329,8 +510,20 @@ describe('StripeWebhookHandler', () => {
       expect(result.reservationId).toBe('res_123');
       expect(ReservationCreationService.createReservation).toHaveBeenCalled();
 
-      // Verify reservation status is updated to 'paid'
-      expect(ReservationQueries.updateStatus).toHaveBeenCalledWith('res_123', 'paid');
+      // Verify reservation is marked as paid with service role
+      expect(ReservationServerQueries.markPaid).toHaveBeenCalledWith({
+        reservationId: 'res_123',
+        provider: 'stripe',
+        externalPaymentId: mockPaymentIntentId,
+      });
+
+      // Verify webhook event is marked as processed (using service role)
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+      });
     });
 
     it('should detect duplicate async payment events', async () => {
@@ -358,6 +551,21 @@ describe('StripeWebhookHandler', () => {
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 789,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.async_payment_failed',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}:failed`,
+          reservation_id: null,
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const session = createMockSession();
@@ -375,6 +583,14 @@ describe('StripeWebhookHandler', () => {
           eventType: 'checkout.session.async_payment_failed',
         }),
       );
+
+      // Verify webhook event is marked as processed (using service role)
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockPaymentIntentId}:failed`,
+      });
     });
 
     it('prefers customer_details over metadata when sending async failure email', async () => {
@@ -383,6 +599,21 @@ describe('StripeWebhookHandler', () => {
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 790,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.async_payment_failed',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}:failed`,
+          reservation_id: null,
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const session = createMockSession({
@@ -426,6 +657,21 @@ describe('StripeWebhookHandler', () => {
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 999,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.expired',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockSessionId}:expired`,
+          reservation_id: null,
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const session = createMockSession();
@@ -437,6 +683,14 @@ describe('StripeWebhookHandler', () => {
       expect(result.eventType).toBe('checkout.session.expired');
       expect(result.error).toContain('Session expired');
       expect(idempotencyManager.createWebhookEvent).toHaveBeenCalled();
+
+      // Verify webhook event is marked as processed (using service role)
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockSessionId}:expired`,
+      });
     });
   });
 
@@ -537,9 +791,10 @@ describe('StripeWebhookHandler', () => {
         request: null,
       }) as Stripe.Event;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.clearAllMocks();
-      (ReservationQueries.getByPayment as any).mockResolvedValue({
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      (ReservationServerQueries.getByPayment as any).mockResolvedValue({
         id: mockReservationId,
         puppy_id: mockPuppyId,
         status: 'paid',
@@ -548,7 +803,7 @@ describe('StripeWebhookHandler', () => {
         deposit_amount: 300,
         notes: 'Original payment',
       });
-      (ReservationQueries.update as any).mockResolvedValue({
+      (ReservationServerQueries.update as any).mockResolvedValue({
         id: mockReservationId,
         status: 'refunded',
       });
@@ -556,6 +811,7 @@ describe('StripeWebhookHandler', () => {
 
     it('should successfully process refund event', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
 
       (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
         exists: false,
@@ -565,6 +821,21 @@ describe('StripeWebhookHandler', () => {
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 888,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'charge.refunded',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}:refunded`,
+          reservation_id: mockReservationId,
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const charge = createMockCharge();
@@ -577,17 +848,28 @@ describe('StripeWebhookHandler', () => {
       expect(result.paymentIntentId).toBe(mockPaymentIntentId);
       expect(result.reservationId).toBe(mockReservationId);
 
-      // Verify reservation was found by payment intent
-      expect(ReservationQueries.getByPayment).toHaveBeenCalledWith('stripe', mockPaymentIntentId);
+      // Verify reservation was found by payment intent using service role
+      expect(ReservationServerQueries.getByPayment).toHaveBeenCalledWith(
+        'stripe',
+        mockPaymentIntentId,
+      );
 
-      // Verify status was updated to refunded
-      expect(ReservationQueries.update).toHaveBeenCalledWith(
+      // Verify status was updated to refunded using service role
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith(
         mockReservationId,
         expect.objectContaining({
           status: 'refunded',
           notes: expect.stringContaining('Stripe Refund'),
         }),
       );
+
+      // Verify webhook event is marked as processed (using service role)
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+        provider: 'stripe',
+        eventId: mockEventId,
+        idempotencyKey: `stripe:${mockPaymentIntentId}:refunded`,
+      });
     });
 
     it('should handle missing payment intent', async () => {
@@ -601,7 +883,8 @@ describe('StripeWebhookHandler', () => {
     });
 
     it('should handle reservation not found', async () => {
-      (ReservationQueries.getByPayment as any).mockResolvedValue(null);
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      (ReservationServerQueries.getByPayment as any).mockResolvedValue(null);
 
       const charge = createMockCharge();
       const event = createRefundEvent(charge);
@@ -613,7 +896,8 @@ describe('StripeWebhookHandler', () => {
     });
 
     it('should handle reservation update failure', async () => {
-      (ReservationQueries.update as any).mockRejectedValue(new Error('Database error'));
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      (ReservationServerQueries.update as any).mockRejectedValue(new Error('Database error'));
 
       const charge = createMockCharge();
       const event = createRefundEvent(charge);
@@ -626,6 +910,7 @@ describe('StripeWebhookHandler', () => {
 
     it('should include refund details in notes', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
 
       (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
         exists: false,
@@ -635,6 +920,21 @@ describe('StripeWebhookHandler', () => {
 
       (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
         success: true,
+        webhookEvent: {
+          id: 889,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'charge.refunded',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}:refunded`,
+          reservation_id: mockReservationId,
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
 
       const charge = createMockCharge();
@@ -642,21 +942,21 @@ describe('StripeWebhookHandler', () => {
 
       await StripeWebhookHandler.processEvent(event);
 
-      expect(ReservationQueries.update).toHaveBeenCalledWith(
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith(
         mockReservationId,
         expect.objectContaining({
           notes: expect.stringMatching(/Amount: \$300.*USD/),
         }),
       );
 
-      expect(ReservationQueries.update).toHaveBeenCalledWith(
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith(
         mockReservationId,
         expect.objectContaining({
           notes: expect.stringMatching(/Reason: requested_by_customer/),
         }),
       );
 
-      expect(ReservationQueries.update).toHaveBeenCalledWith(
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith(
         mockReservationId,
         expect.objectContaining({
           notes: expect.stringMatching(/Refund ID: re_test123/),
