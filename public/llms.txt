@@ -1,0 +1,29 @@
+# Project Documentation Index
+
+> This index serves as a map for AI agents to locate relevant context, architecture decisions, and historical changes.
+
+## Core Documentation
+- README.md: Project overview, setup steps, and tech stack (Next.js 15, Supabase, Stripe).
+- AGENTS.md: Operating manual for agents (conventions, workflows, file structure).
+- CLAUDE.md: Context specifically for Claude Code (commands, architecture summary).
+- GEMINI.md: Context specifically for Gemini agents (project overview, conventions).
+- docs/llms.txt: Source-of-truth documentation index for agents (this file).
+- public/llms.txt: Published copy served at `/llms.txt` (keep in sync with docs/llms.txt).
+
+## Project History & Context
+- docs/history/README.md: Entry point for project history and navigation.
+- docs/history/CHANGELOG.md: Unified timeline of features, optimizations, and fixes.
+- docs/history/sprints/: Detailed reports for Sprints 0-5.
+- docs/history/archive/: Deep dive technical reports and legacy logs (e.g., LCP optimization, optimization-changelog).
+
+## Planning & Requirements
+- docs/planning/PRD.md: Product Requirements Document.
+- docs/planning/SPRINT_PLAN.md: Master execution roadmap.
+
+## Architecture & Features
+- docs/database/migration-guide.md: Database schema management and migration workflows.
+- docs/payments/payments-architecture.md: Details on Stripe/PayPal integration and webhook logic.
+- REPORT_STRIPE_WEBHOOKS.md: Deep dive into Stripe webhook deduplication and status logic.
+
+## Infrastructure & Deployment
+- docs/deployment/soft-delete-feature.md: Guide for the soft-delete functionality.

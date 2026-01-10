@@ -15,7 +15,8 @@
     "e2e": "playwright test",
     "optimize-images": "node scripts/optimize-images.mjs",
     "validate-deployment": "npx tsx scripts/validate-deployment.ts",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run e2e",
+    "docs:sync-llms": "test -f docs/llms.txt && mkdir -p public && cp docs/llms.txt public/llms.txt",
+    "verify": "npm run docs:sync-llms && npm run lint && npm run typecheck && npm run test && npm run e2e",
     "supabase:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts",
     "prepare": "husky"
   },
