@@ -19,6 +19,7 @@
   - History in `docs/history/`.
   - Architecture decisions in `docs/archive/` or specific feature docs.
   - Context map in `docs/llms.txt`.
+- **Puppy Recommendations**: Always filter by `status === 'available'` before applying breed/litter matching.
 
 ## Anti-Patterns
 
