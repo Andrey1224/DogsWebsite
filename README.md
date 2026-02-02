@@ -8,6 +8,16 @@ Sprint workspace for Exotic Bulldog Legacy. Sprint 1 delivered the Supabase-driv
 - npm 10+
 - Optional: Playwright browsers (`npx playwright install`)
 
+## Documentation Entrypoints
+
+- **[AI Context Map](docs/llms.txt)**: Source of truth for all documentation links.
+- **[Project History](docs/history/README.md)**: Changelogs, sprints, and deep dives.
+- **[Agent Guidelines](AGENTS.md)**: Rules, conventions, and Memory Bank workflows.
+- **[Active Context](memory-bank/activeContext.md)**: Current focus and status.
+- **[Public Index](public/llms.txt)**: Published version of the documentation map.
+
+---
+
 ## Setup
 
 1. Copy `.env.example` to `.env.local` and populate the following keys:
@@ -56,10 +66,10 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 
 ## Reference Docs
 
-- `Spec1.md` — product scope and functional requirements.
+- `docs/planning/PRD.md` — product scope and functional requirements.
 - `SPRINT_PLAN.md` — roadmap broken into sprints and DoD.
 - `AGENTS.md` — contributor practices, repo structure, and command reference.
-- `CLAUDE.md` — agent operating rules (Context7 usage, file ordering)..
+- `CLAUDE.md` — agent operating rules (Context7 usage, file ordering).
 
 ## Data & Seeding
 
@@ -90,17 +100,22 @@ CI mirrors these commands in `.github/workflows/ci.yml` so every PR must pass li
 - `components/analytics-provider.tsx` wraps the app with a consent-aware GA4/Meta Pixel client. Accept/decline decisions update Consent Mode (`ad_user_data`, `ad_personalization`) and gate tracking for `contact_click`, `form_submit`, `form_success`, and `chat_open` events.
 - Production contact info is sourced from `NEXT_PUBLIC_CONTACT_*` variables. Update `.env.local`, `.env.example`, and Vercel/GitHub secrets to keep the contact bar, Crisp copy, and analytics payloads in sync.
 
-## Payment Integration (Sprint 3 & 4)
+## Payment Integration (Sprint 3 & 4) ✅
 
 ### Overview
 
 - **Stripe Checkout Sessions**: Server-created sessions with hosted checkout and metadata
 - **PayPal Smart Buttons**: Orders API v2 with server-side create/capture endpoints
 - **Webhook Processing**: Automated fulfillment (Stripe + PayPal) with signature verification
-- **Idempotency**: Multi-layer protection against duplicate charges
-- **Email Notifications**: Automatic owner + customer emails on successful deposit
+  - **Stripe Events**: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `charge.refunded`
+  - **PayPal Events**: `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED`
+- **Reservation Status Management**: Automatic transition from `pending` → `paid` after successful payment ✅
+- **Refund Processing**: Automated refund handling with status updates and email notifications ✅
+- **Idempotency**: Multi-layer protection against duplicate charges via `webhook_events` table
+- **Email Notifications**: Automatic owner + customer emails on successful deposit and refunds
 - **Server-Side Analytics**: GA4 `deposit_paid` events via Measurement Protocol ✅
 - **Webhook Monitoring**: Health check endpoint + Slack/email alerts for failures ✅
+- **Admin Dashboard**: Management interface for reservations with manual status overrides ✅
 
 ### Stripe Setup
 
@@ -165,6 +180,7 @@ stripe trigger checkout.session.completed
 4. Subscribe to events:
    - `CHECKOUT.ORDER.APPROVED`
    - `PAYMENT.CAPTURE.COMPLETED`
+   - `PAYMENT.CAPTURE.REFUNDED` ✅
 5. Copy the **Webhook ID** for signature verification
 
 #### 3. Implementation Notes
@@ -220,6 +236,65 @@ For server-side conversion tracking:
 
 - Use sandbox buyer account from [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/accounts)
 - Credentials are auto-generated (usually `sb-xxxxx@personal.example.com`)
+
+### Reservation Status Lifecycle ✅
+
+Reservations automatically progress through the following states:
+
+1. **`pending`** → Initial state after payment intent/order creation (15-minute expiry)
+2. **`paid`** → Webhook confirms payment and updates status automatically
+3. **`refunded`** → Payment refunded (automatic via webhook or manual via payment provider)
+4. **`cancelled`** → Manually cancelled by admin
+5. **`expired`** → Auto-expired by pg_cron job after 15 minutes
+
+**Critical Fix**: Webhooks now automatically update reservation status from `pending` to `paid` immediately after payment confirmation. This prevents reservations from getting stuck in pending state or expiring incorrectly.
+
+### Refund Processing ✅
+
+Both Stripe and PayPal support automated refund handling:
+
+#### Stripe Refunds
+
+- Webhook event: `charge.refunded`
+- Handler: `lib/stripe/webhook-handler.ts` → `handleChargeRefunded()`
+- Updates reservation status to `refunded` and sends email notifications
+
+#### PayPal Refunds
+
+- Webhook event: `PAYMENT.CAPTURE.REFUNDED`
+- Handler: `lib/paypal/webhook-handler.ts` → `handleCaptureRefunded()`
+- Updates reservation status to `refunded` and sends email notifications
+
+#### Refund Emails
+
+- Owner notification with refund details and customer information
+- Customer notification with refund confirmation and transaction ID
+- Templates in `lib/emails/refund-notifications.ts`
+
+### Admin Reservations Dashboard ✅
+
+Access at `/admin/reservations` (requires admin authentication):
+
+#### Features
+
+- **View All Reservations**: Filterable list by status, payment provider, date range
+- **Status Filters**: Quick filters for pending, paid, refunded, cancelled, expired
+- **Payment Mismatch Detection**: Automatically identifies stuck reservations (pending with payment IDs)
+- **Manual Status Updates**: Override reservation status with audit logging
+- **Reservation Details**: Customer info, puppy details, payment provider, amounts, dates
+
+#### Key Files
+
+- UI: `app/admin/(dashboard)/reservations/page.tsx`
+- Server Actions: `app/admin/(dashboard)/reservations/actions.ts`
+- Queries: `lib/reservations/queries.ts`
+  - `getAllWithFilters()` - Advanced filtering
+  - `getPaymentStatusMismatches()` - Find stuck reservations
+  - `adminUpdateStatus()` - Manual status override with audit trail
+
+#### Manual Status Updates
+
+When webhooks fail or for customer service needs, admins can manually update reservation status. All manual updates are logged in the reservation `notes` field with timestamp and reason for audit purposes.
 
 ### Scheduled Jobs
 

@@ -32,7 +32,7 @@ export function FaqContent() {
 
         <div className="relative z-10 mb-12 text-center">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-700/50 bg-slate-800/50 px-4 py-1.5">
-            <HelpCircle size={14} className="text-orange-400" />
+            <HelpCircle size={14} className="text-orange-400" aria-hidden="true" />
             <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
               Support Center
             </span>
@@ -47,8 +47,12 @@ export function FaqContent() {
           <div className="group relative mx-auto max-w-xl">
             <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-orange-500 to-purple-600 opacity-20 blur transition duration-500 group-hover:opacity-40" />
             <div className="relative flex items-center rounded-full border border-slate-700 bg-[#1E293B] shadow-2xl">
-              <Search className="ml-4 text-slate-500" size={20} />
+              <Search className="ml-4 text-slate-500" size={20} aria-hidden="true" />
+              <label htmlFor="faq-search" className="sr-only">
+                Search frequently asked questions
+              </label>
               <input
+                id="faq-search"
                 type="text"
                 placeholder="Search for 'deposit', 'delivery', 'diet'..."
                 className="w-full border-none bg-transparent px-4 py-4 text-white placeholder-slate-500 focus:outline-none focus:ring-0"
@@ -78,7 +82,7 @@ export function FaqContent() {
                   {/* Category Title */}
                   {!searchTerm && (
                     <div className="mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
-                      <IconComponent size={20} className={cat.iconColor} />
+                      <IconComponent size={20} className={cat.iconColor} aria-hidden="true" />
                       <h2 className="text-xl font-bold text-slate-200">{cat.category}</h2>
                     </div>
                   )}
@@ -87,25 +91,34 @@ export function FaqContent() {
                     {cat.items.map((item, itemIdx) => {
                       const isOpen = openCategory === catIdx && openItem === itemIdx;
 
+                      const accordionId = `faq-${catIdx}-${itemIdx}`;
+                      const buttonId = `${accordionId}-button`;
+                      const panelId = `${accordionId}-panel`;
+
                       return (
-                        <button
+                        <div
                           key={item.question}
-                          type="button"
-                          onClick={() => {
-                            if (isOpen) {
-                              setOpenItem(-1);
-                            } else {
-                              setOpenCategory(catIdx);
-                              setOpenItem(itemIdx);
-                            }
-                          }}
-                          className={`group w-full cursor-pointer overflow-hidden rounded-2xl border text-left transition-all duration-300 ${
+                          className={`group w-full overflow-hidden rounded-2xl border transition-all duration-300 ${
                             isOpen
                               ? 'border-orange-500/50 bg-[#151e32] shadow-lg shadow-orange-500/5'
                               : 'border-slate-800 bg-[#111827] hover:border-slate-600'
                           }`}
                         >
-                          <div className="flex items-start justify-between gap-4 p-6">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isOpen) {
+                                setOpenItem(-1);
+                              } else {
+                                setOpenCategory(catIdx);
+                                setOpenItem(itemIdx);
+                              }
+                            }}
+                            className="flex w-full items-start justify-between gap-4 p-6 text-left"
+                            aria-expanded={isOpen}
+                            aria-controls={panelId}
+                            id={buttonId}
+                          >
                             <h3
                               className={`text-lg font-semibold leading-snug ${isOpen ? 'text-orange-400' : 'text-slate-200 group-hover:text-white'}`}
                             >
@@ -113,11 +126,16 @@ export function FaqContent() {
                             </h3>
                             <ChevronDown
                               className={`flex-shrink-0 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-500' : ''}`}
+                              aria-hidden="true"
                             />
-                          </div>
+                          </button>
 
                           <div
                             className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                            id={panelId}
+                            role="region"
+                            aria-labelledby={buttonId}
+                            aria-hidden={!isOpen}
                           >
                             <div className="overflow-hidden">
                               <div className="mt-2 border-t border-slate-700/50 px-6 pb-6 pt-4 leading-relaxed text-slate-400">
@@ -125,7 +143,7 @@ export function FaqContent() {
                               </div>
                             </div>
                           </div>
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -153,13 +171,13 @@ export function FaqContent() {
               href="/contact"
               className="flex items-center gap-2 rounded-full bg-white px-6 py-3 font-bold !text-black transition-colors hover:bg-slate-200"
             >
-              <MessageCircle size={18} className="!text-black" /> Chat with us
+              <MessageCircle size={18} className="!text-black" aria-hidden="true" /> Chat with us
             </Link>
             <Link
               href="/contact"
               className="flex items-center gap-2 rounded-full border border-slate-600 px-6 py-3 font-medium text-white transition-colors hover:bg-slate-800"
             >
-              <Mail size={18} /> Email Support
+              <Mail size={18} aria-hidden="true" /> Email Support
             </Link>
           </div>
         </div>

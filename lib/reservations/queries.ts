@@ -347,6 +347,152 @@ export class ReservationQueries {
       return false;
     }
   }
+
+  /**
+   * Get payment status mismatches (admin only)
+   *
+   * Finds reservations that are stuck in 'pending' status but have
+   * external_payment_id and are older than 15 minutes.
+   * These likely indicate webhook processing issues.
+   */
+  static async getPaymentStatusMismatches(): Promise<Reservation[]> {
+    try {
+      const fifteenMinutesAgo = new Date();
+      fifteenMinutesAgo.setMinutes(fifteenMinutesAgo.getMinutes() - 15);
+
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .eq('status', 'pending')
+        .not('external_payment_id', 'is', null)
+        .lt('created_at', fifteenMinutesAgo.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error || !data) {
+        console.error('Error getting payment status mismatches:', error);
+        return [];
+      }
+
+      return data as Reservation[];
+    } catch (error) {
+      console.error('Error getting payment status mismatches:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Admin manual status update with audit logging
+   *
+   * Updates reservation status with audit trail in notes field.
+   * Used for manual interventions when webhooks fail or for
+   * customer service scenarios.
+   *
+   * @param id - Reservation ID
+   * @param status - New status to set
+   * @param adminReason - Reason for manual update (required for audit)
+   * @returns Updated reservation or null if not found
+   */
+  static async adminUpdateStatus(
+    id: string,
+    status: ReservationStatus,
+    adminReason: string,
+  ): Promise<Reservation | null> {
+    try {
+      const existing = await this.getById(id);
+      if (!existing) {
+        console.error(`Admin update failed: Reservation ${id} not found`);
+        return null;
+      }
+
+      const timestamp = new Date().toISOString();
+      const auditNote = `[Admin Override ${timestamp}] Status changed: ${existing.status} → ${status}. Reason: ${adminReason}`;
+      const updatedNotes = existing.notes ? `${existing.notes}\n\n${auditNote}` : auditNote;
+
+      console.info(`[Admin] Updating reservation ${id} status to ${status}`, {
+        previousStatus: existing.status,
+        newStatus: status,
+        reason: adminReason,
+      });
+
+      return this.update(id, {
+        status,
+        notes: updatedNotes,
+      });
+    } catch (error) {
+      console.error('Error in admin status update:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all reservations with filters (admin only)
+   *
+   * Supports filtering by status, payment provider, and date range.
+   * Includes puppy details for display.
+   *
+   * @param filters - Optional filters for status, provider, date range
+   * @param limit - Number of results to return (default: 100)
+   * @param offset - Offset for pagination (default: 0)
+   */
+  static async getAllWithFilters(
+    filters?: {
+      status?: ReservationStatus;
+      paymentProvider?: PaymentProvider;
+      startDate?: Date;
+      endDate?: Date;
+    },
+    limit: number = 100,
+    offset: number = 0,
+  ): Promise<ReservationWithPuppy[]> {
+    try {
+      let query = supabase
+        .from('reservations')
+        .select(
+          `
+          *,
+          puppy:puppies(
+            id,
+            name,
+            breed_id,
+            status,
+            price,
+            slug
+          )
+        `,
+        )
+        .order('created_at', { ascending: false });
+
+      if (filters?.status) {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters?.paymentProvider) {
+        query = query.eq('payment_provider', filters.paymentProvider);
+      }
+
+      if (filters?.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
+      }
+
+      if (filters?.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+      }
+
+      query = query.range(offset, offset + limit - 1);
+
+      const { data, error } = await query;
+
+      if (error || !data) {
+        console.error('Error getting reservations with filters:', error);
+        return [];
+      }
+
+      return data as ReservationWithPuppy[];
+    } catch (error) {
+      console.error('Error getting reservations with filters:', error);
+      return [];
+    }
+  }
 }
 
 /**

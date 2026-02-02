@@ -23,9 +23,14 @@ import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
 } from '@/lib/emails/deposit-notifications';
+import {
+  sendOwnerRefundNotification,
+  sendCustomerRefundNotification,
+} from '@/lib/emails/refund-notifications';
 import { sendAsyncPaymentFailedEmail } from '@/lib/emails/async-payment-failed';
 import { createServiceRoleClient } from '@/lib/supabase/client';
-import { ReservationQueries } from '@/lib/reservations/queries';
+import { ReservationServerQueries } from '@/lib/reservations/server-queries';
+import { WebhookEventsServer } from '@/lib/webhooks/webhook-events-server';
 import type { Json } from '@/lib/supabase/database.types';
 import type {
   WebhookProcessingResult,
@@ -162,6 +167,9 @@ export class StripeWebhookHandler {
       case 'checkout.session.expired':
         return this.handleSessionExpired(event, eventId);
 
+      case 'charge.refunded':
+        return this.handleChargeRefunded(event, eventId);
+
       default:
         console.log(`[Stripe Webhook] Unhandled event type: ${type}`);
         return {
@@ -217,8 +225,8 @@ export class StripeWebhookHandler {
     const paymentDedupeKey = `stripe:${paymentIntentId}`;
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
-      paymentDedupeKey,
-      paymentDedupeKey,
+      eventId, // Use actual Stripe event ID (evt_...)
+      paymentDedupeKey, // Use payment intent for idempotency key
     );
 
     if (idempotencyCheck.exists) {
@@ -308,8 +316,8 @@ export class StripeWebhookHandler {
     const paymentDedupeKey = `stripe:${paymentIntentId}`;
     const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
       'stripe',
-      paymentDedupeKey,
-      paymentDedupeKey,
+      eventId, // Use actual Stripe event ID (evt_...)
+      paymentDedupeKey, // Use payment intent for idempotency key
     );
 
     if (idempotencyCheck.exists) {
@@ -386,6 +394,18 @@ export class StripeWebhookHandler {
       payload: serializeStripeEvent(event),
     });
 
+    // Mark as processed since we're done with this event (using service role to bypass RLS)
+    await WebhookEventsServer.markProcessed({
+      provider: 'stripe',
+      eventId,
+      idempotencyKey: `stripe:${paymentIntentId}:failed`,
+    }).catch((error) => {
+      console.error(
+        '[Stripe Webhook] Failed to mark async_payment_failed event as processed:',
+        error,
+      );
+    });
+
     // Send email to customer with helpful information
     const customerEmail = session.customer_details?.email || metadata.customer_email;
     const customerName = session.customer_details?.name || metadata.customer_name || undefined;
@@ -434,6 +454,15 @@ export class StripeWebhookHandler {
       payload: serializeStripeEvent(event),
     });
 
+    // Mark as processed since we're done with this event (using service role to bypass RLS)
+    await WebhookEventsServer.markProcessed({
+      provider: 'stripe',
+      eventId,
+      idempotencyKey: `stripe:${session.id}:expired`,
+    }).catch((error) => {
+      console.error('[Stripe Webhook] Failed to mark expired event as processed:', error);
+    });
+
     // TODO: Track abandoned checkout in analytics
     // const metadata = session.metadata as StripeCheckoutMetadata;
     // await trackAnalyticsEvent('checkout_abandoned', {
@@ -464,8 +493,46 @@ export class StripeWebhookHandler {
     metadata: StripeCheckoutMetadata,
     paymentIntentId: string,
   ): Promise<WebhookProcessingResult> {
-    // Early duplicate check by payment intent in reservations table
-    const existingReservation = await ReservationQueries.getByPayment(
+    // CRITICAL FIX: Create webhook event and mark as processing BEFORE any early returns
+    // This ensures the webhook event is properly tracked even if we find existing reservation
+    await idempotencyManager.createWebhookEvent({
+      provider: 'stripe',
+      eventId,
+      eventType,
+      idempotencyKey: `stripe:${paymentIntentId}`,
+      payload: {
+        event_id: eventId,
+        session_id: session.id,
+        payment_intent: paymentIntentId,
+        metadata,
+      },
+    });
+
+    // Mark webhook event as being processed (using service role to bypass RLS)
+    // This prevents concurrent processing and ensures processing_started_at is set
+    try {
+      await WebhookEventsServer.markProcessing({
+        provider: 'stripe',
+        eventId,
+        idempotencyKey: `stripe:${paymentIntentId}`,
+        eventType,
+      });
+    } catch (markError) {
+      console.error(
+        '[Stripe Webhook] CRITICAL: Failed to mark webhook event as processing:',
+        markError,
+      );
+      // This is critical - if we can't mark as processing, webhook might be processed elsewhere
+      return {
+        success: false,
+        eventType,
+        paymentIntentId,
+        error: 'Failed to mark webhook event as processing',
+      };
+    }
+
+    // Check for existing reservation by payment intent
+    const existingReservation = await ReservationServerQueries.getByPayment(
       'stripe',
       paymentIntentId,
     ).catch((error) => {
@@ -475,8 +542,46 @@ export class StripeWebhookHandler {
 
     if (existingReservation?.id) {
       console.log(
-        `[Stripe Webhook] Payment intent ${paymentIntentId} already has reservation ${existingReservation.id}, skipping`,
+        `[Stripe Webhook] Payment intent ${paymentIntentId} already has reservation ${existingReservation.id}`,
       );
+
+      // If reservation exists but is not marked as paid, mark it as paid now
+      if (existingReservation.status !== 'paid') {
+        console.log(
+          `[Stripe Webhook] Reservation ${existingReservation.id} is in status '${existingReservation.status}', marking as paid`,
+        );
+
+        try {
+          await ReservationServerQueries.markPaid({
+            reservationId: existingReservation.id,
+            provider: 'stripe',
+            externalPaymentId: paymentIntentId,
+          });
+          console.log(`[Stripe Webhook] Reservation ${existingReservation.id} marked as paid`);
+        } catch (markPaidError) {
+          console.error(
+            `[Stripe Webhook] Failed to mark existing reservation as paid:`,
+            markPaidError,
+          );
+          // Don't return error - mark webhook as processed to avoid retry loop
+        }
+      }
+
+      // Mark webhook event as processed
+      try {
+        await WebhookEventsServer.markProcessed({
+          provider: 'stripe',
+          eventId,
+          idempotencyKey: `stripe:${paymentIntentId}`,
+        });
+        console.log(`[Stripe Webhook] Webhook event ${eventId} marked as processed`);
+      } catch (markError) {
+        console.error(
+          `[Stripe Webhook] CRITICAL: Failed to mark webhook event as processed:`,
+          markError,
+        );
+      }
+
       return {
         success: true,
         eventType,
@@ -559,24 +664,75 @@ export class StripeWebhookHandler {
 
       console.log(`[Stripe Webhook] Successfully created reservation ID: ${reservationId}`);
 
+      // CRITICAL FIX: Mark reservation as paid with service role (bypasses RLS)
+      let statusUpdateSucceeded = false;
+      try {
+        const updatedReservation = await ReservationServerQueries.markPaid({
+          reservationId,
+          provider: 'stripe',
+          externalPaymentId: paymentIntentId,
+        });
+
+        if (!updatedReservation) {
+          console.error(`[Stripe Webhook] Failed to mark reservation ${reservationId} as paid`);
+          return {
+            success: false,
+            eventType,
+            paymentIntentId,
+            reservationId,
+            error: 'Failed to mark reservation as paid',
+          };
+        } else {
+          console.log(`[Stripe Webhook] Reservation ${reservationId} marked as paid`);
+          statusUpdateSucceeded = true;
+        }
+      } catch (statusUpdateError) {
+        console.error(`[Stripe Webhook] Error marking reservation as paid:`, statusUpdateError);
+        return {
+          success: false,
+          eventType,
+          paymentIntentId,
+          reservationId,
+          error:
+            statusUpdateError instanceof Error
+              ? statusUpdateError.message
+              : 'Failed to mark reservation as paid',
+        };
+      }
+
+      // Only proceed with emails and notifications if status update succeeded
+      if (!statusUpdateSucceeded) {
+        return {
+          success: false,
+          eventType,
+          paymentIntentId,
+          reservationId,
+          error: 'Failed to mark reservation as paid',
+        };
+      }
+
       if (metadata.puppy_slug) {
         revalidatePath(`/puppies/${metadata.puppy_slug}`);
       }
       revalidatePath('/puppies');
 
-      await idempotencyManager.createWebhookEvent({
-        provider: 'stripe',
-        eventId,
-        eventType,
-        idempotencyKey: `stripe:${paymentIntentId}`,
-        payload: {
-          event_id: eventId,
-          session_id: session.id,
-          payment_intent: paymentIntentId,
-          metadata,
-        },
-        reservationId,
-      });
+      // Mark webhook event as successfully processed (using service role to bypass RLS)
+      try {
+        await WebhookEventsServer.markProcessed({
+          provider: 'stripe',
+          eventId,
+          idempotencyKey: `stripe:${paymentIntentId}`,
+        });
+        console.log(`[Stripe Webhook] Webhook event ${eventId} marked as processed`);
+      } catch (markError) {
+        console.error(
+          `[Stripe Webhook] CRITICAL: Failed to mark webhook event as processed:`,
+          markError,
+        );
+        // This is critical - if we can't mark as processed, webhook will retry
+        // But since reservation is already created and marked as paid, we should still return success
+        // to avoid duplicate reservations
+      }
 
       await trackDepositPaid({
         value: session.amount_total / 100,
@@ -684,5 +840,142 @@ export class StripeWebhookHandler {
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
+  }
+
+  /**
+   * Handle charge.refunded event
+   *
+   * Triggered when a charge is refunded (full or partial).
+   * Updates reservation status to 'refunded' and sends email notifications.
+   */
+  private static async handleChargeRefunded(
+    event: Stripe.Event,
+    eventId: string,
+  ): Promise<WebhookProcessingResult> {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId =
+      typeof charge.payment_intent === 'string'
+        ? charge.payment_intent
+        : charge.payment_intent?.id || null;
+
+    if (!paymentIntentId) {
+      console.error('[Stripe Webhook] Missing payment_intent on charge.refunded');
+      return {
+        success: false,
+        eventType: 'charge.refunded',
+        error: 'Missing payment_intent',
+      };
+    }
+
+    console.log(`[Stripe Webhook] Processing refund for payment_intent: ${paymentIntentId}`);
+
+    // Find reservation by payment intent (using service role to bypass RLS)
+    const reservation = await ReservationServerQueries.getByPayment(
+      'stripe',
+      paymentIntentId,
+    ).catch((error) => {
+      console.error('[Stripe Webhook] Failed to find reservation for refund:', error);
+      return null;
+    });
+
+    if (!reservation) {
+      console.warn(`[Stripe Webhook] No reservation found for payment_intent: ${paymentIntentId}`);
+      return {
+        success: false,
+        eventType: 'charge.refunded',
+        paymentIntentId,
+        error: 'Reservation not found',
+      };
+    }
+
+    console.log(`[Stripe Webhook] Found reservation ${reservation.id} for refund`);
+
+    // Extract refund information
+    const refund = charge.refunds?.data?.[0];
+    const refundId = refund?.id || charge.id;
+    const refundAmount = charge.amount_refunded / 100; // Convert from cents
+    const refundReason = refund?.reason || 'Unknown';
+
+    // Update reservation status to 'refunded' (using service role to bypass RLS)
+    try {
+      const refundNote = `[Stripe Refund ${new Date().toISOString()}] Amount: $${refundAmount} ${charge.currency?.toUpperCase() || 'USD'}, Reason: ${refundReason}, Refund ID: ${refundId}`;
+      const existingNotes = reservation.notes || '';
+      const updatedNotes = existingNotes ? `${existingNotes}\n\n${refundNote}` : refundNote;
+
+      await ReservationServerQueries.update(reservation.id, {
+        status: 'refunded',
+        notes: updatedNotes,
+      });
+
+      console.log(`[Stripe Webhook] Reservation ${reservation.id} marked as refunded`);
+    } catch (error) {
+      console.error(`[Stripe Webhook] Error updating reservation status to refunded:`, error);
+      return {
+        success: false,
+        eventType: 'charge.refunded',
+        paymentIntentId,
+        reservationId: reservation.id,
+        error: 'Failed to update reservation status',
+      };
+    }
+
+    // Get puppy details for email
+    const supabase = supabaseAdminClient || createServiceRoleClient();
+    const { data: puppy } = await supabase
+      .from('puppies')
+      .select('name, slug')
+      .eq('id', reservation.puppy_id)
+      .single();
+
+    if (!puppy) {
+      console.warn(`[Stripe Webhook] Puppy not found for reservation ${reservation.id}`);
+    }
+
+    // Send refund notification emails
+    const emailData = {
+      customerName: reservation.customer_name || 'Valued Customer',
+      customerEmail: reservation.customer_email || 'customer@example.com',
+      puppyName: puppy?.name || 'Puppy',
+      puppySlug: puppy?.slug || '',
+      refundAmount,
+      currency: charge.currency?.toUpperCase() || 'USD',
+      paymentProvider: 'stripe' as const,
+      reservationId: reservation.id,
+      refundId,
+      reason: refundReason,
+    };
+
+    void Promise.all([
+      sendOwnerRefundNotification(emailData),
+      sendCustomerRefundNotification(emailData),
+    ]).catch((error) => {
+      console.error('[Stripe Webhook] Failed to send refund email notifications:', error);
+    });
+
+    // Store webhook event for audit trail
+    await idempotencyManager.createWebhookEvent({
+      provider: 'stripe',
+      eventId,
+      eventType: 'charge.refunded',
+      idempotencyKey: `stripe:${paymentIntentId}:refunded`,
+      payload: serializeStripeEvent(event),
+      reservationId: reservation.id,
+    });
+
+    // Mark as processed since we're done with this event (using service role to bypass RLS)
+    await WebhookEventsServer.markProcessed({
+      provider: 'stripe',
+      eventId,
+      idempotencyKey: `stripe:${paymentIntentId}:refunded`,
+    }).catch((error) => {
+      console.error('[Stripe Webhook] Failed to mark refund event as processed:', error);
+    });
+
+    return {
+      success: true,
+      eventType: 'charge.refunded',
+      paymentIntentId,
+      reservationId: reservation.id,
+    };
   }
 }

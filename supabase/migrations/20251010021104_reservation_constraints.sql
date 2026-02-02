@@ -135,14 +135,22 @@ END
 $$;
 
 -- Add function to automatically expire pending reservations
-CREATE OR REPLACE FUNCTION expire_pending_reservations()
-RETURNS VOID AS $$
+-- Drop first to allow changing return type from INTEGER (previous migration) to VOID
+DROP FUNCTION IF EXISTS expire_pending_reservations();
+
+CREATE FUNCTION expire_pending_reservations()
+RETURNS INTEGER AS $$
+DECLARE
+  expired_count INTEGER;
 BEGIN
   UPDATE reservations
   SET status = 'expired', updated_at = NOW()
   WHERE status = 'pending'
   AND expires_at IS NOT NULL
   AND expires_at < NOW();
+
+  GET DIAGNOSTICS expired_count = ROW_COUNT;
+  RETURN expired_count;
 END;
 $$ LANGUAGE plpgsql;
 

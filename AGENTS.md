@@ -1,5 +1,21 @@
 # Repository Guidelines
 
+## Codex Instructions
+
+Codex reads `AGENTS.md` before working in this repo.
+
+Read first (in order):
+
+1. `docs/llms.txt`
+2. `memory-bank/activeContext.md`
+3. `memory-bank/systemPatterns.md`
+4. `docs/history/README.md`
+
+Definition of Done:
+
+- Update `memory-bank/activeContext.md` (and related Memory Bank files as needed).
+- Run `npm run verify` (or note why it was not run).
+
 ## Project Structure & Module Organization
 
 - Next.js app router lives in `app/` (routes, server actions, metadata); shared styling in `app/globals.css`.
@@ -38,3 +54,32 @@
 - PRs: include a short summary, linked issue, screenshots for UI changes, and note any env/secret additions; request review for changes touching payments/Supabase.
 - Ensure CI-equivalent checks pass locally (`lint`, `typecheck`, `test`, `e2e`, `build`) and update docs (`README.md`, `SPRINT_PLAN.md`) when behavior shifts.
 - Never commit secrets; keep `.env.local` local and refresh keys before recording videos or screenshots.
+
+## Memory Bank & Context
+
+We use a **Memory Bank** to persist context across sessions.
+
+- **Location**: `memory-bank/`
+- **Files**:
+  - `activeContext.md`: Current goal, recent changes, next steps. **Update this at start/end of session.**
+  - `progress.md`: Completed milestones and overall status.
+  - `systemPatterns.md`: Architectural decisions and standards.
+
+## Documentation Entrypoints
+
+- **`docs/llms.txt`**: The master index of all documentation.
+- **`docs/history/CHANGELOG.md`**: Record significant features/fixes here.
+
+## Memory Bank workflow (required)
+
+At the start of any coding session:
+
+1. Read `memory-bank/activeContext.md`
+2. Read `memory-bank/systemPatterns.md`
+3. Use `docs/llms.txt` as the doc map
+
+Before opening a PR / finishing a task:
+
+- Update `memory-bank/activeContext.md` (what changed + next steps)
+- Update `memory-bank/progress.md` if a milestone moved
+- Update `memory-bank/systemPatterns.md` if a new rule/decision emerged

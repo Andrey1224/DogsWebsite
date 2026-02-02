@@ -73,6 +73,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   const allPuppies = await getPuppiesWithRelations();
   const related = allPuppies
     .filter((candidate) => candidate.id !== puppy.id)
+    .filter((candidate) => candidate.status === 'available')
     .filter((candidate) => {
       const sameLitter = puppy.litter_id && candidate.litter_id === puppy.litter_id;
       // Priority: Use direct breed field, fallback to parent breed
@@ -101,6 +102,8 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
     formatBreed(puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? '';
   const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
   const paypalClientId = process.env.PAYPAL_CLIENT_ID ?? null;
+  const reservationsDisabled = process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED === 'true';
+  const reservationsDisabledMessage = process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED_MESSAGE ?? null;
 
   // Prepare weight display
   const weightDisplay = puppy.weight_oz
@@ -235,6 +238,8 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             status={puppy.status || 'unknown'}
             canReserve={reservationState?.canReserve ?? false}
             reservationBlocked={reservationState?.reservationBlocked ?? false}
+            reservationsDisabled={reservationsDisabled}
+            reservationsDisabledMessage={reservationsDisabledMessage}
             depositAmount={depositAmount}
             paypalClientId={paypalClientId}
           />

@@ -40,7 +40,7 @@ vi.mock('@hcaptcha/react-hcaptcha', () => ({
   default: () => <div data-testid="hcaptcha-widget">Mock HCaptcha</div>,
 }));
 
-vi.mock('@/app/contact/actions', () => ({
+vi.mock('@/app/(site)/(chrome)/contact/actions', () => ({
   submitContactInquiry: vi.fn(async () => ({
     status: 'idle' as const,
   })),
@@ -216,7 +216,7 @@ describe('Component Accessibility Tests', () => {
 
   describe('Form Elements', () => {
     it('should have accessible error states', async () => {
-      const { submitContactInquiry } = await import('@/app/contact/actions');
+      const { submitContactInquiry } = await import('@/app/(site)/(chrome)/contact/actions');
 
       (submitContactInquiry as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 'error' as const,
@@ -242,7 +242,7 @@ describe('Component Accessibility Tests', () => {
     });
 
     it('should have accessible success states', async () => {
-      const { submitContactInquiry } = await import('@/app/contact/actions');
+      const { submitContactInquiry } = await import('@/app/(site)/(chrome)/contact/actions');
 
       (submitContactInquiry as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 'success' as const,

@@ -194,6 +194,7 @@ export function PuppyRow({ puppy, statusOptions, archived }: PuppyRowProps) {
           Status
         </label>
         <select
+          key={`${puppy.id}-${puppy.status}`}
           id={`status-${puppy.id}`}
           name="status"
           defaultValue={puppy.status}

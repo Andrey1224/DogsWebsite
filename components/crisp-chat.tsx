@@ -9,11 +9,11 @@ import { CONTACT_COPY, CONTACT_CHANNELS } from '@/lib/config/contact';
 const CRISP_WEBSITE_ID = process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID;
 const WHATSAPP_LINK = CONTACT_CHANNELS.find((channel) => channel.id === 'whatsapp')?.href;
 
-// Helper to detect mobile screens (matches Tailwind 'sm' breakpoint)
-const MOBILE_MAX = 640;
-function isMobile() {
+// Helper to detect mobile-like screens (width or coarse pointer)
+const MOBILE_QUERY = '(max-width: 768px), (pointer: coarse)';
+function isMobileLike() {
   if (typeof window === 'undefined') return false;
-  return window.matchMedia(`(max-width: ${MOBILE_MAX}px}`).matches;
+  return window.matchMedia(MOBILE_QUERY).matches;
 }
 
 export function CrispChat() {
@@ -66,7 +66,7 @@ export function CrispChat() {
 
     const chatClosedHandler = () => {
       // Re-hide widget on mobile after user closes chat
-      if (isMobile()) {
+      if (isMobileLike()) {
         pushCommand('do', 'chat:hide');
       }
     };
@@ -97,7 +97,7 @@ export function CrispChat() {
   const applyMobileVisibility = () => {
     if (!window.$crisp) return;
 
-    if (isMobile()) {
+    if (isMobileLike()) {
       window.$crisp.push(['do', 'chat:hide']); // Hide bubble on mobile
     } else {
       window.$crisp.push(['do', 'chat:show']); // Show bubble on desktop
@@ -134,15 +134,18 @@ export function CrispChat() {
     };
     window.addEventListener('crisp:open', onForceOpen);
 
-    // 3. Re-apply visibility rules on resize
-    const onResize = () => {
+    // 3. Re-apply visibility rules on viewport change
+    const onVisibilityChange = () => {
       if (loadedRef.current) applyMobileVisibility();
     };
-    window.addEventListener('resize', onResize);
+    const mediaQuery = window.matchMedia(MOBILE_QUERY);
+    window.addEventListener('resize', onVisibilityChange);
+    mediaQuery.addEventListener('change', onVisibilityChange);
 
     return () => {
       window.removeEventListener('crisp:open', onForceOpen);
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener('resize', onVisibilityChange);
+      mediaQuery.removeEventListener('change', onVisibilityChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, trackEvent]); // loadCrisp and openChat are stable via refs

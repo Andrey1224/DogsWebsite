@@ -166,7 +166,7 @@ Created shared consent helper utilities:
 ### Documentation (2 files)
 
 1. `docs/optimization-changelog.md` - Added January 25 section
-2. `docs/history/2025-01-25-lcp-optimization-e2e-fixes.md` - **NEW** - This report
+2. `docs/history/archive/2025-01-25-lcp-optimization-e2e-fixes.md` - **NEW** - This report
 
 ---
 

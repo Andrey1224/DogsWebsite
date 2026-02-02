@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": [{ "pattern": "^https?://" }, { "pattern": "^mailto:" }],
+  "replacementPatterns": [
+    {
+      "pattern": "^/",
+      "replacement": "{{BASEURL}}/"
+    }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 2,
+  "fallbackRetryDelay": "10s"
+}

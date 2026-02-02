@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { usePathname } from 'next/navigation';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-import type { ContactFormState } from '@/app/contact/actions';
+import type { ContactFormState } from '@/app/(site)/(chrome)/contact/actions';
 
 let ContactForm: (typeof import('./contact-form'))['ContactForm'];
 const submitContactInquiryMock = vi.fn<
@@ -34,7 +34,7 @@ vi.mock('@hcaptcha/react-hcaptcha', () => ({
   }),
 }));
 
-vi.mock('@/app/contact/actions', () => ({
+vi.mock('@/app/(site)/(chrome)/contact/actions', () => ({
   submitContactInquiry: submitContactInquiryMock,
 }));
 

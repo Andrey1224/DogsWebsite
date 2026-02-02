@@ -4,12 +4,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { axe } from '../helpers/axe';
 
 // Import pages
-import HomePage from '@/app/page';
-import AboutPage from '@/app/about/page';
-import ContactPage from '@/app/contact/page';
-import FAQPage from '@/app/faq/page';
-import PoliciesPage from '@/app/policies/page';
-import ReviewsPage from '@/app/reviews/page';
+import HomePage from '@/app/(site)/(chrome)/page';
+import AboutPage from '@/app/(site)/(chrome)/about/page';
+import ContactPage from '@/app/(site)/(chrome)/contact/page';
+import FAQPage from '@/app/(site)/(chrome)/faq/page';
+import PoliciesPage from '@/app/(site)/(chrome)/policies/page';
+import ReviewsPage from '@/app/(site)/(chrome)/reviews/page';
 
 // Mock dependencies
 vi.mock('next/navigation', () => ({
@@ -58,7 +58,7 @@ vi.mock('@/lib/reviews/queries', () => ({
   }),
 }));
 
-vi.mock('@/app/reviews/upload-actions', () => ({
+vi.mock('@/app/(site)/(chrome)/reviews/upload-actions', () => ({
   createReviewPhotoUploadTarget: vi.fn(),
   getReviewPhotoPublicUrl: vi.fn(async () => ''),
 }));

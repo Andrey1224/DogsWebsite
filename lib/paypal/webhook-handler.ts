@@ -7,12 +7,17 @@
 
 import { ReservationCreationError, ReservationCreationService } from '@/lib/reservations/create';
 import { idempotencyManager } from '@/lib/reservations/idempotency';
+import { ReservationQueries } from '@/lib/reservations/queries';
 import type { ReservationChannel } from '@/lib/reservations/types';
 import { trackDepositPaid } from '@/lib/analytics/server-events';
 import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
 } from '@/lib/emails/deposit-notifications';
+import {
+  sendOwnerRefundNotification,
+  sendCustomerRefundNotification,
+} from '@/lib/emails/refund-notifications';
 import { getPayPalOrder } from './client';
 import type {
   PayPalCapture,
@@ -49,6 +54,8 @@ export class PayPalWebhookHandler {
     switch (eventType) {
       case 'PAYMENT.CAPTURE.COMPLETED':
         return this.handleCaptureCompleted(event);
+      case 'PAYMENT.CAPTURE.REFUNDED':
+        return this.handleCaptureRefunded(event);
       case 'CHECKOUT.ORDER.APPROVED':
         await idempotencyManager.createWebhookEvent({
           provider: 'paypal',
@@ -213,6 +220,21 @@ export class PayPalWebhookHandler {
         `[PayPal Webhook] Reservation created for capture ${captureId}, reservation ID ${reservationId}`,
       );
 
+      // CRITICAL FIX: Update reservation status to 'paid'
+      try {
+        const updatedReservation = await ReservationQueries.updateStatus(reservationId, 'paid');
+        if (!updatedReservation) {
+          console.error(
+            `[PayPal Webhook] Failed to update reservation ${reservationId} to paid status`,
+          );
+        } else {
+          console.log(`[PayPal Webhook] Reservation ${reservationId} marked as paid`);
+        }
+      } catch (statusUpdateError) {
+        console.error(`[PayPal Webhook] Error updating reservation status:`, statusUpdateError);
+        // Non-fatal - reservation exists, emails will still be sent
+      }
+
       await trackDepositPaid({
         value: amountValue,
         currency: capture.amount?.currency_code?.toUpperCase() || 'USD',
@@ -278,5 +300,130 @@ export class PayPalWebhookHandler {
         error: error instanceof Error ? error.message : 'Failed to create reservation',
       };
     }
+  }
+
+  /**
+   * Handle PAYMENT.CAPTURE.REFUNDED event
+   *
+   * Triggered when a PayPal capture is refunded (full or partial).
+   * Updates reservation status to 'refunded' and sends email notifications.
+   */
+  private static async handleCaptureRefunded(
+    event: PayPalWebhookEvent<Record<string, unknown>>,
+  ): Promise<PayPalWebhookProcessingResult> {
+    const { id: eventId, event_type: eventType } = event;
+    const resource = event.resource;
+
+    if (!isPayPalCaptureResource(resource)) {
+      console.error('[PayPal Webhook] Invalid capture resource on PAYMENT.CAPTURE.REFUNDED');
+      return {
+        success: false,
+        eventType,
+        error: 'Invalid capture resource',
+      };
+    }
+
+    const captureId = resource.id;
+    console.log(`[PayPal Webhook] Processing refund for capture: ${captureId}`);
+
+    // Find reservation by capture ID
+    const reservation = await ReservationQueries.getByPayment('paypal', captureId).catch(
+      (error) => {
+        console.error('[PayPal Webhook] Failed to find reservation for refund:', error);
+        return null;
+      },
+    );
+
+    if (!reservation) {
+      console.warn(`[PayPal Webhook] No reservation found for capture: ${captureId}`);
+      return {
+        success: false,
+        eventType,
+        captureId,
+        error: 'Reservation not found',
+      };
+    }
+
+    console.log(`[PayPal Webhook] Found reservation ${reservation.id} for refund`);
+
+    // Extract refund information from resource
+    // PayPal refund events have refund details in the resource
+    const refundAmount = parseFloat(resource.amount?.value || '0');
+    const refundId = captureId; // PayPal uses capture ID for refund tracking
+    const refundReason = 'Customer request'; // PayPal doesn't provide detailed reason in webhook
+
+    // Update reservation status to 'refunded'
+    try {
+      const refundNote = `[PayPal Refund ${new Date().toISOString()}] Amount: $${refundAmount} ${resource.amount?.currency_code || 'USD'}, Capture ID: ${captureId}`;
+      const existingNotes = reservation.notes || '';
+      const updatedNotes = existingNotes ? `${existingNotes}\n\n${refundNote}` : refundNote;
+
+      await ReservationQueries.update(reservation.id, {
+        status: 'refunded',
+        notes: updatedNotes,
+      });
+
+      console.log(`[PayPal Webhook] Reservation ${reservation.id} marked as refunded`);
+    } catch (error) {
+      console.error(`[PayPal Webhook] Error updating reservation status to refunded:`, error);
+      return {
+        success: false,
+        eventType,
+        captureId,
+        reservationId: reservation.id,
+        error: 'Failed to update reservation status',
+      };
+    }
+
+    // Get puppy details for email
+    const { createSupabaseClient } = await import('@/lib/supabase/client');
+    const supabase = createSupabaseClient();
+    const { data: puppy } = await supabase
+      .from('puppies')
+      .select('name, slug')
+      .eq('id', reservation.puppy_id)
+      .single();
+
+    if (!puppy) {
+      console.warn(`[PayPal Webhook] Puppy not found for reservation ${reservation.id}`);
+    }
+
+    // Send refund notification emails
+    const emailData = {
+      customerName: reservation.customer_name || 'Valued Customer',
+      customerEmail: reservation.customer_email || 'customer@example.com',
+      puppyName: puppy?.name || 'Puppy',
+      puppySlug: puppy?.slug || '',
+      refundAmount,
+      currency: resource.amount?.currency_code?.toUpperCase() || 'USD',
+      paymentProvider: 'paypal' as const,
+      reservationId: reservation.id,
+      refundId,
+      reason: refundReason,
+    };
+
+    void Promise.all([
+      sendOwnerRefundNotification(emailData),
+      sendCustomerRefundNotification(emailData),
+    ]).catch((error) => {
+      console.error('[PayPal Webhook] Failed to send refund email notifications:', error);
+    });
+
+    // Store webhook event for audit trail
+    await idempotencyManager.createWebhookEvent({
+      provider: 'paypal',
+      eventId,
+      eventType,
+      idempotencyKey: `paypal:${captureId}:refunded`,
+      payload: event,
+      reservationId: reservation.id,
+    });
+
+    return {
+      success: true,
+      eventType,
+      captureId,
+      reservationId: reservation.id,
+    };
   }
 }

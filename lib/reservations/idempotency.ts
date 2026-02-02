@@ -5,6 +5,8 @@
  * safe retry mechanisms for payment operations.
  */
 
+import 'server-only';
+
 import { createServiceRoleClient } from '@/lib/supabase/client';
 import type {
   PaymentProvider,
@@ -75,33 +77,78 @@ export class IdempotencyManager {
       // Check by provider and event ID first
       const { data: existingEvent, error: eventError } = await this.supabase
         .from('webhook_events')
-        .select('id, processed, processing_error, payload')
+        .select('id, processed, processing_started_at, processing_error, payload')
         .eq('provider', provider)
         .eq('event_id', eventId)
-        .single();
+        .maybeSingle();
 
       if (existingEvent && !eventError) {
-        return {
-          exists: true,
-          paymentId: eventId,
-          provider,
-        };
+        // Only treat as duplicate if already processed or currently being processed
+        if (existingEvent.processed) {
+          return {
+            exists: true,
+            paymentId: eventId,
+            provider,
+          };
+        }
+
+        // Check if currently being processed (within last 5 minutes)
+        if (existingEvent.processing_started_at) {
+          const processingStarted = new Date(existingEvent.processing_started_at);
+          const now = new Date();
+          const minutesSinceStart = (now.getTime() - processingStarted.getTime()) / 1000 / 60;
+
+          if (minutesSinceStart < 5) {
+            return {
+              exists: true,
+              paymentId: eventId,
+              provider,
+            };
+          }
+        }
+
+        // Event exists but not processed and not being processed - allow retry
+        console.log(`[Idempotency] Event ${eventId} exists but not processed, allowing retry`);
       }
 
       // If idempotency key is provided, check by key
       if (idempotencyKey) {
         const { data: keyEvent, error: keyError } = await this.supabase
           .from('webhook_events')
-          .select('id, processed, processing_error, payload')
+          .select('id, processed, processing_started_at, processing_error, payload')
+          .eq('provider', provider)
           .eq('idempotency_key', idempotencyKey)
-          .single();
+          .maybeSingle();
 
         if (keyEvent && !keyError) {
-          return {
-            exists: true,
-            paymentId: eventId,
-            provider,
-          };
+          // Only treat as duplicate if already processed or currently being processed
+          if (keyEvent.processed) {
+            return {
+              exists: true,
+              paymentId: eventId,
+              provider,
+            };
+          }
+
+          // Check if currently being processed (within last 5 minutes)
+          if (keyEvent.processing_started_at) {
+            const processingStarted = new Date(keyEvent.processing_started_at);
+            const now = new Date();
+            const minutesSinceStart = (now.getTime() - processingStarted.getTime()) / 1000 / 60;
+
+            if (minutesSinceStart < 5) {
+              return {
+                exists: true,
+                paymentId: eventId,
+                provider,
+              };
+            }
+          }
+
+          // Event exists but not processed and not being processed - allow retry
+          console.log(
+            `[Idempotency] Event with key ${idempotencyKey} exists but not processed, allowing retry`,
+          );
         }
       }
 
@@ -111,7 +158,7 @@ export class IdempotencyManager {
         .select('id, status, customer_email, external_payment_id')
         .eq('payment_provider', provider)
         .eq('external_payment_id', eventId)
-        .single();
+        .maybeSingle();
 
       if (reservation && !reservationError) {
         return {

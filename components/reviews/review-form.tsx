@@ -6,12 +6,12 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useRouter } from 'next/navigation';
 import { Star, UploadCloud, ArrowRight, X } from 'lucide-react';
 
-import type { ReviewFormState } from '@/app/reviews/actions';
-import { submitReview } from '@/app/reviews/actions';
+import type { ReviewFormState } from '@/app/(site)/(chrome)/reviews/actions';
+import { submitReview } from '@/app/(site)/(chrome)/reviews/actions';
 import {
   createReviewPhotoUploadTarget,
   getReviewPhotoPublicUrl,
-} from '@/app/reviews/upload-actions';
+} from '@/app/(site)/(chrome)/reviews/upload-actions';
 import { useAnalytics } from '@/components/analytics-provider';
 
 const HC_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;

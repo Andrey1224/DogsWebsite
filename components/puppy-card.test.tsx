@@ -120,46 +120,57 @@ describe('PuppyCard', () => {
     expect(floatingButton).toHaveAttribute('href', '/puppies/milo');
   });
 
-  it('renders Unavailable button for sold puppies', () => {
+  it('renders floating action button for sold puppies', () => {
     const puppy = buildPuppy({ status: 'sold' });
     render(<PuppyCard puppy={puppy} />);
 
-    const button = screen.getByRole('button', { name: /unavailable/i });
-    expect(button).toBeInTheDocument();
-    expect(button).toBeDisabled();
-    expect(button).toHaveClass('bg-slate-800', 'cursor-not-allowed');
+    const floatingButton = screen.getByRole('link', { name: /view details for milo/i });
+    expect(floatingButton).toBeInTheDocument();
+    expect(floatingButton).toHaveAttribute('href', '/puppies/milo');
   });
 
-  it('renders Unavailable button for reserved puppies', () => {
+  it('renders floating action button for reserved puppies', () => {
     const puppy = buildPuppy({ status: 'reserved' });
     render(<PuppyCard puppy={puppy} />);
 
-    const button = screen.getByRole('button', { name: /unavailable/i });
-    expect(button).toBeInTheDocument();
-    expect(button).toBeDisabled();
+    const floatingButton = screen.getByRole('link', { name: /view details for milo/i });
+    expect(floatingButton).toBeInTheDocument();
+    expect(floatingButton).toHaveAttribute('href', '/puppies/milo');
   });
 
-  it('applies grayscale filter to image for sold puppies', () => {
+  it('renders View Details link for sold puppies', () => {
     const puppy = buildPuppy({ status: 'sold' });
     render(<PuppyCard puppy={puppy} />);
 
-    const image = screen.getByAltText('Milo portrait');
-    expect(image).toHaveClass('grayscale', 'opacity-60');
+    const link = screen.getByText(/view details/i);
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/puppies/milo');
+    expect(link).toHaveClass('bg-slate-700');
   });
 
-  it('applies grayscale filter to image for reserved puppies', () => {
+  it('renders View Details link for reserved puppies', () => {
     const puppy = buildPuppy({ status: 'reserved' });
     render(<PuppyCard puppy={puppy} />);
 
-    const image = screen.getByAltText('Milo portrait');
-    expect(image).toHaveClass('grayscale', 'opacity-60');
+    const link = screen.getByText(/view details/i);
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/puppies/milo');
   });
 
-  it('does not apply grayscale filter to image for available puppies', () => {
-    const puppy = buildPuppy({ status: 'available' });
-    render(<PuppyCard puppy={puppy} />);
+  it('does not apply grayscale filter to any puppies', () => {
+    const availablePuppy = buildPuppy({ status: 'available' });
+    const { rerender } = render(<PuppyCard puppy={availablePuppy} />);
+    let image = screen.getByAltText('Milo portrait');
+    expect(image).not.toHaveClass('grayscale');
 
-    const image = screen.getByAltText('Milo portrait');
+    const soldPuppy = buildPuppy({ status: 'sold' });
+    rerender(<PuppyCard puppy={soldPuppy} />);
+    image = screen.getByAltText('Milo portrait');
+    expect(image).not.toHaveClass('grayscale');
+
+    const reservedPuppy = buildPuppy({ status: 'reserved' });
+    rerender(<PuppyCard puppy={reservedPuppy} />);
+    image = screen.getByAltText('Milo portrait');
     expect(image).not.toHaveClass('grayscale');
   });
 
