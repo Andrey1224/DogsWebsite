@@ -19,6 +19,8 @@ interface ReserveButtonProps {
   status: string;
   canReserve: boolean;
   reservationBlocked: boolean;
+  reservationsDisabled: boolean;
+  reservationsDisabledMessage?: string | null;
   depositAmount: number;
   paypalClientId: string | null;
 }
@@ -29,6 +31,8 @@ export function ReserveButton({
   status,
   canReserve,
   reservationBlocked,
+  reservationsDisabled,
+  reservationsDisabledMessage,
   depositAmount,
   paypalClientId,
 }: ReserveButtonProps) {
@@ -71,6 +75,32 @@ export function ReserveButton({
 
   const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
   const paypalConfigured = Boolean(paypalClientId);
+
+  if (reservationsDisabled) {
+    return (
+      <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
+        <p className="text-sm font-semibold text-orange-400">Reservations temporarily paused</p>
+        <p className="text-sm text-slate-400">
+          {reservationsDisabledMessage ??
+            "We're finalizing Stripe customer setup. Please check back soon or reach out if you need help."}
+        </p>
+        <button
+          type="button"
+          disabled
+          className="w-full cursor-not-allowed rounded-2xl bg-slate-800 py-4 text-sm font-semibold text-slate-500"
+        >
+          Reservations Unavailable
+        </button>
+        <p className="text-xs text-slate-500">
+          Need assistance?{' '}
+          <a href="/contact" className="font-semibold text-orange-400 hover:underline">
+            Contact us
+          </a>
+          .
+        </p>
+      </div>
+    );
+  }
 
   if (!canReserve) {
     if (reservationBlocked) {

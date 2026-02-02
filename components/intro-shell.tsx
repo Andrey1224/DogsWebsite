@@ -12,6 +12,7 @@ type IntroShellProps = {
 export function IntroShell({ children }: IntroShellProps) {
   const [showIntro, setShowIntro] = useState<boolean>(false);
   const [hasEmittedComplete, setHasEmittedComplete] = useState(false);
+  const introDisabled = process.env.NEXT_PUBLIC_INTRO_DISABLED === 'true';
 
   const emitIntroComplete = useCallback(() => {
     if (hasEmittedComplete) return;
@@ -22,6 +23,13 @@ export function IntroShell({ children }: IntroShellProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    if (introDisabled) {
+      sessionStorage.setItem('ebl_intro_complete', 'true');
+      setShowIntro(false);
+      emitIntroComplete();
+      return;
+    }
 
     // Auto-skip intro for automated browsers (e.g., Playwright) to keep tests stable
     const isAutomation = navigator.webdriver;
@@ -35,7 +43,7 @@ export function IntroShell({ children }: IntroShellProps) {
     const hasSeen = sessionStorage.getItem('ebl_intro_complete');
     setShowIntro(!hasSeen);
     if (hasSeen) emitIntroComplete();
-  }, [emitIntroComplete]);
+  }, [emitIntroComplete, introDisabled]);
 
   useEffect(() => {
     const root = document.documentElement;

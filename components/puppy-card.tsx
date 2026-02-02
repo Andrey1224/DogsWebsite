@@ -41,7 +41,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
   const loading = isAboveFold ? 'eager' : 'lazy';
 
   const isAvailable = puppy.status === 'available';
-  const isUnavailable = puppy.status === 'sold' || puppy.status === 'reserved';
+  const reservationsDisabled = process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED === 'true';
 
   return (
     <article
@@ -54,9 +54,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
           src={coverImage}
           alt={puppy.name ? `${puppy.name} portrait` : 'Bulldog portrait'}
           fill
-          className={`object-cover transition-transform duration-700 group-hover:scale-105 ${
-            isUnavailable ? 'grayscale opacity-60' : ''
-          }`}
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading={loading}
         />
@@ -68,23 +66,21 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
 
         {/* Status Badge */}
         <span
-          className={`absolute right-4 top-4 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${statusClass}`}
+          className={`absolute right-4 top-4 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider backdrop-blur-md ${statusClass}`}
         >
           {puppy.status}
         </span>
 
-        {/* Floating Action Button (hover, Available only) */}
-        {isAvailable && (
-          <div className="absolute bottom-4 right-4 translate-y-0 md:translate-y-12 transition-transform duration-300 md:group-hover:translate-y-0">
-            <Link
-              href={`/puppies/${puppy.slug}`}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white shadow-lg shadow-black/30 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-orange-400/60 hover:text-orange-300"
-              aria-label={`View details for ${puppy.name}`}
-            >
-              <ArrowUpRight size={18} />
-            </Link>
-          </div>
-        )}
+        {/* Floating Action Button (hover) */}
+        <div className="absolute bottom-4 right-4 translate-y-0 md:translate-y-12 transition-transform duration-300 md:group-hover:translate-y-0">
+          <Link
+            href={`/puppies/${puppy.slug}`}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white shadow-lg shadow-black/30 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-orange-400/60 hover:text-orange-300"
+            aria-label={`View details for ${puppy.name}`}
+          >
+            <ArrowUpRight size={18} />
+          </Link>
+        </div>
       </div>
 
       {/* Content */}
@@ -109,20 +105,27 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
 
         {/* Action Buttons */}
         <div className="flex gap-3 border-t border-slate-800 pt-4">
-          {isAvailable ? (
+          {isAvailable && !reservationsDisabled ? (
             <Link
               href={`/puppies/${puppy.slug}`}
               className="flex-1 rounded-xl bg-orange-500 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600"
             >
               Reserve Now
             </Link>
-          ) : (
+          ) : isAvailable ? (
             <button
               disabled
               className="w-full cursor-not-allowed rounded-xl bg-slate-800 py-3 text-sm font-semibold text-slate-500"
             >
-              Unavailable
+              Reservations Paused
             </button>
+          ) : (
+            <Link
+              href={`/puppies/${puppy.slug}`}
+              className="w-full rounded-xl bg-slate-700 py-3 text-center text-sm font-semibold text-slate-300 transition-all hover:bg-slate-600"
+            >
+              View Details
+            </Link>
           )}
         </div>
       </div>
