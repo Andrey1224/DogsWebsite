@@ -10,6 +10,7 @@
 
 ## Recent Wins
 
+- Fixed admin puppy status dropdown not reflecting database updates after page refresh.
 - Fixed critical Stripe webhook bug preventing "paid" status updates.
 - Consolidated fragmented history files into `docs/history/`.
 - Established `docs/llms.txt` as the documentation source of truth.

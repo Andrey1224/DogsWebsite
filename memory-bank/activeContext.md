@@ -10,6 +10,7 @@
 
 ## Current Status
 
+- **Recent Fix**: Admin puppy status dropdown now correctly displays updated values after page refresh (Feb 1, 2026).
 - **Recent Fix**: Critical Stripe webhook early return bug fixed (Jan 10, 2026).
 - **Recent Enhancement**: "You may also love" section now shows only available puppies (Feb 1, 2026).
 - **Docs**: Refactored `docs/history` structure and created `docs/llms.txt`.
