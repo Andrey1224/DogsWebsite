@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0B1120] px-6 py-10 text-white">
       <div className="pointer-events-none absolute -left-10 top-10 h-80 w-80 rounded-full bg-orange-500/10 blur-[120px]" />
       <div className="pointer-events-none absolute -right-10 bottom-0 h-80 w-80 rounded-full bg-purple-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
+      <div className="pointer-events-none absolute inset-0 bg-[url('/textures/cubes.png')] opacity-[0.03]" />
 
       <div className="relative z-10 w-full max-w-lg">
         <div className="mb-8 flex flex-col items-center">

@@ -398,7 +398,7 @@ function CallToAction() {
   return (
     <section className="bg-[#0B1120] px-6 py-20 md:px-20">
       <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[3rem] border border-slate-700/50 bg-gradient-to-r from-[#1E293B] to-[#1a2333] p-12 text-center shadow-2xl">
-        <div className="absolute inset-0 opacity-5 [background-image:url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+        <div className="absolute inset-0 opacity-5 [background-image:url('/textures/cubes.png')]" />
         <h2 className="relative z-10 mb-6 text-3xl font-bold md:text-5xl">
           Ready to find your perfect bulldog?
         </h2>

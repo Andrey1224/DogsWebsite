@@ -106,9 +106,6 @@ export default function RootLayout({
 
         {/* Preconnect for Crisp Chat - reduces DNS/TLS handshake time */}
         <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
-
-        {/* Preconnect for Transparent Textures pattern */}
-        <link rel="preconnect" href="https://www.transparenttextures.com" crossOrigin="anonymous" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
