@@ -47,5 +47,8 @@ export function PromoGate() {
 
   if (automation) return null;
 
+  // Check if promo is disabled via env variable
+  if (process.env.NEXT_PUBLIC_PROMO_DISABLED === 'true') return null;
+
   return <PromoModal open={open} onClose={handleClose} />;
 }
