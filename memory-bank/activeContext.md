@@ -10,6 +10,10 @@
 
 ## Current Status
 
+- **Recent Optimization**: Lighthouse Mobile performance improvements completed (Feb 6, 2026):
+  - ✅ Localized transparenttextures.com texture (~300ms LCP improvement)
+  - ✅ Removed 10 redundant PNG files (3.68MB freed from repository)
+  - ✅ Updated TypeScript target ES2017 → ES2019 (~6-8KB bundle reduction)
 - **Recent Fix**: Admin puppy status dropdown now correctly displays updated values after page refresh (Feb 1, 2026).
 - **Recent Fix**: Critical Stripe webhook early return bug fixed (Jan 10, 2026).
 - **Recent Enhancement**: "You may also love" section now shows only available puppies (Feb 1, 2026).

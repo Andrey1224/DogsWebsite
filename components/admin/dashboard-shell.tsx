@@ -24,7 +24,7 @@ export function AdminDashboardShell({ email, children }: AdminDashboardShellProp
       {/* Background effects */}
       <div className="pointer-events-none absolute left-1/4 top-0 h-80 w-80 rounded-full bg-orange-500/10 blur-[120px]" />
       <div className="pointer-events-none absolute right-1/5 bottom-0 h-80 w-80 rounded-full bg-purple-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
+      <div className="pointer-events-none absolute inset-0 bg-[url('/textures/cubes.png')] opacity-[0.03]" />
 
       {/* Sidebar */}
       <aside className="relative z-10 w-full flex-shrink-0 border-b border-slate-800/50 bg-[#111827]/50 md:h-auto md:w-64 md:border-b-0 md:border-r md:border-slate-800/50">
