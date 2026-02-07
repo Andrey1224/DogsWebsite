@@ -10,6 +10,7 @@
 
 ## Current Status
 
+- **Recent Feature**: Added promotional modal disable flag `NEXT_PUBLIC_PROMO_DISABLED` (Feb 6, 2026).
 - **Recent Optimization**: Lighthouse Mobile performance improvements completed (Feb 6, 2026):
   - ✅ Localized transparenttextures.com texture (~300ms LCP improvement)
   - ✅ Removed 10 redundant PNG files (3.68MB freed from repository)
@@ -21,6 +22,7 @@
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
 - **Intro**: Added an env flag to skip the intro screen.
+- **Promo**: Added an env flag to disable the promotional modal.
 
 ## Active Workstream
 
