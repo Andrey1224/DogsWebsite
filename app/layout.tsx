@@ -70,6 +70,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google Site Verification */}
+        <meta
+          name="google-site-verification"
+          content="QcntDgPQ0XvZFNEmE-y70IfO97-6me0KEriMcwaQHf0"
+        />
+
         {/* DNS prefetch and preconnect for Supabase Storage */}
         {supabaseHostname && (
           <>
