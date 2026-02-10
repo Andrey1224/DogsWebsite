@@ -7,37 +7,53 @@
 - **P2**: Automate documentation integrity (link checking).
 - **P3**: Temporarily pause customer reservations until Stripe customer setup is complete.
 - **P4**: Disable intro screen so the home page loads immediately.
+- **P5**: Disable promotional modal on production via env variable.
 
 ## Current Status
 
-- **Recent Optimization**: Lighthouse Mobile performance improvements completed (Feb 6, 2026):
+- **IN PROGRESS**: `NEXT_PUBLIC_PROMO_DISABLED=true` set in Vercel but promo modal still showing.
+  - Debug logging added to `components/home/promo-gate.tsx` (commit `3baf367`, main)
+  - Need to check browser console on production to diagnose root cause
+  - Suspected cause: env variable not embedded in bundle (client component), or missing redeploy without build cache
+  - **TODO**: Remove debug logs once issue is resolved
+- **Recent Feature**: `NEXT_PUBLIC_PROMO_DISABLED` env flag added (Feb 6, 2026) — commit `292bb0d` in main
+- **Recent Optimization**: Lighthouse Mobile performance improvements (Feb 6, 2026) — PR #11 merged to main:
   - ✅ Localized transparenttextures.com texture (~300ms LCP improvement)
   - ✅ Removed 10 redundant PNG files (3.68MB freed from repository)
   - ✅ Updated TypeScript target ES2017 → ES2019 (~6-8KB bundle reduction)
 - **Recent Fix**: Admin puppy status dropdown now correctly displays updated values after page refresh (Feb 1, 2026).
 - **Recent Fix**: Critical Stripe webhook early return bug fixed (Jan 10, 2026).
 - **Recent Enhancement**: "You may also love" section now shows only available puppies (Feb 1, 2026).
-- **Docs**: Refactored `docs/history` structure and created `docs/llms.txt`.
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
 - **Intro**: Added an env flag to skip the intro screen.
 
+## Branch State (Feb 6, 2026)
+
+| Branch | Latest commit | Notes                                      |
+| ------ | ------------- | ------------------------------------------ |
+| `main` | `3baf367`     | Debug logs in PromoGate — remove after fix |
+| `dev`  | `1b4595e`     | 1 doc-only commit ahead of main            |
+
 ## Active Workstream
 
-- Implementing "AI Docs Optimization" plan.
-- Integrating `markdown-link-check` into CI verify pipeline.
+- Debugging `NEXT_PUBLIC_PROMO_DISABLED` not taking effect on production.
 - Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED`.
 - Skipping intro screen via `NEXT_PUBLIC_INTRO_DISABLED`.
 
 ## Risks & Issues
 
+- **Promo debug code in main**: `components/home/promo-gate.tsx` has temporary console.log statements — must be removed after fix.
 - **Docs Drift**: Manual updates to `llms.txt` and `CHANGELOG.md` required until automation is built.
 - **Complexity**: Payment flows (atomic reservations + idempotency) are complex; rely on `REPORT_STRIPE_WEBHOOKS.md` for context.
 
 ## Next Steps
 
-1. Install `markdown-link-check`.
-2. Verify all markdown links in `docs/` and `memory-bank/`.
-3. Plan auto-generation for `docs/llms.txt`.
-4. Enable/disable reservations via env when Stripe customer setup is ready.
-5. Turn off intro in `.env.local` when ready to hide the splash screen.
+1. Check browser console on production to see `[PromoGate]` log output.
+2. Based on result:
+   - If `undefined` → redeploy Vercel with cleared build cache, verify env var is set for Production environment.
+   - If `true` but modal still shows → investigate `PromoModal` component for separate disable logic.
+3. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
+4. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
+5. Enable/disable reservations via env when Stripe customer setup is ready.
+6. Turn off intro in `.env.local` when ready to hide the splash screen.
