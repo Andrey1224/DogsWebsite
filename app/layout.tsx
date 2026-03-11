@@ -115,6 +115,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
+        suppressHydrationWarning
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <JsonLd id="organization-schema" data={organizationSchema} />

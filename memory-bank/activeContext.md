@@ -24,6 +24,11 @@
 - **Recent Fix**: Admin puppy status dropdown now correctly displays updated values after page refresh (Feb 1, 2026).
 - **Recent Fix**: Critical Stripe webhook early return bug fixed (Jan 10, 2026).
 - **Recent Enhancement**: "You may also love" section now shows only available puppies (Feb 1, 2026).
+- **SEO Audit Finding (Mar 10, 2026)**: repository review does not show a global `noindex` tag in `app/layout.tsx`; default metadata explicitly sets `robots.index/follow=true`.
+- **SEO Audit Finding (Mar 10, 2026)**: puppy detail pages only set `noIndex: true` when a requested puppy slug is missing, which suggests Search Console `Excluded by 'noindex'` could be caused by stale/invalid puppy URLs rather than a site-wide meta tag.
+- **SEO Audit Finding (Mar 10, 2026)**: internal navigation and puppy cards already use `next/link`, so the current codebase does not match the `div onClick + router.push()` crawlability anti-pattern.
+- **SEO Fix (Mar 10, 2026)**: added `/reviews` to `app/sitemap.ts` so the reviews page is explicitly advertised in the XML sitemap.
+- **Verification (Mar 10, 2026)**: `npm run verify` passed docs sync, link checks, lint, typecheck, and Vitest suite; Playwright failed with `Process from config.webServer exited early`.
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
 - **Intro**: Added an env flag to skip the intro screen.
@@ -40,6 +45,8 @@
 - Debugging `NEXT_PUBLIC_PROMO_DISABLED` not taking effect on production.
 - Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED`.
 - Skipping intro screen via `NEXT_PUBLIC_INTRO_DISABLED`.
+- Investigating Search Console SEO warnings around `noindex` exclusions and low internal-link counts.
+- Sitemap completeness updated to include `/reviews`.
 
 ## Risks & Issues
 
@@ -57,3 +64,6 @@
 4. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
 5. Enable/disable reservations via env when Stripe customer setup is ready.
 6. Turn off intro in `.env.local` when ready to hide the splash screen.
+7. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
+8. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
+9. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.

@@ -1,0 +1,164 @@
+import React from 'react';
+import { ChevronRight, Clock, Calendar, User, ArrowLeft, Share2, Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-[#0b101a] text-slate-300 font-sans selection:bg-[#ff6b00] selection:text-white pb-24">
+      
+      {/* Навигация (Хлебные крошки) */}
+      <nav className="max-w-4xl mx-auto px-6 pt-12 pb-6 flex items-center gap-2 text-sm text-slate-500">
+        <a href="#" className="hover:text-[#ff6b00] transition-colors flex items-center gap-1">
+          <ArrowLeft size={14} /> Назад в блог
+        </a>
+        <span>/</span>
+        <a href="#" className="hover:text-[#ff6b00] transition-colors">Главная</a>
+        <ChevronRight size={14} />
+        <a href="#" className="hover:text-[#ff6b00] transition-colors">Блог</a>
+        <ChevronRight size={14} />
+        <span className="text-slate-300">Питание</span>
+      </nav>
+
+      <article className="max-w-4xl mx-auto px-6">
+        
+        {/* Шапка статьи (Header) */}
+        <header className="mb-10 text-center md:text-left">
+          <div className="inline-block px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/20 text-[#ff6b00] text-sm font-medium mb-6">
+            Питание и диета
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight tracking-tight">
+            Как правильно кормить французского бульдога: полное руководство
+          </h1>
+          
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-sm text-slate-400 mb-8 border-b border-slate-800 pb-8">
+            <div className="flex items-center gap-2">
+              <User size={16} className="text-[#ff6b00]" />
+              <span className="font-medium text-slate-300">Татьяна (Exotic Bulldog Legacy)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar size={16} />
+              <span>Обновлено: 10 Марта, 2026</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock size={16} />
+              <span>5 мин чтения</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Главное изображение (Cover Image) */}
+        <div className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-12 border border-slate-800 relative">
+          <img 
+            src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200" 
+            alt="Французский бульдог ест из миски" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Контентная часть и сайдбар с шерингом */}
+        <div className="flex flex-col md:flex-row gap-12">
+          
+          {/* Плавающая панель соцсетей (Desktop) */}
+          <aside className="hidden md:flex flex-col gap-4 sticky top-24 h-max">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Поделиться</span>
+            <button className="w-10 h-10 rounded-full bg-[#151c2b] border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-[#ff6b00] transition-colors">
+              <Facebook size={18} />
+            </button>
+            <button className="w-10 h-10 rounded-full bg-[#151c2b] border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-[#ff6b00] transition-colors">
+              <Twitter size={18} />
+            </button>
+            <button className="w-10 h-10 rounded-full bg-[#151c2b] border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-[#ff6b00] transition-colors">
+              <LinkIcon size={18} />
+            </button>
+          </aside>
+
+          {/* Текст статьи */}
+          <div className="prose prose-invert prose-lg max-w-3xl prose-headings:text-white prose-p:text-slate-300 prose-a:text-[#ff6b00] prose-strong:text-white">
+            <p className="text-xl leading-relaxed text-slate-200 font-medium mb-8">
+              Французские бульдоги — обладатели чувствительного пищеварения и склонности к пищевым аллергиям. Выбор правильного рациона — это не просто вопрос сытости, это фундамент здоровья, качества шерсти и продолжительности жизни вашего питомца.
+            </p>
+
+            <h2 className="text-2xl font-bold mt-12 mb-6">Почему стандартный корм из супермаркета не подходит?</h2>
+            <p className="mb-6 leading-relaxed">
+              Многие коммерческие корма содержат дешевые наполнители: кукурузу, сою и пшеницу. Для брахицефальных пород (с плоской мордочкой) такие ингредиенты часто становятся причиной сильного газообразования, кожных высыпаний и слезотечения.
+            </p>
+
+            <blockquote className="border-l-4 border-[#ff6b00] pl-6 py-2 my-8 bg-[#151c2b]/50 rounded-r-xl italic">
+              "В нашем питомнике Exotic Bulldog Legacy мы придерживаемся строгих стандартов питания с первых недель жизни щенка. Здоровый кишечник — это 80% иммунитета."
+            </blockquote>
+
+            <h2 className="text-2xl font-bold mt-12 mb-6">Основы идеального рациона</h2>
+            <ul className="list-disc pl-6 space-y-3 mb-8 marker:text-[#ff6b00]">
+              <li><strong>Высококачественный белок:</strong> Основа должна состоять из легкоусвояемого мяса (индейка, ягненок, утка). Курицу следует вводить с осторожностью, так как она является частым аллергеном.</li>
+              <li><strong>Омега-3 и Омега-6:</strong> Рыбий жир или лососевое масло жизненно необходимы для поддержания здоровья кожи и блестящей шерсти.</li>
+              <li><strong>Умеренная калорийность:</strong> Французы склонны к ожирению, что дает критическую нагрузку на их суставы и дыхательную систему.</li>
+            </ul>
+
+            <div className="bg-[#151c2b] border border-slate-800 rounded-2xl p-8 my-10">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span className="bg-[#ff6b00] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">💡</span>
+                Совет ветеринара
+              </h3>
+              <p className="text-sm">
+                Всегда следите за тем, чтобы у собаки был доступ к свежей воде, особенно если вы кормите ее сухим кормом (kibble). Если собака ест слишком быстро и заглатывает воздух, используйте специальные миски для медленного поедания (slow feeder).
+              </p>
+            </div>
+
+            <h2 className="text-2xl font-bold mt-12 mb-6">Сухой корм или натуральное питание (Raw Diet)?</h2>
+            <p className="mb-6 leading-relaxed">
+              Оба подхода имеют право на жизнь, если они сбалансированы. Мы рекомендуем премиальные холистики без зерна или тщательно рассчитанный натуральный рацион. При передаче щенка новым владельцам мы всегда предоставляем подробный план питания, к которому малыш уже привык.
+            </p>
+          </div>
+        </div>
+
+        {/* Блок Автора (E-E-A-T) */}
+        <div className="mt-16 pt-10 border-t border-slate-800 flex flex-col md:flex-row items-center md:items-start gap-6 bg-[#151c2b]/30 p-8 rounded-3xl">
+          <div className="w-20 h-20 rounded-full bg-slate-800 overflow-hidden shrink-0 border-2 border-[#ff6b00]">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200" alt="Автор" className="w-full h-full object-cover" />
+          </div>
+          <div className="text-center md:text-left">
+            <h4 className="text-lg font-bold text-white mb-2">Татьяна — Основатель Exotic Bulldog Legacy</h4>
+            <p className="text-sm text-slate-400 leading-relaxed mb-4">
+              Заводчик с многолетним стажем, специализирующийся на французских и английских бульдогах. Моя цель — не просто разведение, а улучшение здоровья породы и подбор идеальных компаньонов для любящих семей.
+            </p>
+            <a href="#" className="text-[#ff6b00] text-sm font-medium hover:underline">Подробнее о нашей истории &rarr;</a>
+          </div>
+        </div>
+      </article>
+
+      {/* Рекомендованные статьи & CTA */}
+      <section className="max-w-7xl mx-auto px-6 mt-24">
+        <h3 className="text-2xl font-bold text-white mb-8">Читайте также</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          {/* Карточка 1 */}
+          <div className="bg-[#151c2b] border border-slate-800 rounded-2xl overflow-hidden flex cursor-pointer hover:border-slate-700 transition-all group h-32">
+            <img src="https://images.unsplash.com/photo-1598133894008-61f7fbf8d156?auto=format&fit=crop&q=80&w=400" className="w-1/3 object-cover group-hover:scale-105 transition-transform duration-500" alt="post" />
+            <div className="p-4 flex flex-col justify-center">
+              <span className="text-[#ff6b00] text-xs font-bold mb-1">УХОД</span>
+              <h4 className="text-white font-medium text-sm md:text-base leading-tight group-hover:text-[#ff6b00] transition-colors">Подготовка дома к появлению щенка: чек-лист</h4>
+            </div>
+          </div>
+          {/* Карточка 2 */}
+          <div className="bg-[#151c2b] border border-slate-800 rounded-2xl overflow-hidden flex cursor-pointer hover:border-slate-700 transition-all group h-32">
+            <img src="https://images.unsplash.com/photo-1611250282006-4484dd3fba6b?auto=format&fit=crop&q=80&w=400" className="w-1/3 object-cover group-hover:scale-105 transition-transform duration-500" alt="post" />
+            <div className="p-4 flex flex-col justify-center">
+              <span className="text-[#ff6b00] text-xs font-bold mb-1">ЗДОРОВЬЕ</span>
+              <h4 className="text-white font-medium text-sm md:text-base leading-tight group-hover:text-[#ff6b00] transition-colors">Понимание DNA и OFA тестирования</h4>
+            </div>
+          </div>
+        </div>
+
+        {/* Финальный CTA */}
+        <div className="bg-gradient-to-r from-[#151c2b] to-[#1a2333] border border-slate-800 rounded-3xl p-8 md:p-12 text-center flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="md:text-left">
+            <h2 className="text-2xl font-bold text-white mb-2">Нашли ответы на свои вопросы?</h2>
+            <p className="text-slate-400">Познакомьтесь с нашими доступными щенками, выращенными с любовью и заботой.</p>
+          </div>
+          <button className="bg-[#ff6b00] hover:bg-[#e66000] text-white px-8 py-4 rounded-full font-medium transition-colors shrink-0 flex items-center gap-2">
+            Посмотреть щенков <ChevronRight size={18} />
+          </button>
+        </div>
+      </section>
+
+    </div>
+  );
+}

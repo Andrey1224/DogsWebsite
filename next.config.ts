@@ -43,6 +43,15 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.exoticbulldog.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+        pathname: '/images/**',
+      },
       ...supabaseRemotePattern,
     ],
     formats: ['image/avif', 'image/webp'],
@@ -57,8 +66,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        // Security headers for all routes except /studio (Studio uses iframes internally)
+        source: '/((?!studio).*)',
         headers: securityHeaders,
+      },
+      {
+        // Studio gets all headers except X-Frame-Options so its iframes can function
+        source: '/studio(.*)',
+        headers: securityHeaders.filter((h) => h.key !== 'X-Frame-Options'),
       },
     ];
   },
