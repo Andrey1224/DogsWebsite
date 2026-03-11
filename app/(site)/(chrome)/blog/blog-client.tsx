@@ -21,6 +21,16 @@ export type BlogClientPost = {
 
 const categories = ['All', 'Health', 'Nutrition', 'Care', 'Breeds'];
 
+const categoryLabel: Record<string, string> = {
+  Питание: 'Nutrition',
+  Уход: 'Care',
+  Здоровье: 'Health',
+  Породы: 'Breeds',
+};
+function displayCategory(cat: string): string {
+  return categoryLabel[cat] ?? cat;
+}
+
 type Props = { posts: BlogClientPost[] };
 
 export function BlogClient({ posts }: Props) {
@@ -93,7 +103,7 @@ export function BlogClient({ posts }: Props) {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 pb-24">
-        {/* Featured Article — only shown on "Все" tab with no search */}
+        {/* Featured Article — only shown on "All" tab with no search */}
         {activeCategory === 'All' && !searchQuery.trim() && featuredPost && (
           <Link href={`/blog/${featuredPost.slug}`} className="group mb-16 block cursor-pointer">
             <article className="flex flex-col overflow-hidden rounded-3xl border border-slate-800 bg-[#151c2b] transition-all duration-300 hover:border-slate-700 md:flex-row">
@@ -111,7 +121,9 @@ export function BlogClient({ posts }: Props) {
               </div>
               <div className="flex flex-col justify-center p-8 md:w-1/2 md:p-12">
                 <div className="mb-4 flex items-center gap-4 text-sm text-slate-400">
-                  <span className="font-medium text-[#ff6b00]">{featuredPost.category}</span>
+                  <span className="font-medium text-[#ff6b00]">
+                    {displayCategory(featuredPost.category)}
+                  </span>
                   <span>•</span>
                   <span>{featuredPost.date}</span>
                   <span>•</span>
@@ -151,7 +163,7 @@ export function BlogClient({ posts }: Props) {
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute left-4 top-4 rounded-full bg-[#0b101a]/80 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                    {post.category}
+                    {displayCategory(post.category)}
                   </div>
                 </div>
 

@@ -19,6 +19,14 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { BlogPortableText } from '@/components/blog/portable-text';
 import { ShareButtons } from './share-buttons';
 
+const categoryLabel: Record<string, string> = {
+  Питание: 'Nutrition',
+  Уход: 'Care',
+  Здоровье: 'Health',
+  Породы: 'Breeds',
+};
+const displayCategory = (cat: string) => categoryLabel[cat] ?? cat;
+
 // ISR: regenerate at most every 60 seconds
 export const revalidate = 60;
 
@@ -85,14 +93,14 @@ export default async function ArticlePage({ params }: { params: Params }) {
           Blog
         </Link>
         <ChevronRight size={14} />
-        <span className="text-slate-300">{post.category}</span>
+        <span className="text-slate-300">{displayCategory(post.category)}</span>
       </nav>
 
       <article className="mx-auto max-w-4xl px-6">
         {/* Article header */}
         <header className="mb-10 text-center md:text-left">
           <div className="mb-6 inline-block rounded-full border border-[#ff6b00]/20 bg-[#ff6b00]/10 px-3 py-1 text-sm font-medium text-[#ff6b00]">
-            {post.category}
+            {displayCategory(post.category)}
           </div>
           <h1 className="mb-6 text-3xl font-bold leading-tight tracking-tight text-white md:text-5xl">
             {post.title}
@@ -145,7 +153,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
         <div className="mt-16 flex flex-col items-center gap-6 rounded-3xl border-t border-slate-800 bg-[#151c2b]/30 p-8 pt-10 md:flex-row md:items-start">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-[#ff6b00] bg-slate-800">
             <Image
-              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200"
+              src="/images/tatiana-author.jpg"
               alt="Tatiana — author"
               fill
               sizes="80px"
