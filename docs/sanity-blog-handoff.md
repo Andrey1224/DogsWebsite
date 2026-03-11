@@ -1,8 +1,9 @@
 # Sanity Blog Integration — Handoff
 
 Implemented: 2026-03-11
+Last updated: 2026-03-11
 Scope: blog listing `/blog` and article pages `/blog/[slug]`
-Packages added: `next-sanity@11`, `@sanity/image-url`, `styled-components`
+Packages added: `next-sanity@11`, `@sanity/image-url`, `react-is`, `styled-components`
 
 ---
 
@@ -27,6 +28,7 @@ Packages added: `next-sanity@11`, `@sanity/image-url`, `styled-components`
 | `app/studio/[[...tool]]/page.tsx`   | Renders embedded Sanity Studio at `/studio`                                                                                                                        |
 | `app/api/revalidate/blog/route.ts`  | Webhook endpoint — validates secret, calls `revalidatePath` to clear ISR cache after a post is published/updated/deleted                                           |
 | `components/blog/portable-text.tsx` | Renders Sanity Portable Text to styled HTML; maps every block type (`lead`, `h2`, `blockquote`, `bullet`, `tipBox`, inline `image`) to the existing article design |
+| `public/images/tatiana-author.jpg`  | Real author photo displayed in the author block on every article page                                                                                              |
 
 ### Modified
 
@@ -101,32 +103,38 @@ npm run dev
 2. Click **Статья → New**.
 3. Fill in the required fields:
 
-| Field                            | Notes                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------ |
-| **Заголовок**                    | Post title                                                               |
-| **Slug**                         | Click _Generate_ — auto-fills from title                                 |
-| **Краткое описание**             | 1–2 sentence excerpt shown on listing cards (max 300 chars)              |
-| **Категория**                    | Pick one: Питание / Уход / Здоровье / Породы                             |
-| **Дата публикации**              | Set to today or a future date                                            |
-| **Время чтения**                 | Optional, e.g. `5 мин`                                                   |
-| **Обложка**                      | Upload the cover image; fill in alt text                                 |
-| **Главная статья**               | Toggle on for exactly one post — appears as the featured hero on `/blog` |
-| **Содержание**                   | Rich text editor; see block types below                                  |
-| **SEO заголовок / SEO описание** | Optional overrides; if blank, title and excerpt are used                 |
+| Field                           | Notes                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| **Title**                       | Post title                                                               |
+| **Slug**                        | Click _Generate_ — auto-fills from title                                 |
+| **Excerpt**                     | 1–2 sentence excerpt shown on listing cards (max 300 chars)              |
+| **Category**                    | Pick one: Nutrition / Care / Health / Breeds                             |
+| **Published at**                | Set to today or a future date                                            |
+| **Read time**                   | Optional, e.g. `5 min`                                                   |
+| **Cover image**                 | Upload the cover image; fill in alt text; use hotspot to set focal point |
+| **Featured**                    | Toggle on for exactly one post — appears as the featured hero on `/blog` |
+| **Body**                        | Rich text editor; see block types below                                  |
+| **SEO title / SEO description** | Optional overrides; if blank, title and excerpt are used                 |
 
 4. Click **Publish**. The post appears on the site within 60 seconds (ISR) or immediately if the webhook is configured.
 
 ### Available rich text blocks
 
-| Block style           | How to select  | Result                                                        |
-| --------------------- | -------------- | ------------------------------------------------------------- |
-| Обычный               | Default        | Standard paragraph                                            |
-| Вступление            | Style dropdown | Larger intro paragraph (displayed at top of article)          |
-| Заголовок H2          | Style dropdown | Section heading                                               |
-| Цитата                | Style dropdown | Blockquote with orange left border                            |
-| Bullet list           | `-` or toolbar | List with orange bullet markers                               |
-| **Совет / Подсказка** | `+` → TipBox   | Info box with 💡 icon and title (default: "Совет ветеринара") |
-| Image                 | `+` → Image    | Inline article image with optional alt text                   |
+| Block style | How to select  | Result                                               |
+| ----------- | -------------- | ---------------------------------------------------- |
+| Normal      | Default        | Standard paragraph                                   |
+| Lead        | Style dropdown | Larger intro paragraph (displayed at top of article) |
+| Heading H2  | Style dropdown | Section heading                                      |
+| Blockquote  | Style dropdown | Blockquote with orange left border                   |
+| Bullet list | `-` or toolbar | List with orange bullet markers                      |
+| **Tip box** | `+` → TipBox   | Info box with 💡 icon and title                      |
+| Image       | `+` → Image    | Inline article image with optional alt text          |
+
+### Image upload tips
+
+- Any aspect ratio is accepted — the cover image displays at its natural ratio on the article page.
+- After uploading the cover image, click **Edit hotspot** and drag the circle to the most important part of the photo (e.g. the dog's face). This ensures the crop on listing cards stays focused on the right area.
+- Recommended minimum cover width: **1200 px**.
 
 ---
 
@@ -197,7 +205,7 @@ In development, `/studio` is always accessible without login for convenience.
 | Limitation                      | Detail                                                                                                                                                                          |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Author block is hardcoded**   | Name, bio, and photo are in JSX (`[slug]/page.tsx`). Suitable for a single-author blog; extract to a Sanity singleton or `author` document type if multiple authors are needed. |
-| **Read time is manual**         | The `Время чтения` field is a plain string. It is not auto-calculated from body word count.                                                                                     |
+| **Read time is manual**         | The `Read time` field is a plain string. It is not auto-calculated from body word count.                                                                                        |
 | **No slug redirect**            | If a slug is changed in Sanity, the old URL returns 404. Add a `redirects` entry in `next.config.ts` or store previous slugs in Sanity if permanent redirects are needed.       |
 | **No per-editor Sanity auth**   | `/studio` is gated by the shared admin cookie, not individual Sanity accounts.                                                                                                  |
 | **Client-side search only**     | The search box on `/blog` filters posts already loaded in the browser. For full-text search across many posts, integrate Sanity's search API or Algolia.                        |
