@@ -4,6 +4,7 @@ import { getPuppies } from '@/lib/supabase/queries';
 import { getSiteUrl } from '@/lib/utils/env';
 import { sanityFetch } from '@/sanity/lib/client';
 import { SITEMAP_POSTS_QUERY, type SitemapPost } from '@/sanity/lib/queries';
+import { getIndexableLocations } from '@/lib/data/locations';
 
 const STATIC_ROUTES = [
   '',
@@ -14,6 +15,7 @@ const STATIC_ROUTES = [
   '/policies',
   '/faq',
   '/blog',
+  '/locations',
 ];
 
 function withBase(path: string, base: string) {
@@ -55,5 +57,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(s._updatedAt),
   }));
 
-  return [...staticEntries, ...puppyEntries, ...blogEntries];
+  const locationEntries: MetadataRoute.Sitemap = getIndexableLocations().map((loc) => ({
+    url: withBase(`/locations/${loc.slug}`, siteUrl),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+    lastModified: new Date(),
+  }));
+
+  return [...staticEntries, ...puppyEntries, ...blogEntries, ...locationEntries];
 }

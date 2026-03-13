@@ -39,6 +39,9 @@ const footerLinks = [
       { label: 'Reviews', href: '/reviews' },
       { label: 'Our Story', href: '/about' },
       { label: 'Health Policy', href: '/policies' },
+      { label: 'Service Areas', href: '/locations' },
+      { label: 'Birmingham, AL', href: '/locations/birmingham-al' },
+      { label: 'Huntsville, AL', href: '/locations/huntsville-al' },
     ],
   },
   {
