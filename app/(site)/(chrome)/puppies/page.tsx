@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { PuppyCard } from '@/components/puppy-card';
@@ -120,6 +121,36 @@ export default async function PuppiesPage({
             ))}
           </div>
         )}
+
+        <div className="mt-16 rounded-3xl border border-slate-800 bg-[#0f1629] p-8">
+          <h2 className="text-2xl font-bold text-white md:text-3xl">
+            Pickup &amp; Delivery Options for Alabama Buyers
+          </h2>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400 md:text-base">
+            Found a puppy you love? Families from Birmingham, Huntsville, and surrounding Alabama
+            communities can review pickup and delivery options before reaching out.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 text-sm font-medium sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+            <Link
+              href="/locations/birmingham-al"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              Birmingham pickup details
+            </Link>
+            <Link
+              href="/locations/huntsville-al"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              Huntsville pickup details
+            </Link>
+            <Link
+              href="/locations"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              View all service areas
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

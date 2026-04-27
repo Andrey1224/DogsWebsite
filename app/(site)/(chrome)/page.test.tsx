@@ -17,4 +17,27 @@ describe('Home', () => {
     expect(primaryCtas).toHaveLength(3);
     primaryCtas.forEach((cta) => expect(cta).toBeVisible());
   });
+
+  it('renders compact service area links', () => {
+    render(<Home />);
+
+    expect(
+      screen.getByRole('heading', { name: /pickup & delivery for alabama families/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', {
+        name: /service areas learn how pickup and delivery work for alabama families/i,
+      }),
+    ).toHaveAttribute('href', '/locations');
+    expect(
+      screen.getByRole('link', {
+        name: /birmingham families pickup and delivery details for birmingham/i,
+      }),
+    ).toHaveAttribute('href', '/locations/birmingham-al');
+    expect(
+      screen.getByRole('link', {
+        name: /huntsville families pickup and flight nanny details for huntsville/i,
+      }),
+    ).toHaveAttribute('href', '/locations/huntsville-al');
+  });
 });

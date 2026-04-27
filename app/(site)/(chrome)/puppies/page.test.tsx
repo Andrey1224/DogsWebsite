@@ -71,6 +71,32 @@ describe('Puppies Page', () => {
     ).toBeInTheDocument();
   });
 
+  it('renders compact service area links below the listings', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(
+      screen.getByRole('heading', {
+        name: /pickup & delivery options for alabama buyers/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /birmingham pickup details/i })).toHaveAttribute(
+      'href',
+      '/locations/birmingham-al',
+    );
+    expect(screen.getByRole('link', { name: /huntsville pickup details/i })).toHaveAttribute(
+      'href',
+      '/locations/huntsville-al',
+    );
+    expect(screen.getByRole('link', { name: /view all service areas/i })).toHaveAttribute(
+      'href',
+      '/locations',
+    );
+  });
+
   it('renders puppy cards when puppies are available', async () => {
     const { getFilteredPuppies } = await import('@/lib/supabase/queries');
     const mockPuppies = [

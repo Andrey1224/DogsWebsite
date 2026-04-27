@@ -225,12 +225,20 @@ export default async function ArticlePage({ params }: { params: Params }) {
             <h2 className="mb-2 text-2xl font-bold text-white">Found what you were looking for?</h2>
             <p className="text-slate-400">Meet our available puppies, raised with love and care.</p>
           </div>
-          <Link
-            href="/puppies"
-            className="flex shrink-0 items-center gap-2 rounded-full bg-[#ff6b00] px-8 py-4 font-medium text-white transition-colors hover:bg-[#e66000]"
-          >
-            View puppies <ChevronRight size={18} />
-          </Link>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
+            <Link
+              href="/puppies"
+              className="flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#ff6b00] px-8 py-4 font-medium text-white transition-colors hover:bg-[#e66000]"
+            >
+              View puppies <ChevronRight size={18} />
+            </Link>
+            <Link
+              href="/locations"
+              className="flex shrink-0 items-center justify-center rounded-full border border-slate-700 bg-[#1a2333] px-8 py-4 font-medium text-white transition-colors hover:bg-[#202b3d]"
+            >
+              View service areas
+            </Link>
+          </div>
         </div>
       </section>
     </div>

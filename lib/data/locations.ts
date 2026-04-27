@@ -48,23 +48,6 @@ export const locations: Location[] = [
           'For Birmingham metro buyers, we can arrange a meet-up at a mutually convenient location. Contact us to discuss options.',
       },
     ],
-    localTestimonials: [
-      {
-        name: 'Melissa T.',
-        city: 'Hoover, AL',
-        text: 'I was nervous about finding a trustworthy breeder. Exotic Bulldog Legacy answered every question, sent weekly photos, and our little Biscuit arrived perfectly healthy. Worth every mile of the drive.',
-      },
-      {
-        name: 'DeShawn R.',
-        city: 'Birmingham, AL',
-        text: "The flight nanny option made everything so easy. Our French bulldog was delivered right to the airport — calm, healthy, and already socialized. We couldn't be happier.",
-      },
-      {
-        name: 'Carla W.',
-        city: 'Vestavia Hills, AL',
-        text: 'After two bad experiences with other breeders, I was skeptical. But the health guarantees, vet records, and constant communication made me feel completely at ease. Our girl Luna is perfect.',
-      },
-    ],
     faq: [
       {
         question: 'How far is the kennel from Birmingham?',
@@ -115,18 +98,6 @@ export const locations: Location[] = [
         type: 'Military Family Coordination',
         description:
           'Flexible scheduling and deposit holds for Redstone Arsenal and other military families. We understand PCS moves and deployment timelines — just ask.',
-      },
-    ],
-    localTestimonials: [
-      {
-        name: 'Jason & Amy K.',
-        city: 'Madison, AL',
-        text: 'As a dual-military family, our schedule is unpredictable. The team at Exotic Bulldog Legacy held our pick for us and worked around our availability. Our French bulldog Max is an absolute joy.',
-      },
-      {
-        name: 'Priya S.',
-        city: 'Huntsville, AL',
-        text: "We did extensive research before choosing a breeder. The genetic testing, transparency about the parents' health, and genuine follow-up support set them apart. Couldn't recommend more highly.",
       },
     ],
     faq: [
