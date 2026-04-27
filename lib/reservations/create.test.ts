@@ -65,9 +65,8 @@ describe('ReservationCreationService', () => {
   }
 
   beforeEach(async () => {
-    const { ReservationQueries, WebhookEventQueries, TransactionQueries } = await import(
-      './queries'
-    );
+    const { ReservationQueries, WebhookEventQueries, TransactionQueries } =
+      await import('./queries');
     Object.values(ReservationQueries).forEach((mockFn) => mockFn.mockReset());
     Object.values(WebhookEventQueries).forEach((mockFn) => mockFn.mockReset());
     Object.values(TransactionQueries).forEach((mockFn) => mockFn.mockReset?.());

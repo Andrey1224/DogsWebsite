@@ -372,9 +372,8 @@ describe('POST /api/paypal/capture', () => {
   it('handles ReservationCreationError with 409 for race condition', async () => {
     const { capturePayPalOrder, getPayPalOrder } = await import('@/lib/paypal/client');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { ReservationCreationService, ReservationCreationError } = await import(
-      '@/lib/reservations/create'
-    );
+    const { ReservationCreationService, ReservationCreationError } =
+      await import('@/lib/reservations/create');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (getPayPalOrder as any).mockResolvedValue({
@@ -432,9 +431,8 @@ describe('POST /api/paypal/capture', () => {
   it('handles ReservationCreationError with 500 for other errors', async () => {
     const { capturePayPalOrder, getPayPalOrder } = await import('@/lib/paypal/client');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { ReservationCreationService, ReservationCreationError } = await import(
-      '@/lib/reservations/create'
-    );
+    const { ReservationCreationService, ReservationCreationError } =
+      await import('@/lib/reservations/create');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (getPayPalOrder as any).mockResolvedValue({

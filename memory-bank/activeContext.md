@@ -46,6 +46,7 @@
   - `npm run typecheck` passed
   - `npm run build` passed after rerunning with network access because `/blog/[slug]` static generation fetches Sanity during page-data collection
   - SEO metadata/global schema cleanup also passed `npm run typecheck`, `npm run lint`, and `npm run build` (build required network-enabled rerun for Sanity-backed blog page data)
+  - `npm run format` passes after reformatting `app/api/paypal/capture/route.test.ts`, `app/opengraph-image.tsx`, `ArticlePage.html`, `BlogPage.html`, and `lib/reservations/create.test.ts`
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
 - **Intro**: Added an env flag to skip the intro screen.
