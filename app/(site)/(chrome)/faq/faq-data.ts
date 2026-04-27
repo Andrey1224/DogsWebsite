@@ -55,7 +55,7 @@ export const faqData: FaqCategory[] = [
       {
         question: 'What are the pickup and delivery options?',
         answer:
-          "You have options! You can pick up in person in Montgomery, AL by appointment. Alternatively, we partner with trusted ground transport and 'flight nannies' who fly with the puppy in-cabin to your nearest airport. Travel fees are quoted at cost.",
+          "You have options! You can pick up in person in Falkville, AL by appointment. Alternatively, we partner with trusted ground transport and 'flight nannies' who fly with the puppy in-cabin to your nearest airport. Travel fees are quoted at cost.",
       },
       {
         question: 'Can we visit before reserving?',
@@ -65,7 +65,7 @@ export const faqData: FaqCategory[] = [
       {
         question: 'Do you offer delivery, and how much does it cost?',
         answer:
-          'Yes. We offer local pickup in the Montgomery, Alabama area and delivery options such as flight nanny transport. Delivery pricing depends on destination, timing, and carrier availability—contact us for a quote.',
+          'Yes. We offer local pickup in the Falkville, Alabama area and delivery options such as flight nanny transport. Delivery pricing depends on destination, timing, and carrier availability—contact us for a quote.',
       },
       {
         question: 'How long does flight nanny delivery take?',

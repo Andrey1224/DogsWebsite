@@ -28,8 +28,8 @@ export default function LocationsPage() {
           <h1 className="mb-4 text-4xl font-bold leading-tight md:text-6xl">Service Areas</h1>
           <p className="text-lg text-slate-400">
             Based in Alabama, Exotic Bulldog Legacy offers pickup by appointment and nationwide
-            delivery via flight nanny. Browse our city pages for local logistics, testimonials, and
-            city-specific FAQs.
+            delivery via flight nanny. Browse our city pages for local logistics, delivery options,
+            and city-specific FAQs.
           </p>
         </div>
       </div>

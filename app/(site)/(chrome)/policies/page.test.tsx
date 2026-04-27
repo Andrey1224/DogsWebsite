@@ -116,7 +116,7 @@ describe('Policies Page', () => {
     renderPoliciesPage();
 
     expect(
-      screen.getByText(/Pickup takes place in Montgomery, AL by appointment/i),
+      screen.getByText(/Pickup takes place in Falkville, AL by appointment/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/Flight nanny transport/i)).toBeInTheDocument();
   });

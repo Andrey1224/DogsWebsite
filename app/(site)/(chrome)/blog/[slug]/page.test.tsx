@@ -8,17 +8,22 @@ vi.mock('next/image', () => ({
   __esModule: true,
   default: ({
     alt,
-    fill: _fill,
-    priority: _priority,
+    fill,
+    priority,
     ...props
   }: {
     alt: string;
     fill?: boolean;
     priority?: boolean;
-  }) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img alt={alt} {...props} />
-  ),
+  }) => {
+    void fill;
+    void priority;
+
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt={alt} {...props} />
+    );
+  },
 }));
 
 vi.mock('next/link', () => ({

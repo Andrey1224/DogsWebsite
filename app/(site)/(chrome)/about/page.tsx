@@ -349,7 +349,7 @@ export default function AboutPage() {
             Ready to add a &ldquo;Cloud of Happiness&rdquo; to your life?
           </h2>
           <p className="mb-8 text-slate-400">
-            We welcome families by appointment in Montgomery, AL and host virtual meet-and-greets.
+            We welcome families by appointment in Falkville, AL and host virtual meet-and-greets.
           </p>
           <Link
             href="/puppies"

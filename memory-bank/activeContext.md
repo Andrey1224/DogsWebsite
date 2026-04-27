@@ -16,6 +16,12 @@
   - Need to check browser console on production to diagnose root cause
   - Suspected cause: env variable not embedded in bundle (client component), or missing redeploy without build cache
   - **TODO**: Remove debug logs once issue is resolved
+- **Recent Fix (Apr 27, 2026)**: Production content audit copy issues corrected in repo.
+  - Birmingham location FAQ deposit normalized from `$500` to `$300`
+  - Visible pickup wording normalized to `Falkville` on FAQ, policies, about CTA, and home FAQ preview copy
+  - `/locations` intro now says `local logistics, delivery options, and city-specific FAQs.`
+  - Added regression coverage for `/locations`, `/locations/birmingham-al`, and `/locations/huntsville-al`
+  - Confirmed `/puppies` still renders the `Pickup & Delivery Options for Alabama Buyers` block on the production page path
 - **Recent Feature**: `NEXT_PUBLIC_PROMO_DISABLED` env flag added (Feb 6, 2026) — commit `292bb0d` in main
 - **Recent Optimization**: Lighthouse Mobile performance improvements (Feb 6, 2026) — PR #11 merged to main:
   - ✅ Localized transparenttextures.com texture (~300ms LCP improvement)
@@ -29,6 +35,10 @@
 - **SEO Audit Finding (Mar 10, 2026)**: internal navigation and puppy cards already use `next/link`, so the current codebase does not match the `div onClick + router.push()` crawlability anti-pattern.
 - **SEO Fix (Mar 10, 2026)**: added `/reviews` to `app/sitemap.ts` so the reviews page is explicitly advertised in the XML sitemap.
 - **Verification (Mar 10, 2026)**: `npm run verify` passed docs sync, link checks, lint, typecheck, and Vitest suite; Playwright failed with `Process from config.webServer exited early`.
+- **Verification (Apr 27, 2026)**:
+  - `npm run lint` now passes after fixing the pre-existing unused props in `app/(site)/(chrome)/blog/[slug]/page.test.tsx`
+  - `npm run typecheck` passed
+  - `npm run build` passed after rerunning with network access because `/blog/[slug]` static generation fetches Sanity during page-data collection
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
 - **Intro**: Added an env flag to skip the intro screen.

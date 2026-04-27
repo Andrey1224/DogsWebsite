@@ -14,7 +14,7 @@ const topFaqs = [
   {
     question: 'What are the pickup and delivery options?',
     answer:
-      'You can pick up in Montgomery by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.',
+      'You can pick up in Falkville by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.',
   },
 ];
 

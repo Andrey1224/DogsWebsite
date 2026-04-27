@@ -62,7 +62,7 @@ export const locations: Location[] = [
       {
         question: 'What deposit is required to reserve a Birmingham puppy?',
         answer:
-          'A $500 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price. We accept major credit cards, PayPal, and bank transfer.',
+          'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price. We accept major credit cards, PayPal, and bank transfer.',
       },
       {
         question: 'Are your puppies health-guaranteed for Birmingham buyers?',

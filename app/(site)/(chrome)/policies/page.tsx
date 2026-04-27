@@ -58,7 +58,7 @@ const policies = [
     iconColor: 'text-blue-400',
     content: (
       <>
-        Pickup takes place in Montgomery, AL by appointment.{' '}
+        Pickup takes place in Falkville, AL by appointment.{' '}
         <span className="font-bold text-white">Flight nanny transport</span> is available across the
         Southeast; travel fees are quoted at cost and must be paid prior to departure.
       </>
