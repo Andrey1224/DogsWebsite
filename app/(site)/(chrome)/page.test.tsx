@@ -1,8 +1,15 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Home from './page';
+import Home, { metadata } from './page';
 
 describe('Home', () => {
+  it('exports homepage metadata with Falkville pickup wording', () => {
+    expect(metadata.description).toContain('appointment pickup in Falkville');
+    expect(metadata.description).not.toContain('Montgomery pickup');
+    expect(metadata.openGraph?.description).toContain('appointment pickup in Falkville');
+    expect(metadata.twitter?.description).toContain('appointment pickup in Falkville');
+  });
+
   it('renders the primary value proposition', () => {
     render(<Home />);
 

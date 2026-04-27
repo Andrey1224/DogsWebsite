@@ -135,7 +135,7 @@ export const BUSINESS_PROFILE = {
   name: 'Exotic Bulldog Legacy',
   legalName: 'Exotic Bulldog Legacy Kennels LLC',
   description:
-    'Responsible French & English bulldog breeding program in Montgomery, Alabama with concierge placement support.',
+    'Responsible French & English bulldog breeding program in Falkville, Alabama with concierge placement support.',
   slogan: 'Trusted French & English bulldogs raised with southern warmth.',
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'mosss73@myyahoo.com',
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE ?? '+17724044470',

@@ -22,6 +22,12 @@
   - `/locations` intro now says `local logistics, delivery options, and city-specific FAQs.`
   - Added regression coverage for `/locations`, `/locations/birmingham-al`, and `/locations/huntsville-al`
   - Confirmed `/puppies` still renders the `Pickup & Delivery Options for Alabama Buyers` block on the production page path
+- **Recent Fix (Apr 27, 2026)**: Homepage SEO metadata and global schema descriptions no longer reference Montgomery.
+  - Homepage metadata description now says `appointment pickup in Falkville`
+  - Shared `BUSINESS_PROFILE.description` now says `breeding program in Falkville, Alabama`
+  - Organization and LocalBusiness JSON-LD inherit the corrected Falkville description from `BUSINESS_PROFILE`
+  - Product schema fallback description in `lib/seo/structured-data.ts` also now uses Falkville for consistency
+  - Confirmed local env address is already `Falkville, AL`, so global schema address on production should not fall back to the Montgomery default
 - **Recent Feature**: `NEXT_PUBLIC_PROMO_DISABLED` env flag added (Feb 6, 2026) — commit `292bb0d` in main
 - **Recent Optimization**: Lighthouse Mobile performance improvements (Feb 6, 2026) — PR #11 merged to main:
   - ✅ Localized transparenttextures.com texture (~300ms LCP improvement)
@@ -39,6 +45,7 @@
   - `npm run lint` now passes after fixing the pre-existing unused props in `app/(site)/(chrome)/blog/[slug]/page.test.tsx`
   - `npm run typecheck` passed
   - `npm run build` passed after rerunning with network access because `/blog/[slug]` static generation fetches Sanity during page-data collection
+  - SEO metadata/global schema cleanup also passed `npm run typecheck`, `npm run lint`, and `npm run build` (build required network-enabled rerun for Sanity-backed blog page data)
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
 - **Intro**: Added an env flag to skip the intro screen.

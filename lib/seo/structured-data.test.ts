@@ -29,7 +29,7 @@ vi.mock('@/lib/config/business', () => ({
     legalName: 'Exotic Bulldog Legacy Kennels LLC',
     slogan: 'Trusted French & English bulldogs raised with southern warmth.',
     description:
-      'Responsible French & English bulldog breeding program in Montgomery, Alabama with concierge placement support.',
+      'Responsible French & English bulldog breeding program in Falkville, Alabama with concierge placement support.',
     logo: 'https://exoticbulldoglegacy.com/favicon.ico',
     imageGallery: [
       '/reviews/sarah-charlie.webp',
@@ -301,7 +301,7 @@ describe('SEO Structured Data', () => {
       const schema = getProductSchema(puppy);
 
       expect(schema.description).toContain('Health-tested french bulldog puppy');
-      expect(schema.description).toContain('Montgomery, Alabama');
+      expect(schema.description).toContain('Falkville, Alabama');
     });
 
     it('includes brand as breed label', () => {

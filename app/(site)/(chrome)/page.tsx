@@ -44,7 +44,7 @@ const FeaturedReviewsCarousel = dynamic(
 export const metadata = buildMetadata({
   title: 'Bulldog Puppies in Alabama | Exotic Bulldog Legacy',
   description:
-    'French and English bulldog puppies available in Alabama with secure deposits, Montgomery pickup, and vetted delivery options from Exotic Bulldog Legacy.',
+    'French and English bulldog puppies available in Alabama with secure deposits, appointment pickup in Falkville, and vetted delivery options from Exotic Bulldog Legacy.',
   path: '/',
   image: 'https://images.exoticbulldog.dev/hero/english-bulldog.jpg',
 });
