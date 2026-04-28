@@ -20,7 +20,7 @@ const DEFAULT_HOURS: HoursEntry[] = [
 
 const DEFAULT_ADDRESS = {
   streetAddress: 'Private kennel (appointment only)',
-  addressLocality: 'Montgomery',
+  addressLocality: 'Falkville',
   addressRegion: 'AL',
   postalCode: '36117',
   addressCountry: 'US',

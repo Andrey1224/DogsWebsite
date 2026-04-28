@@ -28,6 +28,10 @@
   - Organization and LocalBusiness JSON-LD inherit the corrected Falkville description from `BUSINESS_PROFILE`
   - Product schema fallback description in `lib/seo/structured-data.ts` also now uses Falkville for consistency
   - Confirmed local env address is already `Falkville, AL`, so global schema address on production should not fall back to the Montgomery default
+- **Recent Fix (Apr 27, 2026)**: Final stale source cleanup completed for `/locations` metadata and shared business fallback locality.
+  - `/locations` metadata description now says `Browse Alabama service-area pages for pickup logistics, delivery options, and city-specific FAQs.`
+  - Shared `DEFAULT_ADDRESS.addressLocality` in `lib/config/business.ts` now defaults to `Falkville`
+  - Updated structured-data test fixtures to match the Falkville fallback address
 - **Recent Feature**: `NEXT_PUBLIC_PROMO_DISABLED` env flag added (Feb 6, 2026) — commit `292bb0d` in main
 - **Recent Optimization**: Lighthouse Mobile performance improvements (Feb 6, 2026) — PR #11 merged to main:
   - ✅ Localized transparenttextures.com texture (~300ms LCP improvement)
@@ -46,6 +50,7 @@
   - `npm run typecheck` passed
   - `npm run build` passed after rerunning with network access because `/blog/[slug]` static generation fetches Sanity during page-data collection
   - SEO metadata/global schema cleanup also passed `npm run typecheck`, `npm run lint`, and `npm run build` (build required network-enabled rerun for Sanity-backed blog page data)
+  - `/locations` metadata and shared fallback locality cleanup also passed `npm run typecheck`, `npm run lint`, and `npm run build` (build again required network-enabled rerun for Sanity-backed blog page data)
   - `npm run format` passes after reformatting `app/api/paypal/capture/route.test.ts`, `app/opengraph-image.tsx`, `ArticlePage.html`, `BlogPage.html`, and `lib/reservations/create.test.ts`
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).

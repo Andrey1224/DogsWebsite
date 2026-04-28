@@ -9,7 +9,7 @@ export const dynamic = 'force-static';
 export const metadata: Metadata = buildMetadata({
   title: 'Service Areas — French & English Bulldog Puppies in Alabama',
   description:
-    'Exotic Bulldog Legacy serves families across Alabama and beyond. Browse our service area pages for city-specific pickup logistics, delivery options, and local testimonials.',
+    'Browse Alabama service-area pages for pickup logistics, delivery options, and city-specific FAQs.',
   path: '/locations',
 });
 

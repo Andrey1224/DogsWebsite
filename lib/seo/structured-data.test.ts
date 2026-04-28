@@ -40,12 +40,12 @@ vi.mock('@/lib/config/business', () => ({
     areaServed: ['Alabama', 'Georgia', 'Florida', 'Tennessee'],
     address: {
       streetAddress: 'Private kennel (appointment only)',
-      addressLocality: 'Montgomery',
+      addressLocality: 'Falkville',
       addressRegion: 'AL',
       postalCode: '36117',
       addressCountry: 'US',
-      formatted: 'Private kennel (appointment only), Montgomery, AL 36117',
-      display: 'Montgomery, AL',
+      formatted: 'Private kennel (appointment only), Falkville, AL 36117',
+      display: 'Falkville, AL',
     },
     coordinates: {
       latitude: 32.3668,
@@ -148,7 +148,7 @@ describe('SEO Structured Data', () => {
       expect(schema.address).toMatchObject({
         '@type': 'PostalAddress',
         streetAddress: 'Private kennel (appointment only)',
-        addressLocality: 'Montgomery',
+        addressLocality: 'Falkville',
         addressRegion: 'AL',
         postalCode: '36117',
         addressCountry: 'US',
