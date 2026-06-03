@@ -14,6 +14,10 @@ import { getPuppyBySlug } from '@/lib/supabase/queries';
 import type { CreateCheckoutSessionParams } from '@/lib/stripe/types';
 import { ReservationQueries } from '@/lib/reservations/queries';
 import { calculateDepositAmount } from '@/lib/payments/deposit';
+import {
+  assertReservationsEnabled,
+  ReservationsDisabledError,
+} from '@/lib/reservations/reservation-guard';
 
 /**
  * Result of checkout session creation
@@ -22,7 +26,7 @@ export interface CreateCheckoutSessionResult {
   success: boolean;
   sessionUrl?: string;
   error?: string;
-  errorCode?: 'PUPPY_NOT_FOUND' | 'PUPPY_NOT_AVAILABLE' | 'STRIPE_ERROR';
+  errorCode?: 'PUPPY_NOT_FOUND' | 'PUPPY_NOT_AVAILABLE' | 'RESERVATIONS_DISABLED' | 'STRIPE_ERROR';
 }
 
 /**
@@ -40,6 +44,8 @@ export async function createCheckoutSession(
   puppySlug: string,
 ): Promise<CreateCheckoutSessionResult> {
   try {
+    assertReservationsEnabled();
+
     // Step 1: Fetch puppy data
     const puppy = await getPuppyBySlug(puppySlug);
 
@@ -146,6 +152,14 @@ export async function createCheckoutSession(
       sessionUrl: session.url || undefined,
     };
   } catch (error) {
+    if (error instanceof ReservationsDisabledError) {
+      return {
+        success: false,
+        error: error.message,
+        errorCode: 'RESERVATIONS_DISABLED',
+      };
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Checkout Session] Error creating session: ${errorMessage}`);
 

@@ -43,6 +43,8 @@ describe('POST /api/paypal/create-order', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000';
+    delete process.env.RESERVATIONS_DISABLED;
+    delete process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED;
   });
 
   it('creates PayPal order successfully for available puppy', async () => {
@@ -97,6 +99,22 @@ describe('POST /api/paypal/create-order', () => {
         cancelUrl: `http://localhost:3000/puppies/${mockPuppySlug}?paypal=cancelled`,
       }),
     );
+  });
+
+  it('returns 503 before order work when reservations are paused', async () => {
+    process.env.RESERVATIONS_DISABLED = 'true';
+
+    const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+    const { createPayPalOrder } = await import('@/lib/paypal/client');
+
+    const request = createRequest({ puppySlug: mockPuppySlug });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(data).toEqual({ error: 'Reservations are currently disabled.' });
+    expect(getPuppyBySlug).not.toHaveBeenCalled();
+    expect(createPayPalOrder).not.toHaveBeenCalled();
   });
 
   it('returns 404 when puppy is not found', async () => {

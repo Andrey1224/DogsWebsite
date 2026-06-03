@@ -8,6 +8,7 @@
 - **P3**: Temporarily pause customer reservations until Stripe customer setup is complete.
 - **P4**: Disable intro screen so the home page loads immediately.
 - **P5**: Disable promotional modal on production via env variable.
+- **P6**: Harden live Stripe rollout with a server-side reservation kill switch.
 
 ## Current Status
 
@@ -16,6 +17,14 @@
   - Need to check browser console on production to diagnose root cause
   - Suspected cause: env variable not embedded in bundle (client component), or missing redeploy without build cache
   - **TODO**: Remove debug logs once issue is resolved
+- **Recent Update (Jun 3, 2026)**: Added server-side reservation guard for live Stripe rollout.
+  - New `RESERVATIONS_DISABLED` server env flag blocks payment checkout/order creation even if public UI is bypassed
+  - `NEXT_PUBLIC_RESERVATIONS_DISABLED` still controls public UI and also participates in the server guard
+  - Stripe checkout action now returns `RESERVATIONS_DISABLED` before puppy lookup or Stripe API calls
+  - PayPal create-order and capture routes now return `503` before PayPal API calls while reservations are disabled
+  - Added targeted regression coverage for the guard, Stripe checkout action, and PayPal routes
+  - `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build` passed
+  - `npm run verify` passed through docs sync, link check, lint, typecheck, and Vitest; Playwright initially failed in sandbox with `listen EPERM` on port 3000, then `npm run e2e` passed with elevated permissions (24 passed, 2 skipped)
 - **Recent Fix (Apr 27, 2026)**: Production content audit copy issues corrected in repo.
   - Birmingham location FAQ deposit normalized from `$500` to `$300`
   - Visible pickup wording normalized to `Falkville` on FAQ, policies, about CTA, and home FAQ preview copy
@@ -53,7 +62,7 @@
   - `/locations` metadata and shared fallback locality cleanup also passed `npm run typecheck`, `npm run lint`, and `npm run build` (build again required network-enabled rerun for Sanity-backed blog page data)
   - `npm run format` passes after reformatting `app/api/paypal/capture/route.test.ts`, `app/opengraph-image.tsx`, `ArticlePage.html`, `BlogPage.html`, and `lib/reservations/create.test.ts`
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
-- **Reservations**: Added a site-wide disable flag for reservation UX (Stripe setup in progress).
+- **Reservations**: Added public and server-side disable flags for reservation UX and payment entrypoints (live Stripe rollout in progress).
 - **Intro**: Added an env flag to skip the intro screen.
 
 ## Branch State (Feb 6, 2026)
@@ -66,7 +75,7 @@
 ## Active Workstream
 
 - Debugging `NEXT_PUBLIC_PROMO_DISABLED` not taking effect on production.
-- Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED`.
+- Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED` and server payment entrypoints via `RESERVATIONS_DISABLED`.
 - Skipping intro screen via `NEXT_PUBLIC_INTRO_DISABLED`.
 - Investigating Search Console SEO warnings around `noindex` exclusions and low internal-link counts.
 - Sitemap completeness updated to include `/reviews`.
@@ -85,7 +94,7 @@
    - If `true` but modal still shows → investigate `PromoModal` component for separate disable logic.
 3. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
 4. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
-5. Enable/disable reservations via env when Stripe customer setup is ready.
+5. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
 6. Turn off intro in `.env.local` when ready to hide the splash screen.
 7. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
 8. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.

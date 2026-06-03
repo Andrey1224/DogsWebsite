@@ -54,6 +54,8 @@ describe('createCheckoutSession', () => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_SITE_URL = 'https://exoticbulldoglegacy.com';
     delete process.env.PLAYWRIGHT_MOCK_RESERVATION;
+    delete process.env.RESERVATIONS_DISABLED;
+    delete process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED;
   });
 
   afterEach(() => {
@@ -118,6 +120,24 @@ describe('createCheckoutSession', () => {
         expires_at: expect.any(Number),
       }),
     );
+  });
+
+  it('returns disabled error before checkout work when reservations are paused', async () => {
+    process.env.RESERVATIONS_DISABLED = 'true';
+
+    const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+    const { stripe } = await import('@/lib/stripe/client');
+    const { createCheckoutSession } = await import('./actions');
+
+    const result = await createCheckoutSession(mockPuppySlug);
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Reservations are currently disabled.',
+      errorCode: 'RESERVATIONS_DISABLED',
+    });
+    expect(getPuppyBySlug).not.toHaveBeenCalled();
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
   });
 
   it('returns error when puppy is not found', async () => {

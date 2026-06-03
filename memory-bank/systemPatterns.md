@@ -8,6 +8,7 @@
 - **Payments**: Dual-provider (Stripe + PayPal).
   - **Pattern**: Atomic reservations via `create_reservation_transaction` RPC.
   - **Idempotency**: `webhook_events` table + application-level checks.
+  - **Kill switch**: Public reservation UX uses `NEXT_PUBLIC_RESERVATIONS_DISABLED`; server payment entrypoints also call the `RESERVATIONS_DISABLED`/public env guard before creating checkout sessions, PayPal orders, or captures.
 - **State**: URL-driven state for lists; Server Actions for mutations.
 
 ## Conventions
