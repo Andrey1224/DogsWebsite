@@ -222,9 +222,9 @@ export class ReservationQueries {
           puppy:puppies(
             id,
             name,
-            breed_id,
+            breed,
             status,
-            price
+            price_usd
           )
         `,
         )
@@ -453,9 +453,9 @@ export class ReservationQueries {
           puppy:puppies(
             id,
             name,
-            breed_id,
+            breed,
             status,
-            price,
+            price_usd,
             slug
           )
         `,
@@ -549,10 +549,10 @@ export class PuppyQueries {
           `
           id,
           name,
-          breed_id,
+          breed,
           status,
-          price,
-          gender,
+          price_usd,
+          sex,
           birth_date,
           description
         `,

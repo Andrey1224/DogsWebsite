@@ -443,9 +443,9 @@ describe('ReservationCreationService', () => {
 
       const payload = ReservationCreationService.generateConfirmationData(reservation, {
         name: 'Duke',
-        breed_id: 'french-bulldog',
-        price: 3000,
-        gender: 'male',
+        breed: 'french-bulldog',
+        price_usd: 3000,
+        sex: 'male',
         birth_date: '2023-09-15',
       });
 
