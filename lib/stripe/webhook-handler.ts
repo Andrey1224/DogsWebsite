@@ -495,7 +495,7 @@ export class StripeWebhookHandler {
   ): Promise<WebhookProcessingResult> {
     // CRITICAL FIX: Create webhook event and mark as processing BEFORE any early returns
     // This ensures the webhook event is properly tracked even if we find existing reservation
-    await idempotencyManager.createWebhookEvent({
+    const createEventResult = await idempotencyManager.createWebhookEvent({
       provider: 'stripe',
       eventId,
       eventType,
@@ -507,6 +507,7 @@ export class StripeWebhookHandler {
         metadata,
       },
     });
+    const webhookEventNumericId = createEventResult?.webhookEvent?.id ?? null;
 
     // Mark webhook event as being processed (using service role to bypass RLS)
     // This prevents concurrent processing and ensures processing_started_at is set
@@ -716,22 +717,43 @@ export class StripeWebhookHandler {
       }
       revalidatePath('/puppies');
 
-      // Mark webhook event as successfully processed (using service role to bypass RLS)
-      try {
+      // Backlink audit trail and mark webhook event as processed.
+      // When the numeric DB id is available, use markAsProcessed which writes
+      // webhook_events.reservation_id in the same update. Then write
+      // reservations.webhook_event_id for the reverse link. Fall back to
+      // WebhookEventsServer.markProcessed when createWebhookEvent did not
+      // return a webhook event object (e.g. duplicate insert race).
+      if (webhookEventNumericId !== null) {
+        await idempotencyManager
+          .markAsProcessed(webhookEventNumericId, reservationId)
+          .catch((markError) => {
+            console.error(
+              `[Stripe Webhook] CRITICAL: Failed to mark webhook event as processed:`,
+              markError,
+            );
+          });
+        await ReservationServerQueries.update(reservationId, {
+          webhook_event_id: webhookEventNumericId,
+        }).catch((backlinkError) => {
+          console.error(
+            `[Stripe Webhook] Failed to backlink reservation to webhook event:`,
+            backlinkError,
+          );
+        });
+        console.log(
+          `[Stripe Webhook] Webhook event ${eventId} processed and backlinked to reservation ${reservationId}`,
+        );
+      } else {
         await WebhookEventsServer.markProcessed({
           provider: 'stripe',
           eventId,
           idempotencyKey: `stripe:${paymentIntentId}`,
+        }).catch((markError) => {
+          console.error(
+            `[Stripe Webhook] CRITICAL: Failed to mark webhook event as processed:`,
+            markError,
+          );
         });
-        console.log(`[Stripe Webhook] Webhook event ${eventId} marked as processed`);
-      } catch (markError) {
-        console.error(
-          `[Stripe Webhook] CRITICAL: Failed to mark webhook event as processed:`,
-          markError,
-        );
-        // This is critical - if we can't mark as processed, webhook will retry
-        // But since reservation is already created and marked as paid, we should still return success
-        // to avoid duplicate reservations
       }
 
       await trackDepositPaid({
