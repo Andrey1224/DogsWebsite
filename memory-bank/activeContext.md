@@ -9,6 +9,7 @@
 - **P4**: Disable intro screen so the home page loads immediately.
 - **P5**: Disable promotional modal on production via env variable.
 - **P6**: Harden live Stripe rollout with a server-side reservation kill switch.
+- **P7**: Support temporary server-side Stripe deposit amount for live $1 payment verification.
 
 ## Current Status
 
@@ -25,6 +26,12 @@
   - Added targeted regression coverage for the guard, Stripe checkout action, and PayPal routes
   - `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build` passed
   - `npm run verify` passed through docs sync, link check, lint, typecheck, and Vitest; Playwright initially failed in sandbox with `listen EPERM` on port 3000, then `npm run e2e` passed with elevated permissions (24 passed, 2 skipped)
+- **Recent Update (Jun 3, 2026)**: Added server-only Stripe deposit amount override for live payment testing.
+  - New `STRIPE_DEPOSIT_AMOUNT_CENTS` env defaults to `30000` and can temporarily be set to `100` for a $1 live Stripe checkout
+  - Config is server-only, validates positive integer cents, and enforces Stripe's USD minimum of 50 cents
+  - Stripe Checkout line item and puppy detail Stripe deposit UI now use the same server-side amount
+  - Webhook handlers were not changed; completed, failed, expired, and refunded events continue through existing handlers
+  - `npm run format`, `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build` passed
 - **Recent Fix (Apr 27, 2026)**: Production content audit copy issues corrected in repo.
   - Birmingham location FAQ deposit normalized from `$500` to `$300`
   - Visible pickup wording normalized to `Falkville` on FAQ, policies, about CTA, and home FAQ preview copy

@@ -13,7 +13,10 @@ import { stripe } from '@/lib/stripe/client';
 import { getPuppyBySlug } from '@/lib/supabase/queries';
 import type { CreateCheckoutSessionParams } from '@/lib/stripe/types';
 import { ReservationQueries } from '@/lib/reservations/queries';
-import { calculateDepositAmount } from '@/lib/payments/deposit';
+import {
+  formatStripeDepositAmount,
+  getStripeDepositAmountCents,
+} from '@/lib/payments/stripe-deposit';
 import {
   assertReservationsEnabled,
   ReservationsDisabledError,
@@ -83,8 +86,9 @@ export async function createCheckoutSession(
       };
     }
 
-    // Step 3: Determine deposit amount (fixed $300 or use puppy price if lower)
-    const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
+    // Step 3: Determine Stripe deposit amount from server-only config.
+    const depositAmountCents = getStripeDepositAmountCents();
+    const depositAmountLabel = formatStripeDepositAmount(depositAmountCents);
 
     // Step 4: Get site URL for redirect URLs
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -101,7 +105,7 @@ export async function createCheckoutSession(
       puppyId: puppy.id,
       puppySlug: puppy.slug || '',
       puppyName: puppy.name || 'Bulldog Puppy',
-      amountCents: depositAmount * 100, // Convert to cents
+      amountCents: depositAmountCents,
       customerEmail: 'collected_at_checkout', // Stripe collects and returns actual email
       successUrl: `${siteUrl}/puppies/${puppySlug}/reserved?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${siteUrl}/puppies/${puppySlug}`,
@@ -116,7 +120,7 @@ export async function createCheckoutSession(
             unit_amount: params.amountCents,
             product_data: {
               name: `Deposit for ${params.puppyName}`,
-              description: `Reserve your ${params.puppyName} with a $${depositAmount} deposit`,
+              description: `Reserve your ${params.puppyName} with a ${depositAmountLabel} deposit`,
               images: puppy.photo_urls?.[0] ? [puppy.photo_urls[0]] : undefined,
             },
           },

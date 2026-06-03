@@ -13,7 +13,7 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { getProductSchema } from '@/lib/seo/structured-data';
 import { ReserveButton } from './reserve-button';
 import { getPuppyReservationState } from '@/lib/reservations/state';
-import { calculateDepositAmount } from '@/lib/payments/deposit';
+import { getStripeDepositAmountDollars } from '@/lib/payments/stripe-deposit';
 
 export const revalidate = 60;
 
@@ -100,7 +100,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
   const breedLabel =
     formatBreed(puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed) ?? '';
-  const depositAmount = calculateDepositAmount({ priceUsd: puppy.price_usd, fixedAmount: 300 });
+  const depositAmount = getStripeDepositAmountDollars();
   const paypalClientId = process.env.PAYPAL_CLIENT_ID ?? null;
   const reservationsDisabled = process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED === 'true';
   const reservationsDisabledMessage = process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED_MESSAGE ?? null;

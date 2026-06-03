@@ -2,7 +2,7 @@
  * Puppy Checkout Actions Tests
  *
  * Tests the critical server action for creating Stripe Checkout Sessions.
- * Validates puppy availability checks, deposit calculations, mock mode,
+ * Validates puppy availability checks, deposit configuration, mock mode,
  * and proper error handling.
  */
 
@@ -29,10 +29,6 @@ vi.mock('@/lib/reservations/queries', () => ({
   },
 }));
 
-vi.mock('@/lib/payments/deposit', () => ({
-  calculateDepositAmount: vi.fn(),
-}));
-
 const BASE_ENV = { ...process.env };
 
 describe('createCheckoutSession', () => {
@@ -56,6 +52,7 @@ describe('createCheckoutSession', () => {
     delete process.env.PLAYWRIGHT_MOCK_RESERVATION;
     delete process.env.RESERVATIONS_DISABLED;
     delete process.env.NEXT_PUBLIC_RESERVATIONS_DISABLED;
+    delete process.env.STRIPE_DEPOSIT_AMOUNT_CENTS;
   });
 
   afterEach(() => {
@@ -65,7 +62,6 @@ describe('createCheckoutSession', () => {
   it('creates checkout session successfully for available puppy', async () => {
     const { getPuppyBySlug } = await import('@/lib/supabase/queries');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
@@ -73,8 +69,6 @@ describe('createCheckoutSession', () => {
     (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (stripe.checkout.sessions.create as any).mockResolvedValue({
       id: 'cs_test_123',
@@ -118,6 +112,44 @@ describe('createCheckoutSession', () => {
         success_url: `https://exoticbulldoglegacy.com/puppies/${mockPuppySlug}/reserved?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `https://exoticbulldoglegacy.com/puppies/${mockPuppySlug}`,
         expires_at: expect.any(Number),
+      }),
+    );
+  });
+
+  it('uses configured $1 live-test deposit amount for Stripe Checkout', async () => {
+    process.env.STRIPE_DEPOSIT_AMOUNT_CENTS = '100';
+
+    const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+    const { ReservationQueries } = await import('@/lib/reservations/queries');
+    const { stripe } = await import('@/lib/stripe/client');
+    const { createCheckoutSession } = await import('./actions');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (stripe.checkout.sessions.create as any).mockResolvedValue({
+      id: 'cs_live_test_123',
+      url: 'https://checkout.stripe.com/c/pay/cs_live_test_123',
+    });
+
+    const result = await createCheckoutSession(mockPuppySlug);
+
+    expect(result.success).toBe(true);
+    expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        line_items: [
+          {
+            price_data: expect.objectContaining({
+              unit_amount: 100,
+              product_data: expect.objectContaining({
+                description: 'Reserve your Bella with a $1 deposit',
+              }),
+            }),
+            quantity: 1,
+          },
+        ],
       }),
     );
   });
@@ -211,7 +243,6 @@ describe('createCheckoutSession', () => {
   it('handles Stripe API errors gracefully', async () => {
     const { getPuppyBySlug } = await import('@/lib/supabase/queries');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
@@ -219,8 +250,6 @@ describe('createCheckoutSession', () => {
     (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (stripe.checkout.sessions.create as any).mockRejectedValue(
       new Error('Stripe API error: Invalid amount'),
@@ -233,10 +262,30 @@ describe('createCheckoutSession', () => {
     expect(result.errorCode).toBe('STRIPE_ERROR');
   });
 
+  it('fails safely when STRIPE_DEPOSIT_AMOUNT_CENTS is invalid', async () => {
+    process.env.STRIPE_DEPOSIT_AMOUNT_CENTS = '49';
+
+    const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+    const { ReservationQueries } = await import('@/lib/reservations/queries');
+    const { stripe } = await import('@/lib/stripe/client');
+    const { createCheckoutSession } = await import('./actions');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
+
+    const result = await createCheckoutSession(mockPuppySlug);
+
+    expect(result.success).toBe(false);
+    expect(result.errorCode).toBe('STRIPE_ERROR');
+    expect(result.error).toContain('Invalid STRIPE_DEPOSIT_AMOUNT_CENTS value "49"');
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
   it('handles puppy without name gracefully', async () => {
     const { getPuppyBySlug } = await import('@/lib/supabase/queries');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
@@ -247,8 +296,6 @@ describe('createCheckoutSession', () => {
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (stripe.checkout.sessions.create as any).mockResolvedValue({
       id: 'cs_test_123',
@@ -280,7 +327,6 @@ describe('createCheckoutSession', () => {
   it('handles puppy without photos', async () => {
     const { getPuppyBySlug } = await import('@/lib/supabase/queries');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
@@ -291,8 +337,6 @@ describe('createCheckoutSession', () => {
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (stripe.checkout.sessions.create as any).mockResolvedValue({
       id: 'cs_test_123',
@@ -324,7 +368,6 @@ describe('createCheckoutSession', () => {
 
     const { getPuppyBySlug } = await import('@/lib/supabase/queries');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
@@ -332,8 +375,6 @@ describe('createCheckoutSession', () => {
     (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (stripe.checkout.sessions.create as any).mockResolvedValue({
       id: 'cs_test_123',
@@ -371,37 +412,9 @@ describe('createCheckoutSession', () => {
     }
   });
 
-  it('calculates deposit amount correctly', async () => {
-    const { getPuppyBySlug } = await import('@/lib/supabase/queries');
-    const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
-    const { stripe } = await import('@/lib/stripe/client');
-    const { createCheckoutSession } = await import('./actions');
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (stripe.checkout.sessions.create as any).mockResolvedValue({
-      id: 'cs_test_123',
-      url: 'https://checkout.stripe.com/c/pay/cs_test_123',
-    });
-
-    await createCheckoutSession(mockPuppySlug);
-
-    expect(calculateDepositAmount).toHaveBeenCalledWith({
-      priceUsd: 4500,
-      fixedAmount: 300,
-    });
-  });
-
   it('sets session expiration to 24 hours', async () => {
     const { getPuppyBySlug } = await import('@/lib/supabase/queries');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
-    const { calculateDepositAmount } = await import('@/lib/payments/deposit');
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
@@ -409,8 +422,6 @@ describe('createCheckoutSession', () => {
     (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (calculateDepositAmount as any).mockReturnValue(300);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (stripe.checkout.sessions.create as any).mockResolvedValue({
       id: 'cs_test_123',

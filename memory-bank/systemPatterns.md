@@ -9,6 +9,7 @@
   - **Pattern**: Atomic reservations via `create_reservation_transaction` RPC.
   - **Idempotency**: `webhook_events` table + application-level checks.
   - **Kill switch**: Public reservation UX uses `NEXT_PUBLIC_RESERVATIONS_DISABLED`; server payment entrypoints also call the `RESERVATIONS_DISABLED`/public env guard before creating checkout sessions, PayPal orders, or captures.
+  - **Stripe deposit amount**: Stripe Checkout reads server-only `STRIPE_DEPOSIT_AMOUNT_CENTS` with a default of `30000`; do not expose this as `NEXT_PUBLIC`.
 - **State**: URL-driven state for lists; Server Actions for mutations.
 
 ## Conventions
