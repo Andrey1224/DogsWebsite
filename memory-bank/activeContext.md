@@ -10,6 +10,7 @@
 - **P5**: Disable promotional modal on production via env variable.
 - **P6**: Harden live Stripe rollout with a server-side reservation kill switch.
 - **P7**: Support temporary server-side Stripe deposit amount for live $1 payment verification.
+- **P8**: Correct live local SEO copy around Falkville/Cullman service areas.
 
 ## Current Status
 
@@ -18,6 +19,15 @@
   - Need to check browser console on production to diagnose root cause
   - Suspected cause: env variable not embedded in bundle (client component), or missing redeploy without build cache
   - **TODO**: Remove debug logs once issue is resolved
+- **Recent Update (Jun 5, 2026)**: Local SEO/service-area copy corrections implemented.
+  - Homepage pickup copy now says `near Falkville, just outside Cullman, Alabama` and no longer risks Montgomery/Falkville conflict
+  - Homepage FAQ preview copy now uses `near Falkville, Alabama by appointment`
+  - Birmingham location FAQ deposit copy is locked to `$300` and fake local testimonials are replaced by an honest `Birmingham Families` note linking to `/reviews` and `/contact`
+  - `/locations` now explains the Falkville/Cullman base, North Alabama service area, $300 deposit flow, pickup/delivery process, and links to `/puppies`, `/contact`, `/faq`, and `/policies`
+  - `/puppies` hero now includes Falkville/Cullman local context and links to `/locations`, `/faq`, and `/contact`
+  - City location empty states now use city-specific wording for future availability, reservation timing, and pickup/delivery options
+  - Targeted Vitest passed for homepage, `/locations`, `/locations/[slug]`, and `/puppies` page coverage
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`637 passed`, `4 skipped`), then failed at Playwright with `Process from config.webServer exited early`; user intentionally skipped rerunning the long e2e cycle
 - **Recent Update (Jun 3, 2026)**: Added server-side reservation guard for live Stripe rollout.
   - New `RESERVATIONS_DISABLED` server env flag blocks payment checkout/order creation even if public UI is bypassed
   - `NEXT_PUBLIC_RESERVATIONS_DISABLED` still controls public UI and also participates in the server guard

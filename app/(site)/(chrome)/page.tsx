@@ -109,8 +109,7 @@ const faqs = [
   },
   {
     question: 'What are the pickup options?',
-    answer:
-      'You can pick up in Falkville by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.',
+    answer: 'You can pick up near Falkville, Alabama by appointment or choose courier delivery.',
   },
 ];
 
@@ -288,8 +287,8 @@ function LogisticsSection() {
               <div>
                 <h3 className="text-lg font-semibold text-white">Pickup or delivery</h3>
                 <p className="text-sm text-slate-400">
-                  Meet us by appointment in Falkville or request vetted courier/flight nanny
-                  delivery. We share transport quotes upfront.
+                  Meet us by appointment near Falkville, just outside Cullman, Alabama, or request
+                  vetted courier/flight nanny delivery. We share transport quotes upfront.
                 </p>
               </div>
             </div>

@@ -49,6 +49,24 @@ describe('Puppies Page', () => {
     ).toBeInTheDocument();
   });
 
+  it('renders local Falkville context and planning links', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(
+      screen.getByText(/Exotic Bulldog Legacy is based near Falkville, just outside Cullman/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /pickup & delivery areas/i })).toHaveAttribute(
+      'href',
+      '/locations',
+    );
+    expect(screen.getByRole('link', { name: /puppy faq/i })).toHaveAttribute('href', '/faq');
+    expect(screen.getByRole('link', { name: /contact us/i })).toHaveAttribute('href', '/contact');
+  });
+
   it('renders breadcrumbs navigation (SEO only)', async () => {
     const { getFilteredPuppies } = await import('@/lib/supabase/queries');
     vi.mocked(getFilteredPuppies).mockResolvedValue([]);

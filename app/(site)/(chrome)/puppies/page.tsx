@@ -98,6 +98,28 @@ export default async function PuppiesPage({
               Browse our current litters, review temperament notes, and reserve the companion who
               fits your lifestyle.
             </p>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
+              Exotic Bulldog Legacy is based near Falkville, just outside Cullman, Alabama. We offer
+              pickup by appointment and can discuss delivery options for families across North
+              Alabama, including Birmingham, Huntsville, Decatur, Madison, and nearby communities.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 text-sm font-medium sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+              <Link
+                href="/locations"
+                className="text-orange-400 transition-colors hover:text-orange-300"
+              >
+                Pickup &amp; delivery areas
+              </Link>
+              <Link href="/faq" className="text-orange-400 transition-colors hover:text-orange-300">
+                Puppy FAQ
+              </Link>
+              <Link
+                href="/contact"
+                className="text-orange-400 transition-colors hover:text-orange-300"
+              >
+                Contact us
+              </Link>
+            </div>
           </div>
         </div>
       </div>

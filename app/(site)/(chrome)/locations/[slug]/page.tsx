@@ -81,11 +81,13 @@ export default async function LocationPage({ params }: { params: Params }) {
         </div>
         {puppies.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-700 bg-[#151e32]/50 p-10 text-center text-sm text-slate-400">
-            No puppies are available right now. Check back soon or{' '}
+            We do not have puppies available for {loc.city} families at this moment. If you are
+            interested in an upcoming French Bulldog or English Bulldog litter,{' '}
             <Link href="/contact" className="text-orange-400 hover:underline">
               contact us
             </Link>{' '}
-            about upcoming litters.
+            to ask about future availability, reservation timing, and pickup or delivery options
+            near {loc.city}.
           </div>
         ) : (
           <>
@@ -150,6 +152,28 @@ export default async function LocationPage({ params }: { params: Params }) {
                 <div className="text-xs text-slate-500">{t.city}</div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {loc.familyNote && (
+        <div className="mx-auto mt-24 max-w-7xl px-6 md:px-12">
+          <div className="rounded-3xl border border-slate-800 bg-[#151e32] p-8 md:p-10">
+            <h2 className="text-3xl font-bold">{loc.familyNote.heading}</h2>
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400 md:text-base">
+              {loc.familyNote.text}
+            </p>
+            <div className="mt-6 flex flex-col gap-3 text-sm font-semibold sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+              {loc.familyNote.links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-orange-400 transition-colors hover:text-orange-300"
+                >
+                  {link.label} →
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

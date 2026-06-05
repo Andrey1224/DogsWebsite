@@ -1,6 +1,11 @@
 export type DeliveryOption = { type: string; description: string };
 export type Testimonial = { name: string; city: string; text: string };
 export type FaqItem = { question: string; answer: string };
+export type FamilyNote = {
+  heading: string;
+  text: string;
+  links: { label: string; href: string }[];
+};
 
 export type Location = {
   slug: string;
@@ -13,6 +18,7 @@ export type Location = {
   driveTimeMinutes?: number;
   deliveryOptions: DeliveryOption[];
   localTestimonials?: Testimonial[];
+  familyNote?: FamilyNote;
   faq: FaqItem[];
   localContext?: string[];
   nearbyAreas?: string[];
@@ -62,7 +68,7 @@ export const locations: Location[] = [
       {
         question: 'What deposit is required to reserve a Birmingham puppy?',
         answer:
-          'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price. We accept major credit cards, PayPal, and bank transfer.',
+          'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price.',
       },
       {
         question: 'Are your puppies health-guaranteed for Birmingham buyers?',
@@ -70,6 +76,14 @@ export const locations: Location[] = [
           'Absolutely. All puppies come with a 1-year genetic health guarantee, up-to-date vaccinations, a health certificate from our licensed vet, and microchipping. The guarantee is the same regardless of how you receive your puppy.',
       },
     ],
+    familyNote: {
+      heading: 'Birmingham Families',
+      text: 'We are currently collecting approved stories from Birmingham-area families. In the meantime, you can read verified reviews from our puppy families or contact us with questions about pickup and delivery near Birmingham.',
+      links: [
+        { label: 'Read verified reviews', href: '/reviews' },
+        { label: 'Contact us', href: '/contact' },
+      ],
+    },
     nearbyAreas: ['Hoover', 'Vestavia Hills', 'Mountain Brook', 'Homewood', 'Pelham', 'Trussville'],
   },
   {

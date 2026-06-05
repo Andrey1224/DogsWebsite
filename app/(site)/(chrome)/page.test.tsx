@@ -25,6 +25,17 @@ describe('Home', () => {
     primaryCtas.forEach((cta) => expect(cta).toBeVisible());
   });
 
+  it('uses Falkville and Cullman pickup wording on the homepage', () => {
+    render(<Home />);
+
+    expect(
+      screen.getByText(
+        /Meet us by appointment near Falkville, just outside Cullman, Alabama, or request vetted courier\/flight nanny delivery\. We share transport quotes upfront\./i,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Meet us by appointment in Montgomery/i)).not.toBeInTheDocument();
+  });
+
   it('renders compact service area links', () => {
     render(<Home />);
 

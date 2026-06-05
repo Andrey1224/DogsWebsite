@@ -51,7 +51,46 @@ describe('Location Page', () => {
     render(component);
 
     expect(
-      screen.getByText(/\$300 non-refundable deposit secures your pick from the litter/i),
+      screen.getByText(
+        'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price.',
+      ),
     ).toBeInTheDocument();
+  });
+
+  it('renders an honest Birmingham family note instead of fake testimonials', async () => {
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    render(component);
+
+    expect(screen.getByRole('heading', { name: /^Birmingham Families$/i })).toBeInTheDocument();
+    expect(
+      screen.getByText(/currently collecting approved stories from Birmingham-area families/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /read verified reviews/i })).toHaveAttribute(
+      'href',
+      '/reviews',
+    );
+    expect(screen.getAllByRole('link', { name: /contact us/i })[0]).toHaveAttribute(
+      'href',
+      '/contact',
+    );
+    expect(screen.queryByText(/Melissa T\./i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/DeShawn R\./i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Carla W\./i)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['birmingham-al', 'Birmingham'],
+    ['huntsville-al', 'Huntsville'],
+  ])('uses city-specific no-availability wording for %s', async (slug, city) => {
+    const component = await LocationPage({ params: Promise.resolve({ slug }) });
+    const { container } = render(component);
+
+    expect(container).toHaveTextContent(
+      `We do not have puppies available for ${city} families at this moment.`,
+    );
+    expect(container).toHaveTextContent(
+      `future availability, reservation timing, and pickup or delivery options near ${city}.`,
+    );
+    expect(screen.queryByText(/No puppies are available right now/i)).not.toBeInTheDocument();
   });
 });

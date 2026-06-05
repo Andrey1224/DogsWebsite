@@ -34,6 +34,49 @@ export default function LocationsPage() {
         </div>
       </div>
 
+      <section className="mx-auto max-w-7xl px-6 pb-14 md:px-12">
+        <div className="max-w-3xl rounded-3xl border border-slate-800 bg-[#151e32] p-8">
+          <h2 className="text-2xl font-bold text-white md:text-3xl">
+            Based Near Falkville, Serving North Alabama
+          </h2>
+          <div className="mt-4 space-y-4 text-sm leading-relaxed text-slate-400 md:text-base">
+            <p>
+              Exotic Bulldog Legacy is based near Falkville, just outside Cullman, Alabama. Families
+              from Cullman, Decatur, Madison, Huntsville, Birmingham, and surrounding communities
+              can arrange pickup by appointment or ask about safe delivery and flight nanny options.
+            </p>
+            <p>
+              Most families begin by viewing available puppies online, asking questions through our
+              contact page, and then choosing the best pickup or delivery option before placing a
+              $300 deposit.
+            </p>
+          </div>
+          <div className="mt-6 flex flex-col gap-3 text-sm font-medium sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
+            <Link
+              href="/puppies"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              View Available Puppies
+            </Link>
+            <Link
+              href="/contact"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              Contact Us
+            </Link>
+            <Link href="/faq" className="text-orange-400 transition-colors hover:text-orange-300">
+              Read FAQ
+            </Link>
+            <Link
+              href="/policies"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              Deposit &amp; Health Policies
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* City Cards */}
       <div className="mx-auto max-w-7xl px-6 md:px-12">
         {locations.length === 0 ? (
@@ -68,6 +111,25 @@ export default function LocationsPage() {
           </div>
         )}
       </div>
+
+      <section className="mx-auto mt-16 max-w-7xl px-6 md:px-12">
+        <div className="max-w-3xl rounded-3xl border border-slate-800 bg-[#151e32] p-8">
+          <h2 className="text-2xl font-bold text-white md:text-3xl">
+            How Pickup and Delivery Works
+          </h2>
+          <div className="mt-4 space-y-4 text-sm leading-relaxed text-slate-400 md:text-base">
+            <p>
+              Pickup is arranged by appointment near Falkville, Alabama. We do not encourage
+              surprise visits because puppy care, family schedules, and safety come first.
+            </p>
+            <p>
+              For families outside the immediate area, delivery or meetup options may be available
+              depending on timing, distance, and puppy readiness. We can discuss ground
+              transportation, airport coordination, or flight nanny delivery when appropriate.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
