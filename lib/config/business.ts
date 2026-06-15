@@ -22,7 +22,7 @@ const DEFAULT_ADDRESS = {
   streetAddress: 'Private kennel (appointment only)',
   addressLocality: 'Falkville',
   addressRegion: 'AL',
-  postalCode: '36117',
+  postalCode: '35622',
   addressCountry: 'US',
 };
 
@@ -144,9 +144,9 @@ export const BUSINESS_PROFILE = {
   priceRange: '$$$',
   logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://exoticbulldoglegacy.com'}/favicon.ico`,
   imageGallery: [
-    '/reviews/sarah-charlie.webp',
-    '/reviews/mark-lisa-duke.webp',
-    '/reviews/cameron-milo.webp',
+    '/images/reviews/sarah-charlie.webp',
+    '/images/reviews/mark-lisa-duke.webp',
+    '/images/reviews/cameron-milo.webp',
   ],
   coordinates: BUSINESS_COORDINATES,
   hours: readHours(),

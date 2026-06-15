@@ -8,7 +8,7 @@ import { getAggregate, getPublishedReviews } from '@/lib/reviews/queries';
 import { buildMetadata } from '@/lib/seo/metadata';
 
 export const metadata = buildMetadata({
-  title: 'Reviews | Exotic Bulldog Legacy',
+  title: 'Reviews',
   description: 'Read authentic reviews from Exotic Bulldog Legacy families across the Southeast.',
   path: '/reviews',
 });

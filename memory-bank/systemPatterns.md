@@ -24,9 +24,20 @@
 - **Puppy Recommendations**: Always filter by `status === 'available'` before applying breed/litter matching.
 - **React Forms**: When using `defaultValue` with dynamic data, add `key` prop that includes the data to force re-mount on updates (e.g., `key={`${id}-${value}`}`).
 
+## SEO Conventions
+
+- **Page titles**: Use `buildMetadata({ title: 'Page Name' })` — do NOT include "Exotic Bulldog Legacy" in the title string. The root layout template `%s | Exotic Bulldog Legacy` appends it automatically.
+- **Structured data (JSON-LD)**: `Organization` and `LocalBusiness` schemas are injected globally in `app/layout.tsx`. Do NOT add `getOrganizationSchema()` or `getLocalBusinessSchema()` in individual pages — it creates duplicate `<script>` tags.
+- **FAQPage schema**: Any page with a visible FAQ section should inject `getFaqSchema(items)` via `<JsonLd>` (see `faq/page.tsx` and `app/(site)/(chrome)/page.tsx` as examples).
+- **Image paths**: All local public images are under `public/images/…`. URL paths must be `/images/…` (e.g., `/images/reviews/sarah-charlie.webp`). There is no `/public/reviews/` directory.
+- **Default OG image**: `lib/seo/metadata.ts` → `DEFAULT_IMAGE = '/images/home/hero/puppy-play.webp'`. Override per-page via the `image` option in `buildMetadata`.
+- **Business profile fallback**: `lib/config/business.ts` `DEFAULT_ADDRESS` uses `postalCode: '35622'` (Falkville, AL). Do not use Montgomery (36117).
+
 ## Anti-Patterns
 
 - **Do NOT**: Use `any` type.
 - **Do NOT**: Commit secrets to `.env`.
 - **Do NOT**: Skip `npm run verify` before push.
 - **Do NOT**: Duplicate business logic in API routes; use `lib/` services.
+- **Do NOT**: Include brand name in page-level title strings — the layout template handles it.
+- **Do NOT**: Add Organization/LocalBusiness JSON-LD to individual pages — already in root layout.

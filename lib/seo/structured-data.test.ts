@@ -32,9 +32,9 @@ vi.mock('@/lib/config/business', () => ({
       'Responsible French & English bulldog breeding program in Falkville, Alabama with concierge placement support.',
     logo: 'https://exoticbulldoglegacy.com/favicon.ico',
     imageGallery: [
-      '/reviews/sarah-charlie.webp',
-      '/reviews/mark-lisa-duke.webp',
-      '/reviews/cameron-milo.webp',
+      '/images/reviews/sarah-charlie.webp',
+      '/images/reviews/mark-lisa-duke.webp',
+      '/images/reviews/cameron-milo.webp',
     ],
     priceRange: '$$$',
     areaServed: ['Alabama', 'Georgia', 'Florida', 'Tennessee'],
@@ -42,9 +42,9 @@ vi.mock('@/lib/config/business', () => ({
       streetAddress: 'Private kennel (appointment only)',
       addressLocality: 'Falkville',
       addressRegion: 'AL',
-      postalCode: '36117',
+      postalCode: '35622',
       addressCountry: 'US',
-      formatted: 'Private kennel (appointment only), Falkville, AL 36117',
+      formatted: 'Private kennel (appointment only), Falkville, AL 35622',
       display: 'Falkville, AL',
     },
     coordinates: {
@@ -150,7 +150,7 @@ describe('SEO Structured Data', () => {
         streetAddress: 'Private kennel (appointment only)',
         addressLocality: 'Falkville',
         addressRegion: 'AL',
-        postalCode: '36117',
+        postalCode: '35622',
         addressCountry: 'US',
       });
     });
@@ -199,9 +199,9 @@ describe('SEO Structured Data', () => {
       const schema = getLocalBusinessSchema();
 
       expect(schema.image).toEqual([
-        '/reviews/sarah-charlie.webp',
-        '/reviews/mark-lisa-duke.webp',
-        '/reviews/cameron-milo.webp',
+        '/images/reviews/sarah-charlie.webp',
+        '/images/reviews/mark-lisa-duke.webp',
+        '/images/reviews/cameron-milo.webp',
       ]);
     });
   });
@@ -353,7 +353,7 @@ describe('SEO Structured Data', () => {
       const puppy = { ...basePuppy, photo_urls: [] };
       const schema = getProductSchema(puppy);
 
-      expect(schema.image).toEqual(['/reviews/mark-lisa-duke.webp']);
+      expect(schema.image).toEqual(['/images/reviews/mark-lisa-duke.webp']);
     });
 
     it('includes color when provided', () => {

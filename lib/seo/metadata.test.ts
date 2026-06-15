@@ -311,11 +311,11 @@ describe('SEO Metadata', () => {
       // When no image is provided, default image is used
       expect(metadata.openGraph?.images).toEqual([
         {
-          url: '/reviews/sarah-charlie.webp',
+          url: '/images/home/hero/puppy-play.webp',
           alt: 'French and English bulldogs from Exotic Bulldog Legacy',
         },
       ]);
-      expect(metadata.twitter?.images).toEqual(['/reviews/sarah-charlie.webp']);
+      expect(metadata.twitter?.images).toEqual(['/images/home/hero/puppy-play.webp']);
     });
   });
 });

@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   if (!puppy) {
     return buildMetadata({
-      title: 'Puppy not found | Exotic Bulldog Legacy',
+      title: 'Puppy not found',
       description: 'The requested bulldog could not be located. Explore available puppies instead.',
       path: `/puppies/${slug}`,
       noIndex: true,

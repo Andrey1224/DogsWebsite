@@ -16,7 +16,7 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { getMerchantReturnPolicySchema } from '@/lib/seo/structured-data';
 
 export const metadata = buildMetadata({
-  title: 'Policies | Exotic Bulldog Legacy',
+  title: 'Policies',
   description:
     "Review Exotic Bulldog Legacy's deposit, health guarantee, transportation, and return policies before reserving a French or English bulldog.",
   path: '/policies',

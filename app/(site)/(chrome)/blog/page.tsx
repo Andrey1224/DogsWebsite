@@ -1,6 +1,4 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { JsonLd } from '@/components/json-ld';
-import { getOrganizationSchema } from '@/lib/seo/structured-data';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { sanityFetch } from '@/sanity/lib/client';
 import { urlFor } from '@/sanity/lib/image';
@@ -11,7 +9,7 @@ import { BlogClient, type BlogClientPost } from './blog-client';
 export const revalidate = 60;
 
 export const metadata = buildMetadata({
-  title: 'Blog — Exotic Bulldog Legacy',
+  title: 'Blog',
   description:
     'Expert tips on care, nutrition, and health for French and English Bulldogs from the Exotic Bulldog Legacy team.',
   path: '/blog',
@@ -45,7 +43,6 @@ export default async function BlogPage() {
           ]}
         />
       </div>
-      <JsonLd data={getOrganizationSchema()} />
       <BlogClient posts={posts} />
     </main>
   );

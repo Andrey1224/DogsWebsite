@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const imageUrl = urlFor(post.mainImage).width(1200).auto('format').url();
 
   return buildMetadata({
-    title: post.seoTitle ?? `${post.title} — Exotic Bulldog Legacy`,
+    title: post.seoTitle ?? post.title,
     description: post.seoDescription ?? post.excerpt,
     path: `/blog/${post.slug.current}`,
     image: imageUrl,

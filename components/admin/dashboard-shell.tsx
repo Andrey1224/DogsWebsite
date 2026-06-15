@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { LogOut, MessageSquare, PawPrint, ClipboardList } from 'lucide-react';
+import { LogOut, MessageSquare, PawPrint, ClipboardList, BookOpen } from 'lucide-react';
 import { signOut } from '@/app/admin/actions';
 
 type AdminDashboardShellProps = {
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/admin/puppies', label: 'Puppies', icon: PawPrint },
   { href: '/admin/reservations', label: 'Reservations', icon: ClipboardList },
   { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
+  { href: '/admin/blog', label: 'Blog', icon: BookOpen },
 ];
 
 export function AdminDashboardShell({ email, children }: AdminDashboardShellProps) {

@@ -54,6 +54,14 @@
   - Organization and LocalBusiness JSON-LD inherit the corrected Falkville description from `BUSINESS_PROFILE`
   - Product schema fallback description in `lib/seo/structured-data.ts` also now uses Falkville for consistency
   - Confirmed local env address is already `Falkville, AL`, so global schema address on production should not fall back to the Montgomery default
+- **SEO Fixes (Jun 14, 2026)**: Comprehensive SEO audit and fixes applied.
+  - **Title duplication bug fixed** (10 files): page-level titles included "Exotic Bulldog Legacy" which the root layout template (`%s | Exotic Bulldog Legacy`) then appended again. Removed brand suffix from all page titles — `page.tsx`, `faq/page.tsx`, `blog/page.tsx`, `about/page.tsx`, `reviews/page.tsx`, `policies/page.tsx`, `contact/page.tsx`, `puppies/[slug]/page.tsx` (404 case), `puppies/[slug]/reserved/page.tsx`, `blog/[slug]/page.tsx`.
+  - **FAQPage JSON-LD added to homepage**: `getFaqSchema(faqs)` now injected via `<JsonLd>` in `Home()` component so the 3 homepage FAQ items appear in Google rich snippets.
+  - **postalCode fixed**: `DEFAULT_ADDRESS.postalCode` in `lib/config/business.ts` was `36117` (Montgomery) instead of `35622` (Falkville). Fixed fallback and corresponding test fixtures.
+  - **Duplicate Organization schema removed**: `about/page.tsx` and `blog/page.tsx` were calling `getOrganizationSchema()` manually but root layout already injects it globally. Removed the redundant `<JsonLd>` calls and unused imports.
+  - **OG image 404 fixed**: Default OG image was `/reviews/sarah-charlie.webp` (and related `/reviews/…` paths in `business.ts`, `structured-data.ts`, `images.ts`) but `public/reviews/` does not exist — actual files are under `public/images/reviews/`. Corrected all paths. Default OG image changed to `/images/home/hero/puppy-play.webp` (proper hero photo instead of customer review photo).
+  - All test fixtures in `lib/seo/metadata.test.ts` and `lib/seo/structured-data.test.ts` updated to match corrected values.
+  - Files changed: `lib/seo/metadata.ts`, `lib/utils/images.ts`, `lib/config/business.ts`, `lib/seo/structured-data.ts`, `app/(site)/(chrome)/page.tsx` (+8 page files), `lib/seo/metadata.test.ts`, `lib/seo/structured-data.test.ts`.
 - **Recent Fix (Apr 27, 2026)**: Final stale source cleanup completed for `/locations` metadata and shared business fallback locality.
   - `/locations` metadata description now says `Browse Alabama service-area pages for pickup logistics, delivery options, and city-specific FAQs.`
   - Shared `DEFAULT_ADDRESS.addressLocality` in `lib/config/business.ts` now defaults to `Falkville`

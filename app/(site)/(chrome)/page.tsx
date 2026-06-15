@@ -18,7 +18,9 @@ import { HeroCarousel } from '@/components/hero-carousel';
 
 import { PromoGate } from '@/components/home/promo-gate';
 import { IntroShell } from '@/components/intro-shell';
+import { JsonLd } from '@/components/json-ld';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getFaqSchema } from '@/lib/seo/structured-data';
 import { getFeaturedReviews } from '@/lib/reviews/queries';
 import type { Review } from '@/lib/reviews/types';
 
@@ -42,7 +44,7 @@ const FeaturedReviewsCarousel = dynamic(
 );
 
 export const metadata = buildMetadata({
-  title: 'Bulldog Puppies in Alabama | Exotic Bulldog Legacy',
+  title: 'Bulldog Puppies in Alabama',
   description:
     'French and English bulldog puppies available in Alabama with secure deposits, appointment pickup in Falkville, and vetted delivery options from Exotic Bulldog Legacy.',
   path: '/',
@@ -136,9 +138,12 @@ function ActionLink({ href, children, variant = 'primary', className = '' }: Act
 }
 
 export default function Home() {
+  const faqSchema = getFaqSchema(faqs);
+
   return (
     <IntroShell>
       <>
+        <JsonLd id="home-faq-schema" data={faqSchema} />
         <PromoGate />
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
