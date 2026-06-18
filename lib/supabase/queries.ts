@@ -24,6 +24,19 @@ export type PuppyFilter = {
   search?: string;
 };
 
+const PUPPY_STATUS_PRIORITY: Record<string, number> = {
+  available: 0,
+  reserved: 1,
+  upcoming: 2,
+  sold: 3,
+};
+
+function getTimestamp(value?: string | null) {
+  if (!value) return 0;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 function normalizeArchiveFlag<T extends { is_archived?: boolean | null }>(
   records: T[],
   usedArchiveColumn: boolean,
@@ -103,37 +116,52 @@ export const getLitters = cache(async () => {
 });
 
 export function applyPuppyFilters(puppies: PuppyWithRelations[], filter: PuppyFilter = {}) {
-  return puppies.filter((puppy) => {
-    // Status filter
-    const matchesStatus =
-      !filter.status || filter.status === 'all' || puppy.status === filter.status;
+  return puppies
+    .filter((puppy) => {
+      // Status filter
+      const matchesStatus =
+        !filter.status || filter.status === 'all' || puppy.status === filter.status;
 
-    // Breed filter
-    const breedFilter = filter.breed ?? 'all';
-    const sireBreed = puppy.parents?.sire?.breed;
-    const damBreed = puppy.parents?.dam?.breed;
-    const matchesBreed =
-      breedFilter === 'all' ||
-      puppy.breed === breedFilter ||
-      sireBreed === breedFilter ||
-      damBreed === breedFilter;
+      // Breed filter
+      const breedFilter = filter.breed ?? 'all';
+      const sireBreed = puppy.parents?.sire?.breed;
+      const damBreed = puppy.parents?.dam?.breed;
+      const matchesBreed =
+        breedFilter === 'all' ||
+        puppy.breed === breedFilter ||
+        sireBreed === breedFilter ||
+        damBreed === breedFilter;
 
-    // Sex filter
-    const sexFilter = filter.sex ?? 'all';
-    const matchesSex = sexFilter === 'all' || puppy.sex === sexFilter;
+      // Sex filter
+      const sexFilter = filter.sex ?? 'all';
+      const matchesSex = sexFilter === 'all' || puppy.sex === sexFilter;
 
-    // Price range filter
-    const matchesPrice =
-      (!filter.priceMin || !puppy.price_usd || puppy.price_usd >= filter.priceMin) &&
-      (!filter.priceMax || !puppy.price_usd || puppy.price_usd <= filter.priceMax);
+      // Price range filter
+      const matchesPrice =
+        (!filter.priceMin || !puppy.price_usd || puppy.price_usd >= filter.priceMin) &&
+        (!filter.priceMax || !puppy.price_usd || puppy.price_usd <= filter.priceMax);
 
-    // Search filter (name)
-    const searchQuery = filter.search?.toLowerCase().trim() ?? '';
-    const matchesSearch =
-      !searchQuery || (puppy.name?.toLowerCase().includes(searchQuery) ?? false);
+      // Search filter (name)
+      const searchQuery = filter.search?.toLowerCase().trim() ?? '';
+      const matchesSearch =
+        !searchQuery || (puppy.name?.toLowerCase().includes(searchQuery) ?? false);
 
-    return matchesStatus && matchesBreed && matchesSex && matchesPrice && matchesSearch;
-  });
+      return matchesStatus && matchesBreed && matchesSex && matchesPrice && matchesSearch;
+    })
+    .sort((left, right) => {
+      const statusDifference =
+        (PUPPY_STATUS_PRIORITY[left.status] ?? Number.MAX_SAFE_INTEGER) -
+        (PUPPY_STATUS_PRIORITY[right.status] ?? Number.MAX_SAFE_INTEGER);
+
+      if (statusDifference !== 0) {
+        return statusDifference;
+      }
+
+      return (
+        getTimestamp(right.created_at ?? right.updated_at) -
+        getTimestamp(left.created_at ?? left.updated_at)
+      );
+    });
 }
 
 export const getPuppiesWithRelations = cache(async () => {

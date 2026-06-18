@@ -11,9 +11,9 @@ import { buildMetadata } from '@/lib/seo/metadata';
 export const revalidate = 60;
 
 export const metadata = buildMetadata({
-  title: 'Available French & English Bulldog Puppies',
+  title: 'French & English Bulldog Puppies',
   description:
-    "Browse Exotic Bulldog Legacy's catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.",
+    "Browse Exotic Bulldog Legacy's current and past French and English bulldog puppies, including photos, health details, and availability.",
   path: '/puppies',
 });
 
@@ -91,12 +91,12 @@ export default async function PuppiesPage({
             <h1 className="mb-4 text-4xl font-bold leading-tight md:text-6xl">
               French & English bulldogs <br />
               <span className="bg-gradient-to-r from-slate-200 to-slate-500 bg-clip-text text-transparent">
-                available now
+                current &amp; past puppies
               </span>
             </h1>
             <p className="max-w-xl text-lg text-slate-400">
-              Browse our current litters, review temperament notes, and reserve the companion who
-              fits your lifestyle.
+              Browse current litters and puppies who have already found homes, with photographs,
+              temperament notes, and availability clearly marked.
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
               Exotic Bulldog Legacy is based near Falkville, just outside Cullman, Alabama. We offer

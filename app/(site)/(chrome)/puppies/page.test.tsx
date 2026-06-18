@@ -32,7 +32,7 @@ describe('Puppies Page', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /French & English bulldogs available now/i,
+        name: /French & English bulldogs current & past puppies/i,
       }),
     ).toBeInTheDocument();
   });
@@ -45,7 +45,7 @@ describe('Puppies Page', () => {
     render(component);
 
     expect(
-      screen.getByText(/Browse our current litters, review temperament notes/i),
+      screen.getByText(/Browse current litters and puppies who have already found homes/i),
     ).toBeInTheDocument();
   });
 

@@ -76,6 +76,24 @@ export function ReserveButton({
   const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
   const paypalConfigured = Boolean(paypalClientId);
 
+  if (status === 'sold') {
+    return (
+      <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
+        <p className="text-sm font-semibold text-slate-300">Unavailable</p>
+        <p className="text-sm text-slate-400">
+          This puppy has found a home and is no longer available for reservation.
+        </p>
+        <p className="text-sm text-slate-400">
+          View our other listings or{' '}
+          <a href="/contact" className="font-semibold text-orange-400 hover:underline">
+            contact us
+          </a>{' '}
+          about upcoming litters.
+        </p>
+      </div>
+    );
+  }
+
   if (reservationsDisabled) {
     return (
       <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">

@@ -61,9 +61,9 @@ describe('PuppyGallery', () => {
       expect(screen.getByText('Available')).toBeInTheDocument();
     });
 
-    it('renders "Sold" badge correctly', () => {
+    it('renders "Unavailable" badge for sold puppies', () => {
       render(<PuppyGallery {...defaultProps} status="sold" />);
-      expect(screen.getByText('Sold')).toBeInTheDocument();
+      expect(screen.getByText('Unavailable')).toBeInTheDocument();
     });
 
     it('renders "Reserved" badge correctly', () => {

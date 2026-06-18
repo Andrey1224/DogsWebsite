@@ -22,6 +22,8 @@
   - Architecture decisions in `docs/archive/` or specific feature docs.
   - Context map in `docs/llms.txt`.
 - **Puppy Recommendations**: Always filter by `status === 'available'` before applying breed/litter matching.
+- **Sold Puppy Visibility**: `status === 'sold'` remains public and is labeled `Unavailable`.
+  Use `is_archived` only for intentional manual hiding; never auto-archive sold puppies.
 - **React Forms**: When using `defaultValue` with dynamic data, add `key` prop that includes the data to force re-mount on updates (e.g., `key={`${id}-${value}`}`).
 
 ## SEO Conventions

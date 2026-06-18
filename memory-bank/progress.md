@@ -6,6 +6,8 @@
 - [x] **LCP Optimization**: Achieved ~500ms improvement (Jan 2025).
 - [x] **Reviews MVP**: Public reviews with photo uploads (Feb 2025).
 - [x] **Payment Enhancements**: Automated refunds, Admin Dashboard, Critical Stripe Fix (Jan 2026).
+- [x] **Public Sold Puppy Profiles**: Keep sold listings viewable and indexable while blocking
+      reservations (Jun 2026).
 - [ ] **AI Context Standards**: Memory Bank adoption & Docs Linting (In Progress).
 
 ## Recent Wins
@@ -14,6 +16,7 @@
 - Fixed critical Stripe webhook bug preventing "paid" status updates.
 - Consolidated fragmented history files into `docs/history/`.
 - Established `docs/llms.txt` as the documentation source of truth.
+- Replaced automatic sold-puppy archiving with explicit manual archive controls.
 
 ## Known Debt
 

@@ -11,9 +11,22 @@
 - **P6**: Harden live Stripe rollout with a server-side reservation kill switch.
 - **P7**: Support temporary server-side Stripe deposit amount for live $1 payment verification.
 - **P8**: Correct live local SEO copy around Falkville/Cullman service areas.
+- **P9**: Keep sold puppy profiles public and indexable while blocking reservations.
 
 ## Current Status
 
+- **Completed (Jun 18, 2026)**: Restored sold puppy profiles as public, non-reservable listings.
+  - Keep `status='sold'` as the database/payment status and display it publicly as
+    `Unavailable`
+  - Stop automatic archiving of sold puppies; reserve `is_archived` for intentional manual hiding
+  - Supabase migration restored 11 sold profiles and kept the technical `test` record archived
+  - Removed the daily auto-archive cron job and `archive_sold_puppies_after_30_days()` function
+  - Keep sold profiles indexable, included in the main catalog and sitemap, with active listings
+    sorted first
+  - Historical prices, photos, lineage, and details remain visible; reservation actions stay blocked
+  - `npm run verify` passed docs, links, lint, typecheck, and Vitest (`637 passed`, `4 skipped`);
+    sandboxed Playwright could not bind port 3000, then elevated `npm run e2e` passed (`23 passed`,
+    `3 skipped`)
 - **IN PROGRESS**: `NEXT_PUBLIC_PROMO_DISABLED=true` set in Vercel but promo modal still showing.
   - Debug logging added to `components/home/promo-gate.tsx` (commit `3baf367`, main)
   - Need to check browser console on production to diagnose root cause
@@ -104,6 +117,7 @@
 - Skipping intro screen via `NEXT_PUBLIC_INTRO_DISABLED`.
 - Investigating Search Console SEO warnings around `noindex` exclusions and low internal-link counts.
 - Sitemap completeness updated to include `/reviews`.
+- Sold puppy visibility now uses status for availability and manual archive only for hiding.
 
 ## Risks & Issues
 
@@ -124,3 +138,5 @@
 7. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
 8. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
 9. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
+10. Deploy the sold-profile UI update so production labels sold listings as `Unavailable` and
+    publishes the refreshed sitemap.

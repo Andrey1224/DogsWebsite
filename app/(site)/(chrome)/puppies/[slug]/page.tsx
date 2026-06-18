@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
   const breed = puppy.breed ?? puppy.parents?.sire?.breed ?? puppy.parents?.dam?.breed;
   const breedLabel = formatBreed(breed);
-  const title = `${puppy.name ?? 'Bulldog'} | Exotic Bulldog Legacy`;
+  const title = puppy.name ?? 'Bulldog';
   const description =
     puppy.description ??
     `Learn more about ${puppy.name ?? 'this bulldog'}, one of our carefully raised ${
@@ -203,11 +203,6 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             <span className="text-3xl font-medium text-slate-200">
               {puppy.price_usd ? `$${puppy.price_usd.toLocaleString()}` : 'Contact'}
             </span>
-            {(puppy.status === 'sold' || puppy.status === 'reserved') && puppy.price_usd ? (
-              <span className="text-sm text-slate-500 line-through">
-                ${puppy.price_usd.toLocaleString()}
-              </span>
-            ) : null}
           </div>
           {/* Stats Grid */}
           <StatsGrid

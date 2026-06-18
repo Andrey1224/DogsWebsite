@@ -2,6 +2,14 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-06-18] Public Sold Puppy Profiles
+
+- **Feature**: Sold puppies remain visible in the main catalog and on indexable detail pages.
+- **UX**: Public status is displayed as `Unavailable`, while historical prices and media remain
+  visible.
+- **Database**: Removed the 30-day auto-archive job; `is_archived` now represents manual hiding
+  only.
+
 ## [2026-01-09] Automated Refunds & Admin Dashboard
 
 - **Fix**: Reservations now auto-transition to `paid` immediately via webhook.

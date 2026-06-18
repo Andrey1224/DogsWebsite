@@ -8,7 +8,7 @@ const statusOptions = [
   { value: 'all', label: 'Status' },
   { value: 'available', label: 'Available' },
   { value: 'reserved', label: 'Reserved' },
-  { value: 'sold', label: 'Sold' },
+  { value: 'sold', label: 'Unavailable' },
   { value: 'upcoming', label: 'Upcoming' },
 ];
 

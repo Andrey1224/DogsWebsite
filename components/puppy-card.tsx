@@ -12,6 +12,10 @@ const statusStyles: Record<string, string> = {
   upcoming: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
 };
 
+const statusLabels: Record<string, string> = {
+  sold: 'Unavailable',
+};
+
 type PuppyCardProps = {
   puppy: PuppyWithRelations;
   /** Index of the card in the list. First 2 cards load eagerly for LCP optimization. */
@@ -25,6 +29,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
   );
   const statusClass =
     statusStyles[puppy.status] ?? 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+  const statusLabel = statusLabels[puppy.status] ?? puppy.status;
 
   // Priority: Use direct puppy.breed field (new approach)
   // Fallback: Use parent breed if puppy.breed is not set (backward compatibility)
@@ -68,7 +73,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
         <span
           className={`absolute right-4 top-4 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider backdrop-blur-md ${statusClass}`}
         >
-          {puppy.status}
+          {statusLabel}
         </span>
 
         {/* Floating Action Button (hover) */}
