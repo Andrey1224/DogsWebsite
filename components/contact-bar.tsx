@@ -19,9 +19,10 @@ const channelIcons = {
 
 type ContactBarProps = {
   channels: ContactChannel[];
+  liveChatEnabled?: boolean;
 };
 
-export function ContactBar({ channels }: ContactBarProps) {
+export function ContactBar({ channels, liveChatEnabled = false }: ContactBarProps) {
   const pathname = usePathname();
   const { trackEvent } = useAnalytics();
 
@@ -79,14 +80,23 @@ export function ContactBar({ channels }: ContactBarProps) {
             Let&apos;s Connect
           </Link>
 
-          {/* Mobile: Direct Chat Trigger */}
-          <button
-            type="button"
-            onClick={openLiveChat}
-            className="sm:hidden ml-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-1.5 text-xs font-bold text-white transition-all hover:shadow-lg hover:shadow-orange-500/20 sm:px-6 sm:py-2.5 sm:text-sm"
-          >
-            Let&apos;s Chat
-          </button>
+          {/* Mobile: Live chat when enabled, contact page otherwise */}
+          {liveChatEnabled ? (
+            <button
+              type="button"
+              onClick={openLiveChat}
+              className="sm:hidden ml-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-1.5 text-xs font-bold text-white transition-all hover:shadow-lg hover:shadow-orange-500/20 sm:px-6 sm:py-2.5 sm:text-sm"
+            >
+              Let&apos;s Chat
+            </button>
+          ) : (
+            <Link
+              href="/contact"
+              className="sm:hidden ml-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-1.5 text-xs font-bold text-white transition-all hover:shadow-lg hover:shadow-orange-500/20 sm:px-6 sm:py-2.5 sm:text-sm"
+            >
+              Contact Us
+            </Link>
+          )}
         </div>
       </div>
     </aside>

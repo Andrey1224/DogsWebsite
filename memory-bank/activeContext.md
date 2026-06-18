@@ -12,9 +12,17 @@
 - **P7**: Support temporary server-side Stripe deposit amount for live $1 payment verification.
 - **P8**: Correct live local SEO copy around Falkville/Cullman service areas.
 - **P9**: Keep sold puppy profiles public and indexable while blocking reservations.
+- **P10**: Disable the unused Crisp live chat without loading its client script.
 
 ## Current Status
 
+- **Completed (Jun 18, 2026)**: Crisp live chat is disabled by default.
+  - `NEXT_PUBLIC_CRISP_ENABLED=false` prevents the loader and Crisp preconnect from rendering
+  - The mobile `Let's Chat` action becomes a normal `/contact` link while chat is disabled
+  - Re-enable by setting `NEXT_PUBLIC_CRISP_ENABLED=true` with a valid
+    `NEXT_PUBLIC_CRISP_WEBSITE_ID`, then redeploy
+  - Production build passed; generated HTML does not reference the Crisp script or preconnect
+  - `npm run verify` passed (`639` Vitest tests, `4` skipped; `24` Playwright tests, `2` skipped)
 - **Completed (Jun 18, 2026)**: Restored sold puppy profiles as public, non-reservable listings.
   - Keep `status='sold'` as the database/payment status and display it publicly as
     `Unavailable`

@@ -63,10 +63,6 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
       pattern: /^G-[A-Z0-9]+$/,
       description: 'Google Analytics 4 measurement ID',
     },
-    NEXT_PUBLIC_CRISP_WEBSITE_ID: {
-      pattern: /^[a-f0-9-]{36}$/,
-      description: 'Crisp chat website ID',
-    },
     NEXT_PUBLIC_CONTACT_LATITUDE: {
       pattern: /^-?\d+(\.\d+)?$/,
       description: 'Business latitude in decimal degrees',
@@ -146,6 +142,16 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
         `⚠️  Invalid format for ${key}: ${config.description}. Current value: ${value}`,
       );
     }
+  }
+
+  const crispEnabled = process.env.NEXT_PUBLIC_CRISP_ENABLED === 'true';
+  const crispWebsiteId = process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID;
+  if (crispEnabled && !crispWebsiteId) {
+    warnings.push(
+      '⚠️  NEXT_PUBLIC_CRISP_ENABLED is true but NEXT_PUBLIC_CRISP_WEBSITE_ID is missing',
+    );
+  } else if (crispEnabled && !/^[a-f0-9-]{36}$/.test(crispWebsiteId ?? '')) {
+    warnings.push('⚠️  Invalid format for NEXT_PUBLIC_CRISP_WEBSITE_ID: Crisp chat website ID');
   }
 
   return { valid: errors.length === 0, errors, warnings };

@@ -8,6 +8,10 @@ export default function ChromeLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const liveChatEnabled =
+    process.env.NEXT_PUBLIC_CRISP_ENABLED === 'true' &&
+    Boolean(process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID);
+
   return (
     <>
       <a href="#main-content" className="skip-link">
@@ -20,7 +24,7 @@ export default function ChromeLayout({
         </main>
         <SiteFooter />
       </div>
-      <ContactBar channels={CONTACT_CHANNELS} />
+      <ContactBar channels={CONTACT_CHANNELS} liveChatEnabled={liveChatEnabled} />
     </>
   );
 }

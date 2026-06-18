@@ -2,6 +2,12 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-06-18] Optional Crisp Live Chat
+
+- **Performance**: Crisp is disabled by default and its preconnect/client script are not requested.
+- **Configuration**: Set `NEXT_PUBLIC_CRISP_ENABLED=true` with a valid Website ID to restore chat.
+- **UX**: The mobile chat CTA links to the contact page while live chat is disabled.
+
 ## [2026-06-18] Public Sold Puppy Profiles
 
 - **Feature**: Sold puppies remain visible in the main catalog and on indexable detail pages.

@@ -44,6 +44,9 @@ export default function RootLayout({
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? null;
   const metaPixelId = process.env.META_PIXEL_ID ?? null;
+  const crispEnabled =
+    process.env.NEXT_PUBLIC_CRISP_ENABLED === 'true' &&
+    Boolean(process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID);
 
   const themeScript = `
     (function() {
@@ -110,8 +113,9 @@ export default function RootLayout({
           </>
         )}
 
-        {/* Preconnect for Crisp Chat - reduces DNS/TLS handshake time */}
-        <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
+        {crispEnabled && (
+          <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
@@ -123,7 +127,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AnalyticsProvider gaMeasurementId={gaMeasurementId} metaPixelId={metaPixelId}>
             {children}
-            <CrispChatLoader />
+            {crispEnabled && <CrispChatLoader />}
             <ConsentBanner />
           </AnalyticsProvider>
         </ThemeProvider>
