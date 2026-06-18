@@ -8,6 +8,8 @@
 - [x] **Payment Enhancements**: Automated refunds, Admin Dashboard, Critical Stripe Fix (Jan 2026).
 - [x] **Public Sold Puppy Profiles**: Keep sold listings viewable and indexable while blocking
       reservations (Jun 2026).
+- [x] **Optional Crisp Chat**: Disable the unused third-party chat and prevent its client script
+      from loading (Jun 2026).
 - [ ] **AI Context Standards**: Memory Bank adoption & Docs Linting (In Progress).
 
 ## Recent Wins
@@ -17,6 +19,8 @@
 - Consolidated fragmented history files into `docs/history/`.
 - Established `docs/llms.txt` as the documentation source of truth.
 - Replaced automatic sold-puppy archiving with explicit manual archive controls.
+- Removed fake Duddy/CHARLIE listings and their test payment data and Storage assets.
+- Disabled Crisp by default while retaining an environment-variable re-enable path.
 
 ## Known Debt
 

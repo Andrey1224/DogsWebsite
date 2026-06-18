@@ -15,6 +15,8 @@ Unified timeline of features, optimizations, and bugfixes.
   visible.
 - **Database**: Removed the 30-day auto-archive job; `is_archived` now represents manual hiding
   only.
+- **Cleanup**: Permanently removed fake Duddy and CHARLIE listings, their canceled test
+  reservations, unprocessed webhook records, and uploaded test images.
 
 ## [2026-01-09] Automated Refunds & Admin Dashboard
 

@@ -23,11 +23,12 @@
     `NEXT_PUBLIC_CRISP_WEBSITE_ID`, then redeploy
   - Production build passed; generated HTML does not reference the Crisp script or preconnect
   - `npm run verify` passed (`639` Vitest tests, `4` skipped; `24` Playwright tests, `2` skipped)
+  - Commit `32d6054` is deployed to `origin/main`
 - **Completed (Jun 18, 2026)**: Restored sold puppy profiles as public, non-reservable listings.
   - Keep `status='sold'` as the database/payment status and display it publicly as
     `Unavailable`
   - Stop automatic archiving of sold puppies; reserve `is_archived` for intentional manual hiding
-  - Supabase migration restored 11 sold profiles and kept the technical `test` record archived
+  - Supabase migration restored real sold profiles and kept the technical `test` record archived
   - Removed the daily auto-archive cron job and `archive_sold_puppies_after_30_days()` function
   - Keep sold profiles indexable, included in the main catalog and sitemap, with active listings
     sorted first
@@ -35,6 +36,8 @@
   - `npm run verify` passed docs, links, lint, typecheck, and Vitest (`637 passed`, `4 skipped`);
     sandboxed Playwright could not bind port 3000, then elevated `npm run e2e` passed (`23 passed`,
     `3 skipped`)
+  - Removed fake test puppies Duddy and CHARLIE from production, including 5 canceled test
+    reservations, 3 unprocessed test webhook events, and 11 Storage objects
 - **IN PROGRESS**: `NEXT_PUBLIC_PROMO_DISABLED=true` set in Vercel but promo modal still showing.
   - Debug logging added to `components/home/promo-gate.tsx` (commit `3baf367`, main)
   - Need to check browser console on production to diagnose root cause
@@ -111,12 +114,11 @@
 - **Reservations**: Added public and server-side disable flags for reservation UX and payment entrypoints (live Stripe rollout in progress).
 - **Intro**: Added an env flag to skip the intro screen.
 
-## Branch State (Feb 6, 2026)
+## Branch State (Jun 18, 2026)
 
-| Branch | Latest commit | Notes                                      |
-| ------ | ------------- | ------------------------------------------ |
-| `main` | `3baf367`     | Debug logs in PromoGate — remove after fix |
-| `dev`  | `1b4595e`     | 1 doc-only commit ahead of main            |
+| Branch | Latest commit | Notes                            |
+| ------ | ------------- | -------------------------------- |
+| `main` | `32d6054`     | Crisp disabled; synced to origin |
 
 ## Active Workstream
 
@@ -146,5 +148,5 @@
 7. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
 8. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
 9. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
-10. Deploy the sold-profile UI update so production labels sold listings as `Unavailable` and
-    publishes the refreshed sitemap.
+10. Confirm the Vercel deployment for `32d6054` completed and verify the Crisp bubble is absent in
+    production.
