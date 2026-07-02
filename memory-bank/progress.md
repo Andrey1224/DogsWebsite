@@ -21,6 +21,9 @@
 - Replaced automatic sold-puppy archiving with explicit manual archive controls.
 - Removed fake Duddy/CHARLIE listings and their test payment data and Storage assets.
 - Disabled Crisp by default while retaining an environment-variable re-enable path.
+- Published the local "Dry Food vs. Raw Diet for Bulldogs" manifesto article with custom
+  responsive diagrams, checklist callouts, SEO metadata, sitemap integration, and the provided
+  nutrition image.
 
 ## Known Debt
 
