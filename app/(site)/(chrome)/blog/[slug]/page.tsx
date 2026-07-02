@@ -18,6 +18,8 @@ import {
 import { buildMetadata } from '@/lib/seo/metadata';
 import { BlogPortableText } from '@/components/blog/portable-text';
 import { ShareButtons } from './share-buttons';
+import { getLocalPost, LOCAL_POSTS } from '@/lib/blog/local-posts';
+import { DryFoodVsRawDietBulldogs } from '@/components/blog/dry-food-vs-raw-diet-bulldogs';
 
 const categoryLabel: Record<string, string> = {
   Питание: 'Nutrition',
@@ -30,16 +32,54 @@ const displayCategory = (cat: string) => categoryLabel[cat] ?? cat;
 // ISR: regenerate at most every 60 seconds
 export const revalidate = 60;
 
+type ExtendedSanityPost = SanityPost & {
+  isLocal?: boolean;
+  image?: string;
+  imageAlt?: string;
+  categoryLabel?: string;
+};
+
+type ExtendedPostPreview = SanityPostPreview & {
+  isLocal?: boolean;
+  image?: string;
+  imageAlt?: string;
+};
+
 // Pre-render known slugs at build time; new slugs are generated on-demand
 export async function generateStaticParams() {
   const slugs = (await sanityFetch<Array<{ slug: string }>>(ALL_POST_SLUGS_QUERY)) ?? [];
-  return slugs.map((s) => ({ slug: s.slug }));
+  const localSlugs = LOCAL_POSTS.map((p) => ({ slug: p.slug }));
+  return [...slugs, ...localSlugs];
 }
 
 type Params = Promise<{ slug: string }>;
 
 // Cache fetch per request so generateMetadata + page don't double-fetch
-const getPost = cache(async (slug: string): Promise<SanityPost | null> => {
+const getPost = cache(async (slug: string): Promise<ExtendedSanityPost | null> => {
+  const localPost = getLocalPost(slug);
+  if (localPost) {
+    return {
+      _id: localPost.id,
+      title: localPost.title,
+      slug: { current: localPost.slug },
+      excerpt: localPost.excerpt,
+      category: localPost.category,
+      publishedAt: localPost.publishedAt,
+      readTime: localPost.readTime,
+      mainImage: {
+        asset: { _ref: '' },
+        alt: localPost.title,
+      },
+      featured: localPost.featured,
+      body: [],
+      seoTitle: localPost.seoTitle,
+      seoDescription: localPost.seoDescription,
+      isLocal: true,
+      image: localPost.image,
+      imageAlt: localPost.imageAlt,
+      categoryLabel: localPost.categoryLabel,
+    };
+  }
   return sanityFetch<SanityPost>(POST_BY_SLUG_QUERY, { slug });
 });
 
@@ -48,7 +88,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const post = await getPost(slug);
   if (!post) return {};
 
-  const imageUrl = urlFor(post.mainImage).width(1200).auto('format').url();
+  const imageUrl =
+    post.isLocal && post.image
+      ? post.image
+      : urlFor(post.mainImage).width(1200).auto('format').url();
 
   return buildMetadata({
     title: post.seoTitle ?? post.title,
@@ -64,14 +107,34 @@ export default async function ArticlePage({ params }: { params: Params }) {
   if (!post) notFound();
 
   // Related: other published posts, same category preferred
-  const allPosts = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
+  const sanityPosts = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
+  const localPostsNormalized: ExtendedPostPreview[] = LOCAL_POSTS.map((p) => ({
+    _id: p.id,
+    title: p.title,
+    slug: { current: p.slug },
+    excerpt: p.excerpt,
+    category: p.category,
+    publishedAt: p.publishedAt,
+    readTime: p.readTime,
+    mainImage: { asset: { _ref: '' }, alt: p.title },
+    featured: p.featured,
+    isLocal: true,
+    image: p.image,
+    imageAlt: p.imageAlt,
+  }));
+
+  const allPosts: ExtendedPostPreview[] = [...localPostsNormalized, ...sanityPosts];
+
   const sameCategory = allPosts.filter(
     (p) => p.slug.current !== slug && p.category === post.category,
   );
   const others = allPosts.filter((p) => p.slug.current !== slug && p.category !== post.category);
   const relatedPosts = [...sameCategory, ...others].slice(0, 2);
 
-  const coverUrl = urlFor(post.mainImage).width(1200).auto('format').url();
+  const coverUrl =
+    post.isLocal && post.image
+      ? post.image
+      : urlFor(post.mainImage).width(1200).auto('format').url();
   const formattedDate = formatPostDate(post.publishedAt);
 
   return (
@@ -93,14 +156,16 @@ export default async function ArticlePage({ params }: { params: Params }) {
           Blog
         </Link>
         <ChevronRight size={14} />
-        <span className="text-slate-300">{displayCategory(post.category)}</span>
+        <span className="text-slate-300">
+          {post.categoryLabel ?? displayCategory(post.category)}
+        </span>
       </nav>
 
       <article className="mx-auto max-w-4xl px-6">
         {/* Article header */}
         <header className="mb-10 text-center md:text-left">
           <div className="mb-6 inline-block rounded-full border border-[#ff6b00]/20 bg-[#ff6b00]/10 px-3 py-1 text-sm font-medium text-[#ff6b00]">
-            {displayCategory(post.category)}
+            {post.categoryLabel ?? displayCategory(post.category)}
           </div>
           <h1 className="mb-6 text-3xl font-bold leading-tight tracking-tight text-white md:text-5xl">
             {post.title}
@@ -127,7 +192,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
         <div className="mb-12 w-full overflow-hidden rounded-3xl border border-slate-800">
           <Image
             src={coverUrl}
-            alt={post.mainImage.alt ?? post.title}
+            alt={(post.isLocal ? (post.imageAlt ?? post.title) : post.mainImage.alt) ?? post.title}
             width={1200}
             height={800}
             sizes="100vw"
@@ -145,7 +210,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
 
           {/* Article body */}
           <div className="max-w-3xl min-w-0">
-            <BlogPortableText value={post.body} />
+            {post.isLocal ? <DryFoodVsRawDietBulldogs /> : <BlogPortableText value={post.body} />}
           </div>
         </div>
 
@@ -183,12 +248,15 @@ export default async function ArticlePage({ params }: { params: Params }) {
             <h3 className="mb-8 text-2xl font-bold text-white">You might also like</h3>
             <div className="mb-16 grid grid-cols-1 gap-6 md:grid-cols-2">
               {relatedPosts.map((related) => {
-                const relatedImg = urlFor(related.mainImage)
-                  .width(400)
-                  .height(128)
-                  .fit('crop')
-                  .auto('format')
-                  .url();
+                const relatedImg =
+                  related.isLocal && related.image
+                    ? related.image
+                    : urlFor(related.mainImage)
+                        .width(400)
+                        .height(128)
+                        .fit('crop')
+                        .auto('format')
+                        .url();
                 return (
                   <Link
                     key={related._id}
@@ -198,7 +266,11 @@ export default async function ArticlePage({ params }: { params: Params }) {
                     <div className="relative w-1/3 shrink-0 overflow-hidden">
                       <Image
                         src={relatedImg}
-                        alt={related.mainImage.alt ?? related.title}
+                        alt={
+                          (related.isLocal
+                            ? (related.imageAlt ?? related.title)
+                            : related.mainImage.alt) ?? related.title
+                        }
                         fill
                         sizes="(max-width: 768px) 33vw, 16vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"

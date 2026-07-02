@@ -16,6 +16,7 @@ export type BlogClientPost = {
   readTime: string;
   date: string;
   image: string;
+  imageAlt?: string;
   featured: boolean;
 };
 
@@ -50,7 +51,7 @@ export function BlogClient({ posts }: Props) {
 
   const featuredPost = posts.find((p) => p.featured);
   const gridPosts = searchedPosts.filter(
-    (p) => !p.featured || activeCategory !== 'All' || searchQuery.trim(),
+    (p) => p.id !== featuredPost?.id || activeCategory !== 'All' || searchQuery.trim(),
   );
 
   return (
@@ -110,7 +111,7 @@ export function BlogClient({ posts }: Props) {
               <div className="relative h-64 overflow-hidden md:h-auto md:w-1/2">
                 <Image
                   src={featuredPost.image}
-                  alt={featuredPost.title}
+                  alt={featuredPost.imageAlt ?? featuredPost.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -157,7 +158,7 @@ export function BlogClient({ posts }: Props) {
                 <div className="relative h-56 overflow-hidden">
                   <Image
                     src={post.image}
-                    alt={post.title}
+                    alt={post.imageAlt ?? post.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"

@@ -5,6 +5,8 @@ import { urlFor } from '@/sanity/lib/image';
 import { ALL_POSTS_QUERY, formatPostDate, type SanityPostPreview } from '@/sanity/lib/queries';
 import { BlogClient, type BlogClientPost } from './blog-client';
 
+import { LOCAL_POSTS } from '@/lib/blog/local-posts';
+
 // ISR: regenerate at most every 60 seconds
 export const revalidate = 60;
 
@@ -29,9 +31,46 @@ function normalizePost(post: SanityPostPreview): BlogClientPost {
   };
 }
 
+interface SortingPost {
+  post: BlogClientPost;
+  publishedAt: string;
+  featured: boolean;
+}
+
 export default async function BlogPage() {
   const raw = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
-  const posts = raw.map(normalizePost);
+
+  const sanityItems: SortingPost[] = raw.map((post) => ({
+    post: normalizePost(post),
+    publishedAt: post.publishedAt,
+    featured: post.featured,
+  }));
+
+  const localItems: SortingPost[] = LOCAL_POSTS.map((post) => ({
+    post: {
+      id: post.id,
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      category: post.category,
+      readTime: post.readTime,
+      date: formatPostDate(post.publishedAt),
+      image: post.image,
+      imageAlt: post.imageAlt,
+      featured: post.featured,
+    },
+    publishedAt: post.publishedAt,
+    featured: post.featured,
+  }));
+
+  const combined = [...localItems, ...sanityItems].sort((a, b) => {
+    if (a.featured !== b.featured) {
+      return a.featured ? -1 : 1;
+    }
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
+
+  const posts = combined.map((item) => item.post);
 
   return (
     <main id="main-content">

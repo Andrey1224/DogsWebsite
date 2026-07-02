@@ -5,6 +5,7 @@ import { getSiteUrl } from '@/lib/utils/env';
 import { sanityFetch } from '@/sanity/lib/client';
 import { SITEMAP_POSTS_QUERY, type SitemapPost } from '@/sanity/lib/queries';
 import { getIndexableLocations } from '@/lib/data/locations';
+import { LOCAL_POSTS } from '@/lib/blog/local-posts';
 
 const STATIC_ROUTES = [
   '',
@@ -57,6 +58,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(s._updatedAt),
   }));
 
+  const localBlogEntries: MetadataRoute.Sitemap = LOCAL_POSTS.map((p) => ({
+    url: withBase(`/blog/${p.slug}`, siteUrl),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+    lastModified: new Date(p.publishedAt),
+  }));
+
   const locationEntries: MetadataRoute.Sitemap = getIndexableLocations().map((loc) => ({
     url: withBase(`/locations/${loc.slug}`, siteUrl),
     changeFrequency: 'monthly' as const,
@@ -64,5 +72,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(),
   }));
 
-  return [...staticEntries, ...puppyEntries, ...blogEntries, ...locationEntries];
+  return [
+    ...staticEntries,
+    ...puppyEntries,
+    ...blogEntries,
+    ...localBlogEntries,
+    ...locationEntries,
+  ];
 }

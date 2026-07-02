@@ -2,6 +2,14 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-07-02] Local Manifesto Blog Post & PortableText Polish
+
+- **Feature**: Created local blog posts registry to allow custom-coded blog layouts.
+- **Content**: Integrated the "Dry Food vs. Raw Diet for Bulldogs" manifesto article with premium responsive diagrams, symptom grids, and custom advice cards.
+- **Beautification**: Polished global `BlogPortableText` renderer to render premium blockquotes with Quote icons, custom orange bullet lists, and glowing advice tip boxes.
+- **Bugfix**: Fixed a blog-client grid rendering bug that caused other featured articles to vanish when multiple featured posts existed.
+- **Integration**: Integrated local post dynamically with sitemaps, search filtering, page pre-rendering (`generateStaticParams`), and related articles mapping.
+
 ## [2026-06-18] Optional Crisp Live Chat
 
 - **Performance**: Crisp is disabled by default and its preconnect/client script are not requested.

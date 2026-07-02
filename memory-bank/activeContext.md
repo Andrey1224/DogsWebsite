@@ -16,6 +16,17 @@
 
 ## Current Status
 
+- **Completed (Jul 2, 2026)**: Replaced the local nutrition blog article image with the provided bulldog raw-food photo.
+  - Target article: `/blog/dry-food-vs-raw-diet-bulldogs`
+  - Replaced/regenerated `public/images/blog/dry-food-vs-raw-diet-bulldogs.jpg`, `.webp`, and `.avif`
+  - Applied `PuppyHealt.md` checklist fixes: descriptive main image alt, `Bulldog Nutrition` article badge label, and JSX `<strong>` formatting instead of visible Markdown `**`
+  - `npm run verify` passed through docs sync, link check, lint, typecheck, and Vitest (`639` passed, `4` skipped); Playwright initially failed in sandbox with `listen EPERM` on port 3000, then elevated e2e exposed stale `.next` ENOENT overlays; after clearing `.next`, elevated `npm run e2e` passed (`24` passed, `2` skipped)
+- **Completed (Jul 2, 2026)**: Coded manifesto blog post "Dry Food vs. Raw Diet for Bulldogs" directly in the codebase.
+  - Custom React layout with two high-fidelity flowcharts (kibble cycle vs. raw diet benefits).
+  - Responsive symptoms checklist grid and info callouts.
+  - Merged local posts registry with Sanity CMS blog archive dynamically.
+  - Dynamic integration in `/blog` list pages, related articles mapping, and `sitemap.ts`.
+  - Typecheck, formatting, and linting checks verified successfully.
 - **Completed (Jun 18, 2026)**: Crisp live chat is disabled by default.
   - `NEXT_PUBLIC_CRISP_ENABLED=false` prevents the loader and Crisp preconnect from rendering
   - The mobile `Let's Chat` action becomes a normal `/contact` link while chat is disabled
