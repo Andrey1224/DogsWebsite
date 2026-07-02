@@ -569,6 +569,13 @@ export function DryFoodVsRawDietBulldogs() {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
+            href="/policies"
+            className="flex items-center justify-between p-4 rounded-xl border border-slate-800 bg-[#151c2b] text-slate-200 hover:border-[#ff6b00] hover:text-[#ff6b00] transition-all font-medium text-sm"
+          >
+            <span>Review health & deposit policies</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
             href="/locations"
             className="flex items-center justify-between p-4 rounded-xl border border-slate-800 bg-[#151c2b] text-slate-200 hover:border-[#ff6b00] hover:text-[#ff6b00] transition-all font-medium text-sm"
           >

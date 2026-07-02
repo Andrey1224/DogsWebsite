@@ -24,6 +24,7 @@
 - Published the local "Dry Food vs. Raw Diet for Bulldogs" manifesto article with custom
   responsive diagrams, checklist callouts, SEO metadata, sitemap integration, and the provided
   nutrition image.
+- Added Vercel Web Analytics via `@vercel/analytics/next` in the root layout.
 
 ## Known Debt
 

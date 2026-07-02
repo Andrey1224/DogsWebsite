@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { AnalyticsProvider } from '@/components/analytics-provider';
 import { ConsentBanner } from '@/components/consent-banner';
 import { CrispChatLoader } from '@/components/crisp-chat-loader';
@@ -130,6 +131,7 @@ export default function RootLayout({
             {crispEnabled && <CrispChatLoader />}
             <ConsentBanner />
           </AnalyticsProvider>
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

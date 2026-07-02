@@ -16,6 +16,18 @@
 
 ## Current Status
 
+- **Completed (Jul 2, 2026)**: Added Vercel Web Analytics tracking.
+  - Installed `@vercel/analytics@2.0.1`
+  - Added `<Analytics />` from `@vercel/analytics/next` to the root `app/layout.tsx`
+  - Kept existing consent-managed GA4/Meta Pixel analytics provider unchanged
+  - `npm run verify` passed docs sync, link check, lint, typecheck, Vitest (`640` passed, `4` skipped), and Playwright (`24` passed, `2` skipped)
+  - `npm run build` passed; the build image optimization step also regenerated several `.webp` assets
+- **Completed (Jul 2, 2026)**: Verified the live nutrition article SEO/indexing checklist and tightened internal linking.
+  - Production checks passed for `/blog/dry-food-vs-raw-diet-bulldogs`, `/blog`, and `/sitemap.xml` (`200` responses)
+  - Confirmed the live article has H1, title/meta description, canonical, loaded article image/alt, no `noindex`, `/blog` listing visibility, and sitemap inclusion
+  - Added an explicit `/policies` CTA link inside the local nutrition article so the article links to `/puppies`, `/contact`, `/faq`, `/policies`, and `/locations`
+  - Added regression coverage for the local article H1 and required internal links
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed, `4` skipped); Playwright initially failed in sandbox with `listen EPERM` on port 3000, an elevated e2e run had one `networkidle` timeout, then the isolated admin retry and full elevated `npm run e2e` passed (`24` passed, `2` skipped)
 - **Completed (Jul 2, 2026)**: Replaced the local nutrition blog article image with the provided bulldog raw-food photo.
   - Target article: `/blog/dry-food-vs-raw-diet-bulldogs`
   - Replaced/regenerated `public/images/blog/dry-food-vs-raw-diet-bulldogs.jpg`, `.webp`, and `.avif`

@@ -97,4 +97,34 @@ describe('ArticlePage', () => {
       '/locations',
     );
   });
+
+  it('renders the local nutrition article with required internal links', async () => {
+    const { sanityFetch } = await import('@/sanity/lib/client');
+
+    vi.mocked(sanityFetch).mockResolvedValueOnce([]);
+
+    const component = await ArticlePage({
+      params: Promise.resolve({ slug: 'dry-food-vs-raw-diet-bulldogs' }),
+    });
+    render(component);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Dry Food vs\. Raw Diet/i);
+    expect(screen.getByRole('link', { name: /view our available puppies/i })).toHaveAttribute(
+      'href',
+      '/puppies',
+    );
+    expect(screen.getByRole('link', { name: /contact exotic bulldog legacy/i })).toHaveAttribute(
+      'href',
+      '/contact',
+    );
+    expect(screen.getByRole('link', { name: /read our faq/i })).toHaveAttribute('href', '/faq');
+    expect(screen.getByRole('link', { name: /review health & deposit policies/i })).toHaveAttribute(
+      'href',
+      '/policies',
+    );
+    expect(screen.getByRole('link', { name: /pickup & delivery in alabama/i })).toHaveAttribute(
+      'href',
+      '/locations',
+    );
+  });
 });

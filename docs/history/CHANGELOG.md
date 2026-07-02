@@ -2,6 +2,12 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-07-02] Vercel Web Analytics
+
+- **Analytics**: Added `@vercel/analytics` and rendered the official Next.js `<Analytics />`
+  component from the root app layout so Vercel can collect visitors and page views.
+- **Compatibility**: Existing consent-managed GA4/Meta Pixel tracking remains unchanged.
+
 ## [2026-07-02] Local Manifesto Blog Post & PortableText Polish
 
 - **Feature**: Created local blog posts registry to allow custom-coded blog layouts.

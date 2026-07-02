@@ -26,6 +26,9 @@
   Use `is_archived` only for intentional manual hiding; never auto-archive sold puppies.
 - **Optional Third-Party Chat**: Load Crisp only when `NEXT_PUBLIC_CRISP_ENABLED=true` and a
   Website ID exists. Disabled integrations must not render preconnects, loaders, or dead CTAs.
+- **Vercel Web Analytics**: Include `<Analytics />` from `@vercel/analytics/next` once in the root
+  `app/layout.tsx`. Keep it separate from the existing consent-managed GA4/Meta Pixel
+  `AnalyticsProvider`.
 - **React Forms**: When using `defaultValue` with dynamic data, add `key` prop that includes the data to force re-mount on updates (e.g., `key={`${id}-${value}`}`).
 
 ## SEO Conventions
