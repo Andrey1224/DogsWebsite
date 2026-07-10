@@ -2,6 +2,14 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-07-10] Split Business and Personal Contact Numbers
+
+- **Content**: Business phone is now used for call, SMS, NAP/footer contact, email fallback, and
+  structured data.
+- **Content**: Personal phone is now used for WhatsApp and Telegram-facing contact surfaces.
+- **Testing**: Added E2E assertions to keep call/SMS on the business number and WhatsApp on the
+  personal number.
+
 ## [2026-07-02] Vercel Web Analytics
 
 - **Analytics**: Added `@vercel/analytics` and rendered the official Next.js `<Analytics />`

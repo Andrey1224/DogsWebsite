@@ -22,7 +22,7 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
     },
     NEXT_PUBLIC_CONTACT_PHONE: {
       pattern: /^\+\d{10,15}$/,
-      description: 'Contact phone in E.164 format (+12055551234)',
+      description: 'Business contact phone in E.164 format (+12055551234)',
     },
     NEXT_PUBLIC_CONTACT_EMAIL: {
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -78,6 +78,10 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
     NEXT_PUBLIC_CONTACT_ADDRESS: {
       pattern: undefined,
       description: 'Full mailing address (Street, City, ST ZIP, Country)',
+    },
+    NEXT_PUBLIC_PERSONAL_PHONE: {
+      pattern: /^\+\d{10,15}$/,
+      description: 'Personal phone for WhatsApp/Telegram display in E.164 format (+12055551234)',
     },
     // Payment processing (Stripe)
     STRIPE_SECRET_KEY: {
@@ -160,10 +164,16 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
 export function validateContactLinks() {
   const errors: string[] = [];
 
-  // Phone validation
+  // Business phone validation
   const phone = process.env.NEXT_PUBLIC_CONTACT_PHONE;
   if (!phone || !/^\+\d{10,15}$/.test(phone)) {
-    errors.push('Invalid phone format. Use E.164 format: +12055551234');
+    errors.push('Invalid business phone format. Use E.164 format: +12055551234');
+  }
+
+  // Personal phone validation
+  const personalPhone = process.env.NEXT_PUBLIC_PERSONAL_PHONE;
+  if (personalPhone && !/^\+\d{10,15}$/.test(personalPhone)) {
+    errors.push('Invalid personal phone format. Use E.164 format: +12055551234');
   }
 
   // Email validation
@@ -172,7 +182,7 @@ export function validateContactLinks() {
     errors.push('Invalid email format');
   }
 
-  // WhatsApp validation (uses same phone)
+  // WhatsApp validation (uses the personal phone by default)
   const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP;
   if (whatsapp && !/^\d{10,15}$/.test(whatsapp)) {
     errors.push('Invalid WhatsApp number format (use digits only)');

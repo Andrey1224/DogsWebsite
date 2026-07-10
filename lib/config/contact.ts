@@ -83,11 +83,15 @@ const DEFAULTS = {
     display: '+1 (772) 404-4470',
     e164: '+17724044470',
   },
+  personalPhone: {
+    display: '+1 (772) 777-9442',
+    e164: '+17727779442',
+  },
   email: {
     address: 'mosss73@myyahoo.com',
   },
   whatsapp: {
-    link: 'https://wa.me/17724044470',
+    link: 'https://wa.me/17727779442',
   },
   telegram: {
     handle: 'exoticbulldoglevel',
@@ -104,8 +108,15 @@ const envPhoneE164 = normalizeE164(envPhoneRaw);
 const phoneDisplay = formatDisplayPhone(envPhoneE164, envPhoneRaw) ?? DEFAULTS.phone.display;
 const phoneE164 = envPhoneE164 ?? DEFAULTS.phone.e164;
 
+const envPersonalPhoneRaw =
+  readEnv('NEXT_PUBLIC_PERSONAL_PHONE') ?? readEnv('NEXT_PUBLIC_WHATSAPP');
+const envPersonalPhoneE164 = normalizeE164(envPersonalPhoneRaw);
+const personalPhoneDisplay =
+  formatDisplayPhone(envPersonalPhoneE164, envPersonalPhoneRaw) ?? DEFAULTS.personalPhone.display;
+const personalPhoneE164 = envPersonalPhoneE164 ?? DEFAULTS.personalPhone.e164;
+
 const emailAddress = readEnv('NEXT_PUBLIC_CONTACT_EMAIL') ?? DEFAULTS.email.address;
-const whatsAppLink = buildWhatsappLink(readEnv('NEXT_PUBLIC_WHATSAPP'), DEFAULTS.whatsapp.link);
+const whatsAppLink = buildWhatsappLink(personalPhoneE164, DEFAULTS.whatsapp.link);
 const telegramDetails = buildTelegramLink(
   readEnv('NEXT_PUBLIC_TELEGRAM_USERNAME'),
   DEFAULTS.telegram.link,
@@ -118,6 +129,10 @@ export const CONTACT_DETAILS = {
   phone: {
     display: phoneDisplay,
     e164: phoneE164,
+  },
+  personalPhone: {
+    display: personalPhoneDisplay,
+    e164: personalPhoneE164,
   },
   email: {
     address: emailAddress,
@@ -146,18 +161,26 @@ export const CONTACT_CHANNELS: ContactChannel[] = [
 export const CONTACT_CARDS: ContactCard[] = [
   {
     id: 'call',
-    label: 'Call or text',
+    label: 'Business phone',
     value: CONTACT_DETAILS.phone.display,
     href: `tel:${CONTACT_DETAILS.phone.e164}`,
     description:
-      'Available 9am–7pm CT. Leave a voicemail after hours and we’ll return it within a business day.',
+      'Primary business line for calls, SMS, appointments, pickup logistics, and official questions.',
   },
   {
     id: 'whatsapp',
-    label: 'WhatsApp',
-    value: CONTACT_DETAILS.phone.display,
+    label: 'WhatsApp (personal)',
+    value: CONTACT_DETAILS.personalPhone.display,
     href: CONTACT_DETAILS.whatsapp.link,
-    description: 'Instant messaging with photos/videos of current puppies and facility tours.',
+    description:
+      'Personal line for fast WhatsApp replies, puppy photos, videos, and quick updates.',
+  },
+  {
+    id: 'telegram',
+    label: 'Telegram (personal)',
+    value: CONTACT_DETAILS.personalPhone.display,
+    href: CONTACT_DETAILS.telegram.link,
+    description: 'Personal Telegram contact for quick questions and direct messaging.',
   },
   {
     id: 'email',
@@ -172,6 +195,6 @@ export const CONTACT_COPY = {
   crisp: {
     welcome:
       'Hi there! Tell us about the bulldog you’re looking for and we’ll share photos, pricing, and timelines.',
-    offline: `We’re currently away. Tap WhatsApp or call the team at ${CONTACT_DETAILS.phone.display} for the fastest reply.`,
+    offline: `We’re currently away. Tap WhatsApp or Telegram at ${CONTACT_DETAILS.personalPhone.display}, or call the business line at ${CONTACT_DETAILS.phone.display}.`,
   },
 };

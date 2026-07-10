@@ -16,12 +16,125 @@
 
 ## Current Status
 
+- **Completed (Jul 10, 2026)**: Marked Cash inactive in live Supabase.
+  - Updated live Supabase `puppies` record `5efc2019-e2e2-4b6d-ae2e-b5bf1a77164e` slug
+    `cash` from `status='available'` to `status='sold'`
+  - Kept `is_archived=false` so `/puppies/cash` remains public and indexable
+  - Set `sold_at='2026-07-10T20:11:29.955722+00:00'`
+  - Verified `/puppies/cash` returns `200`, title is `Cash | Exotic Bulldog Legacy`, visible
+    page text includes `Unavailable`, reservation/deposit CTAs are absent, and no `noindex` is
+    present
+  - Did not rerun `npm run verify` for this data-only Supabase update; previous contact-number
+    verification already passed earlier in the session
+- **Completed (Jul 10, 2026)**: Split public contact phone usage into business and personal numbers.
+  - Business phone is `+1 (772) 404-4470` / `+17724044470` for call, SMS, NAP, footer, email fallback, and schema
+  - Personal phone is `+1 (772) 777-9442` / `+17727779442` for WhatsApp and Telegram-facing contact surfaces
+  - Added `NEXT_PUBLIC_PERSONAL_PHONE` support while keeping `NEXT_PUBLIC_WHATSAPP` as the WhatsApp digits source/fallback
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed, `4` skipped), then failed at Playwright in sandbox with `listen EPERM`; elevated `npm run e2e` passed (`24` passed, `2` skipped)
+- **Diagnostic Update (Jul 7, 2026)**: Vercel project is now linked through `npx vercel@latest`.
+  - User authenticated successfully as `nepod77-3372`
+  - Active Vercel team is `nepodymka-andriis-projects`
+  - Repository is linked to `nepodymka-andriis-projects/dogs-website`
+  - `.vercel/repo.json` still records project `dogs-website`
+    (`prj_o2XKGn57o9GAQ1Yrj7tkaV24wf8i`) under org/team
+    `team_b5KHgghutvTGJGMjKnW0ybMj`
+  - `.env.local` now contains `VERCEL_OIDC_TOKEN`; `.env*` and `.vercel` are ignored by git
+  - Global `vercel` command is now installed at
+    `/Users/andriinepodymka/.nvm/versions/node/v20.19.5/bin/vercel`
+  - Installed CLI version is `54.21.0`
+  - `vercel whoami --token "$VERCEL_TOKEN"` cannot run inside this Codex process because
+    `VERCEL_TOKEN` is not present in the process environment; plain `vercel whoami` exits
+    successfully but does not print the username in this non-interactive command session
+- **Diagnostic (Jul 7, 2026)**: Reviewed Stripe deposit amount override path.
+  - Code default remains `DEFAULT_STRIPE_DEPOSIT_AMOUNT_CENTS = 30000` (`$300`) in
+    `lib/payments/stripe-deposit.ts`
+  - `$1` live-test checkout was enabled by setting server-only Vercel env
+    `STRIPE_DEPOSIT_AMOUNT_CENTS=100`
+  - To restore live Stripe checkout to `$300`, set Vercel env
+    `STRIPE_DEPOSIT_AMOUNT_CENTS=30000` for the active environment(s), or remove the env override
+    so code falls back to the default
+  - Codex process cannot inspect/update Vercel env values directly because `VERCEL_TOKEN` is not
+    present in its environment, though the global `vercel` CLI is installed
+  - User screenshot confirms `STRIPE_DEPOSIT_AMOUNT_CENTS` exists only for `Production`; CLI
+    updates for `preview` and `development` correctly fail with "not found"
+  - User then updated `STRIPE_DEPOSIT_AMOUNT_CENTS` for `Production` via Vercel CLI and started
+    `vercel deploy --prod`; the temporary Vercel deployment URL is protected by Vercel SSO, while
+    the public production domain remains reachable
+- **Diagnostic (Jul 7, 2026)**: Checked local Vercel CLI/project connection state.
+  - Global `vercel` command is not available in the current shell PATH (`command not found`)
+  - `npm exec vercel -- --version` produced no output within 60 seconds and was interrupted
+  - Local `.vercel/repo.json` links this repository directory to Vercel project `dogs-website`
+    (`prj_o2XKGn57o9GAQ1Yrj7tkaV24wf8i`) under org/team `team_b5KHgghutvTGJGMjKnW0ybMj`
+  - Standard `.vercel/project.json` is not present; this appears to be repository/project
+    metadata rather than a currently usable local CLI installation
+- **Completed (Jul 6, 2026)**: Marked Gravy unavailable while keeping the profile public.
+  - Updated live Supabase `puppies` record `29e43947-4049-42f4-9165-0c952a0d57f3` slug
+    `gravy` from `status='available'` to `status='sold'`
+  - Kept `is_archived=false` so `/puppies/gravy` remains public and indexable
+  - Verified `/puppies/gravy` returns `200`, title is `Gravy | Exotic Bulldog Legacy`, visible
+    page text includes `Unavailable`, and no `noindex` is present
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed,
+    `4` skipped), then failed at Playwright in sandbox with `listen EPERM`; elevated
+    `npm run e2e` passed (`24` passed, `2` skipped)
+- **Completed (Jul 6, 2026)**: Published Dory as a live available puppy listing.
+  - Inserted live Supabase `puppies` record `cf380769-0be0-437b-bede-98d24d6a09eb` with slug
+    `dory`, `status='available'`, `price_usd=4000`, `birth_date='2026-05-10'`,
+    `breed='french_bulldog'`, `sex='female'`, and `color='Dark Merle'`
+  - Added all seven Dory photos from `public/images/Dory1.jpeg` through `Dory7.jpeg`
+  - Uploaded the seven Dory JPEGs to Supabase Storage bucket `puppies` and updated `photo_urls`
+    to the public Storage URLs so production can render photos immediately
+  - Verified `/puppies/dory` returns `200`, title is `Dory | Exotic Bulldog Legacy`, no `noindex`
+    is present, and the first Storage image returns `200 image/jpeg`
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed,
+    `4` skipped), then failed at Playwright in sandbox with `listen EPERM`; elevated
+    `npm run e2e` passed (`24` passed, `2` skipped)
+- **Completed (Jul 6, 2026)**: Published Latte as a live available puppy listing.
+  - Inserted live Supabase `puppies` record `2b1d183d-e764-4e82-9798-49020f7fa7a6` with slug
+    `latte`, `status='available'`, `price_usd=6000`, `birth_date='2026-05-10'`,
+    `breed='french_bulldog'`, `sex='female'`, and `color='Chocolate Merle'`
+  - Added all five Latte photos from `public/images/Latte1.jpg` through `Latte5.jpg`
+  - Uploaded the five Latte JPEGs to Supabase Storage bucket `puppies` and updated `photo_urls`
+    to the public Storage URLs so production can render photos immediately
+  - Verified `/puppies/latte` returns `200`, title is `Latte | Exotic Bulldog Legacy`, no
+    `noindex` is present, and the first Storage image returns `200 image/jpeg`
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed,
+    `4` skipped), then failed at Playwright in sandbox with `listen EPERM`; elevated
+    `npm run e2e` passed (`24` passed, `2` skipped)
+- **Completed (Jul 6, 2026)**: Published Cash as a live available puppy listing.
+  - Inserted live Supabase `puppies` record `5efc2019-e2e2-4b6d-ae2e-b5bf1a77164e` with slug
+    `cash`, `status='available'`, `price_usd=3000`, `birth_date='2026-05-10'`,
+    `breed='french_bulldog'`, `sex='male'`, and `color='Rojo Merle'`
+  - Added all five Cash photos from `public/images/Cash1.jpg` through `Cash5.jpg`
+  - Uploaded the five Cash JPEGs to Supabase Storage bucket `puppies` and updated `photo_urls`
+    to the public Storage URLs so production can render photos immediately
+  - Verified `/puppies/cash` returns `200`, title is `Cash | Exotic Bulldog Legacy`, no
+    `noindex` is present, and the first Storage image returns `200 image/jpeg`
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed,
+    `4` skipped), then failed at Playwright in sandbox with `listen EPERM`; elevated
+    `npm run e2e` passed (`24` passed, `2` skipped)
 - **Completed (Jul 2, 2026)**: Added Vercel Web Analytics tracking.
   - Installed `@vercel/analytics@2.0.1`
   - Added `<Analytics />` from `@vercel/analytics/next` to the root `app/layout.tsx`
   - Kept existing consent-managed GA4/Meta Pixel analytics provider unchanged
   - `npm run verify` passed docs sync, link check, lint, typecheck, Vitest (`640` passed, `4` skipped), and Playwright (`24` passed, `2` skipped)
   - `npm run build` passed; the build image optimization step also regenerated several `.webp` assets
+- **Diagnostic (Jul 6, 2026)**: Supabase MCP endpoint is reachable but not active in this Codex session.
+  - `https://mcp.supabase.com/mcp` returns `401 Unauthorized` without a Bearer token, confirming the remote MCP service is online
+  - Tool discovery exposes Context7, Google Drive, GitHub, Chrome DevTools, Playwright, and node REPL MCP tools, but no Supabase MCP namespace/tools
+  - Supabase CLI `2.70.4` is installed and can list the linked `vsjsrbmcxryuodlqscnl / exotic-bulldog` project with network access
+  - Local Supabase stack is not running because Docker daemon is unavailable
+- **Config Update (Jul 6, 2026)**: Project Supabase MCP config now scopes the remote server to the live project in read-only mode.
+  - `.codex/config.toml` uses `https://mcp.supabase.com/mcp?project_ref=vsjsrbmcxryuodlqscnl&read_only=true`
+  - Added `bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"` so the token stays outside the repository
+  - User still needs to provide `SUPABASE_ACCESS_TOKEN` to the Codex process and restart Codex before Supabase MCP tools appear
+- **Diagnostic (Jul 6, 2026)**: Rechecked Supabase MCP authorization in the current Codex session.
+  - `.codex/config.toml` still contains the Supabase MCP server configuration with `bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"`
+  - Current shell environment reports `SUPABASE_ACCESS_TOKEN=missing` without exposing token contents
+  - Tool discovery for `Supabase` returns `0` tools, so Supabase MCP is still not active in this running session
+  - `npm run verify` passed docs sync, link check, lint, typecheck, and Vitest (`640` passed, `4` skipped), then failed at Playwright because the sandbox could not bind `0.0.0.0:3000` (`listen EPERM`)
+- **Auth Note (Jul 6, 2026)**: Supabase CLI browser login cannot run inside this non-TTY Codex command session.
+  - `npx supabase login` exits with `Cannot use automatic login flow inside non-TTY environments`
+  - Use a browser-created Supabase access token via `SUPABASE_ACCESS_TOKEN` or `npx supabase login --token <token>`
 - **Completed (Jul 2, 2026)**: Verified the live nutrition article SEO/indexing checklist and tightened internal linking.
   - Production checks passed for `/blog/dry-food-vs-raw-diet-bulldogs`, `/blog`, and `/sitemap.xml` (`200` responses)
   - Confirmed the live article has H1, title/meta description, canonical, loaded article image/alt, no `noindex`, `/blog` listing visibility, and sitemap inclusion
@@ -174,3 +287,6 @@
 9. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
 10. Confirm the Vercel deployment for `32d6054` completed and verify the Crisp bubble is absent in
     production.
+11. Reconnect/authenticate the Supabase MCP integration in Codex, preferably scoped to
+    `project_ref=vsjsrbmcxryuodlqscnl` and `read_only=true`, then restart the session and verify
+    Supabase MCP tools appear in tool discovery.
