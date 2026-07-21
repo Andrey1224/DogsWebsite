@@ -16,6 +16,26 @@
 
 ## Current Status
 
+- **Completed (Jul 21, 2026)**: Marked Latte inactive, published Sachi and Sunny, and added a
+  sire photo for Ace in live Supabase.
+  - Updated live Supabase `puppies` record `2b1d183d-e764-4e82-9798-49020f7fa7a6` slug `latte`
+    from `status='available'` to `status='sold'` (matches the pattern used for Cash/Gravy)
+  - Inserted live Supabase `puppies` record `0e670613-451b-4025-8cba-c3f42b0a8f02` with slug
+    `sachi`, `status='sold'` (listed unavailable by design), `price_usd=2700`, `sex='female'`,
+    `breed='french_bulldog'`, `color='Lilac & Tan'`, no `birth_date`
+    - Uploaded 3 gallery photos (`public/images/Sachi1-3.jpg`) and 1 dam photo
+      (`public/images/Jessica.jpg`) to Supabase Storage bucket `puppies`
+    - Dam: Jessica, 23 lb, Black & Tan. Sire: Ace (renamed from initial placeholder "Ice"), 30 lb,
+      Cream — sire photo (`public/images/Ace.jpg`) uploaded and linked after the user flagged the
+      missing image
+  - Inserted live Supabase `puppies` record `937babe3-8165-45b4-9332-cecac31649e5` with slug
+    `sunny`, `status='available'`, `price_usd=3000`, `birth_date='2026-06-22'`, `sex='female'`,
+    `breed='french_bulldog'`, `color='Cream'`
+    - Uploaded 3 gallery photos (`public/images/Sunny1-3.jpg`) to Supabase Storage bucket `puppies`
+    - Reused the already-uploaded Jessica (dam) and Ace (sire) Storage photo URLs and lineage
+      metadata from the Sachi record — same parents, same notes
+  - Data-only Supabase updates; no application code changed. Did not rerun `npm run verify` for
+    these changes (consistent with prior data-only puppy status/publish entries in this log)
 - **Completed (Jul 10, 2026)**: Marked Cash inactive in live Supabase.
   - Updated live Supabase `puppies` record `5efc2019-e2e2-4b6d-ae2e-b5bf1a77164e` slug
     `cash` from `status='available'` to `status='sold'`
