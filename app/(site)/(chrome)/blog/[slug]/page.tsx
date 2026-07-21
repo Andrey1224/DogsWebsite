@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { cache } from 'react';
+import type { ComponentType } from 'react';
 import { ArrowLeft, ChevronRight, Clock, Calendar, User } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -20,6 +21,14 @@ import { BlogPortableText } from '@/components/blog/portable-text';
 import { ShareButtons } from './share-buttons';
 import { getLocalPost, LOCAL_POSTS } from '@/lib/blog/local-posts';
 import { DryFoodVsRawDietBulldogs } from '@/components/blog/dry-food-vs-raw-diet-bulldogs';
+import { UltimateGuideForNewBulldogOwners } from '@/components/blog/ultimate-guide-for-new-bulldog-owners';
+import { PuppyPottyTraining101 } from '@/components/blog/puppy-potty-training-101';
+
+const LOCAL_POST_COMPONENTS: Record<string, ComponentType> = {
+  'dry-food-vs-raw-diet-bulldogs': DryFoodVsRawDietBulldogs,
+  'ultimate-guide-for-new-bulldog-owners': UltimateGuideForNewBulldogOwners,
+  'puppy-potty-training-101': PuppyPottyTraining101,
+};
 
 const categoryLabel: Record<string, string> = {
   Питание: 'Nutrition',
@@ -210,7 +219,14 @@ export default async function ArticlePage({ params }: { params: Params }) {
 
           {/* Article body */}
           <div className="max-w-3xl min-w-0">
-            {post.isLocal ? <DryFoodVsRawDietBulldogs /> : <BlogPortableText value={post.body} />}
+            {post.isLocal ? (
+              (() => {
+                const LocalArticle = LOCAL_POST_COMPONENTS[post.slug.current];
+                return LocalArticle ? <LocalArticle /> : null;
+              })()
+            ) : (
+              <BlogPortableText value={post.body} />
+            )}
           </div>
         </div>
 
