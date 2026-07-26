@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AnalyticsProvider } from '@/components/analytics-provider';
 import { ConsentBanner } from '@/components/consent-banner';
 import { CrispChatLoader } from '@/components/crisp-chat-loader';
@@ -132,6 +133,7 @@ export default function RootLayout({
             <ConsentBanner />
           </AnalyticsProvider>
           <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
