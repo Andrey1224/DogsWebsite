@@ -1,4 +1,4 @@
-const DEFAULT_PLACEHOLDER = '/reviews/cameron-milo.webp';
+const DEFAULT_PLACEHOLDER = '/images/reviews/cameron-milo.webp';
 const ALLOWED_REMOTE_PROTOCOLS = ['http://', 'https://', 'data:', 'blob:'];
 
 export function resolveLocalImage(

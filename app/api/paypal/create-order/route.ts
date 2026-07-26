@@ -7,6 +7,10 @@ import { createPayPalOrder } from '@/lib/paypal/client';
 import { getPuppyBySlug } from '@/lib/supabase/queries';
 import { ReservationQueries } from '@/lib/reservations/queries';
 import { calculateDepositAmount } from '@/lib/payments/deposit';
+import {
+  assertReservationsEnabled,
+  ReservationsDisabledError,
+} from '@/lib/reservations/reservation-guard';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +20,8 @@ const requestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    assertReservationsEnabled();
+
     const json = await request.json();
     const { puppySlug } = requestSchema.parse(json);
 
@@ -64,6 +70,10 @@ export async function POST(request: NextRequest) {
       status: order.status,
     });
   } catch (error) {
+    if (error instanceof ReservationsDisabledError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

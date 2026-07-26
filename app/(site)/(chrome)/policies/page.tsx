@@ -16,7 +16,7 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { getMerchantReturnPolicySchema } from '@/lib/seo/structured-data';
 
 export const metadata = buildMetadata({
-  title: 'Policies | Exotic Bulldog Legacy',
+  title: 'Policies',
   description:
     "Review Exotic Bulldog Legacy's deposit, health guarantee, transportation, and return policies before reserving a French or English bulldog.",
   path: '/policies',
@@ -58,7 +58,7 @@ const policies = [
     iconColor: 'text-blue-400',
     content: (
       <>
-        Pickup takes place in Montgomery, AL by appointment.{' '}
+        Pickup takes place in Falkville, AL by appointment.{' '}
         <span className="font-bold text-white">Flight nanny transport</span> is available across the
         Southeast; travel fees are quoted at cost and must be paid prior to departure.
       </>

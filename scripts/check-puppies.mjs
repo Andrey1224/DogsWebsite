@@ -97,9 +97,20 @@ async function checkPuppies() {
         ? Math.floor((new Date() - new Date(puppy.sold_at)) / (1000 * 60 * 60 * 24))
         : null;
       console.log(
-        `  - ${puppy.name}: sold ${daysAgo !== null ? `${daysAgo} days ago` : 'date unknown'}`,
+        `  - ${puppy.name}: sold ${daysAgo !== null ? `${daysAgo} days ago` : 'date unknown'}, ${
+          puppy.is_archived ? 'hidden' : 'public'
+        }`,
       );
     });
+
+    const unexpectedlyArchived = soldPuppies.filter(
+      (puppy) => puppy.is_archived && puppy.slug?.toLowerCase() !== 'test',
+    );
+    if (unexpectedlyArchived.length > 0) {
+      console.log(
+        `\n⚠️  ${unexpectedlyArchived.length} sold puppy profile(s) are archived unexpectedly.`,
+      );
+    }
   }
 
   // Check if columns exist

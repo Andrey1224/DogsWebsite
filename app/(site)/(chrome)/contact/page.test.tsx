@@ -133,9 +133,10 @@ describe('Contact Page', () => {
   it('renders contact method cards', () => {
     renderContactPage();
 
-    // Check for all 3 contact cards
-    expect(screen.getByText(/Call or text/i)).toBeInTheDocument();
+    // Check for all contact cards
+    expect(screen.getByText(/Business phone/i)).toBeInTheDocument();
     expect(screen.getAllByText(/WhatsApp/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Telegram/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Email/i).length).toBeGreaterThan(0);
   });
 

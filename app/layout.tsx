@@ -1,4 +1,6 @@
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AnalyticsProvider } from '@/components/analytics-provider';
 import { ConsentBanner } from '@/components/consent-banner';
 import { CrispChatLoader } from '@/components/crisp-chat-loader';
@@ -44,6 +46,9 @@ export default function RootLayout({
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? null;
   const metaPixelId = process.env.META_PIXEL_ID ?? null;
+  const crispEnabled =
+    process.env.NEXT_PUBLIC_CRISP_ENABLED === 'true' &&
+    Boolean(process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID);
 
   const themeScript = `
     (function() {
@@ -110,11 +115,13 @@ export default function RootLayout({
           </>
         )}
 
-        {/* Preconnect for Crisp Chat - reduces DNS/TLS handshake time */}
-        <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
+        {crispEnabled && (
+          <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}
+        suppressHydrationWarning
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <JsonLd id="organization-schema" data={organizationSchema} />
@@ -122,9 +129,11 @@ export default function RootLayout({
         <ThemeProvider>
           <AnalyticsProvider gaMeasurementId={gaMeasurementId} metaPixelId={metaPixelId}>
             {children}
-            <CrispChatLoader />
+            {crispEnabled && <CrispChatLoader />}
             <ConsentBanner />
           </AnalyticsProvider>
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>

@@ -83,13 +83,14 @@ describe('PuppyCard', () => {
     expect(badge).toHaveClass('bg-green-500/20', 'text-green-400', 'border-green-500/30');
   });
 
-  it('displays sold status badge with gray styling', () => {
+  it('displays sold puppies as unavailable with gray styling', () => {
     const puppy = buildPuppy({ status: 'sold' });
     render(<PuppyCard puppy={puppy} />);
 
-    const badge = screen.getByText(/sold/i);
+    const badge = screen.getByText(/unavailable/i);
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('bg-slate-500/20', 'text-slate-400', 'border-slate-500/30');
+    expect(screen.queryByText(/^sold$/i)).not.toBeInTheDocument();
   });
 
   it('displays reserved status badge with orange styling', () => {

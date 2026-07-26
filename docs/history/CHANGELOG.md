@@ -2,6 +2,44 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-07-10] Split Business and Personal Contact Numbers
+
+- **Content**: Business phone is now used for call, SMS, NAP/footer contact, email fallback, and
+  structured data.
+- **Content**: Personal phone is now used for WhatsApp and Telegram-facing contact surfaces.
+- **Testing**: Added E2E assertions to keep call/SMS on the business number and WhatsApp on the
+  personal number.
+
+## [2026-07-02] Vercel Web Analytics
+
+- **Analytics**: Added `@vercel/analytics` and rendered the official Next.js `<Analytics />`
+  component from the root app layout so Vercel can collect visitors and page views.
+- **Compatibility**: Existing consent-managed GA4/Meta Pixel tracking remains unchanged.
+
+## [2026-07-02] Local Manifesto Blog Post & PortableText Polish
+
+- **Feature**: Created local blog posts registry to allow custom-coded blog layouts.
+- **Content**: Integrated the "Dry Food vs. Raw Diet for Bulldogs" manifesto article with premium responsive diagrams, symptom grids, and custom advice cards.
+- **Beautification**: Polished global `BlogPortableText` renderer to render premium blockquotes with Quote icons, custom orange bullet lists, and glowing advice tip boxes.
+- **Bugfix**: Fixed a blog-client grid rendering bug that caused other featured articles to vanish when multiple featured posts existed.
+- **Integration**: Integrated local post dynamically with sitemaps, search filtering, page pre-rendering (`generateStaticParams`), and related articles mapping.
+
+## [2026-06-18] Optional Crisp Live Chat
+
+- **Performance**: Crisp is disabled by default and its preconnect/client script are not requested.
+- **Configuration**: Set `NEXT_PUBLIC_CRISP_ENABLED=true` with a valid Website ID to restore chat.
+- **UX**: The mobile chat CTA links to the contact page while live chat is disabled.
+
+## [2026-06-18] Public Sold Puppy Profiles
+
+- **Feature**: Sold puppies remain visible in the main catalog and on indexable detail pages.
+- **UX**: Public status is displayed as `Unavailable`, while historical prices and media remain
+  visible.
+- **Database**: Removed the 30-day auto-archive job; `is_archived` now represents manual hiding
+  only.
+- **Cleanup**: Permanently removed fake Duddy and CHARLIE listings, their canceled test
+  reservations, unprocessed webhook records, and uploaded test images.
+
 ## [2026-01-09] Automated Refunds & Admin Dashboard
 
 - **Fix**: Reservations now auto-transition to `paid` immediately via webhook.

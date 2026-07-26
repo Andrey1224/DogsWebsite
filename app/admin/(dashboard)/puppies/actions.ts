@@ -71,9 +71,7 @@ export async function updatePuppyStatusAction(input: {
   await updateAdminPuppyStatus(parsed);
   revalidateCatalog(input.slug);
 
-  // If status changed to 'sold', database trigger will auto-archive
-  const archived = parsed.status === 'sold';
-  return { success: true, archived };
+  return { success: true, archived: false };
 }
 
 export async function updatePuppyPriceAction(input: {

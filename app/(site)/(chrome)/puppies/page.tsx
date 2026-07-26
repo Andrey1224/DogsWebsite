@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { PuppyCard } from '@/components/puppy-card';
@@ -10,9 +11,9 @@ import { buildMetadata } from '@/lib/seo/metadata';
 export const revalidate = 60;
 
 export const metadata = buildMetadata({
-  title: 'Available French & English Bulldog Puppies',
+  title: 'French & English Bulldog Puppies',
   description:
-    "Browse Exotic Bulldog Legacy's catalog of available and upcoming French and English bulldog puppies, complete with health details and secure reservations.",
+    "Browse Exotic Bulldog Legacy's current and past French and English bulldog puppies, including photos, health details, and availability.",
   path: '/puppies',
 });
 
@@ -90,13 +91,35 @@ export default async function PuppiesPage({
             <h1 className="mb-4 text-4xl font-bold leading-tight md:text-6xl">
               French & English bulldogs <br />
               <span className="bg-gradient-to-r from-slate-200 to-slate-500 bg-clip-text text-transparent">
-                available now
+                current &amp; past puppies
               </span>
             </h1>
             <p className="max-w-xl text-lg text-slate-400">
-              Browse our current litters, review temperament notes, and reserve the companion who
-              fits your lifestyle.
+              Browse current litters and puppies who have already found homes, with photographs,
+              temperament notes, and availability clearly marked.
             </p>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
+              Exotic Bulldog Legacy is based near Falkville, just outside Cullman, Alabama. We offer
+              pickup by appointment and can discuss delivery options for families across North
+              Alabama, including Birmingham, Huntsville, Decatur, Madison, and nearby communities.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 text-sm font-medium sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+              <Link
+                href="/locations"
+                className="text-orange-400 transition-colors hover:text-orange-300"
+              >
+                Pickup &amp; delivery areas
+              </Link>
+              <Link href="/faq" className="text-orange-400 transition-colors hover:text-orange-300">
+                Puppy FAQ
+              </Link>
+              <Link
+                href="/contact"
+                className="text-orange-400 transition-colors hover:text-orange-300"
+              >
+                Contact us
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -120,6 +143,36 @@ export default async function PuppiesPage({
             ))}
           </div>
         )}
+
+        <div className="mt-16 rounded-3xl border border-slate-800 bg-[#0f1629] p-8">
+          <h2 className="text-2xl font-bold text-white md:text-3xl">
+            Pickup &amp; Delivery Options for Alabama Buyers
+          </h2>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400 md:text-base">
+            Found a puppy you love? Families from Birmingham, Huntsville, and surrounding Alabama
+            communities can review pickup and delivery options before reaching out.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 text-sm font-medium sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+            <Link
+              href="/locations/birmingham-al"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              Birmingham pickup details
+            </Link>
+            <Link
+              href="/locations/huntsville-al"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              Huntsville pickup details
+            </Link>
+            <Link
+              href="/locations"
+              className="text-orange-400 transition-colors hover:text-orange-300"
+            >
+              View all service areas
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

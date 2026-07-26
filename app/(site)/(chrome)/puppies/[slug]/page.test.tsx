@@ -35,13 +35,9 @@ vi.mock('@/lib/reservations/state', () => ({
   getPuppyReservationState: vi.fn(),
 }));
 
-// Mock Deposit Calculation
-vi.mock('@/lib/payments/deposit', () => ({
-  calculateDepositAmount: vi.fn().mockReturnValue({
-    amount: 300,
-    currency: 'USD',
-    formatted: '$300.00',
-  }),
+// Mock Stripe Deposit Configuration
+vi.mock('@/lib/payments/stripe-deposit', () => ({
+  getStripeDepositAmountDollars: vi.fn().mockReturnValue(300),
 }));
 
 // Mock complex child components to simplify integration test

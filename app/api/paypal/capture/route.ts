@@ -8,6 +8,10 @@ import type { PayPalOrderMetadata } from '@/lib/paypal/types';
 import { ReservationCreationError, ReservationCreationService } from '@/lib/reservations/create';
 import type { ReservationChannel } from '@/lib/reservations/types';
 import { ReservationQueries } from '@/lib/reservations/queries';
+import {
+  assertReservationsEnabled,
+  ReservationsDisabledError,
+} from '@/lib/reservations/reservation-guard';
 
 export const runtime = 'nodejs';
 
@@ -28,6 +32,8 @@ function parseMetadata(customId?: string): PayPalOrderMetadata | null {
 
 export async function POST(request: NextRequest) {
   try {
+    assertReservationsEnabled();
+
     const json = await request.json();
     const { orderId } = requestSchema.parse(json);
 
@@ -140,6 +146,10 @@ export async function POST(request: NextRequest) {
       throw reservationError;
     }
   } catch (error) {
+    if (error instanceof ReservationsDisabledError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

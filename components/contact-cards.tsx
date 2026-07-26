@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Phone, Mail, MessageCircle, Copy, Check } from 'lucide-react';
+import { Phone, Mail, MessageCircle, Send, Copy, Check } from 'lucide-react';
 
 import { useAnalytics } from '@/components/analytics-provider';
 import type { ContactCard } from '@/lib/config/contact';
@@ -23,6 +23,11 @@ const CARD_STYLES = {
     icon: MessageCircle,
     iconColor: 'text-green-400',
     iconBg: 'bg-green-400/10',
+  },
+  telegram: {
+    icon: Send,
+    iconColor: 'text-sky-400',
+    iconBg: 'bg-sky-400/10',
   },
   email: {
     icon: Mail,
@@ -60,7 +65,13 @@ function ContactMethodCard({ card }: { card: ContactCard }) {
   };
 
   const actionLabel =
-    card.id === 'call' ? 'Call Now' : card.id === 'whatsapp' ? 'Chat on WhatsApp' : 'Send Email';
+    card.id === 'call'
+      ? 'Call Business'
+      : card.id === 'whatsapp'
+        ? 'Open WhatsApp'
+        : card.id === 'telegram'
+          ? 'Open Telegram'
+          : 'Send Email';
 
   return (
     <article className="group relative overflow-hidden rounded-[2rem] border border-slate-800 bg-[#151e32] p-8 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-2xl hover:shadow-orange-900/5">
@@ -98,7 +109,7 @@ function ContactMethodCard({ card }: { card: ContactCard }) {
 
 export function ContactCards({ cards }: ContactCardsProps) {
   return (
-    <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+    <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
         <ContactMethodCard key={card.id} card={card} />
       ))}

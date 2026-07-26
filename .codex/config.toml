@@ -1,0 +1,19 @@
+[mcp_servers.chrome-devtools]
+args = ["chrome-devtools-mcp@latest"]
+command = "npx"
+
+[mcp_servers.context7]
+args = [
+    "-y",
+    "@upstash/context7-mcp",
+    "--api-key",
+    "ctx7sk-cc9c06d8-68ab-492b-b833-f21d5eb634d3",
+]
+command = "npx"
+
+[mcp_servers.playwright]
+args = ["@playwright/mcp@latest"]
+command = "npx"
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp"

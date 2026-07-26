@@ -81,9 +81,9 @@ export interface ReservationWithPuppy extends Reservation {
   puppy: {
     id: string;
     name: string;
-    breed_id: string;
+    breed: string;
     status: string;
-    price: number;
+    price_usd: number;
     slug?: string;
   };
 }

@@ -315,9 +315,9 @@ export class ReservationCreationService {
     reservation: Reservation,
     puppy: {
       name?: string;
-      breed_id?: string;
-      price?: number;
-      gender?: string;
+      breed?: string;
+      price_usd?: number;
+      sex?: string;
       birth_date?: string;
     },
   ) {
@@ -332,11 +332,11 @@ export class ReservationCreationService {
       expiresAt: reservation.expires_at,
       createdAt: reservation.created_at,
       puppyDetails: {
-        breed: puppy?.breed_id,
-        price: puppy?.price
-          ? formatCentsToUSD(Math.round(puppy.price * 100))
+        breed: puppy?.breed,
+        price: puppy?.price_usd
+          ? formatCentsToUSD(Math.round(puppy.price_usd * 100))
           : 'Price not available',
-        gender: puppy?.gender,
+        gender: puppy?.sex,
         birthDate: puppy?.birth_date,
       },
     };

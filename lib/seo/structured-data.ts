@@ -111,7 +111,7 @@ export function getProductSchema(puppy: PuppyWithRelations) {
     .join(' ');
   const photos = (
     puppy.photo_urls && puppy.photo_urls.length > 0 ? puppy.photo_urls : [undefined]
-  ).map((photo) => resolveLocalImage(photo, '/reviews/mark-lisa-duke.webp'));
+  ).map((photo) => resolveLocalImage(photo, '/images/reviews/mark-lisa-duke.webp'));
 
   const availabilityMap: Record<string, string> = {
     available: 'https://schema.org/InStock',
@@ -143,7 +143,7 @@ export function getProductSchema(puppy: PuppyWithRelations) {
     name: puppy.name ?? `${breedLabel} Puppy`,
     description:
       puppy.description ??
-      `Health-tested ${breedLabel.toLowerCase()} puppy from Exotic Bulldog Legacy in Montgomery, Alabama.`,
+      `Health-tested ${breedLabel.toLowerCase()} puppy from Exotic Bulldog Legacy in Falkville, Alabama.`,
     sku: puppy.id,
     brand: {
       '@type': 'Brand',

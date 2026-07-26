@@ -44,7 +44,7 @@ export function PuppyGallery({ photos, videos = [], name, status, shareUrl }: Pu
         <div className="absolute left-6 top-6">
           {isSold ? (
             <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/80 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-300 backdrop-blur-md">
-              <CheckCircle2 size={14} /> Sold
+              <CheckCircle2 size={14} /> Unavailable
             </div>
           ) : isAvailable ? (
             <div className="flex items-center gap-2 rounded-full bg-green-500/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-green-500/20 backdrop-blur-md">

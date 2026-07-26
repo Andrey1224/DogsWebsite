@@ -8,7 +8,7 @@ import { FaqContent } from './faq-content';
 import { faqItemsFlat } from './faq-data';
 
 export const metadata = buildMetadata({
-  title: 'Frequently Asked Questions | Exotic Bulldog Legacy',
+  title: 'Frequently Asked Questions',
   description:
     'Find answers about reserving, raising, and transporting French and English bulldog puppies from Exotic Bulldog Legacy.',
   path: '/faq',

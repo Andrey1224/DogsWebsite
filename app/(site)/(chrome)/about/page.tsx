@@ -16,14 +16,12 @@ import {
 } from 'lucide-react';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { JsonLd } from '@/components/json-ld';
-import { getOrganizationSchema } from '@/lib/seo/structured-data';
 import { buildMetadata } from '@/lib/seo/metadata';
 
 export const dynamic = 'force-static';
 
 export const metadata = buildMetadata({
-  title: 'About — Exotic Bulldog Legacy',
+  title: 'About',
   description:
     "Discover Exotic Bulldog Legacy's family-run French and English Bulldog breeding program in Alabama and the journey that inspired it.",
   path: '/about',
@@ -68,8 +66,6 @@ export default function AboutPage() {
           ]}
         />
       </div>
-      <JsonLd data={getOrganizationSchema()} />
-
       {/* --- HERO SECTION --- */}
       <header className="relative mx-auto max-w-7xl px-6 pb-20 pt-32 md:px-12">
         <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
@@ -349,7 +345,7 @@ export default function AboutPage() {
             Ready to add a &ldquo;Cloud of Happiness&rdquo; to your life?
           </h2>
           <p className="mb-8 text-slate-400">
-            We welcome families by appointment in Montgomery, AL and host virtual meet-and-greets.
+            We welcome families by appointment in Falkville, AL and host virtual meet-and-greets.
           </p>
           <Link
             href="/puppies"

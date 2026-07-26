@@ -18,7 +18,9 @@ import { HeroCarousel } from '@/components/hero-carousel';
 
 import { PromoGate } from '@/components/home/promo-gate';
 import { IntroShell } from '@/components/intro-shell';
+import { JsonLd } from '@/components/json-ld';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getFaqSchema } from '@/lib/seo/structured-data';
 import { getFeaturedReviews } from '@/lib/reviews/queries';
 import type { Review } from '@/lib/reviews/types';
 
@@ -42,9 +44,9 @@ const FeaturedReviewsCarousel = dynamic(
 );
 
 export const metadata = buildMetadata({
-  title: 'Bulldog Puppies in Alabama | Exotic Bulldog Legacy',
+  title: 'Bulldog Puppies in Alabama',
   description:
-    'French and English bulldog puppies available in Alabama with secure deposits, Montgomery pickup, and vetted delivery options from Exotic Bulldog Legacy.',
+    'French and English bulldog puppies available in Alabama with secure deposits, appointment pickup in Falkville, and vetted delivery options from Exotic Bulldog Legacy.',
   path: '/',
   image: 'https://images.exoticbulldog.dev/hero/english-bulldog.jpg',
 });
@@ -76,6 +78,26 @@ const features: FeatureItem[] = [
   },
 ];
 
+const serviceAreaCards = [
+  {
+    title: 'Service Areas',
+    description: 'Learn how pickup and delivery work for Alabama families.',
+    href: '/locations',
+  },
+  {
+    title: 'Birmingham Families',
+    description:
+      'Pickup and delivery details for Birmingham, Hoover, Vestavia Hills, and nearby areas.',
+    href: '/locations/birmingham-al',
+  },
+  {
+    title: 'Huntsville Families',
+    description:
+      'Pickup and flight nanny details for Huntsville, Madison, Decatur, and Rocket City families.',
+    href: '/locations/huntsville-al',
+  },
+];
+
 const faqs = [
   {
     question: 'How do I place a deposit?',
@@ -89,8 +111,7 @@ const faqs = [
   },
   {
     question: 'What are the pickup options?',
-    answer:
-      'You can pick up in Montgomery by appointment or choose courier delivery. We partner with trusted ground transport and flight nannies; travel fees are quoted at cost and due prior to departure.',
+    answer: 'You can pick up near Falkville, Alabama by appointment or choose courier delivery.',
   },
 ];
 
@@ -117,14 +138,18 @@ function ActionLink({ href, children, variant = 'primary', className = '' }: Act
 }
 
 export default function Home() {
+  const faqSchema = getFaqSchema(faqs);
+
   return (
     <IntroShell>
       <>
+        <JsonLd id="home-faq-schema" data={faqSchema} />
         <PromoGate />
         <main className="min-h-screen bg-[#0B1120] text-white selection:bg-orange-500/30">
           <HeroSection />
           <FeaturesSection />
           <LogisticsSection />
+          <ServiceAreasSection />
           <FaqSection />
           <Suspense fallback={null}>
             <ReviewsSectionLoader />
@@ -244,8 +269,8 @@ function LogisticsSection() {
             We encourage you to contact us first to discuss your needs, schedule a kennel visit, or
             arrange a video call to meet your future puppy. Once you&apos;ve found your perfect
             match, you can secure your puppy with a $300 deposit (online or in person). We&apos;ll
-            then confirm your reservation, lock availability, and coordinate pickup in Falkville,
-            Alabama (by appointment) or arrange trusted delivery to your door.
+            then confirm your reservation, lock availability, and coordinate pickup in Falkville (by
+            appointment) or arrange trusted delivery to your door.
           </p>
           <div className="space-y-4 rounded-3xl border border-slate-800 bg-[#0f1629] p-6">
             <div className="flex gap-4">
@@ -267,8 +292,8 @@ function LogisticsSection() {
               <div>
                 <h3 className="text-lg font-semibold text-white">Pickup or delivery</h3>
                 <p className="text-sm text-slate-400">
-                  Meet us by appointment in Montgomery or request vetted courier/flight nanny
-                  delivery. We share transport quotes upfront.
+                  Meet us by appointment near Falkville, just outside Cullman, Alabama, or request
+                  vetted courier/flight nanny delivery. We share transport quotes upfront.
                 </p>
               </div>
             </div>
@@ -327,6 +352,47 @@ function LogisticsSection() {
               </ActionLink>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ServiceAreasSection() {
+  return (
+    <section className="bg-[#0B1120] py-16">
+      <div className="mx-auto max-w-7xl px-6 md:px-20">
+        <div className="mb-8 max-w-3xl">
+          <h2 className="text-2xl font-bold text-white md:text-3xl">
+            Pickup &amp; Delivery for Alabama Families
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-slate-400 md:text-base">
+            Families across Alabama can schedule appointment pickup in Falkville or ask about
+            trusted delivery options. We regularly help buyers from Birmingham, Huntsville, and
+            nearby communities understand pickup timing, airport delivery, and what to expect before
+            bringing a puppy home.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {serviceAreaCards.map((card) => (
+            <Link
+              key={card.title}
+              href={card.href}
+              className="group rounded-3xl border border-slate-800 bg-[#0f1629] p-6 transition-colors hover:border-orange-500/30 hover:bg-[#151e32]"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{card.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{card.description}</p>
+                </div>
+                <ArrowUpRight
+                  size={18}
+                  className="mt-1 shrink-0 text-orange-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

@@ -26,6 +26,7 @@ test.describe('Contact Links', () => {
     const href = await callLink.getAttribute('href');
 
     expect(href).toMatch(/^tel:\+\d{10,15}$/);
+    expect(href).toBe('tel:+17724044470');
   });
 
   test('Text link uses sms: URI scheme', async ({ page }) => {
@@ -34,6 +35,7 @@ test.describe('Contact Links', () => {
     const href = await textLink.getAttribute('href');
 
     expect(href).toMatch(/^sms:\+\d{10,15}$/);
+    expect(href).toBe('sms:+17724044470');
   });
 
   test('WhatsApp link uses wa.me domain', async ({ page }) => {
@@ -42,6 +44,7 @@ test.describe('Contact Links', () => {
     const href = await whatsappLink.getAttribute('href');
 
     expect(href).toMatch(/^https:\/\/wa\.me\/\d{10,15}$/);
+    expect(href).toBe('https://wa.me/17727779442');
   });
 
   test('Telegram link uses t.me domain', async ({ page }) => {

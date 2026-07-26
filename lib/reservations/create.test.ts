@@ -65,9 +65,8 @@ describe('ReservationCreationService', () => {
   }
 
   beforeEach(async () => {
-    const { ReservationQueries, WebhookEventQueries, TransactionQueries } = await import(
-      './queries'
-    );
+    const { ReservationQueries, WebhookEventQueries, TransactionQueries } =
+      await import('./queries');
     Object.values(ReservationQueries).forEach((mockFn) => mockFn.mockReset());
     Object.values(WebhookEventQueries).forEach((mockFn) => mockFn.mockReset());
     Object.values(TransactionQueries).forEach((mockFn) => mockFn.mockReset?.());
@@ -444,9 +443,9 @@ describe('ReservationCreationService', () => {
 
       const payload = ReservationCreationService.generateConfirmationData(reservation, {
         name: 'Duke',
-        breed_id: 'french-bulldog',
-        price: 3000,
-        gender: 'male',
+        breed: 'french-bulldog',
+        price_usd: 3000,
+        sex: 'male',
         birth_date: '2023-09-15',
       });
 

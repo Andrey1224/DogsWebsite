@@ -32,7 +32,7 @@ describe('Puppies Page', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /French & English bulldogs available now/i,
+        name: /French & English bulldogs current & past puppies/i,
       }),
     ).toBeInTheDocument();
   });
@@ -45,8 +45,26 @@ describe('Puppies Page', () => {
     render(component);
 
     expect(
-      screen.getByText(/Browse our current litters, review temperament notes/i),
+      screen.getByText(/Browse current litters and puppies who have already found homes/i),
     ).toBeInTheDocument();
+  });
+
+  it('renders local Falkville context and planning links', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(
+      screen.getByText(/Exotic Bulldog Legacy is based near Falkville, just outside Cullman/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /pickup & delivery areas/i })).toHaveAttribute(
+      'href',
+      '/locations',
+    );
+    expect(screen.getByRole('link', { name: /puppy faq/i })).toHaveAttribute('href', '/faq');
+    expect(screen.getByRole('link', { name: /contact us/i })).toHaveAttribute('href', '/contact');
   });
 
   it('renders breadcrumbs navigation (SEO only)', async () => {
@@ -69,6 +87,32 @@ describe('Puppies Page', () => {
     expect(
       screen.getByText(/No puppies match the selected filters right now/i),
     ).toBeInTheDocument();
+  });
+
+  it('renders compact service area links below the listings', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await PuppiesPage({ searchParams: Promise.resolve({}) });
+    render(component);
+
+    expect(
+      screen.getByRole('heading', {
+        name: /pickup & delivery options for alabama buyers/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /birmingham pickup details/i })).toHaveAttribute(
+      'href',
+      '/locations/birmingham-al',
+    );
+    expect(screen.getByRole('link', { name: /huntsville pickup details/i })).toHaveAttribute(
+      'href',
+      '/locations/huntsville-al',
+    );
+    expect(screen.getByRole('link', { name: /view all service areas/i })).toHaveAttribute(
+      'href',
+      '/locations',
+    );
   });
 
   it('renders puppy cards when puppies are available', async () => {

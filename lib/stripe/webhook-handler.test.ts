@@ -215,12 +215,10 @@ describe('StripeWebhookHandler', () => {
         externalPaymentId: mockPaymentIntentId,
       });
 
-      // Verify webhook event is marked as processed (using service role)
-      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
-      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
-        provider: 'stripe',
-        eventId: mockEventId,
-        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+      // Verify audit backlinks: webhook_events.reservation_id and reservations.webhook_event_id
+      expect(idempotencyManager.markAsProcessed).toHaveBeenCalledWith(123, 'res_123');
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith('res_123', {
+        webhook_event_id: 123,
       });
     });
 
@@ -431,6 +429,99 @@ describe('StripeWebhookHandler', () => {
       expect(WebhookEventsServer.markProcessed).not.toHaveBeenCalled();
     });
 
+    describe('audit backlinks', () => {
+      it('sets webhook_events.reservation_id and reservations.webhook_event_id after successful payment', async () => {
+        const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+        const { ReservationCreationService } = await import('@/lib/reservations/create');
+        const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+
+        (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+          exists: false,
+          paymentId: mockPaymentIntentId,
+          provider: 'stripe',
+        });
+        (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+          success: true,
+          webhookEvent: { id: 42 },
+        });
+        (ReservationCreationService.createReservation as any).mockResolvedValue({
+          reservationId: 'res_audit_test',
+        });
+        (ReservationServerQueries.markPaid as any).mockResolvedValue({
+          id: 'res_audit_test',
+          status: 'paid',
+        });
+
+        const session = createMockSession();
+        const event = createMockEvent('checkout.session.completed', session);
+
+        const result = await StripeWebhookHandler.processEvent(event);
+
+        expect(result.success).toBe(true);
+        expect(result.reservationId).toBe('res_audit_test');
+
+        // webhook_events.reservation_id must be set via markAsProcessed
+        expect(idempotencyManager.markAsProcessed).toHaveBeenCalledWith(42, 'res_audit_test');
+
+        // reservations.webhook_event_id must be set via update
+        expect(ReservationServerQueries.update).toHaveBeenCalledWith('res_audit_test', {
+          webhook_event_id: 42,
+        });
+
+        // WebhookEventsServer.markProcessed must NOT be called when the numeric id is available
+        const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+        expect(WebhookEventsServer.markProcessed).not.toHaveBeenCalled();
+      });
+
+      it('falls back to WebhookEventsServer.markProcessed when createWebhookEvent returns no webhookEvent', async () => {
+        const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+        const { ReservationCreationService } = await import('@/lib/reservations/create');
+        const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+
+        (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+          exists: false,
+          paymentId: mockPaymentIntentId,
+          provider: 'stripe',
+        });
+        // Simulate duplicate-insert race: success but no webhookEvent object returned
+        (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+          success: true,
+          isDuplicate: true,
+        });
+        (ReservationCreationService.createReservation as any).mockResolvedValue({
+          reservationId: 'res_fallback_test',
+        });
+        (ReservationServerQueries.markPaid as any).mockResolvedValue({
+          id: 'res_fallback_test',
+          status: 'paid',
+        });
+
+        const session = createMockSession();
+        const event = createMockEvent('checkout.session.completed', session);
+
+        const result = await StripeWebhookHandler.processEvent(event);
+
+        expect(result.success).toBe(true);
+
+        // Without numeric id: falls back to event-id-based markProcessed
+        const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+        expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
+          provider: 'stripe',
+          eventId: mockEventId,
+          idempotencyKey: `stripe:${mockPaymentIntentId}`,
+        });
+
+        // markAsProcessed must NOT be called (no numeric id available)
+        expect(idempotencyManager.markAsProcessed).not.toHaveBeenCalled();
+
+        // webhook_event_id update must NOT be attempted
+        expect(ReservationServerQueries.update).not.toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({ webhook_event_id: expect.anything() }),
+        );
+      });
+    });
+
     it('should handle race condition errors gracefully', async () => {
       const { idempotencyManager } = await import('@/lib/reservations/idempotency');
       const { ReservationCreationService } = await import('@/lib/reservations/create');
@@ -517,12 +608,10 @@ describe('StripeWebhookHandler', () => {
         externalPaymentId: mockPaymentIntentId,
       });
 
-      // Verify webhook event is marked as processed (using service role)
-      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
-      expect(WebhookEventsServer.markProcessed).toHaveBeenCalledWith({
-        provider: 'stripe',
-        eventId: mockEventId,
-        idempotencyKey: `stripe:${mockPaymentIntentId}`,
+      // Verify audit backlinks: webhook_events.reservation_id and reservations.webhook_event_id
+      expect(idempotencyManager.markAsProcessed).toHaveBeenCalledWith(456, 'res_123');
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith('res_123', {
+        webhook_event_id: 456,
       });
     });
 

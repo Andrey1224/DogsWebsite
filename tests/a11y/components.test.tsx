@@ -195,6 +195,24 @@ describe('Component Accessibility Tests', () => {
 
       await expectNoA11yViolations(container);
     });
+
+    it('links to the contact page instead of opening chat when live chat is disabled', async () => {
+      const { getByRole, queryByRole } = await renderWithAct(
+        <ContactBar channels={CONTACT_CHANNELS} />,
+      );
+
+      expect(getByRole('link', { name: 'Contact Us' })).toHaveAttribute('href', '/contact');
+      expect(queryByRole('button', { name: "Let's Chat" })).not.toBeInTheDocument();
+    });
+
+    it('renders the chat trigger only when live chat is enabled', async () => {
+      const { getByRole, queryByRole } = await renderWithAct(
+        <ContactBar channels={CONTACT_CHANNELS} liveChatEnabled />,
+      );
+
+      expect(getByRole('button', { name: "Let's Chat" })).toBeInTheDocument();
+      expect(queryByRole('link', { name: 'Contact Us' })).not.toBeInTheDocument();
+    });
   });
 
   describe('Theme Components', () => {

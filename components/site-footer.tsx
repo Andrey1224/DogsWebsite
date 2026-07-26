@@ -19,6 +19,7 @@ const cityState = `${BUSINESS_PROFILE.address.addressLocality}, ${BUSINESS_PROFI
 const publicCityState = `${cityState} (by appointment)`;
 const phoneDisplay = CONTACT_DETAILS.phone.display;
 const phoneHref = `tel:${CONTACT_DETAILS.phone.e164}`;
+const personalPhoneDisplay = CONTACT_DETAILS.personalPhone.display;
 
 function formatTimeTo12Hour(value: string) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -39,6 +40,9 @@ const footerLinks = [
       { label: 'Reviews', href: '/reviews' },
       { label: 'Our Story', href: '/about' },
       { label: 'Health Policy', href: '/policies' },
+      { label: 'Service Areas', href: '/locations' },
+      { label: 'Birmingham, AL', href: '/locations/birmingham-al' },
+      { label: 'Huntsville, AL', href: '/locations/huntsville-al' },
     ],
   },
   {
@@ -53,7 +57,12 @@ const footerLinks = [
   {
     title: 'Contact',
     items: [
-      { label: phoneDisplay, href: phoneHref, isExternal: true },
+      { label: `Business: ${phoneDisplay}`, href: phoneHref, isExternal: true },
+      {
+        label: `Personal WhatsApp/Telegram: ${personalPhoneDisplay}`,
+        href: CONTACT_DETAILS.whatsapp.link,
+        isExternal: true,
+      },
       {
         label: BUSINESS_PROFILE.email,
         href: `mailto:${BUSINESS_PROFILE.email}`,

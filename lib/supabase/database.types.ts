@@ -474,7 +474,6 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      archive_sold_puppies_after_30_days: { Args: never; Returns: number };
       create_reservation_transaction: {
         Args: {
           p_amount: number;

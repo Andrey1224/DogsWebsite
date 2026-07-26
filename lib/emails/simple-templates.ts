@@ -143,7 +143,7 @@ export function generateOwnerNotificationEmail(inquiry: InquiryData): string {
 }
 
 export function generateCustomerConfirmationEmail(name: string): string {
-  const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || '+17727779442';
+  const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || '+17724044470';
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'nepod77@gmail.com';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 

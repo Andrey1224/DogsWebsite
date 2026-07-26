@@ -48,7 +48,15 @@ export function PromoGate() {
   if (automation) return null;
 
   // Check if promo is disabled via env variable
-  if (process.env.NEXT_PUBLIC_PROMO_DISABLED === 'true') return null;
+  const promoDisabled = process.env.NEXT_PUBLIC_PROMO_DISABLED === 'true';
+
+  // Debug log (remove after verification)
+  if (typeof window !== 'undefined') {
+    console.log('[PromoGate] NEXT_PUBLIC_PROMO_DISABLED:', process.env.NEXT_PUBLIC_PROMO_DISABLED);
+    console.log('[PromoGate] promoDisabled:', promoDisabled);
+  }
+
+  if (promoDisabled) return null;
 
   return <PromoModal open={open} onClose={handleClose} />;
 }

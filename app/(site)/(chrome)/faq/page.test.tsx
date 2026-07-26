@@ -5,7 +5,7 @@
  * Tests new dark UI with search, categories, and accordion.
  */
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
 
@@ -109,6 +109,21 @@ describe('FAQ Page', () => {
     expect(
       screen.getByRole('heading', { level: 3, name: /What are the pickup and delivery options?/i }),
     ).toBeInTheDocument();
+  });
+
+  it('shows Falkville pickup wording in the Pickup & Delivery answers', () => {
+    renderFaqPage();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /What are the pickup and delivery options?/i }),
+    );
+
+    expect(
+      screen.getByText(/pick up in person in Falkville, AL by appointment/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/pick up in person in Montgomery, AL by appointment/i),
+    ).not.toBeInTheDocument();
   });
 
   it('renders breadcrumbs (sr-only for SEO)', () => {

@@ -144,6 +144,9 @@ describe('About Page', () => {
         name: /See available puppies/i,
       }),
     ).toHaveAttribute('href', '/puppies');
+    expect(
+      screen.getByText(/We welcome families by appointment in Falkville, AL/i),
+    ).toBeInTheDocument();
   });
 
   it('renders breadcrumbs (sr-only for SEO)', () => {

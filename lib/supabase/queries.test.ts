@@ -164,4 +164,49 @@ describe('applyPuppyFilters', () => {
     const result = applyPuppyFilters(puppies, { status: 'sold', breed: 'french_bulldog' });
     expect(result).toHaveLength(0);
   });
+
+  it('sorts active statuses before sold puppies and newer records first within a status', () => {
+    const records: PuppyWithRelations[] = [
+      {
+        ...puppies[0],
+        id: 'sold-newer',
+        status: 'sold',
+        created_at: '2026-06-01T00:00:00.000Z',
+      },
+      {
+        ...puppies[0],
+        id: 'available-older',
+        status: 'available',
+        created_at: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        ...puppies[0],
+        id: 'sold-older',
+        status: 'sold',
+        created_at: '2026-02-01T00:00:00.000Z',
+      },
+      {
+        ...puppies[0],
+        id: 'reserved',
+        status: 'reserved',
+        created_at: '2026-05-01T00:00:00.000Z',
+      },
+      {
+        ...puppies[0],
+        id: 'upcoming',
+        status: 'upcoming',
+        created_at: '2026-04-01T00:00:00.000Z',
+      },
+    ];
+
+    const result = applyPuppyFilters(records, { status: 'all' });
+
+    expect(result.map((puppy) => puppy.id)).toEqual([
+      'available-older',
+      'reserved',
+      'upcoming',
+      'sold-newer',
+      'sold-older',
+    ]);
+  });
 });
