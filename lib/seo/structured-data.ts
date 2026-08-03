@@ -9,6 +9,17 @@ type FAQItem = {
   answer: string;
 };
 
+type BlogPostingOptions = {
+  title: string;
+  description: string;
+  slug: string;
+  image: string;
+  datePublished: string;
+  dateModified?: string;
+  category?: string;
+  authorName?: string;
+};
+
 type ReturnPolicyOptions = {
   name: string;
   days?: number;
@@ -176,6 +187,52 @@ export function getFaqSchema(items: FAQItem[]) {
         text: item.answer,
       },
     })),
+  };
+}
+
+export function getBlogPostingSchema({
+  title,
+  description,
+  slug,
+  image,
+  datePublished,
+  dateModified = datePublished,
+  category,
+  authorName = 'Tatiana',
+}: BlogPostingOptions) {
+  const siteUrl = getSiteUrl();
+  const url = new URL(`/blog/${slug}`, siteUrl).toString();
+  const imageUrl = image.startsWith('http') ? image : new URL(image, siteUrl).toString();
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': url,
+    },
+    image: [imageUrl],
+    datePublished,
+    dateModified,
+    articleSection: category,
+    inLanguage: 'en-US',
+    author: {
+      '@type': 'Person',
+      name: authorName,
+      url: new URL('/about', siteUrl).toString(),
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: BUSINESS_PROFILE.name,
+      url: siteUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: BUSINESS_PROFILE.logo,
+      },
+    },
   };
 }
 

@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, ArrowDown, ShieldAlert, Lightbulb, Heart } from 'lucide-react';
 

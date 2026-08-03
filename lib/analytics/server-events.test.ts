@@ -33,7 +33,7 @@ describe('trackDepositPaid', () => {
 
     const { trackDepositPaid } = await import('./server-events');
 
-    await trackDepositPaid(mockEvent, 'client-1');
+    await trackDepositPaid(mockEvent, { clientId: 'client-1' });
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
@@ -50,7 +50,7 @@ describe('trackDepositPaid', () => {
 
     const { trackDepositPaid } = await import('./server-events');
 
-    await trackDepositPaid(mockEvent, 'client-1');
+    await trackDepositPaid(mockEvent, { clientId: 'client-1', sessionId: 'session-1' });
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('measurement_id=G-123456'),
@@ -59,6 +59,21 @@ describe('trackDepositPaid', () => {
         headers: { 'Content-Type': 'application/json' },
       }),
     );
+
+    const request = fetchMock.mock.calls[0]?.[1];
+    expect(JSON.parse(String(request?.body))).toEqual({
+      client_id: 'client-1',
+      events: [
+        {
+          name: 'deposit_paid',
+          params: {
+            ...mockEvent,
+            session_id: 'session-1',
+            engagement_time_msec: 100,
+          },
+        },
+      ],
+    });
   });
 
   it('logs an error when GA responds with non-ok status', async () => {

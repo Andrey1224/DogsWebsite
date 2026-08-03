@@ -63,6 +63,10 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
       pattern: /^G-[A-Z0-9]+$/,
       description: 'Google Analytics 4 measurement ID',
     },
+    NEXT_PUBLIC_META_PIXEL_ID: {
+      pattern: /^\d+$/,
+      description: 'Meta Pixel ID',
+    },
     NEXT_PUBLIC_CONTACT_LATITUDE: {
       pattern: /^-?\d+(\.\d+)?$/,
       description: 'Business latitude in decimal degrees',

@@ -41,6 +41,8 @@ const footerLinks = [
       { label: 'Our Story', href: '/about' },
       { label: 'Health Policy', href: '/policies' },
       { label: 'Service Areas', href: '/locations' },
+      { label: 'Cullman, AL', href: '/locations/cullman-al' },
+      { label: 'Decatur, AL', href: '/locations/decatur-al' },
       { label: 'Birmingham, AL', href: '/locations/birmingham-al' },
       { label: 'Huntsville, AL', href: '/locations/huntsville-al' },
     ],

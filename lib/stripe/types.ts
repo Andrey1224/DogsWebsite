@@ -37,6 +37,10 @@ export interface StripeCheckoutMetadata {
   customer_phone?: string;
   /** Source channel (site, whatsapp, etc.) */
   channel?: string;
+  /** GA4 browser client ID for server-side conversion attribution */
+  ga_client_id?: string;
+  /** GA4 browser session ID for server-side conversion attribution */
+  ga_session_id?: string;
 }
 
 /**

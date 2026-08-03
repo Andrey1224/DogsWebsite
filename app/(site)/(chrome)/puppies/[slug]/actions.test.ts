@@ -116,6 +116,37 @@ describe('createCheckoutSession', () => {
     );
   });
 
+  it('passes validated GA4 attribution identifiers into Stripe metadata', async () => {
+    const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+    const { ReservationQueries } = await import('@/lib/reservations/queries');
+    const { stripe } = await import('@/lib/stripe/client');
+    const { createCheckoutSession } = await import('./actions');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (stripe.checkout.sessions.create as any).mockResolvedValue({
+      id: 'cs_attributed_123',
+      url: 'https://checkout.stripe.com/c/pay/cs_attributed_123',
+    });
+
+    await createCheckoutSession(mockPuppySlug, {
+      clientId: '123456.789012',
+      sessionId: '987654321',
+    });
+
+    expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          ga_client_id: '123456.789012',
+          ga_session_id: '987654321',
+        }),
+      }),
+    );
+  });
+
   it('uses configured $1 live-test deposit amount for Stripe Checkout', async () => {
     process.env.STRIPE_DEPOSIT_AMOUNT_CENTS = '100';
 

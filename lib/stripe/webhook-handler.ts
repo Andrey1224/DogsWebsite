@@ -100,6 +100,8 @@ function getCheckoutMetadata(session: Stripe.Checkout.Session): {
     customer_phone:
       normalizeMetadataValue(metadata?.customer_phone) || session.customer_details?.phone,
     channel: normalizeMetadataValue(metadata?.channel),
+    ga_client_id: normalizeMetadataValue(metadata?.ga_client_id),
+    ga_session_id: normalizeMetadataValue(metadata?.ga_session_id),
   };
 
   const missing = REQUIRED_METADATA_FIELDS.filter(
@@ -756,14 +758,20 @@ export class StripeWebhookHandler {
         });
       }
 
-      await trackDepositPaid({
-        value: session.amount_total / 100,
-        currency: session.currency?.toUpperCase() || 'USD',
-        puppy_slug: metadata.puppy_slug,
-        puppy_name: metadata.puppy_name,
-        payment_provider: 'stripe',
-        reservation_id: reservationId,
-      });
+      await trackDepositPaid(
+        {
+          value: session.amount_total / 100,
+          currency: session.currency?.toUpperCase() || 'USD',
+          puppy_slug: metadata.puppy_slug,
+          puppy_name: metadata.puppy_name,
+          payment_provider: 'stripe',
+          reservation_id: reservationId,
+        },
+        {
+          clientId: metadata.ga_client_id,
+          sessionId: metadata.ga_session_id,
+        },
+      );
 
       const emailData = {
         customerName: session.customer_details?.name || metadata.customer_name || 'Valued Customer',

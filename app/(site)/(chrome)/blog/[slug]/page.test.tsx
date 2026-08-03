@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ArticlePage from './page';
+import ArticlePage, { generateMetadata } from './page';
 
 vi.mock('next/image', () => ({
   __esModule: true,
@@ -125,6 +125,63 @@ describe('ArticlePage', () => {
     expect(screen.getByRole('link', { name: /pickup & delivery in alabama/i })).toHaveAttribute(
       'href',
       '/locations',
+    );
+    expect(screen.getByRole('img', { name: /tatiana — author/i })).toHaveAttribute(
+      'src',
+      '/images/tatiana-author.webp',
+    );
+
+    const articleSchema = document.querySelector('#blog-posting-dry-food-vs-raw-diet-bulldogs');
+    const breadcrumbSchema = document.querySelector(
+      'nav[aria-label="Breadcrumb"] script[type="application/ld+json"]',
+    );
+
+    expect(articleSchema).not.toBeNull();
+    expect(JSON.parse(articleSchema?.textContent ?? '{}')).toMatchObject({
+      '@type': 'BlogPosting',
+      headline: expect.stringMatching(/Dry Food vs\. Raw Diet/i),
+    });
+    expect(breadcrumbSchema).not.toBeNull();
+  });
+
+  it.each([
+    ['ultimate-guide-for-new-bulldog-owners', /preparing for a bulldog puppy in alabama/i],
+    ['puppy-potty-training-101', /start the routine before your alabama pickup/i],
+  ])('links the local article %s to both priority city pages', async (slug, sectionHeading) => {
+    const { sanityFetch } = await import('@/sanity/lib/client');
+
+    vi.mocked(sanityFetch).mockResolvedValueOnce([]);
+
+    const component = await ArticlePage({ params: Promise.resolve({ slug }) });
+    render(component);
+
+    expect(screen.getByRole('heading', { name: sectionHeading })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /huntsville/i })).toHaveAttribute(
+      'href',
+      '/locations/huntsville-al',
+    );
+    expect(screen.getByRole('link', { name: /birmingham/i })).toHaveAttribute(
+      'href',
+      '/locations/birmingham-al',
+    );
+    expect(screen.getByText(/Updated: August 2, 2026/i)).toBeInTheDocument();
+
+    const articleSchema = document.querySelector(`#blog-posting-${slug}`);
+    expect(JSON.parse(articleSchema?.textContent ?? '{}')).toMatchObject({
+      '@type': 'BlogPosting',
+      dateModified: '2026-08-02T21:30:00.000Z',
+    });
+  });
+
+  it('uses search-focused metadata for the new potty-training article', async () => {
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ slug: 'puppy-potty-training-101' }),
+    });
+
+    expect(metadata.title).toBe('How to Potty Train a Puppy: Step-by-Step');
+    expect(metadata.description).toMatch(/pads or outdoor trips/i);
+    expect(new URL(String(metadata.alternates?.canonical)).pathname).toBe(
+      '/blog/puppy-potty-training-101',
     );
   });
 });

@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { Lock } from 'lucide-react';
 
+import { useAnalytics } from '@/components/analytics-provider';
 import { createCheckoutSession } from './actions';
 
 interface ReserveButtonProps {
@@ -36,6 +37,7 @@ export function ReserveButton({
   depositAmount,
   paypalClientId,
 }: ReserveButtonProps) {
+  const { getAnalyticsIdentifiers, trackEvent } = useAnalytics();
   const [isStripeLoading, setIsStripeLoading] = useState(false);
   const isPayPalProcessing = false;
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +52,38 @@ export function ReserveButton({
     setIsStripeLoading(true);
     setError(null);
 
+    const commerceParams = {
+      currency: 'USD',
+      value: depositAmount,
+      items: [
+        {
+          item_id: puppySlug,
+          item_name: puppyName || puppySlug,
+          item_category: 'Puppy deposit',
+          price: depositAmount,
+          quantity: 1,
+        },
+      ],
+    };
+
+    trackEvent('reserve_click', {
+      puppy_slug: puppySlug,
+      puppy_name: puppyName ?? undefined,
+      deposit_amount: depositAmount,
+      payment_provider: 'stripe',
+    });
+    trackEvent('begin_checkout', commerceParams);
+
     try {
-      const result = await createCheckoutSession(puppySlug);
+      const analyticsIdentifiers = await getAnalyticsIdentifiers();
+      const result = await createCheckoutSession(puppySlug, analyticsIdentifiers);
 
       if (!result.success) {
+        trackEvent('checkout_error', {
+          puppy_slug: puppySlug,
+          payment_provider: 'stripe',
+          error_code: result.errorCode,
+        });
         setError(result.error || 'Failed to create checkout session');
         setIsStripeLoading(false);
         return;
@@ -63,11 +93,21 @@ export function ReserveButton({
       if (result.sessionUrl) {
         window.location.href = result.sessionUrl;
       } else {
+        trackEvent('checkout_error', {
+          puppy_slug: puppySlug,
+          payment_provider: 'stripe',
+          error_code: 'MISSING_CHECKOUT_URL',
+        });
         setError('No checkout URL received');
         setIsStripeLoading(false);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      trackEvent('checkout_error', {
+        puppy_slug: puppySlug,
+        payment_provider: 'stripe',
+        error_code: 'UNEXPECTED_ERROR',
+      });
       setError(errorMessage);
       setIsStripeLoading(false);
     }

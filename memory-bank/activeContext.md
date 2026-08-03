@@ -16,6 +16,133 @@
 
 ## Current Status
 
+- **Completed (Aug 2, 2026)**: Expanded the site's consent-managed analytics into a measurable
+  SEO-to-lead funnel.
+  - Restored automatic GA4 page views; the previous root configuration disabled them without a
+    manual page-view replacement.
+  - Fixed Meta Pixel configuration by reading the deployed `NEXT_PUBLIC_META_PIXEL_ID`, added
+    App Router page-view tracking, and mapped standard Meta conversion events.
+  - Added `view_item` on puppy profiles, `generate_lead` after successful contact inquiries,
+    `begin_checkout`/reservation diagnostics on Stripe intent, and checkout-error diagnostics.
+  - GA4 browser client/session identifiers now flow through validated Stripe metadata into the
+    server-side `deposit_paid` event for stronger conversion attribution.
+  - Removed Google/Meta preconnects before consent. GA4, Meta Pixel, and their events continue to
+    load only after an explicit analytics opt-in.
+  - Live browser verification found and corrected the legacy Meta queue's conflicting version
+    shape. The production page now loads the expected `fbevents.js` plus Meta's pixel-specific
+    configuration script without the earlier version-conflict warning.
+  - Deployed to Vercel production as `dpl_7tgABYv8WPhBoPSbFC7sQQRuQmW8`; the primary domain was
+    aliased to the ready deployment. Live `/api/health` reports analytics `ok` with both `ga4` and
+    `meta_pixel`; overall health remains `degraded` only because `NEXT_PUBLIC_CONTACT_HOURS` is
+    not explicitly set and the documented fallback schedule is in use.
+  - Verification: production build passed; `VITEST_MAX_THREADS=4 npm run verify` passed docs,
+    links, lint, typecheck, Vitest (676 passed, 4 skipped), and Playwright (25 passed, 2 skipped).
+
+- **Completed (Aug 2, 2026)**: Restored a more personal breeder voice to the owner guide's BOAS
+  section while retaining veterinarian-led evaluation, individualized treatment language, surgical
+  risk context, and the authoritative American College of Veterinary Surgeons reference.
+  - Deployed to Vercel production as `dpl_BxEhR3WnQ6jdsEpmHwWWP9Xh4y3T`; the primary domain was
+    aliased to the ready deployment and the live article HTML contains the updated authorial copy.
+  - Verification: `npm run verify` passed documentation checks, lint, typecheck, Vitest (668
+    passed, 4 skipped), and Playwright (25 passed, 2 skipped).
+- **Diagnostic Update (Aug 2, 2026)**: Completed the post-deployment Search Console and Google
+  Business Profile audit without changing settings or requesting indexing.
+  - Performance, last 28 days vs previous 28 days: clicks `6 vs 7` (-14.3%), impressions
+    `257 vs 223` (+15.2%), CTR `2.3% vs 3.1%` (-0.8 pp), and average position `11.5 vs 13.3`
+    (improved by 1.8 positions).
+  - Performance, last 3 months vs previous 3 months: clicks `19 vs 13` (+46.2%), impressions
+    `716 vs 276` (+159.4%), CTR `2.7% vs 4.7%` (-2.0 pp), and average position `13.7 vs 8.1`.
+    The broader three-month query footprint added many low-volume, lower-ranking queries; the
+    rolling 28-day position is improving.
+  - Last-28-day pages: home `4 clicks / 34 impressions / position 2.9`; Huntsville
+    `2 / 90 / 9.4`; Birmingham `0 / 52 / 12.5`; puppies `0 / 42 / 8.5`; locations
+    `0 / 24 / 11.2`; dry-food article `0 / 32 / 17.1`. The dry-food article improved by 8.6
+    positions; Birmingham improved by 2.5 positions despite fewer impressions.
+  - Important queries: `french bulldogs for sale huntsville al` held position `8.9` with 15
+    impressions; the exact-domain brand query fell from 34 to 13 impressions and position 5.7 to
+    7.2; `english bulldogs for sale near me` improved from position 11 to 7.5; several new generic
+    and nutrition queries appeared with small samples.
+  - Page indexing increased from the previous 11 to 15 indexed URLs; 8 remain excluded (5
+    intentional `noindex`, 3 crawled/not indexed). The three crawled/not-indexed examples are the
+    high-carb article plus old Pearl and Duke puppy URLs. Pearl and Duke now correctly return 404;
+    the updated high-carb article returns 200 and passed a live indexability test but remains
+    outside the index.
+  - Both new owner-education articles are indexed. Cullman and Decatur are not yet in the index
+    immediately after deployment, but both passed live URL tests as available/indexable with valid
+    breadcrumbs. No indexing request was submitted.
+  - `/sitemap.xml` is successful, was read Aug 2, and reports 29 discovered pages. Core Web Vitals
+    has insufficient 90-day field data for both mobile and desktop. Links reports 0 external and
+    154 internal links.
+  - Search Console reports 0 invalid breadcrumb items (9 valid), 0 invalid review snippets (1
+    valid), 0 non-HTTPS URLs, no manual actions, and no security issues.
+  - The owner account contains an `Exotic Bulldog Legacy` Business Profile at the Falkville
+    address, but it is `Verification required`, `Not publicly visible`, and absent for an exact
+    Maps brand search. Maps instead returns the unrelated `Legacy Exotic Bulldogs` profile.
+  - GBP category (`Dog breeder`), business phone, SMS, and website are correct. Missing items are
+    description, opening date, social profiles, service area, main hours, cover image, logo, and
+    business photos. Confirm whether the Falkville address should be publicly displayed before
+    starting verification.
+- **Completed (Aug 2, 2026)**: Added the third post-audit local SEO package for Cullman and
+  Decatur.
+  - Deployed the complete three-part post-audit SEO package to Vercel production as deployment
+    `dpl_14SFiEpCu9nfjKhoNzE8ZUpoYn7k`; `https://exoticbulldoglegacy.com` is aliased to the ready
+    deployment.
+  - Live verification returned HTTP 200 for the home, location hub, both new city pages, both new
+    articles, `sitemap.xml`, and `robots.txt`; the missing-puppy regression URL returned a real HTTP 404. Cullman/Decatur canonicals and FAQ schema, both articles' `BlogPosting` schema, and every
+    new sitemap URL were present in production.
+  - Added indexable `/locations/cullman-al` and `/locations/decatur-al` pages with unique local
+    intent, pickup/delivery guidance, nearby service areas, owner resources, and FAQs. The copy
+    accurately describes Falkville as the operating location and does not imply storefronts in
+    either city.
+  - Expanded the Alabama location hub from two to four city pages, rewrote its metadata/H1/intro
+    around statewide search intent, and added Cullman/Decatur links to the sitewide footer.
+  - Statically generated every indexable city route with `dynamicParams = false` and published
+    city-specific `FAQPage` structured data alongside the existing local-business schema.
+  - Kept Madison within the Huntsville page and Falkville within the home/business entity rather
+    than creating thin, overlapping city pages. Additional city expansion should wait for the next
+    28-day Search Console comparison.
+  - Browser verification covered the Alabama hub plus both new city pages; canonical URLs,
+    headings, four-city navigation, FAQ schema, and responsive presentation were present with no
+    browser-console errors.
+  - Verification: targeted location/sitemap/footer tests passed (34/34); `npm run verify` passed
+    documentation checks, lint, typecheck, Vitest (668 passed, 4 skipped), and Playwright (25
+    passed, 2 skipped); `npx next build` passed with all four city routes statically generated.
+- **Completed (Aug 2, 2026)**: Shipped the second post-audit article and internal-linking SEO
+  package.
+  - Rewrote the two July 21 article SEO titles/descriptions around clearer search intent and set
+    truthful `updatedAt` timestamps; article headers, `BlogPosting.dateModified`, and local-post
+    sitemap dates now use the revision date.
+  - Corrected the public article date formatter from Russian to English for the English-language
+    site.
+  - Added natural, contextual links from both new articles to `/locations/huntsville-al`,
+    `/locations/birmingham-al`, `/locations`, and relevant commercial/policy pages.
+  - Added a reusable owner-resource section to both city pages, linking families back to the new
+    owner guide, potty-training guide, and health/deposit policies.
+  - Replaced unsafe certainty around brachycephalic airway surgery with veterinarian-led guidance
+    and an authoritative American College of Veterinary Surgeons reference; also softened absolute
+    claims around heat, swimming, skin-fold care, vaccination exposure, and bladder timelines.
+  - Removed unnecessary client-component boundaries from all three custom local articles. The
+    `/blog/[slug]` production route fell from 14.3 kB to 1.57 kB and First Load JS from 125 kB to
+    112 kB.
+  - Verification: targeted sitemap/article/location tests passed (16/16); `npm run verify` passed
+    link checks, lint, typecheck, Vitest (648 passed, 4 skipped), and Playwright (25 passed, 2
+    skipped); `npx next build` passed with all four article slugs statically generated.
+- **Completed (Aug 2, 2026)**: Shipped the first post-audit technical SEO package.
+  - Stabilized sitemap output: static and location URLs no longer claim a new `lastModified` value
+    on every render; puppy, Sanity, and local-post URLs retain their real source dates.
+  - Added `BlogPosting` and `BreadcrumbList` structured data to every article page, including
+    canonical URLs, publisher/author identity, images, categories, and published/modified dates.
+  - Projected Sanity `_updatedAt` into article data and added optional `updatedAt` support to the
+    local-post registry.
+  - Replaced the deleted `/images/tatiana-author.jpg` reference with the existing optimized
+    `/images/tatiana-author.webp` asset.
+  - Removed the puppy-detail streaming boundary that converted `notFound()` into a soft 404;
+    missing puppy URLs now return a real HTTP 404. Added E2E regression coverage for the status.
+  - Verification: targeted SEO tests passed (45/45); `npm run verify` passed link checks, lint,
+    typecheck, Vitest (642 passed, 4 skipped), and Playwright (25 passed, 2 skipped). The production
+    build passed and statically generated all four blog articles. Repository-wide Prettier remains
+    blocked only by pre-existing untracked `.claude/settings.local.json` and `NewBlogPosts.md`; all
+    files changed in this package were formatted.
 - **Completed (Jul 21, 2026)**: Added a new blog category "Bulldog Owner School" with two local
   articles, fixing a single-article rendering bug in the process.
   - New `lib/blog/local-posts.ts` entries: `ultimate-guide-for-new-bulldog-owners` (featured,
@@ -311,6 +438,9 @@
 
 ## Active Workstream
 
+- Meta Conversions API integration added (Aug 3, 2026): consent-gated browser/server events now share `event_id` for deduplication. Standard events include PageView, ViewContent, Contact, Lead, InitiateCheckout, and Purchase. The server token is never exposed to the browser; email/phone support is SHA-256 hashed before transmission.
+- New `/api/analytics/meta` endpoint accepts only allowlisted standard events after the `exoticbulldoglegacy_consent=granted` cookie is present. Browser delivery uses `keepalive` so outbound WhatsApp/contact navigation does not silently drop the server copy.
+
 - Debugging `NEXT_PUBLIC_PROMO_DISABLED` not taking effect on production.
 - Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED` and server payment entrypoints via `RESERVATIONS_DISABLED`.
 - Skipping intro screen via `NEXT_PUBLIC_INTRO_DISABLED`.
@@ -326,19 +456,21 @@
 
 ## Next Steps
 
+1. Confirm `NEXT_PUBLIC_META_PIXEL_ID` and `META_CONVERSION_API_TOKEN` are present in the Vercel Production environment, deploy, then verify Browser + Server event sources and deduplication in Meta Events Manager.
+
 1. Check browser console on production to see `[PromoGate]` log output.
-2. Based on result:
+1. Based on result:
    - If `undefined` → redeploy Vercel with cleared build cache, verify env var is set for Production environment.
    - If `true` but modal still shows → investigate `PromoModal` component for separate disable logic.
-3. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
-4. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
-5. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
-6. Turn off intro in `.env.local` when ready to hide the splash screen.
-7. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
-8. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
-9. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
-10. Confirm the Vercel deployment for `32d6054` completed and verify the Crisp bubble is absent in
-    production.
-11. Reconnect/authenticate the Supabase MCP integration in Codex, preferably scoped to
-    `project_ref=vsjsrbmcxryuodlqscnl` and `read_only=true`, then restart the session and verify
-    Supabase MCP tools appear in tool discovery.
+1. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
+1. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
+1. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
+1. Turn off intro in `.env.local` when ready to hide the splash screen.
+1. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
+1. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
+1. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
+1. Confirm the Vercel deployment for `32d6054` completed and verify the Crisp bubble is absent in
+   production.
+1. Reconnect/authenticate the Supabase MCP integration in Codex, preferably scoped to
+   `project_ref=vsjsrbmcxryuodlqscnl` and `read_only=true`, then restart the session and verify
+   Supabase MCP tools appear in tool discovery.

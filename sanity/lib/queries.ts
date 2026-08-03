@@ -25,6 +25,7 @@ export type SanityPost = SanityPostPreview & {
   body: PortableTextBlock[];
   seoTitle?: string;
   seoDescription?: string;
+  updatedAt?: string;
 };
 
 /** All posts, ordered: featured first, then newest. */
@@ -56,7 +57,8 @@ export const POST_BY_SLUG_QUERY = `
     "featured": coalesce(featured, false),
     body,
     seoTitle,
-    seoDescription
+    seoDescription,
+    "updatedAt": _updatedAt
   }
 `;
 
@@ -80,9 +82,9 @@ export type SitemapPost = {
   _updatedAt: string;
 };
 
-/** Format ISO date to Russian locale, e.g. "10 марта 2026 г." */
+/** Format an ISO date for the English-language public site, e.g. "March 10, 2026". */
 export function formatPostDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString('ru-RU', {
+  return new Date(isoDate).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

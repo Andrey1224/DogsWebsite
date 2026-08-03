@@ -16,7 +16,12 @@ vi.mock('@/sanity/lib/client', () => ({
 }));
 
 vi.mock('@/lib/data/locations', () => ({
-  getIndexableLocations: () => [],
+  getIndexableLocations: () => [
+    { slug: 'birmingham-al' },
+    { slug: 'huntsville-al' },
+    { slug: 'cullman-al' },
+    { slug: 'decatur-al' },
+  ],
 }));
 
 describe('sitemap', () => {
@@ -43,5 +48,41 @@ describe('sitemap', () => {
         url: 'https://example.com/puppies/mocha',
       }),
     );
+  });
+
+  it('does not publish fabricated current timestamps for static and location pages', async () => {
+    vi.mocked(getPuppies).mockResolvedValue([]);
+
+    const entries = await sitemap();
+    const homeEntry = entries.find((entry) => entry.url === 'https://example.com');
+    const locationEntry = entries.find(
+      (entry) => entry.url === 'https://example.com/locations/huntsville-al',
+    );
+
+    expect(homeEntry).toBeDefined();
+    expect(homeEntry?.lastModified).toBeUndefined();
+    expect(locationEntry).toBeDefined();
+    expect(locationEntry?.lastModified).toBeUndefined();
+  });
+
+  it('uses the real update date for revised local articles', async () => {
+    vi.mocked(getPuppies).mockResolvedValue([]);
+
+    const entries = await sitemap();
+    const articleEntry = entries.find(
+      (entry) => entry.url === 'https://example.com/blog/ultimate-guide-for-new-bulldog-owners',
+    );
+
+    expect(articleEntry?.lastModified).toEqual(new Date('2026-08-02T21:30:00.000Z'));
+  });
+
+  it('includes the Cullman and Decatur service-area pages', async () => {
+    vi.mocked(getPuppies).mockResolvedValue([]);
+
+    const entries = await sitemap();
+    const urls = entries.map((entry) => entry.url);
+
+    expect(urls).toContain('https://example.com/locations/cullman-al');
+    expect(urls).toContain('https://example.com/locations/decatur-al');
   });
 });

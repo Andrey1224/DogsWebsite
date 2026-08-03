@@ -21,6 +21,7 @@ import {
   assertReservationsEnabled,
   ReservationsDisabledError,
 } from '@/lib/reservations/reservation-guard';
+import type { AnalyticsIdentifiers } from '@/lib/analytics/types';
 
 /**
  * Result of checkout session creation
@@ -30,6 +31,11 @@ export interface CreateCheckoutSessionResult {
   sessionUrl?: string;
   error?: string;
   errorCode?: 'PUPPY_NOT_FOUND' | 'PUPPY_NOT_AVAILABLE' | 'RESERVATIONS_DISABLED' | 'STRIPE_ERROR';
+}
+
+function normalizeAnalyticsIdentifier(value?: string): string | undefined {
+  const normalized = value?.trim();
+  return normalized && /^[A-Za-z0-9._-]{1,128}$/.test(normalized) ? normalized : undefined;
 }
 
 /**
@@ -45,6 +51,7 @@ export interface CreateCheckoutSessionResult {
  */
 export async function createCheckoutSession(
   puppySlug: string,
+  analyticsIdentifiers: AnalyticsIdentifiers = {},
 ): Promise<CreateCheckoutSessionResult> {
   try {
     assertReservationsEnabled();
@@ -89,6 +96,8 @@ export async function createCheckoutSession(
     // Step 3: Determine Stripe deposit amount from server-only config.
     const depositAmountCents = getStripeDepositAmountCents();
     const depositAmountLabel = formatStripeDepositAmount(depositAmountCents);
+    const gaClientId = normalizeAnalyticsIdentifier(analyticsIdentifiers.clientId);
+    const gaSessionId = normalizeAnalyticsIdentifier(analyticsIdentifiers.sessionId);
 
     // Step 4: Get site URL for redirect URLs
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -137,6 +146,8 @@ export async function createCheckoutSession(
         puppy_name: params.puppyName,
         customer_email: params.customerEmail,
         channel: 'site',
+        ...(gaClientId ? { ga_client_id: gaClientId } : {}),
+        ...(gaSessionId ? { ga_session_id: gaSessionId } : {}),
       },
       payment_intent_data: {
         // Statement descriptor appears on customer's bank statement

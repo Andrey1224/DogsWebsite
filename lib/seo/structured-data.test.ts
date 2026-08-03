@@ -11,6 +11,7 @@ import {
   getLocalBusinessSchema,
   getProductSchema,
   getFaqSchema,
+  getBlogPostingSchema,
   getMerchantReturnPolicySchema,
 } from './structured-data';
 import type { PuppyWithRelations } from '@/lib/supabase/types';
@@ -202,6 +203,36 @@ describe('SEO Structured Data', () => {
         '/images/reviews/sarah-charlie.webp',
         '/images/reviews/mark-lisa-duke.webp',
         '/images/reviews/cameron-milo.webp',
+      ]);
+    });
+  });
+
+  describe('getBlogPostingSchema', () => {
+    it('generates article metadata with absolute URLs', () => {
+      const schema = getBlogPostingSchema({
+        title: 'Puppy Potty Training 101',
+        description: 'A practical puppy potty training guide.',
+        slug: 'puppy-potty-training-101',
+        image: '/images/blog/puppy-potty-training-101.jpg',
+        datePublished: '2026-07-21T11:00:00.000Z',
+        category: 'Care',
+      });
+
+      expect(schema).toMatchObject({
+        '@type': 'BlogPosting',
+        headline: 'Puppy Potty Training 101',
+        url: 'https://exoticbulldoglegacy.com/blog/puppy-potty-training-101',
+        datePublished: '2026-07-21T11:00:00.000Z',
+        dateModified: '2026-07-21T11:00:00.000Z',
+        articleSection: 'Care',
+        author: {
+          '@type': 'Person',
+          name: 'Tatiana',
+          url: 'https://exoticbulldoglegacy.com/about',
+        },
+      });
+      expect(schema.image).toEqual([
+        'https://exoticbulldoglegacy.com/images/blog/puppy-potty-training-101.jpg',
       ]);
     });
   });

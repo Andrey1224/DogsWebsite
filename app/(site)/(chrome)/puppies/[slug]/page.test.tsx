@@ -45,6 +45,10 @@ vi.mock('@/components/puppy-gallery', () => ({
   PuppyGallery: () => <div data-testid="puppy-gallery">Gallery</div>,
 }));
 
+vi.mock('@/components/analytics/puppy-view-tracker', () => ({
+  PuppyViewTracker: () => <div data-testid="puppy-view-tracker" />,
+}));
+
 vi.mock('@/components/puppy-detail/stats-grid', () => ({
   StatsGrid: () => <div data-testid="stats-grid">StatsGrid</div>,
 }));
@@ -104,6 +108,7 @@ describe('PuppyDetailPage', () => {
 
     // Check child components rendered
     expect(screen.getByTestId('puppy-gallery')).toBeInTheDocument();
+    expect(screen.getByTestId('puppy-view-tracker')).toBeInTheDocument();
     expect(screen.getByTestId('stats-grid')).toBeInTheDocument();
     expect(screen.getByText('Reserve')).toBeInTheDocument();
   });

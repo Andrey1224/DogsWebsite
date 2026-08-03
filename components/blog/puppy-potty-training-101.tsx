@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import {
   CheckCircle2,
@@ -57,8 +55,8 @@ export function PuppyPottyTraining101() {
   const ageMilestones = [
     { age: '2 months', hold: '1–2 hours max' },
     { age: '3 months', hold: '~3 hours' },
-    { age: '4–5 months', hold: 'Up to 4–5 hours' },
-    { age: '6–8 months', hold: 'Adult schedule (8–10 hrs overnight)' },
+    { age: '4–5 months', hold: 'About 3–5 hours' },
+    { age: '6+ months', hold: 'Gradually longer with routine' },
   ];
 
   const cueMethods = [
@@ -84,8 +82,8 @@ export function PuppyPottyTraining101() {
       {/* Intro section */}
       <div className="space-y-6">
         <p className="text-xl font-medium leading-relaxed text-slate-200">
-          Potty training is one of the first and most important steps in helping a new puppy adjust
-          to your home.
+          Potty training is one of the first and most important steps in helping a French Bulldog,
+          English Bulldog, or any new puppy adjust to your home.
         </p>
         <p className="leading-relaxed">
           This process requires patience, consistency, and a clear understanding of puppy
@@ -100,8 +98,10 @@ export function PuppyPottyTraining101() {
           Option 1: Indoor Puppy Pads
         </h2>
         <p className="leading-relaxed">
-          Puppy pads are a great temporary tool, especially during the post-vaccination quarantine
-          period or for very young puppies.
+          Puppy pads can be a useful temporary tool for very young puppies or when your veterinarian
+          recommends limiting exposure to public dog areas. Ask your veterinarian when private-yard
+          or neighborhood training is appropriate for your puppy&rsquo;s vaccination status and
+          local disease risk.
         </p>
 
         <div className="my-8 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -257,8 +257,10 @@ export function PuppyPottyTraining101() {
           How and When Puppies Learn to Hold It
         </h2>
         <p className="leading-relaxed">
-          Physiologically, puppies don&rsquo;t gain full control over their bladder and bowels until
-          around 3.5 to 4 months old. Before this age, they simply can&rsquo;t hold it for long.
+          Young puppies have limited bladder and bowel control, so frequent opportunities are more
+          effective than expecting them to hold it. The ranges below are planning estimates, not
+          rules: age, size, water intake, sleep, activity, medication, and health can all change the
+          schedule.
         </p>
 
         <div className="my-8 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -274,6 +276,24 @@ export function PuppyPottyTraining101() {
             </div>
           ))}
         </div>
+        <p className="text-sm leading-relaxed text-slate-400">
+          Take puppies out after waking, meals, drinking, play, and before bed even when the chart
+          suggests they could wait longer. Sudden accidents, straining, excessive thirst, diarrhea,
+          or unusually frequent urination should be discussed with a veterinarian.
+        </p>
+      </div>
+
+      {/* Training timeline */}
+      <div className="mt-12 space-y-6">
+        <h2 className="mb-6 mt-12 border-b border-slate-800 pb-2 text-2xl font-bold text-white md:text-3xl">
+          How Long Does Puppy Potty Training Take?
+        </h2>
+        <p className="leading-relaxed">
+          Many puppies show progress within a few weeks, but reliability usually develops gradually
+          over several months. Changes in home, weather, routine, or health can cause temporary
+          setbacks. Track successful trips and accidents for a week, then adjust timing based on
+          your puppy&rsquo;s actual pattern instead of comparing them with another dog.
+        </p>
       </div>
 
       {/* Teaching Cues */}
@@ -337,6 +357,38 @@ export function PuppyPottyTraining101() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Alabama service area links */}
+      <div className="mt-12 space-y-6 rounded-2xl border border-slate-800 bg-[#151c2b]/40 p-6 md:p-8">
+        <h2 className="text-2xl font-bold text-white md:text-3xl">
+          Start the Routine Before Your Alabama Pickup
+        </h2>
+        <p className="leading-relaxed">
+          Ask what surface, cue word, meal schedule, and potty routine your puppy currently knows so
+          you can continue it at home. Families can review pickup and delivery details for{' '}
+          <Link
+            href="/locations/huntsville-al"
+            className="text-white underline transition-colors hover:text-[#ff6b00]"
+          >
+            Huntsville-area Bulldog puppies
+          </Link>{' '}
+          and{' '}
+          <Link
+            href="/locations/birmingham-al"
+            className="text-white underline transition-colors hover:text-[#ff6b00]"
+          >
+            Birmingham-area Bulldog puppies
+          </Link>
+          . You can also review our{' '}
+          <Link
+            href="/policies"
+            className="text-white underline transition-colors hover:text-[#ff6b00]"
+          >
+            health and deposit policies
+          </Link>{' '}
+          before reserving.
+        </p>
       </div>
 
       {/* Call to Actions */}

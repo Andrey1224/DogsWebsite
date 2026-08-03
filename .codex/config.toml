@@ -16,4 +16,5 @@ args = ["@playwright/mcp@latest"]
 command = "npx"
 
 [mcp_servers.supabase]
-url = "https://mcp.supabase.com/mcp"
+url = "https://mcp.supabase.com/mcp?project_ref=vsjsrbmcxryuodlqscnl&read_only=true"
+bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"

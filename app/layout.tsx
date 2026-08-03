@@ -45,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? null;
-  const metaPixelId = process.env.META_PIXEL_ID ?? null;
+  const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? process.env.META_PIXEL_ID ?? null;
   const crispEnabled =
     process.env.NEXT_PUBLIC_CRISP_ENABLED === 'true' &&
     Boolean(process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID);
@@ -86,32 +86,6 @@ export default function RootLayout({
           <>
             <link rel="dns-prefetch" href={`https://${supabaseHostname}`} />
             <link rel="preconnect" href={`https://${supabaseHostname}`} crossOrigin="anonymous" />
-          </>
-        )}
-
-        {/* Preconnect for analytics (GA4/GTM) - only if consent granted */}
-        {gaMeasurementId && (
-          <>
-            <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-            <link
-              rel="preconnect"
-              href="https://www.googletagmanager.com"
-              crossOrigin="anonymous"
-            />
-            <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-            <link
-              rel="preconnect"
-              href="https://www.google-analytics.com"
-              crossOrigin="anonymous"
-            />
-          </>
-        )}
-
-        {/* Preconnect for Facebook Pixel - only if configured */}
-        {metaPixelId && (
-          <>
-            <link rel="dns-prefetch" href="https://connect.facebook.net" />
-            <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
           </>
         )}
 

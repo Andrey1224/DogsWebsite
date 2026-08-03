@@ -7,6 +7,7 @@ export type LocalPostDetails = Omit<BlogClientPost, 'category'> & {
   imageAlt?: string;
   seoTitle?: string;
   seoDescription?: string;
+  updatedAt?: string;
   publishedAt: string; // ISO format for sorting
 };
 
@@ -45,9 +46,10 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
     imageAlt:
       'French Bulldog and English Bulldog relaxing together comfortably on a couch, illustrating a new-owner care guide.',
     featured: true,
-    seoTitle: 'The Ultimate Guide for New French & English Bulldog Owners',
+    seoTitle: 'New French & English Bulldog Owner Guide',
     seoDescription:
-      'Essential care guide for new French and English Bulldog owners: respiratory health, harnesses, climate control, water safety, joint care, wrinkle hygiene, and nutrition.',
+      'New French or English Bulldog owner? Learn daily care, breathing and heat safety, exercise, water safety, wrinkle hygiene, nutrition, and puppy preparation.',
+    updatedAt: '2026-08-02T21:30:00.000Z',
     publishedAt: '2026-07-21T12:00:00.000Z',
   },
   {
@@ -63,9 +65,10 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
     image: '/images/blog/puppy-potty-training-101.jpg',
     imageAlt: 'Bulldog puppy learning an indoor potty training routine.',
     featured: false,
-    seoTitle: 'Puppy Potty Training 101 | Pads vs. Outdoor Training Guide',
+    seoTitle: 'How to Potty Train a Puppy: Step-by-Step',
     seoDescription:
-      'A step-by-step guide to puppy potty training: indoor pads vs. outdoor training, the landing strip method, age-based bladder control, and golden rules for success.',
+      'Learn how to potty train a puppy with pads or outdoor trips, a realistic age-based schedule, positive reinforcement, accident cleanup, and transition steps.',
+    updatedAt: '2026-08-02T21:30:00.000Z',
     publishedAt: '2026-07-21T11:00:00.000Z',
   },
 ];

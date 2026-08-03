@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnchorHTMLAttributes } from 'react';
 
-import LocationPage from './page';
+import LocationPage, { generateMetadata, generateStaticParams } from './page';
 
 vi.mock('next/link', () => ({
   __esModule: true,
@@ -37,6 +37,8 @@ describe('Location Page', () => {
   it.each([
     ['birmingham-al', 'Birmingham'],
     ['huntsville-al', 'Huntsville'],
+    ['cullman-al', 'Cullman'],
+    ['decatur-al', 'Decatur'],
   ])('does not render the testimonial section for %s', async (slug, city) => {
     const component = await LocationPage({ params: Promise.resolve({ slug }) });
     render(component);
@@ -81,6 +83,8 @@ describe('Location Page', () => {
   it.each([
     ['birmingham-al', 'Birmingham'],
     ['huntsville-al', 'Huntsville'],
+    ['cullman-al', 'Cullman'],
+    ['decatur-al', 'Decatur'],
   ])('uses city-specific no-availability wording for %s', async (slug, city) => {
     const component = await LocationPage({ params: Promise.resolve({ slug }) });
     const { container } = render(component);
@@ -92,5 +96,70 @@ describe('Location Page', () => {
       `future availability, reservation timing, and pickup or delivery options near ${city}.`,
     );
     expect(screen.queryByText(/No puppies are available right now/i)).not.toBeInTheDocument();
+  });
+
+  it.each(['birmingham-al', 'huntsville-al', 'cullman-al', 'decatur-al'])(
+    'links %s families to the new owner resources',
+    async (slug) => {
+      const component = await LocationPage({ params: Promise.resolve({ slug }) });
+      render(component);
+
+      expect(screen.getByRole('link', { name: /new bulldog owner guide/i })).toHaveAttribute(
+        'href',
+        '/blog/ultimate-guide-for-new-bulldog-owners',
+      );
+      expect(screen.getByRole('link', { name: /puppy potty training/i })).toHaveAttribute(
+        'href',
+        '/blog/puppy-potty-training-101',
+      );
+      expect(
+        screen
+          .getAllByRole('link', { name: /health & deposit policies/i })
+          .some((link) => link.getAttribute('href') === '/policies'),
+      ).toBe(true);
+    },
+  );
+
+  it.each([
+    ['cullman-al', 'Cullman', /Cullman County is centrally positioned along Interstate 65/i],
+    ['decatur-al', 'Decatur', /Decatur sits on the Tennessee River in North Alabama/i],
+  ])('renders unique local planning content for %s', async (slug, city, localCopy) => {
+    const component = await LocationPage({ params: Promise.resolve({ slug }) });
+    render(component);
+
+    expect(
+      screen.getByRole('heading', { name: new RegExp(`Planning Your ${city} Puppy Pickup`, 'i') }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(localCopy)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /check current puppies/i })).toHaveAttribute(
+      'href',
+      '/puppies',
+    );
+
+    const faqSchema = document.querySelector(`#location-faq-${slug}`);
+    expect(JSON.parse(faqSchema?.textContent ?? '{}')).toMatchObject({
+      '@type': 'FAQPage',
+    });
+  });
+
+  it('pre-renders every indexable city page', () => {
+    expect(generateStaticParams()).toEqual(
+      expect.arrayContaining([
+        { slug: 'birmingham-al' },
+        { slug: 'huntsville-al' },
+        { slug: 'cullman-al' },
+        { slug: 'decatur-al' },
+      ]),
+    );
+  });
+
+  it.each([
+    ['cullman-al', 'Bulldog Puppies Near Cullman, Alabama'],
+    ['decatur-al', 'Bulldog Puppies Near Decatur, Alabama'],
+  ])('uses search-focused metadata for %s', async (slug, title) => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug }) });
+
+    expect(metadata.title).toBe(title);
+    expect(new URL(String(metadata.alternates?.canonical)).pathname).toBe(`/locations/${slug}`);
   });
 });

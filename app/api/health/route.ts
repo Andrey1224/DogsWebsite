@@ -124,7 +124,7 @@ export async function GET() {
     if (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
       analyticsServices.push('ga4');
     }
-    if (process.env.META_PIXEL_ID) {
+    if (process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.META_PIXEL_ID) {
       analyticsServices.push('meta_pixel');
     }
 

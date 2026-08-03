@@ -39,7 +39,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: withBase(route, siteUrl),
     changeFrequency: route === '' ? 'weekly' : 'monthly',
     priority: route === '' ? 1 : 0.7,
-    lastModified: new Date(),
   }));
 
   const puppyEntries: MetadataRoute.Sitemap = puppies
@@ -62,14 +61,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: withBase(`/blog/${p.slug}`, siteUrl),
     changeFrequency: 'monthly' as const,
     priority: 0.6,
-    lastModified: new Date(p.publishedAt),
+    lastModified: new Date(p.updatedAt ?? p.publishedAt),
   }));
 
   const locationEntries: MetadataRoute.Sitemap = getIndexableLocations().map((loc) => ({
     url: withBase(`/locations/${loc.slug}`, siteUrl),
     changeFrequency: 'monthly' as const,
     priority: 0.6,
-    lastModified: new Date(),
   }));
 
   return [
