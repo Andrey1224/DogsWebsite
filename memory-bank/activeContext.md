@@ -17,6 +17,31 @@
 
 ## Current Status
 
+- **Completed (Aug 4, 2026)**: Live $1 Stripe payment QA — verified deposit and pay-in-full
+  checkout end-to-end on the client's real (live) Stripe account.
+  - `.env.local` Stripe keys are now **live** (`sk_live_`/`pk_live_`), not sandbox — restored
+    from the previously-commented values. Sandbox keys are now the commented-out fallback.
+    See memory `stripe-test-keys-active-in-env-local` (needs updating to match).
+  - Key discovery: the deployed production site already has its own **live-mode Stripe webhook
+    endpoint** configured and working independently of local dev — it has its own
+    `STRIPE_WEBHOOK_SECRET` on Vercel (referenced in `.env.local` as the commented "Moms real
+    one" secret) and its own `OWNER_EMAIL` (`mosss73@myyahoo.com`, not the local
+    `nepod77@gmail.com`). Any live Stripe event now gets delivered to both production and any
+    local `stripe listen --live` session running at the same time — production wins the
+    race to create the reservation, and a local listener that loses the race fires a
+    "money taken without reservation" alert email that looks like a bug but isn't (the
+    reservation exists, just created by prod's handler, not the local one). Don't be alarmed
+    by that alert if this is retested locally — verify the DB/Resend dashboard, not just the
+    local terminal log.
+  - Verified via two real $1 charges against test/hidden puppy records (created directly via
+    Supabase MCP `insert`, archived immediately after): deposit flow → reservation `paid`,
+    puppy → `reserved`; full-pay flow → reservation `paid`, puppy → `sold`. Both customer and
+    real-owner (`mosss73@myyahoo.com`) emails confirmed delivered via the Resend dashboard.
+  - `STRIPE_DEPOSIT_AMOUNT_CENTS` and `RESEND_DELIVERY_MODE` were temporarily changed for the
+    test window and have been reverted to their prior values (`unset`/$300 default,
+    `"never"`). Live Stripe keys were intentionally left active per user request — local dev
+    now runs against the real payment account, not sandbox.
+
 - **Completed (Aug 3, 2026)**: Final hardening pass on the Advanced Consent Mode v2 analytics
   stack (no architecture changes — cookieless GA/Meta-after-Accept/Vercel-always design kept).
   - Removed the `navigator.webdriver` auto-Accept branch from `components/consent-banner.tsx`
@@ -684,7 +709,7 @@
    - If `true` but modal still shows → investigate `PromoModal` component for separate disable logic.
 1. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
 1. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
-1. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
+1. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed. **Live Stripe webhook verification is now confirmed (Aug 4, 2026, see Current Status)** — flipping the kill switches off is a business decision for the user, not done automatically here.
 1. Turn off intro in `.env.local` when ready to hide the splash screen.
 1. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
 1. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.

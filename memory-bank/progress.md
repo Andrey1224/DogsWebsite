@@ -42,6 +42,14 @@
   Vercel Analytics `beforeSend`, hardened `/api/analytics/meta` with a same-origin check and a
   `customData` allowlist, and added a `resetConsent()`-backed "Privacy settings" control in the
   footer (PR #15, merged to `main` as `500e6fc`).
+- Verified the live Stripe integration end-to-end on the client's real account (Aug 4, 2026): two
+  real $1 charges (deposit + pay-in-full) against disposable, archived-after test puppy records
+  confirmed reservation creation, correct `paid`/`reserved`/`sold` state transitions, and delivery
+  of both customer and real-owner (`mosss73@myyahoo.com`) emails. Also confirmed the Vercel
+  production deployment already runs live Stripe keys and has its own independent live webhook
+  endpoint — no production config changes were needed. See `memory-bank/activeContext.md`
+  (Aug 4, 2026 entry) for the full writeup, including a race-condition gotcha when testing with
+  `stripe listen --live` locally while production is also live.
 
 ## Known Debt
 
@@ -51,3 +59,7 @@
 - **Analytics follow-ups**: see `docs/planning/ANALYTICS_BACKLOG.md` — re-sanitizing Meta CAPI
   `sourceUrl` server-side with a domain restriction, and strengthening the PII filter to catch
   substring-matched keys and nested objects.
+- **CI/CD follow-ups**: see `docs/planning/CICD_BACKLOG.md` — caching Playwright browser binaries
+  and parallelizing lint/typecheck/unit-test jobs. (The two highest-value fixes — dropping
+  `optimize-images` from CI's build step and deduping push/pull_request runs — already shipped in
+  `13eae01`.)

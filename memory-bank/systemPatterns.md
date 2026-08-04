@@ -11,6 +11,23 @@
   - **Kill switch**: Public reservation UX uses `NEXT_PUBLIC_RESERVATIONS_DISABLED`; server payment entrypoints also call the `RESERVATIONS_DISABLED`/public env guard before creating checkout sessions, PayPal orders, or captures.
   - **Stripe deposit amount**: Stripe Checkout reads server-only `STRIPE_DEPOSIT_AMOUNT_CENTS` with a default of `30000`; do not expose this as `NEXT_PUBLIC`.
 - **State**: URL-driven state for lists; Server Actions for mutations.
+- **Single shared Supabase project**: there is no separate staging/dev database. Local dev
+  (`.env.local`, `npm run dev`) and the deployed production site read/write the **same** Supabase
+  project (`exotic-bulldog`, ref `vsjsrbmcxryuodlqscnl`) — confirmed Aug 4, 2026 by cross-checking
+  a puppy inserted locally against the live public site. Any record created (or deleted) locally
+  is immediately real on the live site. Test data must use an obviously-labeled record and be
+  archived (`is_archived = true`) immediately, since `is_archived` is the only visibility switch
+  and it fully blocks both the public grid and the slug page (no "hidden but directly reachable"
+  state exists).
+- **Production already runs live Stripe independently of `.env.local`**: the Vercel deployment has
+  its own live-mode `STRIPE_SECRET_KEY`/webhook endpoint/`STRIPE_WEBHOOK_SECRET`/`OWNER_EMAIL`
+  (confirmed Aug 4, 2026 — production's own webhook handler processes real events and emails the
+  real owner regardless of what `.env.local` is set to). If a live Stripe event is triggered while
+  a local `stripe listen --live` session is also forwarding the same account's events, production
+  wins the create-reservation race; the local side sees "Puppy is no longer available for
+  reservation" and fires a money-safety alert email that looks alarming but reflects duplicate
+  processing, not a real failure. Verify against the DB / Resend dashboard, not the local log,
+  when this happens.
 
 ## Conventions
 
