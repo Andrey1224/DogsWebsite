@@ -51,10 +51,10 @@
     denylist, is dropped by default. Parse failures fall back to origin+pathname only, never
     the raw input.
   - **PII never leaves the browser, even after Accept**: `lib/analytics/sensitive-params.ts`'s
-    `stripSensitiveEventParams()` denylist (email/phone/name/address/message/token/
-    session_id/customer_id/order_id/etc.) is applied to GA4 `trackEvent` params in granted
-    mode and to Meta's `trackCustom` fallback — consent controls _whether_ analytics run, not
-    _what_ gets sent once it does.
+    `stripSensitiveEventParams()` denylist (`email`/`phone`/`name`/`address`/`message`/`token`/
+    `session_id`/`customer_id`/`order_id`/etc.) is applied to GA4 `trackEvent` params in
+    granted mode and to Meta's `trackCustom` fallback — consent controls **whether** analytics
+    run, not **what** gets sent once it does.
   - **Vercel Analytics `beforeSend`**: must be defined inside a client component
     (`components/vercel-analytics.tsx`) — a function prop can't cross the Server → Client
     Component boundary from `app/layout.tsx`.
