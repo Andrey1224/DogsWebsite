@@ -3,6 +3,7 @@ import { Activity, ArrowLeft, MapPin, Star, Weight } from 'lucide-react';
 import Link from 'next/link';
 
 import { JsonLd } from '@/components/json-ld';
+import { PuppyViewTracker } from '@/components/analytics/puppy-view-tracker';
 import { PuppyGallery } from '@/components/puppy-gallery';
 import { PuppyCard } from '@/components/puppy-card';
 import { StatsGrid } from '@/components/puppy-detail/stats-grid';
@@ -157,6 +158,13 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
   return (
     <div className="min-h-screen bg-[#0B1120] pb-20 pt-24 font-sans text-white">
       <JsonLd id={`product-${puppy.id}`} data={productSchema} />
+      <PuppyViewTracker
+        slug={puppy.slug || slug}
+        name={puppy.name || 'Bulldog Puppy'}
+        breed={breedLabel || 'Bulldog'}
+        price={puppy.price_usd ?? null}
+        status={puppy.status || 'unknown'}
+      />
 
       {/* Breadcrumb Navigation */}
       <div className="mx-auto mb-8 flex max-w-7xl items-center gap-2 px-6 pt-8 text-sm text-slate-400 md:px-12">
@@ -236,6 +244,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             reservationsDisabled={reservationsDisabled}
             reservationsDisabledMessage={reservationsDisabledMessage}
             depositAmount={depositAmount}
+            puppyPrice={puppy.price_usd ?? null}
             paypalClientId={paypalClientId}
           />
         </div>

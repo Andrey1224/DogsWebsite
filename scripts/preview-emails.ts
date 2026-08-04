@@ -21,6 +21,7 @@ const sampleData: DepositData = {
   depositAmount: 300,
   currency: 'USD',
   paymentProvider: 'stripe',
+  paymentType: 'deposit',
   reservationId: 'res_test123',
   transactionId: 'txn_test456',
 };

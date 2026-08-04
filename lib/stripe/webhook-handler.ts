@@ -31,14 +31,13 @@ import { sendAsyncPaymentFailedEmail } from '@/lib/emails/async-payment-failed';
 import { createServiceRoleClient } from '@/lib/supabase/client';
 import { ReservationServerQueries } from '@/lib/reservations/server-queries';
 import { WebhookEventsServer } from '@/lib/webhooks/webhook-events-server';
+import { alertWebhookError } from '@/lib/monitoring/webhook-alerts';
 import type { Json } from '@/lib/supabase/database.types';
 import type {
   WebhookProcessingResult,
   StripeCheckoutMetadata,
   TypedCheckoutSession,
 } from './types';
-
-let supabaseAdminClient: ReturnType<typeof createServiceRoleClient> | null = null;
 
 function serializeStripeEvent(event: Stripe.Event): Json {
   // Stripe events are plain data objects; JSON round-trip strips methods/non-serializable fields.
@@ -52,21 +51,6 @@ const REQUIRED_METADATA_FIELDS: Array<keyof StripeCheckoutMetadata> = [
   'puppy_name',
   'customer_email',
 ];
-
-function getServiceRoleClient() {
-  if (supabaseAdminClient) {
-    return supabaseAdminClient;
-  }
-
-  try {
-    supabaseAdminClient = createServiceRoleClient();
-    return supabaseAdminClient;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn('[Stripe Webhook] Service role client unavailable:', message);
-    return null;
-  }
-}
 
 function getPaymentIntentId(session: Stripe.Checkout.Session): string | null {
   const { payment_intent: paymentIntent } = session;
@@ -100,6 +84,11 @@ function getCheckoutMetadata(session: Stripe.Checkout.Session): {
     customer_phone:
       normalizeMetadataValue(metadata?.customer_phone) || session.customer_details?.phone,
     channel: normalizeMetadataValue(metadata?.channel),
+    payment_type:
+      (normalizeMetadataValue(metadata?.payment_type) as 'deposit' | 'full' | undefined) ??
+      'deposit',
+    ga_client_id: normalizeMetadataValue(metadata?.ga_client_id),
+    ga_session_id: normalizeMetadataValue(metadata?.ga_session_id),
   };
 
   const missing = REQUIRED_METADATA_FIELDS.filter(
@@ -121,9 +110,84 @@ function isUniqueExternalPaymentError(error: unknown): boolean {
   const normalized = message.toLowerCase();
   return (
     normalized.includes('unique_external_payment_per_provider') ||
-    normalized.includes('duplicate key value') ||
-    normalized.includes('external_payment_id')
+    normalized.includes('duplicate_external_payment')
   );
+}
+
+async function recordMoneyTakenWithoutReservation(params: {
+  eventId: string;
+  eventType: string;
+  paymentIntentId: string;
+  error: string;
+  metadata?: Partial<StripeCheckoutMetadata>;
+}): Promise<void> {
+  const idempotencyKey = `stripe:${params.paymentIntentId}`;
+  await WebhookEventsServer.markFailed({
+    provider: 'stripe',
+    eventId: params.eventId,
+    idempotencyKey,
+    error: params.error,
+  });
+
+  if (!params.metadata?.puppy_id) return;
+
+  const claimed = await WebhookEventsServer.claimAlert({
+    provider: 'stripe',
+    idempotencyKey,
+  });
+  if (!claimed) return;
+
+  await alertWebhookError({
+    provider: 'stripe',
+    eventType: params.eventType,
+    eventId: params.eventId,
+    paymentId: params.paymentIntentId,
+    error: params.error,
+    puppyId: params.metadata.puppy_id,
+    customerEmail: params.metadata.customer_email,
+    timestamp: new Date(),
+  });
+}
+
+async function recordStaleStripeEvent(event: Stripe.Event): Promise<void> {
+  const session = event.data.object as Stripe.Checkout.Session;
+  const paymentIntentId = getPaymentIntentId(session);
+  const { metadata } = getCheckoutMetadata(session);
+  const idempotencyKey = `stripe:${paymentIntentId ?? event.id}`;
+  const error = 'Event is stale and will not be processed';
+
+  await idempotencyManager.createWebhookEvent({
+    provider: 'stripe',
+    eventId: event.id,
+    eventType: event.type,
+    payload: serializeStripeEvent(event),
+    idempotencyKey,
+  });
+  await WebhookEventsServer.markFailed({
+    provider: 'stripe',
+    eventId: event.id,
+    idempotencyKey,
+    error,
+  });
+
+  if (!metadata?.puppy_id) return;
+
+  const alertCount = await WebhookEventsServer.claimAlertBucket({
+    provider: 'stripe',
+    bucketKey: 'stale-checkout-events',
+  });
+  if (alertCount === 0) return;
+
+  await alertWebhookError({
+    provider: 'stripe',
+    eventType: 'stale-checkout-events',
+    eventId: event.id,
+    paymentId: 'stale-checkout-events',
+    error: `${error}. ${alertCount} stale checkout event(s) accumulated in this alert window.`,
+    puppyId: metadata.puppy_id,
+    customerEmail: metadata.customer_email,
+    timestamp: new Date(),
+  });
 }
 
 /**
@@ -143,8 +207,9 @@ export class StripeWebhookHandler {
       const nowSeconds = Math.floor(Date.now() / 1000);
       if (nowSeconds - created > STALE_EVENT_TTL_SECONDS) {
         console.warn('[Stripe Webhook] Discarding stale event:', eventId);
+        await recordStaleStripeEvent(event);
         return {
-          success: false,
+          success: true,
           eventType: type,
           error: 'Event is stale and will not be processed',
         };
@@ -230,6 +295,14 @@ export class StripeWebhookHandler {
     );
 
     if (idempotencyCheck.exists) {
+      if (idempotencyCheck.inProgress) {
+        return {
+          success: false,
+          eventType: 'checkout.session.completed',
+          paymentIntentId,
+          error: 'Webhook event is already processing; retry later',
+        };
+      }
       console.log(
         `[Stripe Webhook] Duplicate event detected for payment_intent ${paymentIntentId}; skipping`,
       );
@@ -321,6 +394,14 @@ export class StripeWebhookHandler {
     );
 
     if (idempotencyCheck.exists) {
+      if (idempotencyCheck.inProgress) {
+        return {
+          success: false,
+          eventType: 'checkout.session.async_payment_succeeded',
+          paymentIntentId,
+          error: 'Webhook event is already processing; retry later',
+        };
+      }
       console.log(
         `[Stripe Webhook] Duplicate event detected for payment_intent ${paymentIntentId}; skipping`,
       );
@@ -608,42 +689,13 @@ export class StripeWebhookHandler {
       `[Stripe Webhook] Creating reservation for puppy_id: ${metadata.puppy_id}, payment_intent: ${paymentIntentId}`,
     );
 
-    const supabase = getServiceRoleClient();
-
-    if (supabase) {
-      const { data: existingReservation, error: existingReservationError } = await supabase
-        .from('reservations')
-        .select('id')
-        .eq('puppy_id', metadata.puppy_id)
-        .eq('status', 'paid')
-        .maybeSingle();
-
-      if (existingReservationError) {
-        console.error(
-          '[Stripe Webhook] Failed to check existing reservations:',
-          existingReservationError.message,
-        );
-      }
-
-      if (existingReservation) {
-        console.log('[Stripe Webhook] Puppy already reserved, skipping duplicate event');
-        await supabase
-          .from('puppies')
-          .update({ status: 'reserved' })
-          .eq('id', metadata.puppy_id)
-          .neq('status', 'reserved');
-
-        return {
-          success: true,
-          eventType,
-          paymentIntentId,
-          duplicate: true,
-          error: 'Puppy already reserved',
-          reservationId: existingReservation.id,
-        };
-      }
-    }
-
+    // Note: no puppy-level "already has a paid reservation" pre-check here. A true
+    // retry of this same payment is already caught above (by payment_intent), and a
+    // genuine race between two different payments for the same puppy is handled
+    // atomically by create_reservation_transaction's row lock (RACE_CONDITION_LOST,
+    // handled below) — a broader pre-check here would incorrectly treat a second,
+    // legitimate payment for a puppy (e.g. re-sold after a prior reservation was
+    // cancelled) as a duplicate and silently drop its reservation record.
     try {
       const { reservationId } = await ReservationCreationService.createReservation({
         puppyId: metadata.puppy_id,
@@ -651,6 +703,7 @@ export class StripeWebhookHandler {
         customerName: session.customer_details?.name || metadata.customer_name || undefined,
         customerPhone: session.customer_details?.phone || metadata.customer_phone,
         depositAmount: session.amount_total / 100,
+        paymentType: metadata.payment_type,
         paymentProvider: 'stripe',
         externalPaymentId: paymentIntentId,
         channel: (metadata.channel || 'site') as
@@ -676,6 +729,13 @@ export class StripeWebhookHandler {
 
         if (!updatedReservation) {
           console.error(`[Stripe Webhook] Failed to mark reservation ${reservationId} as paid`);
+          await recordMoneyTakenWithoutReservation({
+            eventId,
+            eventType,
+            paymentIntentId,
+            error: `Reservation ${reservationId} was created but could not be marked paid`,
+            metadata,
+          });
           return {
             success: false,
             eventType,
@@ -689,6 +749,16 @@ export class StripeWebhookHandler {
         }
       } catch (statusUpdateError) {
         console.error(`[Stripe Webhook] Error marking reservation as paid:`, statusUpdateError);
+        await recordMoneyTakenWithoutReservation({
+          eventId,
+          eventType,
+          paymentIntentId,
+          error:
+            statusUpdateError instanceof Error
+              ? statusUpdateError.message
+              : 'Failed to mark reservation as paid',
+          metadata,
+        });
         return {
           success: false,
           eventType,
@@ -756,14 +826,21 @@ export class StripeWebhookHandler {
         });
       }
 
-      await trackDepositPaid({
-        value: session.amount_total / 100,
-        currency: session.currency?.toUpperCase() || 'USD',
-        puppy_slug: metadata.puppy_slug,
-        puppy_name: metadata.puppy_name,
-        payment_provider: 'stripe',
-        reservation_id: reservationId,
-      });
+      await trackDepositPaid(
+        {
+          value: session.amount_total / 100,
+          currency: session.currency?.toUpperCase() || 'USD',
+          puppy_slug: metadata.puppy_slug,
+          puppy_name: metadata.puppy_name,
+          payment_provider: 'stripe',
+          payment_type: metadata.payment_type,
+          reservation_id: reservationId,
+        },
+        {
+          clientId: metadata.ga_client_id,
+          sessionId: metadata.ga_session_id,
+        },
+      );
 
       const emailData = {
         customerName: session.customer_details?.name || metadata.customer_name || 'Valued Customer',
@@ -773,6 +850,7 @@ export class StripeWebhookHandler {
         depositAmount: session.amount_total / 100,
         currency: session.currency?.toUpperCase() || 'USD',
         paymentProvider: 'stripe' as const,
+        paymentType: metadata.payment_type,
         reservationId,
         transactionId: paymentIntentId,
       };
@@ -802,6 +880,13 @@ export class StripeWebhookHandler {
     } catch (error) {
       if (error instanceof ReservationCreationError) {
         if (error.code === 'RACE_CONDITION_LOST') {
+          await recordMoneyTakenWithoutReservation({
+            eventId,
+            eventType,
+            paymentIntentId,
+            error: error.message,
+            metadata,
+          });
           return {
             success: true,
             eventType,
@@ -826,6 +911,25 @@ export class StripeWebhookHandler {
             duplicate: true,
             skipped: true,
             error: 'Duplicate external payment id',
+          };
+        }
+
+        await recordMoneyTakenWithoutReservation({
+          eventId,
+          eventType,
+          paymentIntentId,
+          error: error.message,
+          metadata,
+        });
+
+        if (error.code === 'PUPPY_NOT_FOUND' || error.code === 'PUPPY_NOT_AVAILABLE') {
+          return {
+            success: true,
+            eventType,
+            paymentIntentId,
+            skipped: true,
+            error: error.message,
+            errorCode: error.code,
           };
         }
 
@@ -854,6 +958,14 @@ export class StripeWebhookHandler {
           error: 'Duplicate external payment id',
         };
       }
+
+      await recordMoneyTakenWithoutReservation({
+        eventId,
+        eventType,
+        paymentIntentId,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        metadata,
+      });
 
       return {
         success: false,
@@ -902,8 +1014,18 @@ export class StripeWebhookHandler {
 
     if (!reservation) {
       console.warn(`[Stripe Webhook] No reservation found for payment_intent: ${paymentIntentId}`);
+      await recordMoneyTakenWithoutReservation({
+        eventId,
+        eventType: 'charge.refunded',
+        paymentIntentId,
+        error: 'Refund received but reservation was not found',
+        metadata: {
+          puppy_id: charge.metadata?.puppy_id,
+          customer_email: charge.billing_details?.email ?? undefined,
+        },
+      });
       return {
-        success: false,
+        success: true,
         eventType: 'charge.refunded',
         paymentIntentId,
         error: 'Reservation not found',
@@ -917,6 +1039,7 @@ export class StripeWebhookHandler {
     const refundId = refund?.id || charge.id;
     const refundAmount = charge.amount_refunded / 100; // Convert from cents
     const refundReason = refund?.reason || 'Unknown';
+    const isFullRefund = charge.refunded === true || charge.amount_refunded >= charge.amount;
 
     // Update reservation status to 'refunded' (using service role to bypass RLS)
     try {
@@ -925,11 +1048,16 @@ export class StripeWebhookHandler {
       const updatedNotes = existingNotes ? `${existingNotes}\n\n${refundNote}` : refundNote;
 
       await ReservationServerQueries.update(reservation.id, {
-        status: 'refunded',
+        ...(isFullRefund ? { status: 'refunded' as const } : {}),
         notes: updatedNotes,
       });
 
-      console.log(`[Stripe Webhook] Reservation ${reservation.id} marked as refunded`);
+      if (isFullRefund) {
+        await ReservationServerQueries.releasePuppyIfNoActiveReservations(reservation.puppy_id);
+        console.log(`[Stripe Webhook] Reservation ${reservation.id} marked as refunded`);
+      } else {
+        console.log(`[Stripe Webhook] Partial refund recorded for reservation ${reservation.id}`);
+      }
     } catch (error) {
       console.error(`[Stripe Webhook] Error updating reservation status to refunded:`, error);
       return {
@@ -942,7 +1070,7 @@ export class StripeWebhookHandler {
     }
 
     // Get puppy details for email
-    const supabase = supabaseAdminClient || createServiceRoleClient();
+    const supabase = createServiceRoleClient();
     const { data: puppy } = await supabase
       .from('puppies')
       .select('name, slug')

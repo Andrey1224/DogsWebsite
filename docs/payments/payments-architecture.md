@@ -256,7 +256,24 @@
 
 ---
 
-## 5. Operational Checklist
+## 5. August 2026: "Pay Full" Option (Stripe-only)
+
+**Feature:** Customers can now pay the puppy's full listed price in one Stripe Checkout session instead of only the standard deposit. The choice is made at reservation time (deposit vs. full) and is mutually exclusive — there is no "pay remaining balance later" flow.
+
+**Implementation:**
+
+- **Schema:** Migration `20260803000000_add_payment_type_to_reservations.sql` adds `reservations.payment_type` (`'deposit' | 'full'`, default `'deposit'`) and a matching `p_payment_type` parameter on the `create_reservation_transaction` RPC.
+- **Puppy status:** The RPC now branches the puppy status write — a full payment sets the puppy to `'sold'` (removed from "available" listings immediately); a deposit keeps the existing `'reserved'` behavior, with the admin manually marking `'sold'` later.
+- **Checkout:** `createCheckoutSession()` (`app/(site)/(chrome)/puppies/[slug]/actions.ts`) takes a `paymentType` argument. For `'full'`, the charge amount is computed from `puppy.price_usd` (via `usdToCents`) instead of the flat `STRIPE_DEPOSIT_AMOUNT_CENTS` env var, and the Checkout Session line item/metadata reflect the payment type.
+- **UI:** The puppy detail page shows a primary "Reserve — $X deposit" CTA and a secondary "Buy Now — Pay full $Y" CTA (only when the puppy has a price set).
+- **Webhook:** `lib/stripe/webhook-handler.ts` reads `payment_type` from session metadata (defaulting to `'deposit'` for sessions created before this shipped, so in-flight checkouts are unaffected), and threads it through to reservation creation, GA4 (`trackDepositPaid`), and the deposit/full-payment email templates.
+- **PayPal:** Untouched functionally — PayPal remains deposit-only and its UI button stays disabled. Its `createReservation()` call sites now pass `paymentType: 'deposit'` explicitly for type consistency with the shared reservation service.
+
+**Operational note — Stripe Radar:** Full-payment sessions (e.g., $3,000) will always exceed the existing Radar custom rule that challenges/reviews transactions >$250 (see §3.2). Consider raising that threshold for domestic full-payment transactions in the Stripe Dashboard, or accept increased manual review volume for full-price purchases. This is a Dashboard configuration change, not something enforced in code.
+
+---
+
+## 6. Operational Checklist
 
 **Payment Configuration:**
 

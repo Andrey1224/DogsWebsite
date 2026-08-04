@@ -1,15 +1,16 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getIndexableLocations } from '@/lib/data/locations';
 
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Service Areas — French & English Bulldog Puppies in Alabama',
+  title: 'Alabama Bulldog Puppies: Pickup & Delivery Areas',
   description:
-    'Browse Alabama service-area pages for pickup logistics, delivery options, and city-specific FAQs.',
+    'Explore French and English Bulldog puppy pickup and delivery areas across Alabama, including Cullman, Decatur, Huntsville, and Birmingham.',
   path: '/locations',
 });
 
@@ -18,6 +19,15 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
+      <div className="sr-only">
+        <Breadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Alabama Service Areas', href: '/locations' },
+          ]}
+        />
+      </div>
+
       {/* Header */}
       <div className="relative mx-auto max-w-7xl px-6 pb-12 pt-32 md:px-12">
         <div className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] -translate-y-1/2 rounded-full bg-blue-600/10 blur-[100px]" />
@@ -25,11 +35,14 @@ export default function LocationsPage() {
           <div className="mb-3 text-xs font-bold uppercase tracking-widest text-orange-400">
             Where We Serve
           </div>
-          <h1 className="mb-4 text-4xl font-bold leading-tight md:text-6xl">Service Areas</h1>
+          <h1 className="mb-4 text-4xl font-bold leading-tight md:text-6xl">
+            French &amp; English Bulldog Puppies in Alabama
+          </h1>
           <p className="text-lg text-slate-400">
             Based in Alabama, Exotic Bulldog Legacy offers pickup by appointment and nationwide
-            delivery via flight nanny. Browse our city pages for local logistics, delivery options,
-            and city-specific FAQs.
+            delivery via flight nanny. Compare our Cullman, Decatur, Huntsville, and Birmingham
+            pages for honest drive-time estimates, local logistics, delivery options, and
+            city-specific FAQs.
           </p>
         </div>
       </div>
@@ -41,9 +54,10 @@ export default function LocationsPage() {
           </h2>
           <div className="mt-4 space-y-4 text-sm leading-relaxed text-slate-400 md:text-base">
             <p>
-              Exotic Bulldog Legacy is based near Falkville, just outside Cullman, Alabama. Families
-              from Cullman, Decatur, Madison, Huntsville, Birmingham, and surrounding communities
-              can arrange pickup by appointment or ask about safe delivery and flight nanny options.
+              Exotic Bulldog Legacy is based near Falkville, about 20 minutes north of Cullman,
+              Alabama. Families from Cullman, Decatur, Madison, Huntsville, Birmingham, and
+              surrounding communities can arrange pickup by appointment or ask about safe delivery
+              and flight nanny options.
             </p>
             <p>
               Most families begin by viewing available puppies online, asking questions through our

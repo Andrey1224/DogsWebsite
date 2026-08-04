@@ -10,6 +10,9 @@
       reservations (Jun 2026).
 - [x] **Optional Crisp Chat**: Disable the unused third-party chat and prevent its client script
       from loading (Jun 2026).
+- [x] **Payment Reliability & Pay Full**: Ship full-payment checkout, durable webhook failure
+      handling, unified reservation integrity, safe refund/cancel release, and payment-safe expiry
+      cron (Aug 2026).
 - [ ] **AI Context Standards**: Memory Bank adoption & Docs Linting (In Progress).
 
 ## Recent Wins
@@ -25,8 +28,14 @@
   responsive diagrams, checklist callouts, SEO metadata, sitemap integration, and the provided
   nutrition image.
 - Added Vercel Web Analytics via `@vercel/analytics/next` in the root layout.
+- Hardened Stripe and PayPal post-capture flows so failures are persisted and alerted, while
+  reservation/puppy state transitions share one database integrity contract.
+- Verified the payment contract against a production-derived local Supabase copy with real
+  Postgres concurrency tests and signed Stripe test-mode webhooks, including full refunds and the
+  second-payment/no-reservation failure path.
 
 ## Known Debt
 
 - **Manual Docs Sync**: `public/llms.txt` relies on `npm run docs:sync-llms`.
-- **E2E Coverage**: Rate-limiting and full checkout flows need deeper E2E coverage (currently mocked).
+- **Automated E2E Coverage**: Browser checkout remains mocked in CI; the signed Stripe CLI sandbox
+  flow is currently a documented manual verification rather than an automated CI job.

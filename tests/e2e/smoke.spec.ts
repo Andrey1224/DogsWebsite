@@ -13,3 +13,10 @@ test('home page highlights core pillars', async ({ page }) => {
   await expect(page.getByRole('link', { name: /view available puppies/i }).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: /health-first standards/i })).toBeVisible();
 });
+
+test('missing puppy pages return a real 404 response', async ({ page }) => {
+  const response = await page.goto('/puppies/seo-missing-puppy');
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: /oops! this pup ran off/i })).toBeVisible();
+});

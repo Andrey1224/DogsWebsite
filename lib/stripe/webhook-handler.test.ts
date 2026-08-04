@@ -31,6 +31,8 @@ vi.mock('@/lib/webhooks/webhook-events-server', () => ({
     markProcessing: vi.fn().mockResolvedValue(undefined),
     markProcessed: vi.fn().mockResolvedValue(undefined),
     markFailed: vi.fn().mockResolvedValue(true),
+    claimAlert: vi.fn().mockResolvedValue(true),
+    claimAlertBucket: vi.fn().mockResolvedValue(1),
   },
 }));
 
@@ -40,7 +42,12 @@ vi.mock('@/lib/reservations/server-queries', () => ({
     markPaid: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
     updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
     update: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'refunded' }),
+    releasePuppyIfNoActiveReservations: vi.fn().mockResolvedValue(true),
   },
+}));
+
+vi.mock('@/lib/monitoring/webhook-alerts', () => ({
+  alertWebhookError: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/emails/async-payment-failed', () => ({
@@ -50,6 +57,15 @@ vi.mock('@/lib/emails/async-payment-failed', () => ({
 vi.mock('@/lib/emails/refund-notifications', () => ({
   sendOwnerRefundNotification: vi.fn().mockResolvedValue({ success: true }),
   sendCustomerRefundNotification: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('@/lib/emails/deposit-notifications', () => ({
+  sendOwnerDepositNotification: vi.fn().mockResolvedValue({ success: true }),
+  sendCustomerDepositConfirmation: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('@/lib/analytics/server-events', () => ({
+  trackDepositPaid: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/supabase/client', () => {
@@ -129,6 +145,7 @@ describe('StripeWebhookHandler', () => {
         puppy_name: 'Test Puppy',
         customer_email: 'test@example.com',
         channel: 'site',
+        payment_type: 'deposit',
       },
       ...overrides,
     }) as TypedCheckoutSession;
@@ -201,6 +218,7 @@ describe('StripeWebhookHandler', () => {
         customerName: 'Test Customer',
         customerPhone: '+12025551234',
         depositAmount: 300, // Converted from cents
+        paymentType: 'deposit',
         paymentProvider: 'stripe',
         externalPaymentId: mockPaymentIntentId,
         channel: 'site',
@@ -220,6 +238,133 @@ describe('StripeWebhookHandler', () => {
       expect(ReservationServerQueries.update).toHaveBeenCalledWith('res_123', {
         webhook_event_id: 123,
       });
+    });
+
+    it('should create a full-payment reservation and thread paymentType through email/analytics', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationCreationService } = await import('@/lib/reservations/create');
+      const { trackDepositPaid } = await import('@/lib/analytics/server-events');
+      const { sendOwnerDepositNotification, sendCustomerDepositConfirmation } =
+        await import('@/lib/emails/deposit-notifications');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
+
+      (ReservationCreationService.createReservation as any).mockResolvedValue({
+        reservationId: 'res_full_123',
+      });
+
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+        webhookEvent: {
+          id: 124,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.completed',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}`,
+          reservation_id: 'res_full_123',
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+      const session = createMockSession({
+        amount_total: 450000, // $4,500 full price
+        metadata: {
+          puppy_id: mockPuppyId,
+          puppy_slug: 'test-puppy',
+          puppy_name: 'Test Puppy',
+          customer_email: 'test@example.com',
+          channel: 'site',
+          payment_type: 'full',
+        },
+      });
+      const event = createMockEvent('checkout.session.completed', session);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(true);
+      expect(result.reservationId).toBe('res_full_123');
+
+      expect(ReservationCreationService.createReservation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositAmount: 4500,
+          paymentType: 'full',
+        }),
+      );
+
+      expect(trackDepositPaid).toHaveBeenCalledWith(
+        expect.objectContaining({ payment_type: 'full' }),
+        expect.anything(),
+      );
+
+      expect(sendOwnerDepositNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentType: 'full' }),
+      );
+      expect(sendCustomerDepositConfirmation).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentType: 'full' }),
+      );
+    });
+
+    it('defaults to paymentType "deposit" when session metadata predates the feature', async () => {
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { ReservationCreationService } = await import('@/lib/reservations/create');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: mockPaymentIntentId,
+        provider: 'stripe',
+      });
+
+      (ReservationCreationService.createReservation as any).mockResolvedValue({
+        reservationId: 'res_legacy_123',
+      });
+
+      (idempotencyManager.createWebhookEvent as any).mockResolvedValue({
+        success: true,
+        webhookEvent: {
+          id: 125,
+          provider: 'stripe',
+          event_id: mockEventId,
+          event_type: 'checkout.session.completed',
+          processed: false,
+          processing_started_at: null,
+          processed_at: null,
+          processing_error: null,
+          idempotency_key: `stripe:${mockPaymentIntentId}`,
+          reservation_id: 'res_legacy_123',
+          payload: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+      // Metadata from a session created before payment_type existed.
+      const session = createMockSession({
+        metadata: {
+          puppy_id: mockPuppyId,
+          puppy_slug: 'test-puppy',
+          puppy_name: 'Test Puppy',
+          customer_email: 'test@example.com',
+          channel: 'site',
+        } as any,
+      });
+      const event = createMockEvent('checkout.session.completed', session);
+
+      const result = await StripeWebhookHandler.processEvent(event);
+
+      expect(result.success).toBe(true);
+      expect(ReservationCreationService.createReservation).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentType: 'deposit' }),
+      );
     });
 
     it('should detect duplicate events via idempotency check', async () => {
@@ -713,6 +858,7 @@ describe('StripeWebhookHandler', () => {
           customer_email: 'metadata@example.com',
           customer_name: 'Metadata Name',
           channel: 'site',
+          payment_type: 'deposit',
         },
         customer_details: {
           email: 'customer-from-session@example.com',
@@ -806,8 +952,24 @@ describe('StripeWebhookHandler', () => {
 
       const result = await StripeWebhookHandler.processEvent(event);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
       expect(result.error).toContain('stale');
+
+      const { idempotencyManager } = await import('@/lib/reservations/idempotency');
+      const { WebhookEventsServer } = await import('@/lib/webhooks/webhook-events-server');
+      const { alertWebhookError } = await import('@/lib/monitoring/webhook-alerts');
+      expect(idempotencyManager.createWebhookEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'stripe', eventId: event.id }),
+      );
+      expect(WebhookEventsServer.markFailed).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'stripe', eventId: event.id }),
+      );
+      expect(WebhookEventsServer.claimAlertBucket).toHaveBeenCalledWith(
+        expect.objectContaining({ bucketKey: 'stale-checkout-events' }),
+      );
+      expect(alertWebhookError).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentId: 'stale-checkout-events' }),
+      );
 
       nowSpy.mockRestore();
     });
@@ -980,7 +1142,7 @@ describe('StripeWebhookHandler', () => {
 
       const result = await StripeWebhookHandler.processEvent(event);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
       expect(result.error).toBe('Reservation not found');
     });
 
@@ -1051,6 +1213,24 @@ describe('StripeWebhookHandler', () => {
           notes: expect.stringMatching(/Refund ID: re_test123/),
         }),
       );
+    });
+
+    it('records a partial refund without releasing the puppy', async () => {
+      const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
+      const charge = createMockCharge({
+        amount_refunded: 10000,
+        refunded: false,
+        refunds: { data: [{ id: mockRefundId, amount: 10000, reason: 'requested_by_customer' }] },
+      });
+
+      const result = await StripeWebhookHandler.processEvent(createRefundEvent(charge));
+
+      expect(result.success).toBe(true);
+      expect(ReservationServerQueries.update).toHaveBeenCalledWith(
+        mockReservationId,
+        expect.not.objectContaining({ status: 'refunded' }),
+      );
+      expect(ReservationServerQueries.releasePuppyIfNoActiveReservations).not.toHaveBeenCalled();
     });
   });
 });

@@ -20,6 +20,25 @@ import type { Reservation, PaymentProvider, ReservationStatus } from './types';
  * Server-side reservation queries using service role
  */
 export class ReservationServerQueries {
+  static async releasePuppyIfNoActiveReservations(puppyId: string): Promise<boolean> {
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase.rpc('release_puppy_if_no_active_reservations', {
+      p_puppy_id: puppyId,
+    });
+
+    if (error) {
+      if (error.code === 'PGRST202' || error.message.includes('Could not find the function')) {
+        console.warn(
+          '[Server Queries] Safe release RPC is not deployed yet; leaving puppy unchanged',
+        );
+        return false;
+      }
+      throw new Error(`Failed to safely release puppy: ${error.message}`);
+    }
+
+    return data === true;
+  }
+
   /**
    * Mark reservation as paid with payment details
    *

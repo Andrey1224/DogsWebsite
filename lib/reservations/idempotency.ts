@@ -101,6 +101,7 @@ export class IdempotencyManager {
           if (minutesSinceStart < 5) {
             return {
               exists: true,
+              inProgress: true,
               paymentId: eventId,
               provider,
             };
@@ -139,6 +140,7 @@ export class IdempotencyManager {
             if (minutesSinceStart < 5) {
               return {
                 exists: true,
+                inProgress: true,
                 paymentId: eventId,
                 provider,
               };
@@ -175,6 +177,7 @@ export class IdempotencyManager {
             status: reservation.status as ReservationStatus,
             deposit_amount: 0,
             amount: 0,
+            payment_type: 'deposit',
             payment_provider: provider,
             external_payment_id: reservation.external_payment_id,
             webhook_event_id: null,

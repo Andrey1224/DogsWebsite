@@ -5,7 +5,7 @@
  * where client-side tracking is not available.
  */
 
-import type { DepositPaidEventParams } from './types';
+import type { AnalyticsIdentifiers, DepositPaidEventParams } from './types';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GA_API_SECRET = process.env.GA4_API_SECRET;
@@ -15,11 +15,11 @@ const MEASUREMENT_PROTOCOL_URL = 'https://www.google-analytics.com/mp/collect';
  * Sends a deposit_paid event to GA4 Measurement Protocol
  *
  * @param params - Event parameters including value, currency, puppy info, etc.
- * @param clientId - GA4 client ID (optional, will generate if not provided)
+ * @param identifiers - GA4 browser identifiers used to attribute the server conversion
  */
 export async function trackDepositPaid(
   params: DepositPaidEventParams,
-  clientId?: string,
+  identifiers: AnalyticsIdentifiers = {},
 ): Promise<void> {
   // Skip in development or if GA is not configured
   if (process.env.NODE_ENV === 'development' || !GA_MEASUREMENT_ID || !GA_API_SECRET) {
@@ -31,7 +31,7 @@ export async function trackDepositPaid(
 
   try {
     const payload = {
-      client_id: clientId || generateClientId(),
+      client_id: identifiers.clientId || generateClientId(),
       events: [
         {
           name: 'deposit_paid',
@@ -41,7 +41,11 @@ export async function trackDepositPaid(
             puppy_slug: params.puppy_slug,
             puppy_name: params.puppy_name,
             payment_provider: params.payment_provider,
+            payment_type: params.payment_type,
             reservation_id: params.reservation_id,
+            ...(identifiers.sessionId
+              ? { session_id: identifiers.sessionId, engagement_time_msec: 100 }
+              : {}),
           },
         },
       ],

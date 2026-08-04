@@ -3,14 +3,21 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { JsonLd } from '@/components/json-ld';
 import { PuppyCard } from '@/components/puppy-card';
 import { getFilteredPuppies } from '@/lib/supabase/queries';
 import { buildMetadata } from '@/lib/seo/metadata';
-import { getLocationBySlug } from '@/lib/data/locations';
+import { getFaqSchema } from '@/lib/seo/structured-data';
+import { getIndexableLocations, getLocationBySlug } from '@/lib/data/locations';
 
 export const revalidate = 60;
+export const dynamicParams = false;
 
 type Params = Promise<{ slug: string }>;
+
+export function generateStaticParams() {
+  return getIndexableLocations().map((location) => ({ slug: location.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
@@ -31,9 +38,11 @@ export default async function LocationPage({ params }: { params: Params }) {
 
   const allPuppies = await getFilteredPuppies({ status: 'available' });
   const puppies = allPuppies.slice(0, 6);
+  const faqSchema = getFaqSchema(loc.faq);
 
   return (
     <div className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
+      <JsonLd id={`location-faq-${loc.slug}`} data={faqSchema} />
       {/* Breadcrumbs (SEO only) */}
       <div className="sr-only">
         <Breadcrumbs
@@ -107,6 +116,87 @@ export default async function LocationPage({ params }: { params: Params }) {
           </>
         )}
       </div>
+
+      {/* Owner resources */}
+      <section className="mx-auto mt-24 max-w-7xl px-6 md:px-12">
+        <div className="mb-8 max-w-3xl">
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-orange-400">
+            Prepare Before Pickup
+          </div>
+          <h2 className="text-3xl font-bold">New Bulldog Owner Resources</h2>
+          <p className="mt-4 leading-relaxed text-slate-400">
+            Build your care and training routine before your puppy arrives in {loc.city}. These
+            practical guides cover the first decisions most French and English Bulldog families need
+            to make.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Link
+            href="/blog/ultimate-guide-for-new-bulldog-owners"
+            className="rounded-2xl border border-slate-800 bg-[#151e32] p-6 transition-colors hover:border-orange-500/50"
+          >
+            <h3 className="text-lg font-bold text-white">New Bulldog Owner Guide</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Breathing, heat, exercise, water, joints, skin folds, and nutrition.
+            </p>
+            <span className="mt-5 inline-block text-sm font-semibold text-orange-400">
+              Read the care guide →
+            </span>
+          </Link>
+          <Link
+            href="/blog/puppy-potty-training-101"
+            className="rounded-2xl border border-slate-800 bg-[#151e32] p-6 transition-colors hover:border-orange-500/50"
+          >
+            <h3 className="text-lg font-bold text-white">Puppy Potty Training</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Pads, outdoor routines, realistic schedules, cues, and positive reinforcement.
+            </p>
+            <span className="mt-5 inline-block text-sm font-semibold text-orange-400">
+              Build a training plan →
+            </span>
+          </Link>
+          <Link
+            href="/policies"
+            className="rounded-2xl border border-slate-800 bg-[#151e32] p-6 transition-colors hover:border-orange-500/50"
+          >
+            <h3 className="text-lg font-bold text-white">Health &amp; Deposit Policies</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Review the health guarantee, reservation process, and buyer responsibilities.
+            </p>
+            <span className="mt-5 inline-block text-sm font-semibold text-orange-400">
+              Review policies →
+            </span>
+          </Link>
+        </div>
+      </section>
+
+      {/* Local planning context */}
+      {loc.localContext && loc.localContext.length > 0 && (
+        <section className="mx-auto mt-24 max-w-7xl px-6 md:px-12">
+          <div className="max-w-4xl rounded-3xl border border-slate-800 bg-[#151e32] p-8 md:p-10">
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-orange-400">
+              Local Planning
+            </div>
+            <h2 className="text-3xl font-bold">Planning Your {loc.city} Puppy Pickup</h2>
+            <div className="mt-5 space-y-4 leading-relaxed text-slate-400">
+              {loc.localContext.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col gap-3 text-sm font-semibold sm:flex-row sm:flex-wrap sm:gap-6">
+              <Link href="/puppies" className="text-orange-400 hover:text-orange-300">
+                Check current puppies →
+              </Link>
+              <Link href="/policies" className="text-orange-400 hover:text-orange-300">
+                Review health &amp; deposit policies →
+              </Link>
+              <Link href="/contact" className="text-orange-400 hover:text-orange-300">
+                Ask about pickup →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Delivery & Pickup Logistics */}
       {loc.deliveryOptions.length > 0 && (

@@ -12,12 +12,13 @@ import type {
   CreateWebhookEventParams,
   WebhookEvent,
   PaymentProvider,
+  PaymentType,
   ReservationCreationErrorCode,
 } from './types';
 import { enhancedCreateReservationParamsSchema } from './schema';
 import { ReservationQueries, WebhookEventQueries } from './queries';
 import { idempotencyManager } from './idempotency';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { createServiceRoleClient } from '@/lib/supabase/client';
 import { formatCentsToUSD } from '@/lib/utils/currency';
 
 export class ReservationCreationError extends Error {
@@ -53,7 +54,10 @@ export class ReservationCreationService {
       }
 
       const validatedParams = validationResult.data;
-      const supabase = createSupabaseClient();
+      // create_reservation_transaction is restricted to service_role (anon/authenticated
+      // were revoked as a security fix — see migration 20260803190100), so this call must
+      // use the service-role client, not the anon client.
+      const supabase = createServiceRoleClient();
 
       // Check idempotency - prevent duplicate reservations
       const idempotencyCheck = await idempotencyManager.checkWebhookEvent(
@@ -62,6 +66,12 @@ export class ReservationCreationService {
       );
 
       if (idempotencyCheck.exists) {
+        if (idempotencyCheck.inProgress) {
+          throw new ReservationCreationError(
+            'Webhook event is still processing and must be retried',
+            'DATABASE_ERROR',
+          );
+        }
         if (idempotencyCheck.reservation?.id) {
           return { reservationId: idempotencyCheck.reservation.id };
         }
@@ -109,6 +119,7 @@ export class ReservationCreationService {
           p_external_payment_id: validatedParams.externalPaymentId,
           p_expires_at: expiresAt,
           p_notes: sanitizedNotes,
+          p_payment_type: validatedParams.paymentType,
         })
         .single();
 
@@ -127,12 +138,26 @@ export class ReservationCreationService {
         }
 
         if (normalizedMessage.includes('PUPPY_NOT_FOUND')) {
-          throw new ReservationCreationError('Puppy not found', 'PUPPY_NOT_AVAILABLE');
+          throw new ReservationCreationError('Puppy not found', 'PUPPY_NOT_FOUND');
+        }
+
+        if (normalizedMessage.includes('DUPLICATE_EXTERNAL_PAYMENT')) {
+          throw new ReservationCreationError(
+            'A reservation already exists for this payment',
+            'DUPLICATE_PAYMENT',
+          );
         }
 
         if (normalizedMessage.includes('DEPOSIT_EXCEEDS_PRICE')) {
           throw new ReservationCreationError(
             'Deposit amount cannot exceed puppy price',
+            'VALIDATION_ERROR',
+          );
+        }
+
+        if (normalizedMessage.includes('FULL_PAYMENT_AMOUNT_MISMATCH')) {
+          throw new ReservationCreationError(
+            'Full payment amount does not match puppy price',
             'VALIDATION_ERROR',
           );
         }
@@ -183,6 +208,7 @@ export class ReservationCreationService {
     customerPhone?: string,
     amount?: number,
     webhookEvent?: CreateWebhookEventParams,
+    paymentType: PaymentType = 'deposit',
   ): Promise<CreateReservationResponse> {
     const params: CreateReservationParams = {
       puppyId,
@@ -190,6 +216,7 @@ export class ReservationCreationService {
       customerName,
       customerPhone,
       depositAmount: amount || 0,
+      paymentType,
       paymentProvider,
       externalPaymentId,
       channel: 'site',
@@ -212,10 +239,12 @@ export class ReservationCreationService {
 
     // If payment amount matches, mark as paid immediately
     if (Math.abs(paymentAmount - params.depositAmount) < 0.01) {
-      try {
-        await ReservationQueries.updateStatus(reservationId, 'paid');
-      } catch (error) {
-        console.error('Failed to update reservation to paid:', error);
+      const updated = await ReservationQueries.updateStatus(reservationId, 'paid');
+      if (!updated) {
+        throw new ReservationCreationError(
+          `Reservation ${reservationId} was created but could not be marked paid`,
+          'DATABASE_ERROR',
+        );
       }
     }
 
@@ -223,7 +252,7 @@ export class ReservationCreationService {
   }
 
   /**
-   * Calculate default expiration time (24 hours from now)
+   * Calculate default expiration time (15 minutes from now)
    */
   private static calculateDefaultExpiry(): string {
     const expiry = new Date();
@@ -288,7 +317,7 @@ export class ReservationCreationService {
     cutoffTime.setHours(cutoffTime.getHours() - timeWindowHours);
 
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createServiceRoleClient();
       const { data, error } = await supabase
         .from('reservations')
         .select('*')
@@ -404,6 +433,7 @@ export async function createReservationFromPayment(
   customerPhone?: string,
   amount?: number,
   webhookEvent?: CreateWebhookEventParams,
+  paymentType: PaymentType = 'deposit',
 ): Promise<CreateReservationResponse> {
   return ReservationCreationService.createFromPayment(
     paymentProvider,
@@ -414,6 +444,7 @@ export async function createReservationFromPayment(
     customerPhone,
     amount,
     webhookEvent,
+    paymentType,
   );
 }
 

@@ -1,5 +1,9 @@
 import Link from 'next/link';
-import { getReservationsAction, getPaymentMismatchesAction } from './actions';
+import {
+  getReservationsAction,
+  getPaymentMismatchesAction,
+  getReliabilityIssuesAction,
+} from './actions';
 
 type PageProps = {
   searchParams: Promise<{ status?: string }>;
@@ -13,11 +17,16 @@ const statusColors: Record<string, string> = {
   expired: 'bg-red-500/10 text-red-500 border-red-500/20',
 };
 
+const paymentTypeColors: Record<string, string> = {
+  deposit: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  full: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+};
+
 export default async function AdminReservationsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const statusFilter = params.status;
 
-  const [reservationsResult, mismatchesResult] = await Promise.all([
+  const [reservationsResult, mismatchesResult, reliabilityResult] = await Promise.all([
     getReservationsAction(
       statusFilter
         ? {
@@ -27,10 +36,13 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
         : { limit: 50 },
     ),
     getPaymentMismatchesAction(),
+    getReliabilityIssuesAction(),
   ]);
 
   const reservations = reservationsResult.success ? reservationsResult.reservations : [];
   const mismatches = mismatchesResult.success ? mismatchesResult.mismatches : [];
+  const failedWebhooks = reliabilityResult.failedWebhooks;
+  const desyncedPuppies = reliabilityResult.desyncedPuppies;
 
   return (
     <div className="space-y-8 text-white">
@@ -49,15 +61,15 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
       </div>
 
       {/* Payment Mismatches Alert */}
-      {mismatches.length > 0 && (
+      {(mismatches.length > 0 || failedWebhooks > 0 || desyncedPuppies > 0) && (
         <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
           <div className="flex items-start gap-3">
             <div className="text-yellow-500">⚠️</div>
             <div className="flex-1">
-              <h3 className="font-semibold text-yellow-500">Payment Status Mismatches</h3>
+              <h3 className="font-semibold text-yellow-500">Payment Reliability Warning</h3>
               <p className="mt-1 text-sm text-yellow-500/80">
-                Found {mismatches.length} reservation(s) stuck in pending status with payment IDs.
-                These likely indicate webhook processing failures.
+                Pending payments: {mismatches.length}. Failed webhooks: {failedWebhooks}. Status
+                mismatches: {desyncedPuppies}. Review these records before changing puppy status.
               </p>
               <Link
                 href="/admin/reservations?status=pending"
@@ -116,6 +128,9 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
                   Amount
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Type
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Status
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -129,7 +144,7 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
             <tbody className="divide-y divide-slate-800">
               {reservations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
                     No reservations found
                   </td>
                 </tr>
@@ -165,6 +180,15 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
                     <td className="px-4 py-3">
                       <span className="text-sm font-medium">
                         ${reservation.deposit_amount?.toFixed(2) || '0.00'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${
+                          paymentTypeColors[reservation.payment_type] || paymentTypeColors.deposit
+                        }`}
+                      >
+                        {reservation.payment_type === 'full' ? 'Full Payment' : 'Deposit'}
                       </span>
                     </td>
                     <td className="px-4 py-3">

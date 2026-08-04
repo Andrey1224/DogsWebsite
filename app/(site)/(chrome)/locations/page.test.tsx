@@ -21,11 +21,13 @@ describe('Locations Page', () => {
     render(<LocationsPage />);
 
     expect(
-      screen.getByText(/local logistics, delivery options, and city-specific FAQs\./i),
+      screen.getByRole('heading', {
+        name: /french & english bulldog puppies in alabama/i,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(/local logistics, testimonials, and city-specific FAQs\./i),
-    ).not.toBeInTheDocument();
+      screen.getByText(/honest drive-time estimates, local logistics, delivery options/i),
+    ).toBeInTheDocument();
   });
 
   it('adds North Alabama context and planning links', () => {
@@ -37,7 +39,7 @@ describe('Locations Page', () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Exotic Bulldog Legacy is based near Falkville, just outside Cullman/i),
+      screen.getByText(/based near Falkville, about 20 minutes north of Cullman/i),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /view available puppies/i })).toHaveAttribute(
       'href',
@@ -63,5 +65,18 @@ describe('Locations Page', () => {
     expect(
       screen.getByText(/ground transportation, airport coordination, or flight nanny delivery/i),
     ).toBeInTheDocument();
+  });
+
+  it.each([
+    ['Cullman', '/locations/cullman-al'],
+    ['Decatur', '/locations/decatur-al'],
+    ['Huntsville', '/locations/huntsville-al'],
+    ['Birmingham', '/locations/birmingham-al'],
+  ])('links to the %s service-area page', (city, href) => {
+    render(<LocationsPage />);
+
+    expect(
+      screen.getByRole('link', { name: new RegExp(`View ${city} details`, 'i') }),
+    ).toHaveAttribute('href', href);
   });
 });

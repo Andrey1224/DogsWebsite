@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -10,6 +11,11 @@ import {
   useState,
 } from 'react';
 import Script from 'next/script';
+import { usePathname, useSearchParams } from 'next/navigation';
+
+import { getMetaTrackingCommand } from '@/lib/analytics/meta-events';
+import { ensureMetaPixelQueue } from '@/lib/analytics/meta-pixel';
+import type { AnalyticsIdentifiers } from '@/lib/analytics/types';
 
 const STORAGE_KEY = 'exoticbulldoglegacy-consent';
 const COOKIE_KEY = 'exoticbulldoglegacy_consent';
@@ -21,6 +27,7 @@ type AnalyticsContextValue = {
   grantConsent: () => void;
   denyConsent: () => void;
   trackEvent: (event: string, params?: Record<string, unknown>) => void;
+  getAnalyticsIdentifiers: () => Promise<AnalyticsIdentifiers>;
 };
 
 const AnalyticsContext = createContext<AnalyticsContextValue | undefined>(undefined);
@@ -31,8 +38,80 @@ type AnalyticsProviderProps = {
   children: React.ReactNode;
 };
 
-type FacebookPixel = NonNullable<Window['fbq']>;
-type FbqCommand = Parameters<FacebookPixel>;
+type MetaPageViewTrackerProps = {
+  consent: ConsentState;
+  ready: boolean;
+};
+
+function metaCookie(name: string): string | undefined {
+  const prefix = `${name}=`;
+  return document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length);
+}
+
+function createMetaEventId(): string {
+  return (
+    globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
+}
+
+function sendMetaServerEvent(
+  eventName: string,
+  eventId: string,
+  customData?: Record<string, unknown>,
+) {
+  void fetch('/api/analytics/meta', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    keepalive: true,
+    body: JSON.stringify({
+      eventName,
+      eventId,
+      sourceUrl: window.location.href,
+      customData,
+      fbp: metaCookie('_fbp'),
+      fbc: metaCookie('_fbc'),
+    }),
+  }).catch(() => {
+    // Analytics must never interrupt navigation or a primary user action.
+  });
+}
+
+function trackMetaStandardEvent(eventName: string, params?: Record<string, unknown>) {
+  const eventId = createMetaEventId();
+  window.fbq?.('track', eventName, params, { eventID: eventId });
+  sendMetaServerEvent(eventName, eventId, params);
+}
+
+function MetaPageViewTracker({ consent, ready }: MetaPageViewTrackerProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const query = searchParams.toString();
+  const pageKey = query ? `${pathname}?${query}` : pathname;
+  const lastTrackedPageRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (consent !== 'granted') {
+      lastTrackedPageRef.current = null;
+      return;
+    }
+
+    if (!ready || lastTrackedPageRef.current === pageKey) return;
+
+    trackMetaStandardEvent('PageView', {
+      page_location: window.location.href,
+      page_path: pageKey,
+      page_title: document.title,
+    });
+    lastTrackedPageRef.current = pageKey;
+  }, [consent, pageKey, ready]);
+
+  return null;
+}
 
 function persistConsent(consent: ConsentState) {
   if (consent === 'unknown') return;
@@ -70,6 +149,7 @@ export function AnalyticsProvider({
   children,
 }: AnalyticsProviderProps) {
   const [consent, setConsent] = useState<ConsentState>('unknown');
+  const [metaReady, setMetaReady] = useState(false);
   const pixelLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -119,20 +199,17 @@ export function AnalyticsProvider({
   useEffect(() => {
     if (!metaPixelId) return;
 
-    if (consent === 'granted' && !pixelLoadedRef.current) {
+    if (consent === 'granted' && pixelLoadedRef.current) {
+      window.fbq?.('consent', 'grant');
+      setMetaReady(true);
+    } else if (consent === 'granted') {
       if (process.env.NODE_ENV === 'development') {
         console.log('📊 Analytics: Meta Pixel consent granted', { metaPixelId });
       }
 
       // Initialize placeholder if fbq doesn't exist
       if (!window.fbq) {
-        const placeholder: FacebookPixel = ((...args: FbqCommand) => {
-          (placeholder.queue ||= []).push(args);
-        }) as FacebookPixel;
-        placeholder.queue = [];
-        placeholder.loaded = false;
-        placeholder.version = '2.0';
-        window.fbq = placeholder;
+        ensureMetaPixelQueue();
       }
 
       // The actual script will be loaded by next/script below
@@ -144,11 +221,42 @@ export function AnalyticsProvider({
         console.log('📊 Analytics: Meta Pixel consent denied');
       }
       window.fbq?.('consent', 'revoke');
+      setMetaReady(false);
     }
   }, [consent, metaPixelId]);
 
   const grantConsent = useCallback(() => setConsent('granted'), []);
   const denyConsent = useCallback(() => setConsent('denied'), []);
+
+  const getAnalyticsIdentifiers = useCallback(async (): Promise<AnalyticsIdentifiers> => {
+    if (consent !== 'granted' || !gaMeasurementId || typeof window.gtag !== 'function') {
+      return {};
+    }
+
+    const getValue = (field: 'client_id' | 'session_id') =>
+      new Promise<string | undefined>((resolve) => {
+        let settled = false;
+        const timeoutId = window.setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          resolve(undefined);
+        }, 500);
+
+        window.gtag?.('get', gaMeasurementId, field, (value) => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timeoutId);
+          resolve(value === undefined || value === null ? undefined : String(value));
+        });
+      });
+
+    const [clientId, sessionId] = await Promise.all([
+      getValue('client_id'),
+      getValue('session_id'),
+    ]);
+
+    return { clientId, sessionId };
+  }, [consent, gaMeasurementId]);
 
   const trackEvent = useCallback(
     (event: string, params?: Record<string, unknown>) => {
@@ -168,7 +276,13 @@ export function AnalyticsProvider({
       }
 
       window.gtag?.('event', event, params);
-      window.fbq?.('trackCustom', event, params);
+
+      const metaCommand = getMetaTrackingCommand(event, params);
+      if (metaCommand.method === 'track') {
+        trackMetaStandardEvent(metaCommand.name, metaCommand.params);
+      } else {
+        window.fbq?.(metaCommand.method, metaCommand.name, metaCommand.params);
+      }
     },
     [consent],
   );
@@ -179,8 +293,9 @@ export function AnalyticsProvider({
       grantConsent,
       denyConsent,
       trackEvent,
+      getAnalyticsIdentifiers,
     }),
-    [consent, grantConsent, denyConsent, trackEvent],
+    [consent, grantConsent, denyConsent, getAnalyticsIdentifiers, trackEvent],
   );
 
   return (
@@ -201,7 +316,7 @@ export function AnalyticsProvider({
             id="ga-init"
             strategy="lazyOnload"
             dangerouslySetInnerHTML={{
-              __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaMeasurementId}', { send_page_view: false });`,
+              __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaMeasurementId}');`,
             }}
             onLoad={() => {
               if (process.env.NODE_ENV === 'development') {
@@ -221,11 +336,12 @@ export function AnalyticsProvider({
               if (process.env.NODE_ENV === 'development') {
                 console.log('📊 Analytics: Meta Pixel script loaded');
               }
-              // Initialize Meta Pixel after script loads
-              window.fbq?.('init', metaPixelId);
+              if (!pixelLoadedRef.current) {
+                window.fbq?.('init', metaPixelId);
+              }
               window.fbq?.('consent', 'grant');
-              window.fbq?.('track', 'PageView');
               pixelLoadedRef.current = true;
+              setMetaReady(true);
             }}
           />
           <noscript>
@@ -240,6 +356,9 @@ export function AnalyticsProvider({
           </noscript>
         </>
       ) : null}
+      <Suspense fallback={null}>
+        <MetaPageViewTracker consent={consent} ready={metaReady} />
+      </Suspense>
       {children}
     </AnalyticsContext.Provider>
   );

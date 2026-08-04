@@ -112,6 +112,16 @@ export async function getPaymentMismatchesAction() {
   }
 }
 
+export async function getReliabilityIssuesAction() {
+  try {
+    await requireAdminSession();
+    return { success: true, ...(await ReservationQueries.getReliabilityIssueCounts()) };
+  } catch (error) {
+    console.error('[Admin] Error fetching payment reliability issues:', error);
+    return { success: false, failedWebhooks: 0, desyncedPuppies: 0 };
+  }
+}
+
 /**
  * Manually update reservation status with audit logging
  *

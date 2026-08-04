@@ -17,6 +17,9 @@ import {
   type SanityPostPreview,
 } from '@/sanity/lib/queries';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getBlogPostingSchema } from '@/lib/seo/structured-data';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { JsonLd } from '@/components/json-ld';
 import { BlogPortableText } from '@/components/blog/portable-text';
 import { ShareButtons } from './share-buttons';
 import { getLocalPost, LOCAL_POSTS } from '@/lib/blog/local-posts';
@@ -87,6 +90,7 @@ const getPost = cache(async (slug: string): Promise<ExtendedSanityPost | null> =
       image: localPost.image,
       imageAlt: localPost.imageAlt,
       categoryLabel: localPost.categoryLabel,
+      updatedAt: localPost.updatedAt ?? localPost.publishedAt,
     };
   }
   return sanityFetch<SanityPost>(POST_BY_SLUG_QUERY, { slug });
@@ -144,10 +148,29 @@ export default async function ArticlePage({ params }: { params: Params }) {
     post.isLocal && post.image
       ? post.image
       : urlFor(post.mainImage).width(1200).auto('format').url();
-  const formattedDate = formatPostDate(post.publishedAt);
+  const formattedDate = formatPostDate(post.updatedAt ?? post.publishedAt);
+  const articleSchema = getBlogPostingSchema({
+    title: post.title,
+    description: post.seoDescription ?? post.excerpt,
+    slug: post.slug.current,
+    image: coverUrl,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt ?? post.publishedAt,
+    category: post.categoryLabel ?? displayCategory(post.category),
+  });
 
   return (
     <div className="min-h-screen bg-[#0b101a] pb-24 font-sans text-slate-300 selection:bg-[#ff6b00] selection:text-white">
+      <JsonLd id={`blog-posting-${post.slug.current}`} data={articleSchema} />
+      <div className="sr-only">
+        <Breadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Blog', href: '/blog' },
+            { label: post.title, href: `/blog/${post.slug.current}` },
+          ]}
+        />
+      </div>
       {/* Breadcrumb */}
       <nav className="mx-auto flex max-w-4xl flex-wrap items-center gap-2 px-6 pb-6 pt-24 text-sm text-slate-500">
         <Link
@@ -234,7 +257,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
         <div className="mt-16 flex flex-col items-center gap-6 rounded-3xl border-t border-slate-800 bg-[#151c2b]/30 p-8 pt-10 md:flex-row md:items-start">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-[#ff6b00] bg-slate-800">
             <Image
-              src="/images/tatiana-author.jpg"
+              src="/images/tatiana-author.webp"
               alt="Tatiana — author"
               fill
               sizes="80px"

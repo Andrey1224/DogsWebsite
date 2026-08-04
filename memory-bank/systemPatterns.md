@@ -29,6 +29,14 @@
 - **Vercel Web Analytics**: Include `<Analytics />` from `@vercel/analytics/next` once in the root
   `app/layout.tsx`. Keep it separate from the existing consent-managed GA4/Meta Pixel
   `AnalyticsProvider`.
+- **Consent-managed marketing analytics**: GA4 and Meta Pixel must not load or preconnect before
+  consent. Use `NEXT_PUBLIC_GA_MEASUREMENT_ID` and `NEXT_PUBLIC_META_PIXEL_ID`. GA4 page views rely
+  on the normal `gtag('config', ...)` call plus Enhanced Measurement history tracking; do not set
+  `send_page_view: false` unless a tested manual page-view implementation replaces it. Map shared
+  commerce/lead actions to GA4 recommended events and Meta standard events in the central provider.
+- **Paid conversion attribution**: Capture GA4 client/session IDs in the browser when checkout
+  begins, validate them before adding them to Stripe metadata, and forward them to GA4 Measurement
+  Protocol when the payment webhook emits `deposit_paid`.
 - **React Forms**: When using `defaultValue` with dynamic data, add `key` prop that includes the data to force re-mount on updates (e.g., `key={`${id}-${value}`}`).
 
 ## SEO Conventions

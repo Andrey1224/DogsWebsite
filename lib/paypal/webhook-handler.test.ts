@@ -26,7 +26,19 @@ vi.mock('@/lib/reservations/queries', () => ({
     updateStatus: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'paid' }),
     getByPayment: vi.fn().mockResolvedValue(null),
     update: vi.fn().mockResolvedValue({ id: 'test-reservation-id', status: 'refunded' }),
+    releasePuppyIfNoActiveReservations: vi.fn().mockResolvedValue(true),
   },
+}));
+
+vi.mock('@/lib/webhooks/webhook-events-server', () => ({
+  WebhookEventsServer: {
+    markFailed: vi.fn().mockResolvedValue(true),
+    claimAlert: vi.fn().mockResolvedValue(true),
+  },
+}));
+
+vi.mock('@/lib/monitoring/webhook-alerts', () => ({
+  alertWebhookError: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/reservations/create', () => {
@@ -362,8 +374,39 @@ describe('PayPalWebhookHandler', () => {
 
     const result = await PayPalWebhookHandler.processEvent(refundEvent);
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
     expect(result.error).toBe('Reservation not found');
+  });
+
+  it('records a partial PayPal refund without releasing the puppy', async () => {
+    (ReservationQueries.getByPayment as any).mockResolvedValue({
+      id: 'res_partial',
+      puppy_id: mockPuppyId,
+      status: 'paid',
+      customer_email: mockEmail,
+      deposit_amount: 300,
+      amount: 300,
+      notes: null,
+    });
+
+    const result = await PayPalWebhookHandler.processEvent({
+      id: mockEventId,
+      event_type: 'PAYMENT.CAPTURE.REFUNDED',
+      resource_type: 'capture',
+      resource: {
+        id: mockCaptureId,
+        status: 'PARTIALLY_REFUNDED',
+        amount: { value: '100.00', currency_code: 'USD' },
+      },
+      create_time: new Date().toISOString(),
+    });
+
+    expect(result.success).toBe(true);
+    expect(ReservationQueries.update).toHaveBeenCalledWith(
+      'res_partial',
+      expect.not.objectContaining({ status: 'refunded' }),
+    );
+    expect(ReservationQueries.releasePuppyIfNoActiveReservations).not.toHaveBeenCalled();
   });
 
   it('handles PAYMENT.CAPTURE.REFUNDED with invalid resource', async () => {

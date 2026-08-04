@@ -41,6 +41,47 @@ export interface MarkFailedParams {
  * Server-side webhook events operations using service role
  */
 export class WebhookEventsServer {
+  static async claimAlertBucket(params: {
+    provider: PaymentProvider;
+    bucketKey: string;
+    throttleMinutes?: number;
+  }): Promise<number> {
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase.rpc('claim_webhook_alert_bucket', {
+      p_provider: params.provider,
+      p_bucket_key: params.bucketKey,
+      p_throttle_minutes: params.throttleMinutes ?? 15,
+    });
+
+    if (error) {
+      console.error('[Webhook Events Server] Failed to claim webhook alert bucket:', error);
+      return 0;
+    }
+
+    return typeof data === 'number' ? data : 0;
+  }
+
+  static async claimAlert(params: {
+    provider: PaymentProvider;
+    idempotencyKey: string;
+    throttleMinutes?: number;
+  }): Promise<boolean> {
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase.rpc('claim_webhook_alert', {
+      p_provider: params.provider,
+      p_idempotency_key: params.idempotencyKey,
+      p_throttle_minutes: params.throttleMinutes ?? 15,
+    });
+
+    if (error) {
+      console.error('[Webhook Events Server] Failed to claim webhook alert:', error);
+      // Compatibility fallback while the claim_webhook_alert migration is rolling out.
+      return true;
+    }
+
+    return data === true;
+  }
+
   /**
    * Mark webhook event as being processed
    *

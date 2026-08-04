@@ -45,6 +45,10 @@ vi.mock('@/components/puppy-gallery', () => ({
   PuppyGallery: () => <div data-testid="puppy-gallery">Gallery</div>,
 }));
 
+vi.mock('@/components/analytics/puppy-view-tracker', () => ({
+  PuppyViewTracker: () => <div data-testid="puppy-view-tracker" />,
+}));
+
 vi.mock('@/components/puppy-detail/stats-grid', () => ({
   StatsGrid: () => <div data-testid="stats-grid">StatsGrid</div>,
 }));
@@ -56,7 +60,11 @@ vi.mock('@/components/puppy-detail/parent-card', () => ({
 }));
 
 vi.mock('./reserve-button', () => ({
-  ReserveButton: () => <button>Reserve</button>,
+  ReserveButton: ({ puppyPrice }: { puppyPrice: number | null }) => (
+    <button data-testid="reserve-button" data-puppy-price={puppyPrice ?? ''}>
+      Reserve
+    </button>
+  ),
 }));
 
 describe('PuppyDetailPage', () => {
@@ -104,8 +112,13 @@ describe('PuppyDetailPage', () => {
 
     // Check child components rendered
     expect(screen.getByTestId('puppy-gallery')).toBeInTheDocument();
+    expect(screen.getByTestId('puppy-view-tracker')).toBeInTheDocument();
     expect(screen.getByTestId('stats-grid')).toBeInTheDocument();
     expect(screen.getByText('Reserve')).toBeInTheDocument();
+    expect(screen.getByTestId('reserve-button')).toHaveAttribute(
+      'data-puppy-price',
+      String(mockPuppy.price_usd),
+    );
   });
 
   it('calls notFound when puppy is not returned', async () => {

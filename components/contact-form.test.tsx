@@ -6,6 +6,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { ContactFormState } from '@/app/(site)/(chrome)/contact/actions';
 
 let ContactForm: (typeof import('./contact-form'))['ContactForm'];
+const trackEventMock = vi.hoisted(() => vi.fn());
 const submitContactInquiryMock = vi.fn<
   (prevState: ContactFormState, formData: FormData) => Promise<ContactFormState>
 >(async () => ({
@@ -20,7 +21,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/components/analytics-provider', () => ({
   useAnalytics: () => ({
-    trackEvent: vi.fn(),
+    trackEvent: trackEventMock,
   }),
 }));
 
@@ -383,6 +384,12 @@ describe('ContactForm', () => {
       expect(formData.get('name')).toBe('John Doe');
       expect(formData.get('email')).toBe('john@example.com');
       expect(formData.get('phone')).toBe('+1 205 555 1234');
+      expect(trackEventMock).toHaveBeenCalledWith('generate_lead', {
+        context_path: '/contact',
+        location: 'contact_page',
+        puppy_slug: undefined,
+        method: 'contact_form',
+      });
     });
   });
 });

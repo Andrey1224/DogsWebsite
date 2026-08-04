@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -16,7 +14,7 @@ export function UltimateGuideForNewBulldogOwners() {
   const climateChecklist = [
     'Run the AC during summer — it’s your bulldog’s favorite napping environment',
     'Walk during cool early mornings or late evenings on hot days',
-    'Keep afternoon potty breaks to a strict 5 minutes, then head back inside',
+    'Keep hot-weather potty breaks brief and watch closely for heavy panting or distress',
     'Always have fresh, cool water available',
   ];
 
@@ -35,10 +33,9 @@ export function UltimateGuideForNewBulldogOwners() {
           the personality of a CEO and the face of an angel.
         </p>
         <p className="leading-relaxed">
-          There are many myths surrounding their health, but let&rsquo;s be honest: owning a bulldog
-          isn&rsquo;t about managing a &ldquo;sick breed&rdquo;&mdash;it is simply a unique,
-          rewarding lifestyle. With the right understanding, these sturdy companions will bring you
-          endless love, joy, and hilarious snorts for years to come.
+          French and English Bulldogs have breed-specific needs, especially around breathing,
+          temperature, skin folds, joints, and water safety. Learning those needs early helps owners
+          build a safe routine and recognize when veterinary guidance is needed.
         </p>
         <p className="leading-relaxed">
           Here is your essential guide to making life with your{' '}
@@ -75,10 +72,10 @@ export function UltimateGuideForNewBulldogOwners() {
           1. Respiratory Anatomy: The Secret Behind the Snore
         </h2>
         <p className="leading-relaxed">
-          A bulldog&rsquo;s main trademark is that unforgettable, adorable face. The physics here
-          are simple: a shortened muzzle makes them incredibly cute, but it also means things are a
-          bit compact inside. A slightly elongated soft palate can sometimes restrict airflow, which
-          is why bulldogs produce their signature snorts.
+          A bulldog&rsquo;s shortened muzzle can be associated with narrow nostrils, an elongated
+          soft palate, or other airway changes. Not every snort signals a medical problem, but
+          labored breathing, gagging, exercise intolerance, blue or pale gums, or collapse require
+          prompt veterinary attention.
         </p>
 
         <div className="my-8 rounded-2xl border border-slate-800 bg-[#151c2b] p-6 md:p-8">
@@ -87,15 +84,25 @@ export function UltimateGuideForNewBulldogOwners() {
               <Wind className="h-5 w-5" />
             </div>
             <div>
-              <h4 className="mb-2 text-base font-bold text-white">Modern Care</h4>
+              <h4 className="mb-2 text-base font-bold text-white">When to Ask a Veterinarian</h4>
               <p className="text-sm leading-relaxed text-slate-300">
-                If your bulldog snores unusually loud or tires quickly, modern veterinary medicine
-                offers a seamless solution. A gentle, virtually bloodless procedure using a CO2
-                laser allows veterinarians to adjust the soft palate and open up the nostrils.
-                Because the laser seals blood vessels as it cuts, there is minimal bleeding, no
-                uncomfortable stitches, and very little post-operative swelling. Dogs typically wake
-                up and start breathing freely almost immediately &mdash; think of it as opening a
-                window to a fresh breeze!
+                In our experience caring for Bulldogs, the right treatment plan can make a
+                meaningful difference in a dog&rsquo;s comfort and breathing. A veterinarian can
+                evaluate whether noisy or difficult breathing is related to brachycephalic
+                obstructive airway syndrome (BOAS). Depending on the dog, care may include weight
+                management, activity changes, or surgery to address narrowed nostrils or an
+                elongated soft palate. Some dogs experience significant relief after appropriate
+                treatment, but airway surgery is never an automatic or instant solution: it requires
+                close monitoring and carries risks. Read the{' '}
+                <a
+                  href="https://www.acvs.org/small-animal/brachycephalic-syndrome/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white underline transition-colors hover:text-[#ff6b00]"
+                >
+                  American College of Veterinary Surgeons overview
+                </a>{' '}
+                and discuss your dog&rsquo;s signs with a licensed veterinarian.
               </p>
             </div>
           </div>
@@ -109,10 +116,10 @@ export function UltimateGuideForNewBulldogOwners() {
                 Why a Harness Is Essential
               </h4>
               <p className="text-sm italic leading-relaxed text-slate-300">
-                To protect your dog&rsquo;s throat and sensitive airway, skip the neck collar for
-                walks. A properly fitted, anatomical Y-harness is a must. It safely distributes
-                pressure across the strong bones of the chest, keeping the neck completely free so
-                your bulldog can explore the world in total comfort.
+                A properly fitted harness can reduce pressure on the neck during walks. Fit matters:
+                the harness should allow normal shoulder movement without rubbing or restricting
+                breathing. Ask your veterinarian for help if your bulldog coughs, gags, or struggles
+                to breathe during activity.
               </p>
             </div>
           </div>
@@ -167,8 +174,8 @@ export function UltimateGuideForNewBulldogOwners() {
         </p>
         <p className="leading-relaxed">
           Planning a trip to the beach, lake, or river? Absolutely! Just equip your bulldog with a
-          high-quality canine life jacket. They will look like a stylish lifeguard and stay
-          completely safe while splashing around with you.
+          high-quality canine life jacket and maintain hands-on supervision. A life jacket reduces
+          risk but does not make unsupervised swimming safe.
         </p>
 
         <div className="my-8 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -233,8 +240,8 @@ export function UltimateGuideForNewBulldogOwners() {
             </div>
             <p className="text-sm leading-relaxed text-slate-300">
               Moisture and dust can accumulate in the facial folds. Gently wipe them clean using a
-              soft, alcohol-free wipe or micellar water, and always dry the skin thoroughly
-              afterward. The golden rule of wrinkle care is keeping the skin dry.
+              soft cloth and a product recommended by your veterinarian, then dry the skin
+              thoroughly. Redness, odor, discharge, or pain warrants a veterinary check.
             </p>
           </div>
           <div className="rounded-xl border border-slate-800/80 bg-[#151c2b]/30 p-5">
@@ -244,8 +251,9 @@ export function UltimateGuideForNewBulldogOwners() {
             </div>
             <p className="text-sm leading-relaxed text-slate-300">
               Some bulldogs (especially English Bulldogs) have very tight tails that create a deep
-              indentation or &ldquo;tail pocket&rdquo; underneath. Keep this area clean by gently
-              removing loose skin flakes and applying a soothing, drying powder if needed.
+              indentation or &ldquo;tail pocket&rdquo; underneath. Keep the area clean and dry using
+              veterinarian-approved products; persistent irritation, odor, or discharge needs an
+              exam.
             </p>
           </div>
         </div>
@@ -270,6 +278,38 @@ export function UltimateGuideForNewBulldogOwners() {
             className="text-white underline transition-colors hover:text-[#ff6b00]"
           >
             Bulldog Nutrition guide on dry food vs. raw diet
+          </Link>
+          .
+        </p>
+      </div>
+
+      {/* Alabama service area links */}
+      <div className="mt-12 space-y-6 rounded-2xl border border-slate-800 bg-[#151c2b]/40 p-6 md:p-8">
+        <h2 className="text-2xl font-bold text-white md:text-3xl">
+          Preparing for a Bulldog Puppy in Alabama
+        </h2>
+        <p className="leading-relaxed">
+          Families planning pickup should prepare the crate, harness, cooling plan, feeding routine,
+          and first veterinary appointment before travel day. Review our local logistics for{' '}
+          <Link
+            href="/locations/huntsville-al"
+            className="text-white underline transition-colors hover:text-[#ff6b00]"
+          >
+            Bulldog puppies near Huntsville
+          </Link>{' '}
+          and{' '}
+          <Link
+            href="/locations/birmingham-al"
+            className="text-white underline transition-colors hover:text-[#ff6b00]"
+          >
+            Bulldog puppies near Birmingham
+          </Link>
+          , or compare all{' '}
+          <Link
+            href="/locations"
+            className="text-white underline transition-colors hover:text-[#ff6b00]"
+          >
+            Alabama pickup and delivery areas
           </Link>
           .
         </p>

@@ -72,10 +72,16 @@ export function ContactForm({ heading, context, variant = 'default' }: ContactFo
 
   useEffect(() => {
     if (state.status === 'success' && !successTrackedRef.current) {
-      trackEvent('form_success', {
+      const analyticsParams = {
         context_path: pathname,
         location: context?.puppySlug ? 'puppy_detail' : 'contact_page',
         puppy_slug: context?.puppySlug ?? undefined,
+      };
+
+      trackEvent('form_success', analyticsParams);
+      trackEvent('generate_lead', {
+        ...analyticsParams,
+        method: 'contact_form',
       });
       successTrackedRef.current = true;
     }

@@ -21,6 +21,8 @@ export const reservationStatusSchema = z.enum([
 
 export const paymentProviderSchema = z.enum(['stripe', 'paypal'] as const);
 
+export const paymentTypeSchema = z.enum(['deposit', 'full'] as const);
+
 export const reservationChannelSchema = z.enum([
   'site',
   'whatsapp',
@@ -79,6 +81,7 @@ export const createReservationParamsSchema = z.object({
     .optional(),
   customerPhone: phoneSchema,
   depositAmount: currencySchema,
+  paymentType: paymentTypeSchema,
   paymentProvider: paymentProviderSchema,
   externalPaymentId: externalPaymentIdSchema,
   channel: reservationChannelSchema.optional(),
@@ -111,6 +114,7 @@ export const reservationRecordSchema = z.object({
   status: reservationStatusSchema,
   deposit_amount: currencySchema,
   amount: currencySchema,
+  payment_type: paymentTypeSchema,
   payment_provider: paymentProviderSchema.nullable(),
   external_payment_id: z.string().nullable(),
   webhook_event_id: z.number().int().positive().nullable(),

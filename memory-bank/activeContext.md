@@ -13,9 +13,246 @@
 - **P8**: Correct live local SEO copy around Falkville/Cullman service areas.
 - **P9**: Keep sold puppy profiles public and indexable while blocking reservations.
 - **P10**: Disable the unused Crisp live chat without loading its client script.
+- **P11**: Add a "Pay Full" option (Stripe-only) alongside the existing deposit reservation flow.
 
 ## Current Status
 
+- **Completed (Aug 3, 2026)**: Closed the remaining literal verification gaps from
+  `PLAN_PAYMENT_RELIABILITY_FIXES.md`.
+  - Added durable stale-Stripe-event persistence plus database-backed alert-window aggregation in
+    `20260803220000_add_webhook_alert_buckets.sql`.
+  - Added eight real-Postgres reservation-integrity/concurrency regressions and corrected the
+    offline Stripe integration expectation to the final `paid` contract; all 12 database-backed
+    integration tests pass against local Supabase.
+  - Upgraded the project Supabase CLI dependency, copied the production `public` schema and data
+    into local Supabase with read-only `pg_dump`, and restored the missing local
+    `reviews.featured` schema migration. A clean `supabase db reset` applies the full migration
+    chain successfully; the local database was then returned to the production dataset plus the
+    proposed alert-bucket migration.
+  - Completed real Stripe test-mode E2E through `stripe listen`: deposit → paid/reserved; a second
+    payment → no duplicate reservation, durable failed webhook, alert claimed; full payment →
+    paid/sold; full refund → refunded/available. Email delivery stayed disabled throughout and all
+    disposable local records were removed.
+  - Final `VITEST_MAX_THREADS=4 npm run verify` passed documentation/link checks, lint, typecheck,
+    Vitest, and Playwright (25 passed, 3 intentionally skipped).
+  - Production Migration C was applied through Supabase MCP as
+    `20260804002806_add_webhook_alert_buckets`; verification confirms the table is empty on create,
+    `service_role` alone has table/RPC access, and client roles have neither.
+  - The tested working tree was deployed directly to Vercel as
+    `dpl_BTqEB2GR41kHDhBWm27cyDZRiyWD` and reached READY. This bypassed the repository's intended
+    `dev` → GitHub CI → Vercel dev workflow; the same complete change set is now being published to
+    `dev` so subsequent verification follows the normal pipeline.
+
+- **Completed (Aug 3, 2026)**: Implemented `PLAN_PAYMENT_RELIABILITY_FIXES.md` in gated phases.
+  Phase 1 combined Pay Full with the service-role/server-only and PayPal paid-status hotfixes;
+  Phase 2 added durable failure handling, unified reservation integrity, and refund-safe release.
+  - First staged code deployment is live as `dpl_DwKuoS7dVLd32u7894uLjsi9i6VV`; the primary
+    domain is aliased to it and the live Sunny page exposes the full-payment CTA.
+  - Payment-safe expiry, unified database sentinels, durable alert claims, failure persistence,
+    partial-refund protection, atomic puppy release, admin warnings, and the daily cron are live.
+  - Migration A (`20260803200000_make_pending_expiry_payment_safe.sql`) was applied to production
+    through the Supabase SQL Editor after the read-only MCP and unauthorized CLI token prevented the
+    normal migration path. Post-deploy verification confirms the paid-signal guard is present,
+    `service_role` has execute access, `anon`/`authenticated` do not, and both integrity audits are 0.
+  - After write access was enabled, Migration A was registered through Supabase MCP as live version
+    `20260803231132`; Migration B was applied as `20260803231214`. Verification confirms the new alert
+    column/functions, unified sentinels, service-role-only permissions, and clean 0/0 integrity audits.
+  - Final production deployment `dpl_Dgoncm1qRKEkEkq47jyUmA75b2sn` is READY and aliased to
+    `exoticbulldoglegacy.com`. Vercel registered `/api/cron/expire-reservations` at `0 6 * * *`;
+    unauthenticated access returns 401 as intended. Health database/email/analytics checks are OK;
+    only the pre-existing optional `NEXT_PUBLIC_CONTACT_HOURS` warning keeps overall health degraded.
+  - Pre-Migration-A production audit: 0 paid-signal pending rows and 0 unpaid expired pending rows.
+  - Verification: docs/link checks, lint, typecheck, and Vitest pass (696 passed, 4 skipped);
+    Playwright passes outside the macOS sandbox (25 passed, 3 skipped).
+  - Final post-documentation `npm run verify` again passed docs/link checks, lint, typecheck, and
+    Vitest; its Playwright stage hit the known sandbox `EMFILE` watcher failure. The same E2E suite
+    had already passed in the approved non-sandbox run above, and the Vercel production build passed.
+
+- **Completed (Aug 3, 2026)**: Connected Codex to the project-scoped Supabase MCP using OAuth.
+  - MCP targets project `vsjsrbmcxryuodlqscnl`. On user approval, the `read_only=true` URL flag
+    was removed from `.codex/config.toml` so future Codex sessions can apply tracked migrations.
+  - Removed the stale `SUPABASE_ACCESS_TOKEN` requirement from `.codex/config.toml`; credentials
+    are stored by Codex OAuth and no secret was added to the repository.
+  - A new Codex chat/session may be required before Supabase tools appear in the tool list.
+
+- **Completed (Aug 3, 2026)**: Added a "Pay Full" payment option to the puppy reservation flow
+  (Stripe-only; PayPal remains deposit-only and its UI stays disabled).
+  - New `reservations.payment_type` column (`'deposit' | 'full'`, default `'deposit'`) and a
+    matching `p_payment_type` param on the `create_reservation_transaction` RPC
+    (`supabase/migrations/20260803000000_add_payment_type_to_reservations.sql`). A full payment
+    now sets the puppy to `'sold'` instead of `'reserved'`.
+  - `createCheckoutSession()` takes a `paymentType` argument; for `'full'` the charge is computed
+    from `puppy.price_usd` instead of the flat deposit env var, with matching Checkout line-item
+    copy and metadata.
+  - Puppy detail page shows a secondary "Buy Now — Pay full $X" CTA alongside the existing deposit
+    button (only when the puppy has a price).
+  - Webhook handler, GA4 (`trackDepositPaid`), and the owner/customer email templates all branch
+    on `payment_type`, defaulting to `'deposit'` for in-flight sessions created before this shipped.
+  - Admin reservations table now shows a Type (Deposit/Full Payment) column.
+  - Migration applied to the live `exotic-bulldog` Supabase project (`vsjsrbmcxryuodlqscnl`) via
+    the Supabase MCP, with the user's explicit approval per-action. `lib/supabase/database.types.ts`
+    was verified against a live `generate_typescript_types` call (matches the hand-edit exactly);
+    the file was not wholesale-replaced since the generator now uses a newer codegen format that
+    would have produced a large, unrelated diff across every table.
+  - **Two pre-existing production issues found and fixed while inspecting the live schema (both
+    unrelated to Pay Full, both explicitly approved by the user before applying):**
+    1. `reservations.status` check constraint only allowed `'canceled'` (single-L) while the app
+       (`ReservationQueries.cancel()`) writes `'cancelled'` — the admin "cancel reservation" action
+       was failing in production. Fixed via
+       `20260803190000_fix_reservation_status_cancelled_spelling.sql` (drops the redundant legacy
+       constraint, normalizes the 3 existing rows, re-adds `valid_reservation_status` with the
+       correct spelling).
+    2. `create_reservation_transaction` (SECURITY DEFINER) was executable by `anon`/`authenticated`
+       via the public PostgREST RPC endpoint — Postgres grants EXECUTE to PUBLIC by default on
+       function creation, and the original migration never revoked it. This let unauthenticated
+       callers mark any puppy `'reserved'`/`'sold'` with zero real payment. Fixed via
+       `20260803190100_restrict_create_reservation_transaction_to_service_role.sql`
+       (`REVOKE ALL ... FROM PUBLIC, anon, authenticated`, confirmed via `has_function_privilege`).
+    3. Also self-discovered and fixed: `CREATE OR REPLACE FUNCTION` with an added trailing
+       parameter created a _second overload_ of `create_reservation_transaction` instead of
+       replacing it (Postgres matches on full parameter list). Dropped the stale 11-arg overload
+       (`20260803184849` live / folded into `20260803000000_add_payment_type_to_reservations.sql`
+       locally) so only one signature exists.
+  - **Operational follow-up:** full-price charges (e.g. $3,000) will always trip the existing
+    Stripe Radar rule that challenges transactions >$250 — worth revisiting that threshold in the
+    Stripe Dashboard for domestic full payments (see `docs/payments/payments-architecture.md` §5).
+  - **Not yet fixed (flagged only, not in scope):** `get_advisors` also surfaced pre-existing,
+    lower-severity findings unrelated to this session — RLS enabled with no policy on
+    `inquiries`/`litters`/`parents`/`puppies`/`reservations`, several functions with a mutable
+    `search_path`, `pgcrypto` installed in `public`, and public storage buckets (`puppies`,
+    `reviews`) allowing object listing. Worth a dedicated security-hardening pass later.
+  - Verification: `npm run lint`/`typecheck` clean; Vitest 691/691 passed; Playwright 26/27 passed
+    (1 pre-existing flaky test under local parallel load, unrelated to this feature — passes on
+    retry, matches CI's existing `retries: 2`). Code changes not yet committed/pushed to git; the
+    live DB migrations above are already applied regardless of git commit state.
+
+- **Completed (Aug 2, 2026)**: Expanded the site's consent-managed analytics into a measurable
+  SEO-to-lead funnel.
+  - Restored automatic GA4 page views; the previous root configuration disabled them without a
+    manual page-view replacement.
+  - Fixed Meta Pixel configuration by reading the deployed `NEXT_PUBLIC_META_PIXEL_ID`, added
+    App Router page-view tracking, and mapped standard Meta conversion events.
+  - Added `view_item` on puppy profiles, `generate_lead` after successful contact inquiries,
+    `begin_checkout`/reservation diagnostics on Stripe intent, and checkout-error diagnostics.
+  - GA4 browser client/session identifiers now flow through validated Stripe metadata into the
+    server-side `deposit_paid` event for stronger conversion attribution.
+  - Removed Google/Meta preconnects before consent. GA4, Meta Pixel, and their events continue to
+    load only after an explicit analytics opt-in.
+  - Live browser verification found and corrected the legacy Meta queue's conflicting version
+    shape. The production page now loads the expected `fbevents.js` plus Meta's pixel-specific
+    configuration script without the earlier version-conflict warning.
+  - Deployed to Vercel production as `dpl_7tgABYv8WPhBoPSbFC7sQQRuQmW8`; the primary domain was
+    aliased to the ready deployment. Live `/api/health` reports analytics `ok` with both `ga4` and
+    `meta_pixel`; overall health remains `degraded` only because `NEXT_PUBLIC_CONTACT_HOURS` is
+    not explicitly set and the documented fallback schedule is in use.
+  - Verification: production build passed; `VITEST_MAX_THREADS=4 npm run verify` passed docs,
+    links, lint, typecheck, Vitest (676 passed, 4 skipped), and Playwright (25 passed, 2 skipped).
+
+- **Completed (Aug 2, 2026)**: Restored a more personal breeder voice to the owner guide's BOAS
+  section while retaining veterinarian-led evaluation, individualized treatment language, surgical
+  risk context, and the authoritative American College of Veterinary Surgeons reference.
+  - Deployed to Vercel production as `dpl_BxEhR3WnQ6jdsEpmHwWWP9Xh4y3T`; the primary domain was
+    aliased to the ready deployment and the live article HTML contains the updated authorial copy.
+  - Verification: `npm run verify` passed documentation checks, lint, typecheck, Vitest (668
+    passed, 4 skipped), and Playwright (25 passed, 2 skipped).
+- **Diagnostic Update (Aug 2, 2026)**: Completed the post-deployment Search Console and Google
+  Business Profile audit without changing settings or requesting indexing.
+  - Performance, last 28 days vs previous 28 days: clicks `6 vs 7` (-14.3%), impressions
+    `257 vs 223` (+15.2%), CTR `2.3% vs 3.1%` (-0.8 pp), and average position `11.5 vs 13.3`
+    (improved by 1.8 positions).
+  - Performance, last 3 months vs previous 3 months: clicks `19 vs 13` (+46.2%), impressions
+    `716 vs 276` (+159.4%), CTR `2.7% vs 4.7%` (-2.0 pp), and average position `13.7 vs 8.1`.
+    The broader three-month query footprint added many low-volume, lower-ranking queries; the
+    rolling 28-day position is improving.
+  - Last-28-day pages: home `4 clicks / 34 impressions / position 2.9`; Huntsville
+    `2 / 90 / 9.4`; Birmingham `0 / 52 / 12.5`; puppies `0 / 42 / 8.5`; locations
+    `0 / 24 / 11.2`; dry-food article `0 / 32 / 17.1`. The dry-food article improved by 8.6
+    positions; Birmingham improved by 2.5 positions despite fewer impressions.
+  - Important queries: `french bulldogs for sale huntsville al` held position `8.9` with 15
+    impressions; the exact-domain brand query fell from 34 to 13 impressions and position 5.7 to
+    7.2; `english bulldogs for sale near me` improved from position 11 to 7.5; several new generic
+    and nutrition queries appeared with small samples.
+  - Page indexing increased from the previous 11 to 15 indexed URLs; 8 remain excluded (5
+    intentional `noindex`, 3 crawled/not indexed). The three crawled/not-indexed examples are the
+    high-carb article plus old Pearl and Duke puppy URLs. Pearl and Duke now correctly return 404;
+    the updated high-carb article returns 200 and passed a live indexability test but remains
+    outside the index.
+  - Both new owner-education articles are indexed. Cullman and Decatur are not yet in the index
+    immediately after deployment, but both passed live URL tests as available/indexable with valid
+    breadcrumbs. No indexing request was submitted.
+  - `/sitemap.xml` is successful, was read Aug 2, and reports 29 discovered pages. Core Web Vitals
+    has insufficient 90-day field data for both mobile and desktop. Links reports 0 external and
+    154 internal links.
+  - Search Console reports 0 invalid breadcrumb items (9 valid), 0 invalid review snippets (1
+    valid), 0 non-HTTPS URLs, no manual actions, and no security issues.
+  - The owner account contains an `Exotic Bulldog Legacy` Business Profile at the Falkville
+    address, but it is `Verification required`, `Not publicly visible`, and absent for an exact
+    Maps brand search. Maps instead returns the unrelated `Legacy Exotic Bulldogs` profile.
+  - GBP category (`Dog breeder`), business phone, SMS, and website are correct. Missing items are
+    description, opening date, social profiles, service area, main hours, cover image, logo, and
+    business photos. Confirm whether the Falkville address should be publicly displayed before
+    starting verification.
+- **Completed (Aug 2, 2026)**: Added the third post-audit local SEO package for Cullman and
+  Decatur.
+  - Deployed the complete three-part post-audit SEO package to Vercel production as deployment
+    `dpl_14SFiEpCu9nfjKhoNzE8ZUpoYn7k`; `https://exoticbulldoglegacy.com` is aliased to the ready
+    deployment.
+  - Live verification returned HTTP 200 for the home, location hub, both new city pages, both new
+    articles, `sitemap.xml`, and `robots.txt`; the missing-puppy regression URL returned a real HTTP 404. Cullman/Decatur canonicals and FAQ schema, both articles' `BlogPosting` schema, and every
+    new sitemap URL were present in production.
+  - Added indexable `/locations/cullman-al` and `/locations/decatur-al` pages with unique local
+    intent, pickup/delivery guidance, nearby service areas, owner resources, and FAQs. The copy
+    accurately describes Falkville as the operating location and does not imply storefronts in
+    either city.
+  - Expanded the Alabama location hub from two to four city pages, rewrote its metadata/H1/intro
+    around statewide search intent, and added Cullman/Decatur links to the sitewide footer.
+  - Statically generated every indexable city route with `dynamicParams = false` and published
+    city-specific `FAQPage` structured data alongside the existing local-business schema.
+  - Kept Madison within the Huntsville page and Falkville within the home/business entity rather
+    than creating thin, overlapping city pages. Additional city expansion should wait for the next
+    28-day Search Console comparison.
+  - Browser verification covered the Alabama hub plus both new city pages; canonical URLs,
+    headings, four-city navigation, FAQ schema, and responsive presentation were present with no
+    browser-console errors.
+  - Verification: targeted location/sitemap/footer tests passed (34/34); `npm run verify` passed
+    documentation checks, lint, typecheck, Vitest (668 passed, 4 skipped), and Playwright (25
+    passed, 2 skipped); `npx next build` passed with all four city routes statically generated.
+- **Completed (Aug 2, 2026)**: Shipped the second post-audit article and internal-linking SEO
+  package.
+  - Rewrote the two July 21 article SEO titles/descriptions around clearer search intent and set
+    truthful `updatedAt` timestamps; article headers, `BlogPosting.dateModified`, and local-post
+    sitemap dates now use the revision date.
+  - Corrected the public article date formatter from Russian to English for the English-language
+    site.
+  - Added natural, contextual links from both new articles to `/locations/huntsville-al`,
+    `/locations/birmingham-al`, `/locations`, and relevant commercial/policy pages.
+  - Added a reusable owner-resource section to both city pages, linking families back to the new
+    owner guide, potty-training guide, and health/deposit policies.
+  - Replaced unsafe certainty around brachycephalic airway surgery with veterinarian-led guidance
+    and an authoritative American College of Veterinary Surgeons reference; also softened absolute
+    claims around heat, swimming, skin-fold care, vaccination exposure, and bladder timelines.
+  - Removed unnecessary client-component boundaries from all three custom local articles. The
+    `/blog/[slug]` production route fell from 14.3 kB to 1.57 kB and First Load JS from 125 kB to
+    112 kB.
+  - Verification: targeted sitemap/article/location tests passed (16/16); `npm run verify` passed
+    link checks, lint, typecheck, Vitest (648 passed, 4 skipped), and Playwright (25 passed, 2
+    skipped); `npx next build` passed with all four article slugs statically generated.
+- **Completed (Aug 2, 2026)**: Shipped the first post-audit technical SEO package.
+  - Stabilized sitemap output: static and location URLs no longer claim a new `lastModified` value
+    on every render; puppy, Sanity, and local-post URLs retain their real source dates.
+  - Added `BlogPosting` and `BreadcrumbList` structured data to every article page, including
+    canonical URLs, publisher/author identity, images, categories, and published/modified dates.
+  - Projected Sanity `_updatedAt` into article data and added optional `updatedAt` support to the
+    local-post registry.
+  - Replaced the deleted `/images/tatiana-author.jpg` reference with the existing optimized
+    `/images/tatiana-author.webp` asset.
+  - Removed the puppy-detail streaming boundary that converted `notFound()` into a soft 404;
+    missing puppy URLs now return a real HTTP 404. Added E2E regression coverage for the status.
+  - Verification: targeted SEO tests passed (45/45); `npm run verify` passed link checks, lint,
+    typecheck, Vitest (642 passed, 4 skipped), and Playwright (25 passed, 2 skipped). The production
+    build passed and statically generated all four blog articles. Repository-wide Prettier remains
+    blocked only by pre-existing untracked `.claude/settings.local.json` and `NewBlogPosts.md`; all
+    files changed in this package were formatted.
 - **Completed (Jul 21, 2026)**: Added a new blog category "Bulldog Owner School" with two local
   articles, fixing a single-article rendering bug in the process.
   - New `lib/blog/local-posts.ts` entries: `ultimate-guide-for-new-bulldog-owners` (featured,
@@ -301,6 +538,7 @@
 - **Infra**: Next.js 15, Tailwind v4, Supabase, Stripe/PayPal integration stable.
 - **Reservations**: Added public and server-side disable flags for reservation UX and payment entrypoints (live Stripe rollout in progress).
 - **Intro**: Added an env flag to skip the intro screen.
+- **Promo**: Added an env flag to disable the promotional modal.
 
 ## Branch State (Jun 18, 2026)
 
@@ -309,6 +547,9 @@
 | `main` | `32d6054`     | Crisp disabled; synced to origin |
 
 ## Active Workstream
+
+- Meta Conversions API integration added (Aug 3, 2026): consent-gated browser/server events now share `event_id` for deduplication. Standard events include PageView, ViewContent, Contact, Lead, InitiateCheckout, and Purchase. The server token is never exposed to the browser; email/phone support is SHA-256 hashed before transmission.
+- New `/api/analytics/meta` endpoint accepts only allowlisted standard events after the `exoticbulldoglegacy_consent=granted` cookie is present. Browser delivery uses `keepalive` so outbound WhatsApp/contact navigation does not silently drop the server copy.
 
 - Debugging `NEXT_PUBLIC_PROMO_DISABLED` not taking effect on production.
 - Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED` and server payment entrypoints via `RESERVATIONS_DISABLED`.
@@ -325,19 +566,21 @@
 
 ## Next Steps
 
+1. Confirm `NEXT_PUBLIC_META_PIXEL_ID` and `META_CONVERSION_API_TOKEN` are present in the Vercel Production environment, deploy, then verify Browser + Server event sources and deduplication in Meta Events Manager.
+
 1. Check browser console on production to see `[PromoGate]` log output.
-2. Based on result:
+1. Based on result:
    - If `undefined` → redeploy Vercel with cleared build cache, verify env var is set for Production environment.
    - If `true` but modal still shows → investigate `PromoModal` component for separate disable logic.
-3. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
-4. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
-5. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
-6. Turn off intro in `.env.local` when ready to hide the splash screen.
-7. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
-8. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
-9. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
-10. Confirm the Vercel deployment for `32d6054` completed and verify the Crisp bubble is absent in
-    production.
-11. Reconnect/authenticate the Supabase MCP integration in Codex, preferably scoped to
-    `project_ref=vsjsrbmcxryuodlqscnl` and `read_only=true`, then restart the session and verify
-    Supabase MCP tools appear in tool discovery.
+1. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
+1. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
+1. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
+1. Turn off intro in `.env.local` when ready to hide the splash screen.
+1. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
+1. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.
+1. Resubmit updated sitemap in Google Search Console after deploy so `/reviews` is recrawled faster.
+1. Confirm the Vercel deployment for `32d6054` completed and verify the Crisp bubble is absent in
+   production.
+1. Reconnect/authenticate the Supabase MCP integration in Codex, preferably scoped to
+   `project_ref=vsjsrbmcxryuodlqscnl` and `read_only=true`, then restart the session and verify
+   Supabase MCP tools appear in tool discovery.

@@ -16,6 +16,11 @@ export type ReservationStatus = 'pending' | 'paid' | 'cancelled' | 'expired' | '
 export type PaymentProvider = 'stripe' | 'paypal';
 
 /**
+ * Payment type: a partial deposit hold, or the full puppy price paid upfront
+ */
+export type PaymentType = 'deposit' | 'full';
+
+/**
  * Reservation channel (how the customer contacted us)
  */
 export type ReservationChannel =
@@ -45,6 +50,7 @@ export interface WebhookEvent {
   processed_at: string | null;
   processing_error: string | null;
   idempotency_key: string | null;
+  last_alerted_at?: string | null;
   reservation_id: string | null;
   payload: unknown;
   created_at: string;
@@ -65,6 +71,7 @@ export interface Reservation {
   status: ReservationStatus;
   deposit_amount: number;
   amount: number;
+  payment_type: PaymentType;
   payment_provider: PaymentProvider | null;
   external_payment_id: string | null;
   webhook_event_id: number | null;
@@ -112,6 +119,8 @@ export interface CreateReservationParams {
   customerPhone?: string;
   /** Deposit amount in USD */
   depositAmount: number;
+  /** Whether this is a partial deposit or the full puppy price */
+  paymentType: PaymentType;
   /** Payment provider */
   paymentProvider: PaymentProvider;
   /** External payment ID (Stripe Payment Intent or PayPal Order ID) */
@@ -150,6 +159,7 @@ export interface CreateReservationResponse {
 }
 
 export type ReservationCreationErrorCode =
+  | 'PUPPY_NOT_FOUND'
   | 'PUPPY_NOT_AVAILABLE'
   | 'RACE_CONDITION_LOST'
   | 'DUPLICATE_PAYMENT'
@@ -177,6 +187,8 @@ export interface CreateWebhookEventResult {
 export interface IdempotencyCheckResult {
   /** Whether a reservation already exists for this payment */
   exists: boolean;
+  /** A matching event is currently locked but has not completed successfully. */
+  inProgress?: boolean;
   /** Existing reservation if found */
   reservation?: Reservation;
   /** Existing webhook event if found */

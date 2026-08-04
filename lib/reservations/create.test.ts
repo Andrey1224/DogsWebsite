@@ -16,6 +16,7 @@ const supabaseFixture = (globalThis as { __SUPABASE_FIXTURE__?: SupabaseFixture 
 
 vi.mock('@/lib/supabase/client', () => ({
   createSupabaseClient: () => supabaseFixture,
+  createServiceRoleClient: () => supabaseFixture,
 }));
 
 vi.mock('./queries', () => {
@@ -55,6 +56,7 @@ describe('ReservationCreationService', () => {
     customerEmail: 'test@example.com',
     customerName: 'Test Customer',
     depositAmount: 500,
+    paymentType: 'deposit',
     paymentProvider: 'stripe',
     externalPaymentId: 'pi_test123',
     channel: 'site',
@@ -127,8 +129,53 @@ describe('ReservationCreationService', () => {
         p_external_payment_id: validParams.externalPaymentId,
         p_notes: null,
         p_payment_provider: validParams.paymentProvider,
+        p_payment_type: validParams.paymentType,
         p_puppy_id: validParams.puppyId,
       });
+    });
+
+    it('sends p_payment_type "full" when reserving with a full payment', async () => {
+      const { idempotencyManager } = await import('./idempotency');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: validParams.externalPaymentId,
+        provider: validParams.paymentProvider,
+      });
+
+      const fullPaymentParams: CreateReservationParams = {
+        ...validParams,
+        paymentType: 'full',
+        depositAmount: 3000,
+      };
+
+      const reservationRecord = {
+        id: 'reservation-456',
+        puppy_id: fullPaymentParams.puppyId,
+        customer_email: fullPaymentParams.customerEmail,
+        status: 'pending',
+        deposit_amount: fullPaymentParams.depositAmount,
+        amount: fullPaymentParams.depositAmount,
+        payment_type: 'full',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const rpcHandler = registerReservationTransaction(async () => ({
+        data: reservationRecord,
+        error: null,
+      }));
+
+      const { reservationId } =
+        await ReservationCreationService.createReservation(fullPaymentParams);
+
+      expect(reservationId).toBe(reservationRecord.id);
+      expect(rpcHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          p_payment_type: 'full',
+          p_deposit_amount: 3000,
+        }),
+      );
     });
 
     it('should return RACE_CONDITION_LOST when puppy is no longer available', async () => {
@@ -199,6 +246,29 @@ describe('ReservationCreationService', () => {
           message: expect.stringContaining('cannot exceed puppy price'),
         },
       );
+      expect(rpcHandler).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle full payment amount mismatch with rollback', async () => {
+      const { idempotencyManager } = await import('./idempotency');
+
+      (idempotencyManager.checkWebhookEvent as any).mockResolvedValue({
+        exists: false,
+        paymentId: validParams.externalPaymentId,
+        provider: validParams.paymentProvider,
+      });
+
+      const rpcHandler = registerReservationTransaction(async () => ({
+        data: null,
+        error: { message: 'FULL_PAYMENT_AMOUNT_MISMATCH' },
+      }));
+
+      await expect(
+        ReservationCreationService.createReservation({ ...validParams, paymentType: 'full' }),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('does not match puppy price'),
+      });
       expect(rpcHandler).toHaveBeenCalledTimes(1);
     });
   });
@@ -350,7 +420,10 @@ describe('ReservationCreationService', () => {
         provider: validParams.paymentProvider,
       });
 
-      (ReservationQueries.updateStatus as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (ReservationQueries.updateStatus as ReturnType<typeof vi.fn>).mockResolvedValue({
+        id: 'paid-reservation',
+        status: 'paid',
+      });
 
       registerReservationTransaction(async () => ({
         data: { reservation_id: 'paid-reservation' },
@@ -428,6 +501,7 @@ describe('ReservationCreationService', () => {
         customer_name: 'Sam',
         customer_email: 'sam@example.com',
         deposit_amount: 500,
+        payment_type: 'deposit',
         payment_provider: 'stripe',
         status: 'pending',
         expires_at: '2024-01-01T12:00:00Z',

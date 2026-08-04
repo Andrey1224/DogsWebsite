@@ -37,6 +37,12 @@ export interface StripeCheckoutMetadata {
   customer_phone?: string;
   /** Source channel (site, whatsapp, etc.) */
   channel?: string;
+  /** Whether this session is a partial deposit or the full puppy price */
+  payment_type: 'deposit' | 'full';
+  /** GA4 browser client ID for server-side conversion attribution */
+  ga_client_id?: string;
+  /** GA4 browser session ID for server-side conversion attribution */
+  ga_session_id?: string;
 }
 
 /**
@@ -56,8 +62,10 @@ export interface CreateCheckoutSessionParams {
   puppySlug: string;
   /** Puppy name for display */
   puppyName: string;
-  /** Deposit amount in cents (e.g., 30000 for $300) */
+  /** Amount to charge in cents (deposit or full price, depending on paymentType) */
   amountCents: number;
+  /** Whether this is a partial deposit or the full puppy price */
+  paymentType: 'deposit' | 'full';
   /** Customer email */
   customerEmail: string;
   /** Customer name (optional) */
