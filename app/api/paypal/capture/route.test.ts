@@ -22,6 +22,12 @@ vi.mock('@/lib/reservations/queries', () => ({
   },
 }));
 
+vi.mock('@/lib/reservations/server-queries', () => ({
+  ReservationServerQueries: {
+    markPaid: vi.fn().mockResolvedValue({ id: 'res_123', status: 'paid' }),
+  },
+}));
+
 vi.mock('@/lib/reservations/create', () => {
   class ReservationCreationError extends Error {
     code: string;
@@ -71,6 +77,7 @@ describe('POST /api/paypal/capture', () => {
     const { capturePayPalOrder, getPayPalOrder } = await import('@/lib/paypal/client');
     const { ReservationQueries } = await import('@/lib/reservations/queries');
     const { ReservationCreationService } = await import('@/lib/reservations/create');
+    const { ReservationServerQueries } = await import('@/lib/reservations/server-queries');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (getPayPalOrder as any).mockResolvedValue({
@@ -141,10 +148,16 @@ describe('POST /api/paypal/capture', () => {
       customerName: 'Test Buyer',
       customerPhone: '1234567890',
       depositAmount: 300,
+      paymentType: 'deposit',
       paymentProvider: 'paypal',
       externalPaymentId: mockCaptureId,
       channel: 'site',
       notes: `PayPal capture ${mockCaptureId}`,
+    });
+    expect(ReservationServerQueries.markPaid).toHaveBeenCalledWith({
+      reservationId: mockReservationId,
+      provider: 'paypal',
+      externalPaymentId: mockCaptureId,
     });
   });
 
@@ -571,6 +584,7 @@ describe('POST /api/paypal/capture', () => {
       customerName: 'Metadata User',
       customerPhone: '9876543210',
       depositAmount: 300,
+      paymentType: 'deposit',
       paymentProvider: 'paypal',
       externalPaymentId: mockCaptureId,
       channel: 'site',

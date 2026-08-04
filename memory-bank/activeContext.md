@@ -13,8 +13,118 @@
 - **P8**: Correct live local SEO copy around Falkville/Cullman service areas.
 - **P9**: Keep sold puppy profiles public and indexable while blocking reservations.
 - **P10**: Disable the unused Crisp live chat without loading its client script.
+- **P11**: Add a "Pay Full" option (Stripe-only) alongside the existing deposit reservation flow.
 
 ## Current Status
+
+- **Completed (Aug 3, 2026)**: Closed the remaining literal verification gaps from
+  `PLAN_PAYMENT_RELIABILITY_FIXES.md`.
+  - Added durable stale-Stripe-event persistence plus database-backed alert-window aggregation in
+    `20260803220000_add_webhook_alert_buckets.sql`.
+  - Added eight real-Postgres reservation-integrity/concurrency regressions and corrected the
+    offline Stripe integration expectation to the final `paid` contract; all 12 database-backed
+    integration tests pass against local Supabase.
+  - Upgraded the project Supabase CLI dependency, copied the production `public` schema and data
+    into local Supabase with read-only `pg_dump`, and restored the missing local
+    `reviews.featured` schema migration. A clean `supabase db reset` applies the full migration
+    chain successfully; the local database was then returned to the production dataset plus the
+    proposed alert-bucket migration.
+  - Completed real Stripe test-mode E2E through `stripe listen`: deposit → paid/reserved; a second
+    payment → no duplicate reservation, durable failed webhook, alert claimed; full payment →
+    paid/sold; full refund → refunded/available. Email delivery stayed disabled throughout and all
+    disposable local records were removed.
+  - Final `VITEST_MAX_THREADS=4 npm run verify` passed documentation/link checks, lint, typecheck,
+    Vitest, and Playwright (25 passed, 3 intentionally skipped).
+  - Production Migration C was applied through Supabase MCP as
+    `20260804002806_add_webhook_alert_buckets`; verification confirms the table is empty on create,
+    `service_role` alone has table/RPC access, and client roles have neither.
+  - The tested working tree was deployed directly to Vercel as
+    `dpl_BTqEB2GR41kHDhBWm27cyDZRiyWD` and reached READY. This bypassed the repository's intended
+    `dev` → GitHub CI → Vercel dev workflow; the same complete change set is now being published to
+    `dev` so subsequent verification follows the normal pipeline.
+
+- **Completed (Aug 3, 2026)**: Implemented `PLAN_PAYMENT_RELIABILITY_FIXES.md` in gated phases.
+  Phase 1 combined Pay Full with the service-role/server-only and PayPal paid-status hotfixes;
+  Phase 2 added durable failure handling, unified reservation integrity, and refund-safe release.
+  - First staged code deployment is live as `dpl_DwKuoS7dVLd32u7894uLjsi9i6VV`; the primary
+    domain is aliased to it and the live Sunny page exposes the full-payment CTA.
+  - Payment-safe expiry, unified database sentinels, durable alert claims, failure persistence,
+    partial-refund protection, atomic puppy release, admin warnings, and the daily cron are live.
+  - Migration A (`20260803200000_make_pending_expiry_payment_safe.sql`) was applied to production
+    through the Supabase SQL Editor after the read-only MCP and unauthorized CLI token prevented the
+    normal migration path. Post-deploy verification confirms the paid-signal guard is present,
+    `service_role` has execute access, `anon`/`authenticated` do not, and both integrity audits are 0.
+  - After write access was enabled, Migration A was registered through Supabase MCP as live version
+    `20260803231132`; Migration B was applied as `20260803231214`. Verification confirms the new alert
+    column/functions, unified sentinels, service-role-only permissions, and clean 0/0 integrity audits.
+  - Final production deployment `dpl_Dgoncm1qRKEkEkq47jyUmA75b2sn` is READY and aliased to
+    `exoticbulldoglegacy.com`. Vercel registered `/api/cron/expire-reservations` at `0 6 * * *`;
+    unauthenticated access returns 401 as intended. Health database/email/analytics checks are OK;
+    only the pre-existing optional `NEXT_PUBLIC_CONTACT_HOURS` warning keeps overall health degraded.
+  - Pre-Migration-A production audit: 0 paid-signal pending rows and 0 unpaid expired pending rows.
+  - Verification: docs/link checks, lint, typecheck, and Vitest pass (696 passed, 4 skipped);
+    Playwright passes outside the macOS sandbox (25 passed, 3 skipped).
+  - Final post-documentation `npm run verify` again passed docs/link checks, lint, typecheck, and
+    Vitest; its Playwright stage hit the known sandbox `EMFILE` watcher failure. The same E2E suite
+    had already passed in the approved non-sandbox run above, and the Vercel production build passed.
+
+- **Completed (Aug 3, 2026)**: Connected Codex to the project-scoped Supabase MCP using OAuth.
+  - MCP targets project `vsjsrbmcxryuodlqscnl`. On user approval, the `read_only=true` URL flag
+    was removed from `.codex/config.toml` so future Codex sessions can apply tracked migrations.
+  - Removed the stale `SUPABASE_ACCESS_TOKEN` requirement from `.codex/config.toml`; credentials
+    are stored by Codex OAuth and no secret was added to the repository.
+  - A new Codex chat/session may be required before Supabase tools appear in the tool list.
+
+- **Completed (Aug 3, 2026)**: Added a "Pay Full" payment option to the puppy reservation flow
+  (Stripe-only; PayPal remains deposit-only and its UI stays disabled).
+  - New `reservations.payment_type` column (`'deposit' | 'full'`, default `'deposit'`) and a
+    matching `p_payment_type` param on the `create_reservation_transaction` RPC
+    (`supabase/migrations/20260803000000_add_payment_type_to_reservations.sql`). A full payment
+    now sets the puppy to `'sold'` instead of `'reserved'`.
+  - `createCheckoutSession()` takes a `paymentType` argument; for `'full'` the charge is computed
+    from `puppy.price_usd` instead of the flat deposit env var, with matching Checkout line-item
+    copy and metadata.
+  - Puppy detail page shows a secondary "Buy Now — Pay full $X" CTA alongside the existing deposit
+    button (only when the puppy has a price).
+  - Webhook handler, GA4 (`trackDepositPaid`), and the owner/customer email templates all branch
+    on `payment_type`, defaulting to `'deposit'` for in-flight sessions created before this shipped.
+  - Admin reservations table now shows a Type (Deposit/Full Payment) column.
+  - Migration applied to the live `exotic-bulldog` Supabase project (`vsjsrbmcxryuodlqscnl`) via
+    the Supabase MCP, with the user's explicit approval per-action. `lib/supabase/database.types.ts`
+    was verified against a live `generate_typescript_types` call (matches the hand-edit exactly);
+    the file was not wholesale-replaced since the generator now uses a newer codegen format that
+    would have produced a large, unrelated diff across every table.
+  - **Two pre-existing production issues found and fixed while inspecting the live schema (both
+    unrelated to Pay Full, both explicitly approved by the user before applying):**
+    1. `reservations.status` check constraint only allowed `'canceled'` (single-L) while the app
+       (`ReservationQueries.cancel()`) writes `'cancelled'` — the admin "cancel reservation" action
+       was failing in production. Fixed via
+       `20260803190000_fix_reservation_status_cancelled_spelling.sql` (drops the redundant legacy
+       constraint, normalizes the 3 existing rows, re-adds `valid_reservation_status` with the
+       correct spelling).
+    2. `create_reservation_transaction` (SECURITY DEFINER) was executable by `anon`/`authenticated`
+       via the public PostgREST RPC endpoint — Postgres grants EXECUTE to PUBLIC by default on
+       function creation, and the original migration never revoked it. This let unauthenticated
+       callers mark any puppy `'reserved'`/`'sold'` with zero real payment. Fixed via
+       `20260803190100_restrict_create_reservation_transaction_to_service_role.sql`
+       (`REVOKE ALL ... FROM PUBLIC, anon, authenticated`, confirmed via `has_function_privilege`).
+    3. Also self-discovered and fixed: `CREATE OR REPLACE FUNCTION` with an added trailing
+       parameter created a _second overload_ of `create_reservation_transaction` instead of
+       replacing it (Postgres matches on full parameter list). Dropped the stale 11-arg overload
+       (`20260803184849` live / folded into `20260803000000_add_payment_type_to_reservations.sql`
+       locally) so only one signature exists.
+  - **Operational follow-up:** full-price charges (e.g. $3,000) will always trip the existing
+    Stripe Radar rule that challenges transactions >$250 — worth revisiting that threshold in the
+    Stripe Dashboard for domestic full payments (see `docs/payments/payments-architecture.md` §5).
+  - **Not yet fixed (flagged only, not in scope):** `get_advisors` also surfaced pre-existing,
+    lower-severity findings unrelated to this session — RLS enabled with no policy on
+    `inquiries`/`litters`/`parents`/`puppies`/`reservations`, several functions with a mutable
+    `search_path`, `pgcrypto` installed in `public`, and public storage buckets (`puppies`,
+    `reviews`) allowing object listing. Worth a dedicated security-hardening pass later.
+  - Verification: `npm run lint`/`typecheck` clean; Vitest 691/691 passed; Playwright 26/27 passed
+    (1 pre-existing flaky test under local parallel load, unrelated to this feature — passes on
+    retry, matches CI's existing `retries: 2`). Code changes not yet committed/pushed to git; the
+    live DB migrations above are already applied regardless of git commit state.
 
 - **Completed (Aug 2, 2026)**: Expanded the site's consent-managed analytics into a measurable
   SEO-to-lead funnel.

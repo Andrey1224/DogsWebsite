@@ -8,6 +8,7 @@ import type { PayPalOrderMetadata } from '@/lib/paypal/types';
 import { ReservationCreationError, ReservationCreationService } from '@/lib/reservations/create';
 import type { ReservationChannel } from '@/lib/reservations/types';
 import { ReservationQueries } from '@/lib/reservations/queries';
+import { ReservationServerQueries } from '@/lib/reservations/server-queries';
 import {
   assertReservationsEnabled,
   ReservationsDisabledError,
@@ -114,11 +115,22 @@ export async function POST(request: NextRequest) {
         customerName,
         customerPhone,
         depositAmount: amountValue,
+        paymentType: 'deposit',
         paymentProvider: 'paypal',
         externalPaymentId: capture.id,
         channel,
         notes: `PayPal capture ${capture.id}`,
       });
+
+      const paidReservation = await ReservationServerQueries.markPaid({
+        reservationId,
+        provider: 'paypal',
+        externalPaymentId: capture.id,
+      });
+
+      if (!paidReservation) {
+        throw new Error(`Failed to mark PayPal reservation ${reservationId} as paid`);
+      }
 
       return NextResponse.json({
         success: true,

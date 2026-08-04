@@ -270,7 +270,7 @@ describeOrSkip('Stripe webhook integration (offline)', () => {
     );
     expect(reservationRows.rowCount).toBe(1);
     expect(reservationRows.rows[0].payment_provider).toBe('stripe');
-    expect(reservationRows.rows[0].status).toBe('pending');
+    expect(reservationRows.rows[0].status).toBe('paid');
     expect(reservationRows.rows[0].puppy_id).toBe(puppy.id);
 
     const webhookRows = await pool.query('SELECT * FROM webhook_events WHERE event_id = $1', [

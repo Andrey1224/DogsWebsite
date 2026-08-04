@@ -304,6 +304,7 @@ export type Database = {
           id: string;
           notes: string | null;
           payment_provider: string | null;
+          payment_type: string;
           paypal_order_id: string | null;
           puppy_id: string | null;
           status: string | null;
@@ -324,6 +325,7 @@ export type Database = {
           id?: string;
           notes?: string | null;
           payment_provider?: string | null;
+          payment_type?: string;
           paypal_order_id?: string | null;
           puppy_id?: string | null;
           status?: string | null;
@@ -344,6 +346,7 @@ export type Database = {
           id?: string;
           notes?: string | null;
           payment_provider?: string | null;
+          payment_type?: string;
           paypal_order_id?: string | null;
           puppy_id?: string | null;
           status?: string | null;
@@ -420,6 +423,7 @@ export type Database = {
           event_type: string;
           id: number;
           idempotency_key: string | null;
+          last_alerted_at: string | null;
           payload: Json;
           processed: boolean;
           processed_at: string | null;
@@ -435,6 +439,7 @@ export type Database = {
           event_type: string;
           id?: number;
           idempotency_key?: string | null;
+          last_alerted_at?: string | null;
           payload: Json;
           processed?: boolean;
           processed_at?: string | null;
@@ -450,6 +455,7 @@ export type Database = {
           event_type?: string;
           id?: number;
           idempotency_key?: string | null;
+          last_alerted_at?: string | null;
           payload?: Json;
           processed?: boolean;
           processed_at?: string | null;
@@ -469,11 +475,51 @@ export type Database = {
           },
         ];
       };
+      webhook_alert_buckets: {
+        Row: {
+          bucket_key: string;
+          last_alerted_at: string | null;
+          pending_count: number;
+          provider: string;
+          updated_at: string;
+        };
+        Insert: {
+          bucket_key: string;
+          last_alerted_at?: string | null;
+          pending_count?: number;
+          provider: string;
+          updated_at?: string;
+        };
+        Update: {
+          bucket_key?: string;
+          last_alerted_at?: string | null;
+          pending_count?: number;
+          provider?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      claim_webhook_alert: {
+        Args: {
+          p_idempotency_key: string;
+          p_provider: string;
+          p_throttle_minutes?: number;
+        };
+        Returns: boolean;
+      };
+      claim_webhook_alert_bucket: {
+        Args: {
+          p_bucket_key: string;
+          p_provider: string;
+          p_throttle_minutes?: number;
+        };
+        Returns: number;
+      };
       create_reservation_transaction: {
         Args: {
           p_amount: number;
@@ -486,6 +532,7 @@ export type Database = {
           p_external_payment_id: string;
           p_notes: string;
           p_payment_provider: string;
+          p_payment_type?: string;
           p_puppy_id: string;
         };
         Returns: {
@@ -501,6 +548,7 @@ export type Database = {
           id: string;
           notes: string | null;
           payment_provider: string | null;
+          payment_type: string;
           paypal_order_id: string | null;
           puppy_id: string | null;
           status: string | null;
@@ -517,6 +565,10 @@ export type Database = {
       };
       dearmor: { Args: { '': string }; Returns: string };
       expire_pending_reservations: { Args: never; Returns: number };
+      release_puppy_if_no_active_reservations: {
+        Args: { p_puppy_id: string };
+        Returns: boolean;
+      };
       gen_random_uuid: { Args: never; Returns: string };
       gen_salt: { Args: { '': string }; Returns: string };
       get_reservation_summary: {

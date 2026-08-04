@@ -22,18 +22,30 @@ const ALERT_CONFIG = {
   // Minimum time between alerts (in minutes) to prevent spam
   THROTTLE_MINUTES: 15,
   // Email recipients for critical alerts
-  ALERT_EMAILS: process.env.ALERT_EMAILS?.split(',') || [process.env.OWNER_EMAIL],
   // Slack webhook URL (optional)
   SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
 };
 
+function getAlertEmails(): string[] {
+  const configured = (process.env.ALERT_EMAILS ?? '')
+    .split(',')
+    .map((email) => email.trim())
+    .filter(Boolean);
+  const fallback = process.env.OWNER_EMAIL?.trim();
+  return configured.length > 0 ? configured : fallback ? [fallback] : [];
+}
+
 // In-memory throttle tracking (resets on deployment)
 const lastAlertTime = new Map<string, number>();
+const globalAlertTimes: number[] = [];
+let suppressedAlertCount = 0;
+const GLOBAL_ALERTS_PER_MINUTE = 10;
 
-interface WebhookErrorContext {
+export interface WebhookErrorContext {
   provider: 'stripe' | 'paypal';
   eventType: string;
   eventId: string;
+  paymentId?: string;
   error: string;
   puppyId?: string;
   customerEmail?: string;
@@ -45,7 +57,7 @@ interface WebhookErrorContext {
  */
 export async function alertWebhookError(context: WebhookErrorContext): Promise<void> {
   // Check throttle
-  const throttleKey = `${context.provider}:${context.eventType}`;
+  const throttleKey = `${context.provider}:${context.paymentId || context.eventId}`;
   const now = Date.now();
   const lastAlert = lastAlertTime.get(throttleKey);
 
@@ -56,18 +68,32 @@ export async function alertWebhookError(context: WebhookErrorContext): Promise<v
     return;
   }
 
+  while (globalAlertTimes.length > 0 && now - globalAlertTimes[0] > 60_000) {
+    globalAlertTimes.shift();
+  }
+  if (globalAlertTimes.length >= GLOBAL_ALERTS_PER_MINUTE) {
+    suppressedAlertCount += 1;
+    console.warn(
+      `[Webhook Alert] Global rate cap reached; ${suppressedAlertCount} alert(s) suppressed`,
+    );
+    return;
+  }
+
+  globalAlertTimes.push(now);
+
   // Update throttle timestamp
   lastAlertTime.set(throttleKey, now);
 
   // Send notifications in parallel
   const notifications = [];
 
-  if (
-    process.env.RESEND_API_KEY &&
-    ALERT_CONFIG.ALERT_EMAILS.length > 0 &&
-    shouldSendTransactionalEmails()
-  ) {
-    notifications.push(sendEmailAlert(context));
+  const alertEmails = getAlertEmails();
+  if (alertEmails.length === 0 && !ALERT_CONFIG.SLACK_WEBHOOK_URL) {
+    throw new Error('Webhook alerts are misconfigured: set ALERT_EMAILS or OWNER_EMAIL');
+  }
+  if (process.env.RESEND_API_KEY && alertEmails.length > 0 && shouldSendTransactionalEmails()) {
+    notifications.push(sendEmailAlert(context, alertEmails, suppressedAlertCount));
+    suppressedAlertCount = 0;
   } else if (!shouldSendTransactionalEmails()) {
     console.info(
       `[Webhook Alert] Skipping email alert (delivery disabled: ${getEmailDeliveryReason()})`,
@@ -95,7 +121,11 @@ export async function alertWebhookError(context: WebhookErrorContext): Promise<v
 /**
  * Send email alert for webhook error
  */
-async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
+async function sendEmailAlert(
+  context: WebhookErrorContext,
+  recipients: string[],
+  suppressedCount: number,
+): Promise<void> {
   if (!shouldSendTransactionalEmails()) {
     console.info(
       `[Webhook Alert] Skipping email alert (delivery disabled: ${getEmailDeliveryReason()})`,
@@ -134,6 +164,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
 
         <div class="error-box">
             <strong>Error:</strong> ${escapeHtml(context.error)}
+            ${suppressedCount > 0 ? `<p>${suppressedCount} additional alert(s) were rate-limited.</p>` : ''}
         </div>
 
         <div class="details">
@@ -198,7 +229,7 @@ async function sendEmailAlert(context: WebhookErrorContext): Promise<void> {
 
   await resend.emails.send({
     from: process.env.RESEND_FROM_EMAIL || 'alerts@exoticbulldoglegacy.com',
-    to: ALERT_CONFIG.ALERT_EMAILS.filter((email): email is string => !!email),
+    to: recipients,
     subject,
     html,
   });

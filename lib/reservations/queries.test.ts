@@ -6,6 +6,7 @@ vi.mock('@/lib/supabase/client', () => {
   let fixture = createSupabaseStub();
   return {
     createSupabaseClient: () => fixture.client,
+    createServiceRoleClient: () => fixture.client,
     __setFixture(newFixture: ReturnType<typeof createSupabaseStub>) {
       fixture = newFixture;
     },
@@ -132,6 +133,9 @@ function createSupabaseStub() {
     if (fn === 'expire_pending_reservations') {
       return { data: 2, error: null };
     }
+    if (fn === 'release_puppy_if_no_active_reservations') {
+      return { data: true, error: null };
+    }
     if (fn === 'get_reservation_summary') {
       return {
         data: [
@@ -167,8 +171,8 @@ describe('ReservationQueries', () => {
     vi.resetModules();
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
-      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    vi.spyOn(supabaseModule, 'createServiceRoleClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createServiceRoleClient>,
     );
   });
 
@@ -189,6 +193,7 @@ describe('ReservationQueries', () => {
       status: 'pending',
       deposit_amount: 500,
       amount: 500,
+      payment_type: 'deposit',
       payment_provider: 'stripe',
       external_payment_id: 'pi_1',
       webhook_event_id: null,
@@ -214,6 +219,7 @@ describe('ReservationQueries', () => {
       status: 'pending',
       deposit_amount: 600,
       amount: 600,
+      payment_type: 'deposit',
       payment_provider: 'stripe',
       external_payment_id: 'pi_cancel',
       webhook_event_id: null,
@@ -338,8 +344,8 @@ describe('PuppyQueries', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
-      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    vi.spyOn(supabaseModule, 'createServiceRoleClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createServiceRoleClient>,
     );
   });
 
@@ -408,8 +414,8 @@ describe('WebhookEventQueries', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
-      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    vi.spyOn(supabaseModule, 'createServiceRoleClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createServiceRoleClient>,
     );
   });
 
@@ -578,8 +584,8 @@ describe('ReservationQueries - Additional Coverage', () => {
     Object.assign(process.env, BASE_ENV);
     supabaseStub = createSupabaseStub();
     const supabaseModule = await import('@/lib/supabase/client');
-    vi.spyOn(supabaseModule, 'createSupabaseClient').mockReturnValue(
-      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createSupabaseClient>,
+    vi.spyOn(supabaseModule, 'createServiceRoleClient').mockReturnValue(
+      supabaseStub.client as unknown as ReturnType<typeof supabaseModule.createServiceRoleClient>,
     );
   });
 

@@ -23,6 +23,7 @@ interface ReserveButtonProps {
   reservationsDisabled: boolean;
   reservationsDisabledMessage?: string | null;
   depositAmount: number;
+  puppyPrice: number | null;
   paypalClientId: string | null;
 }
 
@@ -35,32 +36,42 @@ export function ReserveButton({
   reservationsDisabled,
   reservationsDisabledMessage,
   depositAmount,
+  puppyPrice,
   paypalClientId,
 }: ReserveButtonProps) {
   const { getAnalyticsIdentifiers, trackEvent } = useAnalytics();
-  const [isStripeLoading, setIsStripeLoading] = useState(false);
+  const [isDepositLoading, setIsDepositLoading] = useState(false);
+  const [isFullPaymentLoading, setIsFullPaymentLoading] = useState(false);
   const isPayPalProcessing = false;
   const [error, setError] = useState<string | null>(null);
   const depositLabel = depositAmount.toLocaleString('en-US', {
     minimumFractionDigits: depositAmount % 1 === 0 ? 0 : 2,
     maximumFractionDigits: depositAmount % 1 === 0 ? 0 : 2,
   });
+  const fullPriceLabel = (puppyPrice ?? 0).toLocaleString('en-US', {
+    minimumFractionDigits: (puppyPrice ?? 0) % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: (puppyPrice ?? 0) % 1 === 0 ? 0 : 2,
+  });
+  const isAnyLoading = isDepositLoading || isFullPaymentLoading;
 
-  const handleReserve = async () => {
-    if (isPayPalProcessing) return;
+  const handleCheckout = async (paymentType: 'deposit' | 'full') => {
+    if (isPayPalProcessing || isAnyLoading) return;
 
-    setIsStripeLoading(true);
+    const amount = paymentType === 'full' ? (puppyPrice ?? 0) : depositAmount;
+    const setLoading = paymentType === 'full' ? setIsFullPaymentLoading : setIsDepositLoading;
+
+    setLoading(true);
     setError(null);
 
     const commerceParams = {
       currency: 'USD',
-      value: depositAmount,
+      value: amount,
       items: [
         {
           item_id: puppySlug,
           item_name: puppyName || puppySlug,
-          item_category: 'Puppy deposit',
-          price: depositAmount,
+          item_category: paymentType === 'full' ? 'Puppy full payment' : 'Puppy deposit',
+          price: amount,
           quantity: 1,
         },
       ],
@@ -69,23 +80,25 @@ export function ReserveButton({
     trackEvent('reserve_click', {
       puppy_slug: puppySlug,
       puppy_name: puppyName ?? undefined,
-      deposit_amount: depositAmount,
+      deposit_amount: amount,
       payment_provider: 'stripe',
+      payment_type: paymentType,
     });
     trackEvent('begin_checkout', commerceParams);
 
     try {
       const analyticsIdentifiers = await getAnalyticsIdentifiers();
-      const result = await createCheckoutSession(puppySlug, analyticsIdentifiers);
+      const result = await createCheckoutSession(puppySlug, paymentType, analyticsIdentifiers);
 
       if (!result.success) {
         trackEvent('checkout_error', {
           puppy_slug: puppySlug,
           payment_provider: 'stripe',
+          payment_type: paymentType,
           error_code: result.errorCode,
         });
         setError(result.error || 'Failed to create checkout session');
-        setIsStripeLoading(false);
+        setLoading(false);
         return;
       }
 
@@ -96,25 +109,28 @@ export function ReserveButton({
         trackEvent('checkout_error', {
           puppy_slug: puppySlug,
           payment_provider: 'stripe',
+          payment_type: paymentType,
           error_code: 'MISSING_CHECKOUT_URL',
         });
         setError('No checkout URL received');
-        setIsStripeLoading(false);
+        setLoading(false);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       trackEvent('checkout_error', {
         puppy_slug: puppySlug,
         payment_provider: 'stripe',
+        payment_type: paymentType,
         error_code: 'UNEXPECTED_ERROR',
       });
       setError(errorMessage);
-      setIsStripeLoading(false);
+      setLoading(false);
     }
   };
 
   const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
   const paypalConfigured = Boolean(paypalClientId);
+  const showFullPaymentOption = Boolean(puppyPrice && puppyPrice > 0);
 
   if (status === 'sold') {
     return (
@@ -206,11 +222,11 @@ export function ReserveButton({
       <div>
         <button
           type="button"
-          onClick={handleReserve}
-          disabled={isStripeLoading || isPayPalProcessing}
+          onClick={() => handleCheckout('deposit')}
+          disabled={isAnyLoading || isPayPalProcessing}
           className="mb-2 w-full rounded-2xl bg-[#F97316] py-4 text-lg font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] hover:bg-[#EA580C] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isStripeLoading ? 'Loading...' : `Reserve ${reserveLabel}`}
+          {isDepositLoading ? 'Loading...' : `Reserve ${reserveLabel}`}
         </button>
         <div className="flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
           ${depositLabel} deposit • Powered by
@@ -218,6 +234,24 @@ export function ReserveButton({
           <span className="font-semibold">Stripe</span>
         </div>
       </div>
+
+      {showFullPaymentOption && (
+        <div>
+          <button
+            type="button"
+            onClick={() => handleCheckout('full')}
+            disabled={isAnyLoading || isPayPalProcessing}
+            className="mb-2 w-full rounded-2xl border-2 border-[#F97316] bg-transparent py-3 text-base font-bold text-[#F97316] transition-all hover:scale-[1.01] hover:bg-[#F97316]/10 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isFullPaymentLoading ? 'Loading...' : `Buy Now — Pay full $${fullPriceLabel}`}
+          </button>
+          <div className="flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
+            Pay in full • Powered by
+            <Lock size={8} />
+            <span className="font-semibold">Stripe</span>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-slate-800 bg-[#151e32] p-4">
         <div className="mb-3 ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">

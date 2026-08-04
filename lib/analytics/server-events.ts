@@ -41,6 +41,7 @@ export async function trackDepositPaid(
             puppy_slug: params.puppy_slug,
             puppy_name: params.puppy_name,
             payment_provider: params.payment_provider,
+            payment_type: params.payment_type,
             reservation_id: params.reservation_id,
             ...(identifiers.sessionId
               ? { session_id: identifiers.sessionId, engagement_time_msec: 100 }

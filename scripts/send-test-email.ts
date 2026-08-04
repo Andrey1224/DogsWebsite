@@ -20,6 +20,7 @@ async function main() {
     depositAmount: 300,
     currency: 'USD',
     paymentProvider: 'stripe',
+    paymentType: 'deposit',
     transactionId: 'tx_test',
     reservationId: 'res_test',
   };

@@ -75,7 +75,7 @@ describe('createCheckoutSession', () => {
       url: 'https://checkout.stripe.com/c/pay/cs_test_123',
     });
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(true);
     expect(result.sessionUrl).toBe('https://checkout.stripe.com/c/pay/cs_test_123');
@@ -108,6 +108,7 @@ describe('createCheckoutSession', () => {
           puppy_name: 'Bella',
           customer_email: 'collected_at_checkout',
           channel: 'site',
+          payment_type: 'deposit',
         },
         success_url: `https://exoticbulldoglegacy.com/puppies/${mockPuppySlug}/reserved?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `https://exoticbulldoglegacy.com/puppies/${mockPuppySlug}`,
@@ -132,7 +133,7 @@ describe('createCheckoutSession', () => {
       url: 'https://checkout.stripe.com/c/pay/cs_attributed_123',
     });
 
-    await createCheckoutSession(mockPuppySlug, {
+    await createCheckoutSession(mockPuppySlug, 'deposit', {
       clientId: '123456.789012',
       sessionId: '987654321',
     });
@@ -165,7 +166,7 @@ describe('createCheckoutSession', () => {
       url: 'https://checkout.stripe.com/c/pay/cs_live_test_123',
     });
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(true);
     expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
@@ -192,7 +193,7 @@ describe('createCheckoutSession', () => {
     const { stripe } = await import('@/lib/stripe/client');
     const { createCheckoutSession } = await import('./actions');
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result).toEqual({
       success: false,
@@ -210,7 +211,7 @@ describe('createCheckoutSession', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (getPuppyBySlug as any).mockResolvedValue(null);
 
-    const result = await createCheckoutSession('nonexistent');
+    const result = await createCheckoutSession('nonexistent', 'deposit');
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Puppy not found');
@@ -228,7 +229,7 @@ describe('createCheckoutSession', () => {
       status: 'reserved',
     });
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('This puppy is reserved and cannot be reserved');
@@ -245,7 +246,7 @@ describe('createCheckoutSession', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(true);
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Reservation in progress - please try again in ~15 minutes');
@@ -265,10 +266,12 @@ describe('createCheckoutSession', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(true);
-    expect(result.sessionUrl).toBe(`/mock-checkout?puppy=${encodeURIComponent(mockPuppySlug)}`);
+    expect(result.sessionUrl).toBe(
+      `/mock-checkout?puppy=${encodeURIComponent(mockPuppySlug)}&paymentType=deposit`,
+    );
   });
 
   it('handles Stripe API errors gracefully', async () => {
@@ -286,7 +289,7 @@ describe('createCheckoutSession', () => {
       new Error('Stripe API error: Invalid amount'),
     );
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Stripe API error: Invalid amount');
@@ -306,7 +309,7 @@ describe('createCheckoutSession', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(false);
     expect(result.errorCode).toBe('STRIPE_ERROR');
@@ -333,7 +336,7 @@ describe('createCheckoutSession', () => {
       url: 'https://checkout.stripe.com/c/pay/cs_test_123',
     });
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(true);
     expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
@@ -374,7 +377,7 @@ describe('createCheckoutSession', () => {
       url: 'https://checkout.stripe.com/c/pay/cs_test_123',
     });
 
-    const result = await createCheckoutSession(mockPuppySlug);
+    const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(result.success).toBe(true);
     expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
@@ -412,7 +415,7 @@ describe('createCheckoutSession', () => {
       url: 'https://checkout.stripe.com/c/pay/cs_test_123',
     });
 
-    await createCheckoutSession(mockPuppySlug);
+    await createCheckoutSession(mockPuppySlug, 'deposit');
 
     expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -435,7 +438,7 @@ describe('createCheckoutSession', () => {
         status,
       });
 
-      const result = await createCheckoutSession(mockPuppySlug);
+      const result = await createCheckoutSession(mockPuppySlug, 'deposit');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(`This puppy is ${status} and cannot be reserved`);
@@ -460,7 +463,7 @@ describe('createCheckoutSession', () => {
     });
 
     const beforeTime = Math.floor(Date.now() / 1000);
-    await createCheckoutSession(mockPuppySlug);
+    await createCheckoutSession(mockPuppySlug, 'deposit');
     const afterTime = Math.floor(Date.now() / 1000);
 
     expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
@@ -477,5 +480,88 @@ describe('createCheckoutSession', () => {
     const expectedExpiry = beforeTime + 24 * 60 * 60;
     expect(expiresAt).toBeGreaterThanOrEqual(expectedExpiry - 5);
     expect(expiresAt).toBeLessThanOrEqual(afterTime + 24 * 60 * 60 + 5);
+  });
+
+  describe('paymentType: full', () => {
+    it('creates a full-price checkout session from puppy.price_usd', async () => {
+      const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+      const { ReservationQueries } = await import('@/lib/reservations/queries');
+      const { stripe } = await import('@/lib/stripe/client');
+      const { createCheckoutSession } = await import('./actions');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (stripe.checkout.sessions.create as any).mockResolvedValue({
+        id: 'cs_full_123',
+        url: 'https://checkout.stripe.com/c/pay/cs_full_123',
+      });
+
+      const result = await createCheckoutSession(mockPuppySlug, 'full');
+
+      expect(result.success).toBe(true);
+      expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          line_items: [
+            {
+              price_data: {
+                currency: 'usd',
+                unit_amount: 450000, // $4,500 (mockPuppy.price_usd) in cents
+                product_data: {
+                  name: 'Full Payment for Bella',
+                  description: 'Purchase Bella in full',
+                  images: ['https://example.com/bella.jpg'],
+                },
+              },
+              quantity: 1,
+            },
+          ],
+          metadata: expect.objectContaining({
+            payment_type: 'full',
+          }),
+        }),
+      );
+    });
+
+    it('returns an error when the puppy has no price for a full payment', async () => {
+      const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+      const { ReservationQueries } = await import('@/lib/reservations/queries');
+      const { stripe } = await import('@/lib/stripe/client');
+      const { createCheckoutSession } = await import('./actions');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (getPuppyBySlug as any).mockResolvedValue({ ...mockPuppy, price_usd: null });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
+
+      const result = await createCheckoutSession(mockPuppySlug, 'full');
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('PUPPY_NOT_AVAILABLE');
+      expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+    });
+
+    it('returns mock checkout URL with paymentType=full in Playwright mode', async () => {
+      process.env.PLAYWRIGHT_MOCK_RESERVATION = 'true';
+      vi.resetModules();
+
+      const { getPuppyBySlug } = await import('@/lib/supabase/queries');
+      const { ReservationQueries } = await import('@/lib/reservations/queries');
+      const { createCheckoutSession } = await import('./actions');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (getPuppyBySlug as any).mockResolvedValue(mockPuppy);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ReservationQueries.hasActiveReservation as any).mockResolvedValue(false);
+
+      const result = await createCheckoutSession(mockPuppySlug, 'full');
+
+      expect(result.success).toBe(true);
+      expect(result.sessionUrl).toBe(
+        `/mock-checkout?puppy=${encodeURIComponent(mockPuppySlug)}&paymentType=full`,
+      );
+    });
   });
 });

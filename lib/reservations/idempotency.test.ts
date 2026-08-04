@@ -88,6 +88,26 @@ describe('Idempotency utilities', () => {
     expect(eq).toHaveBeenCalledWith('id', 42);
   });
 
+  it('marks a fresh processing lock as in progress rather than a completed duplicate', async () => {
+    const existingEvent = {
+      id: 7,
+      processed: false,
+      processing_started_at: new Date().toISOString(),
+      processing_error: null,
+      payload: {},
+    };
+    const builder: Record<string, unknown> = {};
+    builder.select = vi.fn(() => builder);
+    builder.eq = vi.fn(() => builder);
+    builder.maybeSingle = vi.fn(async () => ({ data: existingEvent, error: null }));
+    (idempotencyManager as unknown as { supabase: { from: Mock } }).supabase = {
+      from: vi.fn(() => builder),
+    };
+
+    const result = await idempotencyManager.checkWebhookEvent('stripe', 'evt_locked');
+    expect(result).toMatchObject({ exists: true, inProgress: true });
+  });
+
   it('marks webhook as failed when update returns error', async () => {
     const eq = vi.fn().mockResolvedValue({ error: { message: 'failed' } });
     (idempotencyManager as unknown as { supabase: { from: Mock } }).supabase = {

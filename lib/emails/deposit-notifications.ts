@@ -48,6 +48,7 @@ export interface DepositData {
   depositAmount: number;
   currency: string;
   paymentProvider: PaymentProvider;
+  paymentType: 'deposit' | 'full';
   reservationId: string;
   transactionId: string;
 }
@@ -62,6 +63,9 @@ export function generateOwnerDepositEmail(data: DepositData): string {
   const safePuppyName = escapeHtml(data.puppyName);
   const puppyUrl = `${siteUrl}/puppies/${data.puppySlug}`;
   const providerLabel = data.paymentProvider === 'stripe' ? 'Stripe' : 'PayPal';
+  const isFullPayment = data.paymentType === 'full';
+  const headline = isFullPayment ? '💰 New Full Payment Received!' : '💰 New Deposit Received!';
+  const amountLabel = isFullPayment ? 'Full Payment' : 'Deposit';
 
   return `
 <!DOCTYPE html>
@@ -69,7 +73,7 @@ export function generateOwnerDepositEmail(data: DepositData): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Deposit Received - Exotic Bulldog Legacy</title>
+    <title>New ${amountLabel} Received - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -92,8 +96,8 @@ export function generateOwnerDepositEmail(data: DepositData): string {
 <body>
     <div class="container">
         <div class="header">
-            <h1>💰 New Deposit Received!</h1>
-            <p>A customer has successfully paid a deposit</p>
+            <h1>${headline}</h1>
+            <p>A customer has successfully paid ${isFullPayment ? 'in full' : 'a deposit'}</p>
         </div>
 
         <div class="section">
@@ -165,6 +169,9 @@ export function generateCustomerDepositEmail(data: DepositData): string {
   const providerLabel = data.paymentProvider === 'stripe' ? 'Stripe' : 'PayPal';
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@exoticbulldoglegacy.com';
   const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || '';
+  const isFullPayment = data.paymentType === 'full';
+  const headline = isFullPayment ? '🎉 Payment Confirmed!' : '🎉 Deposit Confirmed!';
+  const amountLabel = isFullPayment ? 'Full Payment' : 'Deposit';
 
   return `
 <!DOCTYPE html>
@@ -172,7 +179,7 @@ export function generateCustomerDepositEmail(data: DepositData): string {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit Confirmation - Exotic Bulldog Legacy</title>
+    <title>${amountLabel} Confirmation - Exotic Bulldog Legacy</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -192,8 +199,8 @@ export function generateCustomerDepositEmail(data: DepositData): string {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎉 Deposit Confirmed!</h1>
-            <p>Dear ${safeName}, thank you for reserving your puppy</p>
+            <h1>${headline}</h1>
+            <p>Dear ${safeName}, thank you for ${isFullPayment ? 'purchasing' : 'reserving'} your puppy</p>
         </div>
 
         <div class="success-icon">✅</div>
@@ -291,7 +298,10 @@ export async function sendOwnerDepositNotification(data: DepositData) {
     const { data: emailData, error } = await getResendClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'noreply@exoticbulldoglegacy.com',
       to: [ownerEmail],
-      subject: `💰 New Deposit: $${data.depositAmount} for ${data.puppyName}`,
+      subject:
+        data.paymentType === 'full'
+          ? `💰 New Full Payment: $${data.depositAmount} for ${data.puppyName}`
+          : `💰 New Deposit: $${data.depositAmount} for ${data.puppyName}`,
       replyTo: data.customerEmail,
       html: generateOwnerDepositEmail(data),
     });
@@ -329,7 +339,10 @@ export async function sendCustomerDepositConfirmation(data: DepositData) {
     const { data: emailData, error } = await getResendClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'noreply@exoticbulldoglegacy.com',
       to: [data.customerEmail],
-      subject: `🎉 Deposit Confirmed - ${data.puppyName} is Reserved for You!`,
+      subject:
+        data.paymentType === 'full'
+          ? `🎉 Payment Confirmed - ${data.puppyName} is Yours!`
+          : `🎉 Deposit Confirmed - ${data.puppyName} is Reserved for You!`,
       html: generateCustomerDepositEmail(data),
     });
 

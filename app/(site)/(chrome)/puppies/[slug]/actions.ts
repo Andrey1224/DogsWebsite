@@ -17,6 +17,7 @@ import {
   formatStripeDepositAmount,
   getStripeDepositAmountCents,
 } from '@/lib/payments/stripe-deposit';
+import { usdToCents } from '@/lib/utils/currency';
 import {
   assertReservationsEnabled,
   ReservationsDisabledError,
@@ -39,7 +40,7 @@ function normalizeAnalyticsIdentifier(value?: string): string | undefined {
 }
 
 /**
- * Create a Stripe Checkout Session for puppy deposit payment
+ * Create a Stripe Checkout Session for a puppy deposit or full-price payment
  *
  * Flow:
  * 1. Validate puppy exists and is available
@@ -47,10 +48,12 @@ function normalizeAnalyticsIdentifier(value?: string): string | undefined {
  * 3. Return session URL for client redirect
  *
  * @param puppySlug - Puppy slug from URL
+ * @param paymentType - 'deposit' for the standard hold, 'full' to pay the puppy's full price
  * @returns Result with session URL or error
  */
 export async function createCheckoutSession(
   puppySlug: string,
+  paymentType: 'deposit' | 'full',
   analyticsIdentifiers: AnalyticsIdentifiers = {},
 ): Promise<CreateCheckoutSessionResult> {
   try {
@@ -93,9 +96,19 @@ export async function createCheckoutSession(
       };
     }
 
-    // Step 3: Determine Stripe deposit amount from server-only config.
+    // Step 3: Determine the amount to charge from server-only config/puppy data.
+    if (paymentType === 'full' && !puppy.price_usd) {
+      return {
+        success: false,
+        error: 'Full price unavailable for this puppy',
+        errorCode: 'PUPPY_NOT_AVAILABLE',
+      };
+    }
+
     const depositAmountCents = getStripeDepositAmountCents();
     const depositAmountLabel = formatStripeDepositAmount(depositAmountCents);
+    const amountCents =
+      paymentType === 'full' ? usdToCents(puppy.price_usd ?? 0) : depositAmountCents;
     const gaClientId = normalizeAnalyticsIdentifier(analyticsIdentifiers.clientId);
     const gaSessionId = normalizeAnalyticsIdentifier(analyticsIdentifiers.sessionId);
 
@@ -105,7 +118,7 @@ export async function createCheckoutSession(
     if (process.env.PLAYWRIGHT_MOCK_RESERVATION === 'true') {
       return {
         success: true,
-        sessionUrl: `/mock-checkout?puppy=${encodeURIComponent(puppy.slug || puppySlug)}`,
+        sessionUrl: `/mock-checkout?puppy=${encodeURIComponent(puppy.slug || puppySlug)}&paymentType=${paymentType}`,
       };
     }
 
@@ -114,11 +127,21 @@ export async function createCheckoutSession(
       puppyId: puppy.id,
       puppySlug: puppy.slug || '',
       puppyName: puppy.name || 'Bulldog Puppy',
-      amountCents: depositAmountCents,
+      amountCents,
+      paymentType,
       customerEmail: 'collected_at_checkout', // Stripe collects and returns actual email
       successUrl: `${siteUrl}/puppies/${puppySlug}/reserved?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${siteUrl}/puppies/${puppySlug}`,
     };
+
+    const lineItemName =
+      paymentType === 'full'
+        ? `Full Payment for ${params.puppyName}`
+        : `Deposit for ${params.puppyName}`;
+    const lineItemDescription =
+      paymentType === 'full'
+        ? `Purchase ${params.puppyName} in full`
+        : `Reserve your ${params.puppyName} with a ${depositAmountLabel} deposit`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -128,8 +151,8 @@ export async function createCheckoutSession(
             currency: 'usd',
             unit_amount: params.amountCents,
             product_data: {
-              name: `Deposit for ${params.puppyName}`,
-              description: `Reserve your ${params.puppyName} with a ${depositAmountLabel} deposit`,
+              name: lineItemName,
+              description: lineItemDescription,
               images: puppy.photo_urls?.[0] ? [puppy.photo_urls[0]] : undefined,
             },
           },
@@ -146,6 +169,7 @@ export async function createCheckoutSession(
         puppy_name: params.puppyName,
         customer_email: params.customerEmail,
         channel: 'site',
+        payment_type: paymentType,
         ...(gaClientId ? { ga_client_id: gaClientId } : {}),
         ...(gaSessionId ? { ga_session_id: gaSessionId } : {}),
       },

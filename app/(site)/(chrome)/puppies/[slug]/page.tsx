@@ -244,6 +244,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             reservationsDisabled={reservationsDisabled}
             reservationsDisabledMessage={reservationsDisabledMessage}
             depositAmount={depositAmount}
+            puppyPrice={puppy.price_usd ?? null}
             paypalClientId={paypalClientId}
           />
         </div>

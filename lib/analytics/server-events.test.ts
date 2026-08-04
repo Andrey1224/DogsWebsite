@@ -10,6 +10,7 @@ const mockEvent: DepositPaidEventParams = {
   puppy_slug: 'duke-the-bulldog',
   puppy_name: 'Duke',
   payment_provider: 'stripe',
+  payment_type: 'deposit',
   reservation_id: 'res_123',
 };
 

@@ -5,7 +5,9 @@
  * with proper error handling and transaction support.
  */
 
-import { createSupabaseClient } from '@/lib/supabase/client';
+import 'server-only';
+
+import { createServiceRoleClient } from '@/lib/supabase/client';
 import type {
   Reservation,
   ReservationWithPuppy,
@@ -18,7 +20,26 @@ import type {
 /**
  * Supabase client instance
  */
-const supabase = createSupabaseClient();
+let cachedClient: ReturnType<typeof createServiceRoleClient> | null = null;
+
+function getSupabaseClient() {
+  if (!cachedClient) {
+    cachedClient = createServiceRoleClient();
+  }
+
+  return cachedClient;
+}
+
+// Preserve the query-builder call sites while deferring service-role client creation until the
+// first database operation. This keeps module imports safe in build/test environments where the
+// service key is intentionally absent.
+const supabase = new Proxy({} as ReturnType<typeof createServiceRoleClient>, {
+  get(_target, property) {
+    const client = getSupabaseClient();
+    const value = Reflect.get(client, property, client) as unknown;
+    return typeof value === 'function' ? value.bind(client) : value;
+  },
+});
 
 /**
  * Reservation queries
@@ -31,7 +52,7 @@ export class ReservationQueries {
     reservation: Omit<Reservation, 'id' | 'created_at' | 'updated_at'>,
   ): Promise<Reservation> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('reservations')
         .insert(reservation)
         .select()
@@ -53,7 +74,11 @@ export class ReservationQueries {
    */
   static async getById(id: string): Promise<Reservation | null> {
     try {
-      const { data, error } = await supabase.from('reservations').select('*').eq('id', id).single();
+      const { data, error } = await getSupabaseClient()
+        .from('reservations')
+        .select('*')
+        .eq('id', id)
+        .single();
 
       if (error || !data) {
         return null;
@@ -312,7 +337,30 @@ export class ReservationQueries {
       updates.notes = reason;
     }
 
-    return this.update(id, updates);
+    const cancelled = await this.update(id, updates);
+    if (cancelled) {
+      await this.releasePuppyIfNoActiveReservations(cancelled.puppy_id);
+    }
+    return cancelled;
+  }
+
+  /** Atomically release a puppy only when the database sees no active reservation. */
+  static async releasePuppyIfNoActiveReservations(puppyId: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc('release_puppy_if_no_active_reservations', {
+      p_puppy_id: puppyId,
+    });
+
+    if (error) {
+      if (error.code === 'PGRST202' || error.message.includes('Could not find the function')) {
+        console.warn(
+          '[Reservations] Safe release RPC is not deployed yet; leaving puppy unchanged',
+        );
+        return false;
+      }
+      throw new Error(`Failed to safely release puppy: ${error.message}`);
+    }
+
+    return data === true;
   }
 
   /**
@@ -380,6 +428,62 @@ export class ReservationQueries {
     }
   }
 
+  static async getReliabilityIssueCounts(): Promise<{
+    failedWebhooks: number;
+    desyncedPuppies: number;
+  }> {
+    const [{ count: failedWebhooks, error: webhookError }, { data: puppies, error: puppyError }] =
+      await Promise.all([
+        supabase
+          .from('webhook_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('processed', false)
+          .not('processing_error', 'is', null),
+        supabase
+          .from('puppies')
+          .select('id, status')
+          .in('status', ['available', 'reserved', 'sold']),
+      ]);
+
+    if (webhookError) throw new Error(`Failed to inspect webhook errors: ${webhookError.message}`);
+    if (puppyError) throw new Error(`Failed to inspect puppy status: ${puppyError.message}`);
+
+    const puppyIds = (puppies ?? []).map((puppy) => puppy.id);
+    if (puppyIds.length === 0) {
+      return { failedWebhooks: failedWebhooks ?? 0, desyncedPuppies: 0 };
+    }
+
+    const { data: activeReservations, error: reservationError } = await supabase
+      .from('reservations')
+      .select('puppy_id, status, external_payment_id, expires_at')
+      .in('puppy_id', puppyIds)
+      .in('status', ['pending', 'paid']);
+
+    if (reservationError) {
+      throw new Error(`Failed to inspect reservation status: ${reservationError.message}`);
+    }
+
+    const now = Date.now();
+    const activePuppyIds = new Set(
+      (activeReservations ?? [])
+        .filter(
+          (reservation) =>
+            reservation.status === 'paid' ||
+            reservation.external_payment_id !== null ||
+            reservation.expires_at === null ||
+            new Date(reservation.expires_at).getTime() > now,
+        )
+        .map((reservation) => reservation.puppy_id),
+    );
+    const desyncedPuppies = (puppies ?? []).filter(
+      (puppy) =>
+        (puppy.status === 'available' && activePuppyIds.has(puppy.id)) ||
+        (puppy.status !== 'available' && !activePuppyIds.has(puppy.id)),
+    ).length;
+
+    return { failedWebhooks: failedWebhooks ?? 0, desyncedPuppies };
+  }
+
   /**
    * Admin manual status update with audit logging
    *
@@ -414,10 +518,16 @@ export class ReservationQueries {
         reason: adminReason,
       });
 
-      return this.update(id, {
+      const updated = await this.update(id, {
         status,
         notes: updatedNotes,
       });
+
+      if (updated && (status === 'cancelled' || status === 'refunded')) {
+        await this.releasePuppyIfNoActiveReservations(updated.puppy_id);
+      }
+
+      return updated;
     } catch (error) {
       console.error('Error in admin status update:', error);
       throw error;

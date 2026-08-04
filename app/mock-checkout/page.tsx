@@ -2,10 +2,16 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default function MockCheckoutPage() {
+interface MockCheckoutPageProps {
+  searchParams: Promise<{ paymentType?: string }>;
+}
+
+export default async function MockCheckoutPage({ searchParams }: MockCheckoutPageProps) {
   if (process.env.PLAYWRIGHT_MOCK_RESERVATION !== 'true') {
     notFound();
   }
+
+  const { paymentType } = await searchParams;
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-4 px-6 py-16 text-center">
@@ -22,6 +28,9 @@ export default function MockCheckoutPage() {
       <p className="rounded-3xl border border-border bg-card px-6 py-4 text-sm text-muted">
         If you reached this page outside of CI, set <code>PLAYWRIGHT_MOCK_RESERVATION=false</code>{' '}
         and restart the dev server to restore the usual checkout redirect.
+      </p>
+      <p data-testid="mock-checkout-payment-type" className="text-sm text-muted">
+        Payment type: {paymentType || 'deposit'}
       </p>
     </main>
   );

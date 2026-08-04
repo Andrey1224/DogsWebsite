@@ -6,6 +6,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   sendOwnerDepositNotification,
   sendCustomerDepositConfirmation,
+  generateOwnerDepositEmail,
+  generateCustomerDepositEmail,
   resetResendClient,
 } from './deposit-notifications';
 
@@ -48,6 +50,7 @@ describe('Deposit Email Notifications', () => {
     depositAmount: 300,
     currency: 'USD',
     paymentProvider: 'stripe' as const,
+    paymentType: 'deposit' as const,
     reservationId: '123',
     transactionId: 'pi_test123',
   };
@@ -180,6 +183,20 @@ describe('Deposit Email Notifications', () => {
       expect(result.success).toBe(true);
 
       process.env = originalEnv;
+    });
+  });
+
+  describe('paymentType branching', () => {
+    const fullPaymentData = { ...mockDepositData, paymentType: 'full' as const };
+
+    it('owner email headline reflects deposit vs full payment', () => {
+      expect(generateOwnerDepositEmail(mockDepositData)).toContain('New Deposit Received');
+      expect(generateOwnerDepositEmail(fullPaymentData)).toContain('New Full Payment Received');
+    });
+
+    it('customer email headline reflects deposit vs full payment', () => {
+      expect(generateCustomerDepositEmail(mockDepositData)).toContain('Deposit Confirmed');
+      expect(generateCustomerDepositEmail(fullPaymentData)).toContain('Payment Confirmed');
     });
   });
 });

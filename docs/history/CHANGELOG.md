@@ -2,6 +2,29 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-08-03] Pay Full & Payment Reliability
+
+- **Payments**: Added Stripe full-price checkout alongside the existing deposit flow; PayPal remains
+  deposit-only.
+- **Database Safety**: Unified reservation availability rules and provider-payment sentinels, with
+  service-role-only RPC permissions and atomic puppy release after full refunds or cancellations.
+- **Failure Recovery**: Persist webhook processing errors, preserve provider retry semantics, and
+  send durable, throttled owner alerts when money is captured without a reservation record.
+- **Stale Events**: Persist discarded Stripe checkout events and aggregate repeated stale-event
+  alerts in a durable database-backed throttle window.
+- **Refunds**: Partial refunds retain the puppy's protected state; only full refunds can release it.
+- **Operations**: Added admin mismatch warnings and activated the payment-safe reservation-expiry
+  cron daily at 06:00 UTC.
+- **Verification**: Supabase integrity audits returned 0 conflicts, the full local verification suite
+  passed (696 unit tests; 25 Playwright tests), and production deployment
+  `dpl_Dgoncm1qRKEkEkq47jyUmA75b2sn` reached READY.
+- **Post-fix Verification**: Rebuilt local Supabase from the production `public` schema/data, added
+  real Postgres concurrency regressions, and completed signed Stripe test-mode flows for deposit,
+  full payment, second-payment failure persistence/alerting, and full-refund puppy release.
+- **Production Completion**: Applied the durable alert-bucket migration and deployed the fully
+  verified payment reliability package to Vercel production as
+  `dpl_BTqEB2GR41kHDhBWm27cyDZRiyWD`.
+
 ## [2026-08-02] GA4 & Meta Conversion Funnel
 
 - **GA4 Page Views**: Restored automatic GA4 page-view collection after the root provider had

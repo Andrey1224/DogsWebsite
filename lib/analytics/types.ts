@@ -15,6 +15,7 @@ export type DepositPaidEventParams = {
   puppy_slug: string;
   puppy_name: string;
   payment_provider: PaymentProvider;
+  payment_type: 'deposit' | 'full';
   reservation_id: string;
 };
 
@@ -36,7 +37,10 @@ export type AnalyticsEvent =
   | { name: 'form_success'; params?: Record<string, unknown> }
   | { name: 'generate_lead'; params?: Record<string, unknown> }
   | { name: 'chat_open'; params?: Record<string, unknown> }
-  | { name: 'reserve_click'; params: { puppy_slug: string } }
+  | {
+      name: 'reserve_click';
+      params: { puppy_slug: string; payment_type?: 'deposit' | 'full' };
+    }
   | { name: 'view_item'; params: CommerceEventParams }
   | { name: 'begin_checkout'; params: CommerceEventParams }
   | { name: 'checkout_error'; params?: Record<string, unknown> }

@@ -8,6 +8,8 @@
 import { ReservationCreationError, ReservationCreationService } from '@/lib/reservations/create';
 import { idempotencyManager } from '@/lib/reservations/idempotency';
 import { ReservationQueries } from '@/lib/reservations/queries';
+import { WebhookEventsServer } from '@/lib/webhooks/webhook-events-server';
+import { alertWebhookError } from '@/lib/monitoring/webhook-alerts';
 import type { ReservationChannel } from '@/lib/reservations/types';
 import { trackDepositPaid } from '@/lib/analytics/server-events';
 import {
@@ -42,6 +44,40 @@ function isPayPalCaptureResource(resource: unknown): resource is PayPalCaptureRe
 
   const candidate = resource as PayPalCaptureResource;
   return typeof candidate.id === 'string' && typeof candidate.amount?.value === 'string';
+}
+
+async function recordPayPalMoneyTakenFailure(params: {
+  eventId: string;
+  eventType: string;
+  captureId: string;
+  error: string;
+  metadata?: Partial<PayPalOrderMetadata>;
+}): Promise<void> {
+  const idempotencyKey = `paypal:${params.captureId}`;
+  await WebhookEventsServer.markFailed({
+    provider: 'paypal',
+    eventId: params.eventId,
+    idempotencyKey,
+    error: params.error,
+  });
+  if (!params.metadata?.puppy_id) return;
+
+  const claimed = await WebhookEventsServer.claimAlert({
+    provider: 'paypal',
+    idempotencyKey,
+  });
+  if (!claimed) return;
+
+  await alertWebhookError({
+    provider: 'paypal',
+    eventType: params.eventType,
+    eventId: params.eventId,
+    paymentId: params.captureId,
+    error: params.error,
+    puppyId: params.metadata.puppy_id,
+    customerEmail: params.metadata.customer_email,
+    timestamp: new Date(),
+  });
 }
 
 export class PayPalWebhookHandler {
@@ -133,6 +169,14 @@ export class PayPalWebhookHandler {
     );
 
     if (idempotencyCheck.exists) {
+      if (idempotencyCheck.inProgress) {
+        return {
+          success: false,
+          eventType: event.event_type,
+          captureId,
+          error: 'Webhook event is already processing; retry later',
+        };
+      }
       console.log(`[PayPal Webhook] Duplicate event detected: ${eventId}`);
       return {
         success: true,
@@ -202,6 +246,7 @@ export class PayPalWebhookHandler {
           customerName: customerName || undefined,
           customerPhone: customerPhone || undefined,
           depositAmount: amountValue,
+          paymentType: 'deposit',
           paymentProvider: 'paypal',
           externalPaymentId: captureId,
           channel: (metadata.channel || 'site') as ReservationChannel,
@@ -227,12 +272,42 @@ export class PayPalWebhookHandler {
           console.error(
             `[PayPal Webhook] Failed to update reservation ${reservationId} to paid status`,
           );
+          await recordPayPalMoneyTakenFailure({
+            eventId,
+            eventType: event.event_type,
+            captureId,
+            error: `Reservation ${reservationId} was created but could not be marked paid`,
+            metadata,
+          });
+          return {
+            success: false,
+            eventType: event.event_type,
+            captureId,
+            reservationId,
+            error: 'Failed to mark reservation as paid',
+          };
         } else {
           console.log(`[PayPal Webhook] Reservation ${reservationId} marked as paid`);
         }
       } catch (statusUpdateError) {
         console.error(`[PayPal Webhook] Error updating reservation status:`, statusUpdateError);
-        // Non-fatal - reservation exists, emails will still be sent
+        await recordPayPalMoneyTakenFailure({
+          eventId,
+          eventType: event.event_type,
+          captureId,
+          error:
+            statusUpdateError instanceof Error
+              ? statusUpdateError.message
+              : 'Failed to mark reservation as paid',
+          metadata,
+        });
+        return {
+          success: false,
+          eventType: event.event_type,
+          captureId,
+          reservationId,
+          error: 'Failed to mark reservation as paid',
+        };
       }
 
       await trackDepositPaid({
@@ -241,6 +316,7 @@ export class PayPalWebhookHandler {
         puppy_slug: metadata.puppy_slug,
         puppy_name: metadata.puppy_name,
         payment_provider: 'paypal',
+        payment_type: 'deposit',
         reservation_id: reservationId,
       });
 
@@ -252,6 +328,7 @@ export class PayPalWebhookHandler {
         depositAmount: amountValue,
         currency: capture.amount?.currency_code?.toUpperCase() || 'USD',
         paymentProvider: 'paypal' as const,
+        paymentType: 'deposit' as const,
         reservationId,
         transactionId: captureId,
       };
@@ -273,6 +350,13 @@ export class PayPalWebhookHandler {
     } catch (error) {
       if (error instanceof ReservationCreationError) {
         if (error.code === 'RACE_CONDITION_LOST') {
+          await recordPayPalMoneyTakenFailure({
+            eventId,
+            eventType: event.event_type,
+            captureId,
+            error: error.message,
+            metadata,
+          });
           return {
             success: true,
             eventType: event.event_type,
@@ -280,6 +364,16 @@ export class PayPalWebhookHandler {
             duplicate: true,
             error: error.message,
           };
+        }
+
+        if (error.code !== 'DUPLICATE_PAYMENT') {
+          await recordPayPalMoneyTakenFailure({
+            eventId,
+            eventType: event.event_type,
+            captureId,
+            error: error.message,
+            metadata,
+          });
         }
 
         return {
@@ -292,6 +386,14 @@ export class PayPalWebhookHandler {
       }
 
       console.error('[PayPal Webhook] Failed to create reservation:', error);
+
+      await recordPayPalMoneyTakenFailure({
+        eventId,
+        eventType: event.event_type,
+        captureId,
+        error: error instanceof Error ? error.message : 'Failed to create reservation',
+        metadata,
+      });
 
       return {
         success: false,
@@ -336,8 +438,14 @@ export class PayPalWebhookHandler {
 
     if (!reservation) {
       console.warn(`[PayPal Webhook] No reservation found for capture: ${captureId}`);
+      await recordPayPalMoneyTakenFailure({
+        eventId,
+        eventType,
+        captureId,
+        error: 'Refund received but reservation was not found',
+      });
       return {
-        success: false,
+        success: true,
         eventType,
         captureId,
         error: 'Reservation not found',
@@ -351,6 +459,8 @@ export class PayPalWebhookHandler {
     const refundAmount = parseFloat(resource.amount?.value || '0');
     const refundId = captureId; // PayPal uses capture ID for refund tracking
     const refundReason = 'Customer request'; // PayPal doesn't provide detailed reason in webhook
+    const originalAmount = reservation.amount || reservation.deposit_amount;
+    const isFullRefund = refundAmount >= originalAmount;
 
     // Update reservation status to 'refunded'
     try {
@@ -359,11 +469,16 @@ export class PayPalWebhookHandler {
       const updatedNotes = existingNotes ? `${existingNotes}\n\n${refundNote}` : refundNote;
 
       await ReservationQueries.update(reservation.id, {
-        status: 'refunded',
+        ...(isFullRefund ? { status: 'refunded' as const } : {}),
         notes: updatedNotes,
       });
 
-      console.log(`[PayPal Webhook] Reservation ${reservation.id} marked as refunded`);
+      if (isFullRefund) {
+        await ReservationQueries.releasePuppyIfNoActiveReservations(reservation.puppy_id);
+        console.log(`[PayPal Webhook] Reservation ${reservation.id} marked as refunded`);
+      } else {
+        console.log(`[PayPal Webhook] Partial refund recorded for reservation ${reservation.id}`);
+      }
     } catch (error) {
       console.error(`[PayPal Webhook] Error updating reservation status to refunded:`, error);
       return {
@@ -376,8 +491,8 @@ export class PayPalWebhookHandler {
     }
 
     // Get puppy details for email
-    const { createSupabaseClient } = await import('@/lib/supabase/client');
-    const supabase = createSupabaseClient();
+    const { createServiceRoleClient } = await import('@/lib/supabase/client');
+    const supabase = createServiceRoleClient();
     const { data: puppy } = await supabase
       .from('puppies')
       .select('name, slug')
