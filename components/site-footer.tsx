@@ -12,6 +12,7 @@ import {
 
 import { CONTACT_DETAILS } from '@/lib/config/contact';
 import { BUSINESS_PROFILE } from '@/lib/config/business';
+import { PrivacySettingsButton } from '@/components/privacy-settings-button';
 
 const locationHours = BUSINESS_PROFILE.hours;
 const mapSrc = BUSINESS_PROFILE.mapEmbedUrl;
@@ -262,6 +263,7 @@ export function SiteFooter() {
             <Link href="/sitemap.xml" className="hover:text-slate-300">
               Sitemap
             </Link>
+            <PrivacySettingsButton className="hover:text-slate-300" />
           </div>
         </div>
       </div>

@@ -15,6 +15,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 
 import { getMetaTrackingCommand } from '@/lib/analytics/meta-events';
 import { ensureMetaPixelQueue } from '@/lib/analytics/meta-pixel';
+import { getSafeUrlParts, sanitizeUrlValue } from '@/lib/analytics/safe-url';
+import { stripSensitiveEventParams } from '@/lib/analytics/sensitive-params';
 import type { AnalyticsIdentifiers } from '@/lib/analytics/types';
 
 const STORAGE_KEY = 'exoticbulldoglegacy-consent';
@@ -26,6 +28,7 @@ type AnalyticsContextValue = {
   consent: ConsentState;
   grantConsent: () => void;
   denyConsent: () => void;
+  resetConsent: () => void;
   trackEvent: (event: string, params?: Record<string, unknown>) => void;
   getAnalyticsIdentifiers: () => Promise<AnalyticsIdentifiers>;
 };
@@ -64,6 +67,7 @@ function sendMetaServerEvent(
   eventId: string,
   customData?: Record<string, unknown>,
 ) {
+  const { safeLocation } = getSafeUrlParts(window.location.href);
   void fetch('/api/analytics/meta', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -72,7 +76,7 @@ function sendMetaServerEvent(
     body: JSON.stringify({
       eventName,
       eventId,
-      sourceUrl: window.location.href,
+      sourceUrl: safeLocation,
       customData,
       fbp: metaCookie('_fbp'),
       fbc: metaCookie('_fbc'),
@@ -103,9 +107,10 @@ function MetaPageViewTracker({ consent, ready }: MetaPageViewTrackerProps) {
 
     if (!ready || lastTrackedPageRef.current === pageKey) return;
 
+    const { safeLocation, safePath } = getSafeUrlParts(window.location.href);
     trackMetaStandardEvent('PageView', {
-      page_location: window.location.href,
-      page_path: pageKey,
+      page_location: safeLocation,
+      page_path: safePath,
       page_title: document.title,
     });
     lastTrackedPageRef.current = pageKey;
@@ -117,37 +122,6 @@ function MetaPageViewTracker({ consent, ready }: MetaPageViewTrackerProps) {
 // ------------------------------------------------------------------------------------------------
 // GA Page View Tracker
 // ------------------------------------------------------------------------------------------------
-const SENSITIVE_PARAMS = new Set([
-  'e',
-  'email',
-  'phone',
-  'token',
-  'code',
-  'key',
-  'password',
-  'secret',
-]);
-
-function buildSafeLocation(href: string): string {
-  try {
-    const url = new URL(href);
-    const params = new URLSearchParams(url.search);
-    let changed = false;
-    for (const key of Array.from(params.keys())) {
-      if (SENSITIVE_PARAMS.has(key.toLowerCase())) {
-        params.delete(key);
-        changed = true;
-      }
-    }
-    if (changed) {
-      url.search = params.toString();
-    }
-    return url.toString();
-  } catch {
-    return href;
-  }
-}
-
 function GaPageViewTracker({
   gaMeasurementId,
   gaReady,
@@ -162,15 +136,15 @@ function GaPageViewTracker({
   useEffect(() => {
     if (!gaReady || typeof window.gtag !== 'function') return;
     const query = searchParams.toString();
+    // pageKey is only used for React-side dedup; it is never sent to GA directly.
     const pageKey = query ? `${pathname}?${query}` : pathname;
     if (lastTrackedRef.current === pageKey) return;
     lastTrackedRef.current = pageKey;
-    // Strip sensitive query params from location
-    const safeLocation = buildSafeLocation(window.location.href);
+    const { safeLocation, safePath } = getSafeUrlParts(window.location.href);
     window.gtag('event', 'page_view', {
       page_title: document.title,
       page_location: safeLocation,
-      page_path: pageKey,
+      page_path: safePath,
     });
   }, [pathname, searchParams, gaReady, gaMeasurementId]);
 
@@ -195,13 +169,30 @@ const ALLOWED_COOKIELESS_PARAMS = new Set([
   'value',
 ]);
 
+/** Sanitizes URL-shaped event fields in place; a no-op for events that don't carry them. */
+function sanitizeUrlFields(params?: Record<string, unknown>): Record<string, unknown> | undefined {
+  if (!params) return undefined;
+  const result = { ...params };
+  if (typeof result.page_location === 'string') {
+    result.page_location = getSafeUrlParts(result.page_location).safeLocation;
+  }
+  if (typeof result.page_path === 'string') {
+    result.page_path = sanitizeUrlValue(result.page_path);
+  }
+  if (typeof result.context_path === 'string') {
+    result.context_path = sanitizeUrlValue(result.context_path);
+  }
+  return result;
+}
+
 function filterCookielessParams(
   params?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
   if (!params) return undefined;
-  return Object.fromEntries(
+  const allowlisted = Object.fromEntries(
     Object.entries(params).filter(([k]) => ALLOWED_COOKIELESS_PARAMS.has(k)),
   );
+  return sanitizeUrlFields(allowlisted);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -324,6 +315,29 @@ export function AnalyticsProvider({
   const grantConsent = useCallback(() => setConsent('granted'), []);
   const denyConsent = useCallback(() => setConsent('denied'), []);
 
+  const resetConsent = useCallback(() => {
+    if (gaMeasurementId && typeof window.gtag === 'function') {
+      window.gtag('consent', 'update', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+      });
+    }
+    window.fbq?.('consent', 'revoke');
+    setMetaReady(false);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.warn('Failed to clear consent from localStorage', error);
+    }
+    if (typeof document !== 'undefined') {
+      document.cookie = `${COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+      document.documentElement.removeAttribute('data-consent');
+    }
+    setConsent('unknown');
+  }, [gaMeasurementId]);
+
   const getAnalyticsIdentifiers = useCallback(async (): Promise<AnalyticsIdentifiers> => {
     if (consent !== 'granted' || !gaMeasurementId || typeof window.gtag !== 'function') {
       return {};
@@ -360,11 +374,12 @@ export function AnalyticsProvider({
         console.log('📈 Analytics: trackEvent called', { event, params, consent });
       }
 
-      // GA4: send to cookieless when unknown/denied, full when granted
+      // GA4: send to cookieless when unknown/denied, full when granted.
+      // Consent never authorizes raw form input or identifiers — strip those either way.
       // Only send if GA has been initialized (gtag function exists)
       if (gaMeasurementId && typeof window.gtag === 'function') {
         if (consent === 'granted') {
-          window.gtag('event', event, params);
+          window.gtag('event', event, stripSensitiveEventParams(sanitizeUrlFields(params)));
         } else {
           // Cookieless: only allowlisted params
           const safeParams = filterCookielessParams(params);
@@ -375,10 +390,11 @@ export function AnalyticsProvider({
       // Meta: only when granted
       if (consent !== 'granted') return;
       const metaCommand = getMetaTrackingCommand(event, params);
+      const safeMetaParams = stripSensitiveEventParams(metaCommand.params);
       if (metaCommand.method === 'track') {
-        trackMetaStandardEvent(metaCommand.name, metaCommand.params);
+        trackMetaStandardEvent(metaCommand.name, safeMetaParams);
       } else {
-        window.fbq?.(metaCommand.method, metaCommand.name, metaCommand.params);
+        window.fbq?.(metaCommand.method, metaCommand.name, safeMetaParams);
       }
     },
     [consent, gaMeasurementId],
@@ -389,10 +405,11 @@ export function AnalyticsProvider({
       consent,
       grantConsent,
       denyConsent,
+      resetConsent,
       trackEvent,
       getAnalyticsIdentifiers,
     }),
-    [consent, grantConsent, denyConsent, getAnalyticsIdentifiers, trackEvent],
+    [consent, grantConsent, denyConsent, resetConsent, getAnalyticsIdentifiers, trackEvent],
   );
 
   return (

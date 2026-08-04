@@ -112,16 +112,29 @@ const policies = [
     iconColor: 'text-cyan-400',
     content: (
       <>
-        Google Analytics 4 loads on every visit using Advanced Consent Mode. Before you make a
-        choice, it sends anonymous, aggregated signals to Google without using cookies. Cookieless
-        signals may technically include your IP address, browser type, referring page, and screen
-        resolution as part of a normal web request — however Google Analytics does not store or log
-        your IP address. Analytics cookies (_ga, _gid) and advertising cookies are NOT created until
-        you click Accept. Meta Pixel and Meta Conversions API are NOT loaded or activated until you
-        click Accept. If you click Decline, advertising tracking remains off for current and future
-        visits. After Decline, Google Analytics continues to send anonymous cookieless signals to
-        help us understand how the site is performing, but no cookies are set and no personal data
-        is linked to your visit.
+        <span className="font-bold text-white">Vercel Web Analytics</span> runs on every visit
+        without cookies and reports aggregated, site-wide statistics — it is not used to build an
+        individual profile of your visit.
+        <br />
+        <br />
+        <span className="font-bold text-white">Google Analytics</span> loads on every visit. Before
+        you make a choice, it uses cookieless measurement: no analytics or advertising cookies are
+        set, but like any normal web request, this traffic can technically include your IP address,
+        browser/user-agent string, referring page, and device/screen parameters. If you click
+        Accept, analytics and advertising cookies (such as _ga and _gid) and Google&rsquo;s
+        advertising features are enabled. Clicking Decline keeps Google Analytics in cookieless mode
+        for current and future visits — no analytics or advertising cookies are set.
+        <br />
+        <br />
+        <span className="font-bold text-white">Meta Pixel and Meta Conversions API</span> are not
+        loaded and do not run until you click Accept. Clicking Decline keeps Meta fully disabled.
+        <br />
+        <br />
+        You can change your choice at any time using the{' '}
+        <span className="font-bold text-white">Privacy settings</span> link in the footer, which
+        reopens this banner and resets Google Analytics to cookieless mode and disables Meta. This
+        clears our stored consent preference; removal of previously set analytics/advertising
+        cookies from your browser is not guaranteed to happen immediately.
       </>
     ),
   },

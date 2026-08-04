@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { presetConsent } from './helpers/consent';
+
+test.beforeEach(async ({ page }) => {
+  // Not exercising consent behavior here — preset it so the banner never blocks assertions.
+  await presetConsent(page, 'granted');
+});
 
 test('home page highlights core pillars', async ({ page }) => {
   await page.goto('/');

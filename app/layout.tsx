@@ -1,11 +1,11 @@
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AnalyticsProvider } from '@/components/analytics-provider';
 import { ConsentBanner } from '@/components/consent-banner';
 import { CrispChatLoader } from '@/components/crisp-chat-loader';
 import { JsonLd } from '@/components/json-ld';
 import { ThemeProvider } from '@/components/theme-provider';
+import { VercelAnalytics } from '@/components/vercel-analytics';
 import {
   validateDevelopmentEnvironment,
   validateProductionEnvironment,
@@ -129,7 +129,7 @@ export default function RootLayout({
             {crispEnabled && <CrispChatLoader />}
             <ConsentBanner />
           </AnalyticsProvider>
-          <Analytics />
+          <VercelAnalytics />
           <SpeedInsights />
         </ThemeProvider>
       </body>

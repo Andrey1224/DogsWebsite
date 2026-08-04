@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { presetConsent } from './helpers/consent';
 
 const SHOULD_MOCK_RESERVATION = process.env.PLAYWRIGHT_MOCK_RESERVATION === 'true';
 
@@ -7,6 +8,11 @@ test.describe('Reservation flow', () => {
     !SHOULD_MOCK_RESERVATION,
     'Requires PLAYWRIGHT_MOCK_RESERVATION=true to avoid real Stripe interactions',
   );
+
+  test.beforeEach(async ({ page }) => {
+    // Not exercising consent behavior here — preset it so the banner never blocks the flow.
+    await presetConsent(page, 'granted');
+  });
 
   test('user selects a puppy and reaches mocked checkout', async ({ page }) => {
     // Navigate directly to available puppies to ensure we find a reservable puppy
