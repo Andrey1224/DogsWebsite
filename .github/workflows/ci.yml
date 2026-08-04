@@ -32,8 +32,9 @@ jobs:
       PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
       PAYPAL_ENV: sandbox
       NEXT_PUBLIC_CRISP_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_CRISP_WEBSITE_ID }}
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
-      META_PIXEL_ID: ${{ secrets.META_PIXEL_ID }}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-TEST123456' }}
+      META_PIXEL_ID: ${{ secrets.META_PIXEL_ID || '1234567890' }}
+      NEXT_PUBLIC_META_PIXEL_ID: ${{ secrets.META_PIXEL_ID || '1234567890' }}
       # Admin console creds (used by admin E2E)
       ADMIN_LOGIN: owner@example.com
       ADMIN_PASSWORD: supersecure
