@@ -197,9 +197,9 @@ describe('Policies Page', () => {
   it('renders all policy sections with proper article structure', () => {
     const { container } = renderPoliciesPage();
 
-    // 6 policy sections as articles
+    // 7 policy sections as articles
     const articles = container.querySelectorAll('article');
-    expect(articles.length).toBe(6);
+    expect(articles.length).toBe(7);
   });
 
   it('has proper styling classes for policy cards', () => {
@@ -217,7 +217,7 @@ describe('Policies Page', () => {
     renderPoliciesPage();
 
     const h2Elements = screen.getAllByRole('heading', { level: 2 });
-    expect(h2Elements.length).toBe(6);
+    expect(h2Elements.length).toBe(7);
   });
 
   it('renders icons for each policy section', () => {
@@ -225,7 +225,7 @@ describe('Policies Page', () => {
 
     // Each article should have an icon container
     const iconContainers = container.querySelectorAll('article svg');
-    expect(iconContainers.length).toBe(6);
+    expect(iconContainers.length).toBe(7);
   });
 
   it('applies hover effects to policy cards', () => {

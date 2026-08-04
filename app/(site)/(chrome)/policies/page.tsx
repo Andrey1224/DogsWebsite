@@ -9,6 +9,7 @@ import {
   Lock,
   CheckCircle2,
   Info,
+  BarChart2,
 } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
@@ -101,6 +102,26 @@ const policies = [
         Adoption contracts, medical records, and AKC paperwork are compiled in a{' '}
         <span className="font-bold text-white">secure client portal</span> before go-home day.
         Co-ownership requests are reviewed on a case-by-case basis.
+      </>
+    ),
+  },
+  {
+    id: 7,
+    title: 'Cookie & Analytics Policy',
+    icon: BarChart2,
+    iconColor: 'text-cyan-400',
+    content: (
+      <>
+        Google Analytics 4 loads on every visit using Advanced Consent Mode. Before you make a
+        choice, it sends anonymous, aggregated signals to Google without using cookies. Cookieless
+        signals may technically include your IP address, browser type, referring page, and screen
+        resolution as part of a normal web request — however Google Analytics does not store or log
+        your IP address. Analytics cookies (_ga, _gid) and advertising cookies are NOT created until
+        you click Accept. Meta Pixel and Meta Conversions API are NOT loaded or activated until you
+        click Accept. If you click Decline, advertising tracking remains off for current and future
+        visits. After Decline, Google Analytics continues to send anonymous cookieless signals to
+        help us understand how the site is performing, but no cookies are set and no personal data
+        is linked to your visit.
       </>
     ),
   },

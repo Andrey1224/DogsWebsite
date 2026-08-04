@@ -16,11 +16,20 @@ type FacebookPixel = ((...args: FbqCommand) => void) & {
   version?: string;
 };
 
+type ConsentSettings = {
+  analytics_storage?: 'granted' | 'denied';
+  ad_storage?: 'granted' | 'denied';
+  ad_user_data?: 'granted' | 'denied';
+  ad_personalization?: 'granted' | 'denied';
+  wait_for_update?: number;
+};
+
 type GtagArgs =
   | ['js', Date]
-  | ['config', string, Record<string, unknown>?]
+  | ['config', string, ({ send_page_view: false } | Record<string, unknown>)?]
   | ['event', string, Record<string, unknown>?]
-  | ['consent', 'update', Record<string, string>]
+  | ['consent', 'default', ConsentSettings]
+  | ['consent', 'update', ConsentSettings]
   | ['get', string, 'client_id' | 'session_id', (value: unknown) => void];
 
 type GtagFunction = (...args: GtagArgs) => void;

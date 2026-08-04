@@ -1,6 +1,6 @@
 # Payment System Operations Report
 
-**Last Updated:** January 9, 2026
+**Last Updated:** August 3, 2026
 **Scope:** Stripe & PayPal payments, security posture, reservation management, refund processing, and monitoring.
 
 ---
@@ -277,13 +277,23 @@
 
 **Payment Configuration:**
 
-- [ ] Keep Vercel/production environment variables current (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`)
+- [ ] Keep Vercel/production environment variables current (`STRIPE_SECRET_KEY`,
+      `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `PAYPAL_CLIENT_ID`,
+      `PAYPAL_CLIENT_SECRET`). Vercel Sensitive values cannot be viewed after save; replace them from
+      the provider dashboard when their mode or ownership is uncertain.
+- [ ] Keep `STRIPE_DEPOSIT_AMOUNT_CENTS` as integer cents only: `30000` for the normal $300 deposit or
+      temporarily `100` for a deliberate $1 verification. Never store a Stripe API key in this variable.
+- [ ] Scope live Stripe keys to Production and test keys to Preview when both environments accept
+      checkout traffic. Environment-variable changes require a new deployment before they take effect.
 - [ ] Verify webhook endpoints registered in both Stripe and PayPal dashboards
 - [ ] Ensure PayPal webhook subscribes to `PAYMENT.CAPTURE.REFUNDED` event ✅ NEW
 - [ ] Verify Stripe webhook subscribes to `charge.refunded` event ✅ NEW
 
 **Testing & Monitoring:**
 
+- [ ] After changing Stripe keys, webhook secrets, or the deposit amount, run one controlled checkout
+      in the matching Stripe mode and confirm the webhook creates a `paid` reservation and updates the
+      puppy status. Refund and restore any disposable live verification transaction.
 - [ ] Re-run webhook signature mismatch smoke tests each release
 - [ ] Monitor `/api/health/webhooks` daily for webhook health status
 - [ ] Check Stripe and PayPal Dashboards weekly for alert fatigue

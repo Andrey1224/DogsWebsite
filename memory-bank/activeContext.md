@@ -17,6 +17,34 @@
 
 ## Current Status
 
+- **Completed (Aug 3, 2026)**: Implemented GA4 Advanced Consent Mode v2.
+  - `beforeInteractive` inline script in `app/layout.tsx` initialises `dataLayer`/`gtag` and calls
+    `gtag('consent', 'default', ...)` synchronously — reads `localStorage('exoticbulldoglegacy-consent')`
+    so returning users start with their stored preference; new/unknown users start `denied`.
+  - GA4 `gtag.js` loads unconditionally (when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set) via `afterInteractive`.
+  - GA4 config uses `send_page_view: false`; new `GaPageViewTracker` sends exactly one `page_view` per
+    navigation (pathname + searchParams). No duplicates on re-render or consent update.
+  - `trackEvent` split: GA4 receives cookieless events (allowlisted params only) at `unknown`/`denied`;
+    Meta events dispatched only when `consent === 'granted'`.
+  - Allowlist: `page_path`, `page_location`, `page_title`, `content_type`, `content_name`,
+    `puppy_slug`, `breed`, `method`, `location`, `context_path`, `currency`, `value`.
+    All other params (including unknown) stripped before cookieless GA4 send.
+  - `buildSafeLocation()` strips sensitive query params (email, token, key, password…) from URLs.
+  - Meta Pixel and Meta CAPI remain fully blocked at `unknown`/`denied`. `/api/analytics/meta`
+    cookie check unchanged. `getAnalyticsIdentifiers()` still requires `granted`.
+  - Added `ConsentSettings` type and `'consent', 'default'` command to `types/window.d.ts`.
+  - New `/policies` Cookie & Analytics Policy section explains Advanced Consent Mode in plain
+    language with accurate IP/user-agent disclosures.
+  - New `components/analytics-provider.test.tsx` (21 tests): bootstrap, script rendering,
+    consent updates, page_view deduplication, cookieless allowlist, Meta isolation,
+    returning-user localStorage scenarios, backward-compat Meta event mapping.
+  - New `tests/e2e/analytics-consent.spec.ts`: Playwright cookie/script presence tests.
+  - Updated `memory-bank/systemPatterns.md` consent pattern rule.
+  - **Verification**: Vitest 721 passed / 12 skipped (733 total, 0 failed).
+    Playwright 31 passed / 1 pre-existing flaky (reservation button, no dev-DB puppies,
+    documented `retries: 2` in CI) / 1 skipped. Port-3000 conflict resolved before E2E run.
+  - Not deployed to production. Awaiting explicit approval before PR/merge to `main`.
+
 - **Completed (Aug 3, 2026)**: Closed the remaining literal verification gaps from
   `PLAN_PAYMENT_RELIABILITY_FIXES.md`.
   - Added durable stale-Stripe-event persistence plus database-backed alert-window aggregation in
@@ -38,10 +66,21 @@
   - Production Migration C was applied through Supabase MCP as
     `20260804002806_add_webhook_alert_buckets`; verification confirms the table is empty on create,
     `service_role` alone has table/RPC access, and client roles have neither.
-  - The tested working tree was deployed directly to Vercel as
-    `dpl_BTqEB2GR41kHDhBWm27cyDZRiyWD` and reached READY. This bypassed the repository's intended
-    `dev` → GitHub CI → Vercel dev workflow; the same complete change set is now being published to
-    `dev` so subsequent verification follows the normal pipeline.
+  - The tested working tree was initially deployed directly to Vercel as
+    `dpl_BTqEB2GR41kHDhBWm27cyDZRiyWD` and reached READY. The same complete change set was then
+    committed to `dev` as `2380ec0`, passed the GitHub/Vercel preview pipeline, and was merged through
+    PR #13 into `main` as `7810e34`.
+  - The post-merge GitHub CI run `30867091312` passed Prettier, lint, typecheck, unit tests, production
+    build, and Playwright E2E. Vercel production deployment
+    `dpl_8qK7T2bki7eZjTZ9rzRjnwNUhRcz` completed successfully; the primary domain, `/api/health`, and
+    `/api/health/webhooks` returned HTTP 200, with webhook health `healthy`. Overall health remains
+    `degraded` only for the existing optional `NEXT_PUBLIC_CONTACT_HOURS` warning.
+  - No Stripe environment variables were changed by the code deployment. Vercel retains Sensitive
+    values without revealing them after save, so the current live/test key mode was not independently
+    re-read during handoff. `STRIPE_DEPOSIT_AMOUNT_CENTS` must contain integer cents (`30000` for $300,
+    or temporarily `100` for a deliberate $1 live check), never a Stripe API key. A new live-card
+    payment was not performed after the merge; the signed Stripe test-mode flow above is the completed
+    automated/integration verification.
 
 - **Completed (Aug 3, 2026)**: Implemented `PLAN_PAYMENT_RELIABILITY_FIXES.md` in gated phases.
   Phase 1 combined Pay Full with the service-role/server-only and PayPal paid-status hotfixes;

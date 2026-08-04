@@ -50,6 +50,27 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_CRISP_ENABLED === 'true' &&
     Boolean(process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID);
 
+  const gaBootstrapScript = gaMeasurementId
+    ? `
+    (function() {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function() { window.dataLayer.push(arguments); };
+      var savedConsent = 'denied';
+      try {
+        var stored = window.localStorage.getItem('exoticbulldoglegacy-consent');
+        if (stored === 'granted') { savedConsent = 'granted'; }
+      } catch(e) {}
+      window.gtag('consent', 'default', {
+        analytics_storage: savedConsent === 'granted' ? 'granted' : 'denied',
+        ad_storage: savedConsent === 'granted' ? 'granted' : 'denied',
+        ad_user_data: savedConsent === 'granted' ? 'granted' : 'denied',
+        ad_personalization: savedConsent === 'granted' ? 'granted' : 'denied',
+        wait_for_update: 500
+      });
+    })();
+  `
+    : null;
+
   const themeScript = `
     (function() {
       try {
@@ -92,6 +113,8 @@ export default function RootLayout({
         {crispEnabled && (
           <link rel="preconnect" href="https://client.crisp.chat" crossOrigin="anonymous" />
         )}
+
+        {gaBootstrapScript && <script dangerouslySetInnerHTML={{ __html: gaBootstrapScript }} />}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[color:var(--bg)] text-[color:var(--text)] antialiased`}

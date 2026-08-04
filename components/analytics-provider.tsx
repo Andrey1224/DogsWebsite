@@ -45,6 +45,7 @@ type MetaPageViewTrackerProps = {
 
 function metaCookie(name: string): string | undefined {
   const prefix = `${name}=`;
+  if (typeof document === 'undefined') return undefined;
   return document.cookie
     .split(';')
     .map((part) => part.trim())
@@ -113,6 +114,98 @@ function MetaPageViewTracker({ consent, ready }: MetaPageViewTrackerProps) {
   return null;
 }
 
+// ------------------------------------------------------------------------------------------------
+// GA Page View Tracker
+// ------------------------------------------------------------------------------------------------
+const SENSITIVE_PARAMS = new Set([
+  'e',
+  'email',
+  'phone',
+  'token',
+  'code',
+  'key',
+  'password',
+  'secret',
+]);
+
+function buildSafeLocation(href: string): string {
+  try {
+    const url = new URL(href);
+    const params = new URLSearchParams(url.search);
+    let changed = false;
+    for (const key of Array.from(params.keys())) {
+      if (SENSITIVE_PARAMS.has(key.toLowerCase())) {
+        params.delete(key);
+        changed = true;
+      }
+    }
+    if (changed) {
+      url.search = params.toString();
+    }
+    return url.toString();
+  } catch {
+    return href;
+  }
+}
+
+function GaPageViewTracker({
+  gaMeasurementId,
+  gaReady,
+}: {
+  gaMeasurementId: string;
+  gaReady: boolean;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const lastTrackedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!gaReady || typeof window.gtag !== 'function') return;
+    const query = searchParams.toString();
+    const pageKey = query ? `${pathname}?${query}` : pathname;
+    if (lastTrackedRef.current === pageKey) return;
+    lastTrackedRef.current = pageKey;
+    // Strip sensitive query params from location
+    const safeLocation = buildSafeLocation(window.location.href);
+    window.gtag('event', 'page_view', {
+      page_title: document.title,
+      page_location: safeLocation,
+      page_path: pageKey,
+    });
+  }, [pathname, searchParams, gaReady, gaMeasurementId]);
+
+  return null;
+}
+
+// ------------------------------------------------------------------------------------------------
+// Allowlist for cookieless GA4 events
+// ------------------------------------------------------------------------------------------------
+const ALLOWED_COOKIELESS_PARAMS = new Set([
+  'page_path',
+  'page_location',
+  'page_title',
+  'content_type',
+  'content_name',
+  'puppy_slug',
+  'breed',
+  'method',
+  'location',
+  'context_path',
+  'currency',
+  'value',
+]);
+
+function filterCookielessParams(
+  params?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  if (!params) return undefined;
+  return Object.fromEntries(
+    Object.entries(params).filter(([k]) => ALLOWED_COOKIELESS_PARAMS.has(k)),
+  );
+}
+
+// ------------------------------------------------------------------------------------------------
+
 function persistConsent(consent: ConsentState) {
   if (consent === 'unknown') return;
   try {
@@ -122,10 +215,11 @@ function persistConsent(consent: ConsentState) {
   }
 
   const ttl = 365 * 24 * 60 * 60;
-  document.cookie = `${COOKIE_KEY}=${consent}; path=/; max-age=${ttl}; SameSite=Lax`;
-
-  // Add data attribute for test verification
-  document.documentElement.setAttribute('data-consent', consent);
+  if (typeof document !== 'undefined') {
+    document.cookie = `${COOKIE_KEY}=${consent}; path=/; max-age=${ttl}; SameSite=Lax`;
+    // Add data attribute for test verification
+    document.documentElement.setAttribute('data-consent', consent);
+  }
 }
 
 function readStoredConsent(): ConsentState {
@@ -150,13 +244,15 @@ export function AnalyticsProvider({
 }: AnalyticsProviderProps) {
   const [consent, setConsent] = useState<ConsentState>('unknown');
   const [metaReady, setMetaReady] = useState(false);
+  const [gaReady, setGaReady] = useState(false);
   const pixelLoadedRef = useRef(false);
+  const gaScriptLoadedRef = useRef(false);
 
   useEffect(() => {
     const storedConsent = readStoredConsent();
     setConsent(storedConsent);
     // Set data attribute on initial load for test verification
-    if (storedConsent !== 'unknown') {
+    if (storedConsent !== 'unknown' && typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-consent', storedConsent);
     }
   }, []);
@@ -171,27 +267,27 @@ export function AnalyticsProvider({
   }, [consent]);
 
   useEffect(() => {
-    if (!gaMeasurementId) return;
+    if (!gaMeasurementId || typeof window.gtag !== 'function') return;
 
-    if (consent === 'granted' && typeof window.gtag === 'function') {
+    if (consent === 'granted') {
       if (process.env.NODE_ENV === 'development') {
         console.log('📊 Analytics: GA4 consent granted', { gaMeasurementId });
       }
       window.gtag('consent', 'update', {
+        analytics_storage: 'granted',
+        ad_storage: 'granted',
         ad_user_data: 'granted',
         ad_personalization: 'granted',
-        analytics_storage: 'granted',
       });
-    }
-
-    if (consent === 'denied' && typeof window.gtag === 'function') {
+    } else if (consent === 'denied') {
       if (process.env.NODE_ENV === 'development') {
         console.log('📊 Analytics: GA4 consent denied');
       }
       window.gtag('consent', 'update', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied',
-        analytics_storage: 'denied',
       });
     }
   }, [consent, gaMeasurementId]);
@@ -264,19 +360,20 @@ export function AnalyticsProvider({
         console.log('📈 Analytics: trackEvent called', { event, params, consent });
       }
 
-      if (consent !== 'granted') {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📈 Analytics: Event blocked - consent not granted');
+      // GA4: send to cookieless when unknown/denied, full when granted
+      // Only send if GA has been initialized (gtag function exists)
+      if (gaMeasurementId && typeof window.gtag === 'function') {
+        if (consent === 'granted') {
+          window.gtag('event', event, params);
+        } else {
+          // Cookieless: only allowlisted params
+          const safeParams = filterCookielessParams(params);
+          window.gtag('event', event, safeParams);
         }
-        return;
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📈 Analytics: Event fired', { event, params });
-      }
-
-      window.gtag?.('event', event, params);
-
+      // Meta: only when granted
+      if (consent !== 'granted') return;
       const metaCommand = getMetaTrackingCommand(event, params);
       if (metaCommand.method === 'track') {
         trackMetaStandardEvent(metaCommand.name, metaCommand.params);
@@ -284,7 +381,7 @@ export function AnalyticsProvider({
         window.fbq?.(metaCommand.method, metaCommand.name, metaCommand.params);
       }
     },
-    [consent],
+    [consent, gaMeasurementId],
   );
 
   const value = useMemo(
@@ -300,32 +397,30 @@ export function AnalyticsProvider({
 
   return (
     <AnalyticsContext.Provider value={value}>
-      {consent === 'granted' && gaMeasurementId ? (
+      {gaMeasurementId ? (
         <>
+          <Script
+            id="ga-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `gtag('js', new Date()); gtag('config', '${gaMeasurementId}', { send_page_view: false });`,
+            }}
+          />
           <Script
             id="ga-gtag"
             src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-            strategy="lazyOnload"
+            strategy="afterInteractive"
             onLoad={() => {
               if (process.env.NODE_ENV === 'development') {
                 console.log('📊 Analytics: GA4 script loaded successfully', { gaMeasurementId });
               }
-            }}
-          />
-          <Script
-            id="ga-init"
-            strategy="lazyOnload"
-            dangerouslySetInnerHTML={{
-              __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaMeasurementId}');`,
-            }}
-            onLoad={() => {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('📊 Analytics: GA4 initialized', { gaMeasurementId });
-              }
+              gaScriptLoadedRef.current = true;
+              setGaReady(true);
             }}
           />
         </>
       ) : null}
+
       {consent === 'granted' && metaPixelId ? (
         <>
           <Script
@@ -356,6 +451,13 @@ export function AnalyticsProvider({
           </noscript>
         </>
       ) : null}
+
+      {gaMeasurementId ? (
+        <Suspense fallback={null}>
+          <GaPageViewTracker gaMeasurementId={gaMeasurementId} gaReady={gaReady} />
+        </Suspense>
+      ) : null}
+
       <Suspense fallback={null}>
         <MetaPageViewTracker consent={consent} ready={metaReady} />
       </Suspense>

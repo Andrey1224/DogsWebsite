@@ -2,6 +2,15 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-08-03] GA4 Advanced Consent Mode v2
+
+- **Analytics**: Implemented GA4 Advanced Consent Mode v2 to provide cookieless signals before user consent is granted.
+- **Privacy**: Meta Pixel and ad personalization/storage remain strictly blocked until explicit 'granted' consent.
+- **Tracking**: Separated page view tracking into a reliable SPA-aware component ensuring exactly one page view event per route change.
+- **Security**: Stripped sensitive query parameters (e.g., email, token, password) from URLs before sending to Google Analytics.
+- **Transparency**: Added a 7th policy entry explaining Cookie & Analytics Policy and the cookieless GA4 mechanism.
+- **Testing**: Added comprehensive unit tests and Playwright end-to-end tests to guarantee compliance with the consent flow.
+
 ## [2026-08-03] Pay Full & Payment Reliability
 
 - **Payments**: Added Stripe full-price checkout alongside the existing deposit flow; PayPal remains
@@ -24,6 +33,13 @@ Unified timeline of features, optimizations, and bugfixes.
 - **Production Completion**: Applied the durable alert-bucket migration and deployed the fully
   verified payment reliability package to Vercel production as
   `dpl_BTqEB2GR41kHDhBWm27cyDZRiyWD`.
+- **GitHub Release Completion**: Published the complete change set to `dev` (`2380ec0`), passed the
+  preview checks, and merged PR #13 into `main` as `7810e34`. Post-merge GitHub CI passed all quality
+  gates, Vercel production deployment `dpl_8qK7T2bki7eZjTZ9rzRjnwNUhRcz` completed, and production
+  homepage/database/webhook smoke checks passed.
+- **Configuration Handoff**: The release did not modify existing Stripe Vercel variables. Sensitive
+  key values remain owner-managed; `STRIPE_DEPOSIT_AMOUNT_CENTS` is an integer-cent setting
+  (`30000` = $300, `100` = $1) and must not contain an API key.
 
 ## [2026-08-02] GA4 & Meta Conversion Funnel
 

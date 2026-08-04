@@ -29,11 +29,17 @@
 - **Vercel Web Analytics**: Include `<Analytics />` from `@vercel/analytics/next` once in the root
   `app/layout.tsx`. Keep it separate from the existing consent-managed GA4/Meta Pixel
   `AnalyticsProvider`.
-- **Consent-managed marketing analytics**: GA4 and Meta Pixel must not load or preconnect before
-  consent. Use `NEXT_PUBLIC_GA_MEASUREMENT_ID` and `NEXT_PUBLIC_META_PIXEL_ID`. GA4 page views rely
-  on the normal `gtag('config', ...)` call plus Enhanced Measurement history tracking; do not set
-  `send_page_view: false` unless a tested manual page-view implementation replaces it. Map shared
-  commerce/lead actions to GA4 recommended events and Meta standard events in the central provider.
+- **Consent-managed marketing analytics (Advanced Consent Mode v2)**: GA4 uses Advanced Consent
+  Mode v2. A `beforeInteractive` inline script in `app/layout.tsx` sets up `dataLayer`, `gtag`,
+  and `gtag('consent', 'default', ...)` synchronously — reading `localStorage('exoticbulldoglegacy-consent')`
+  so returning users start with their stored preference, new/unknown users start with `denied`.
+  gtag.js loads unconditionally via `afterInteractive` when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set.
+  GA4 config uses `send_page_view: false`; `GaPageViewTracker` sends exactly one `page_view` per
+  navigation. trackEvent sends GA4 events in cookieless mode (allowlisted params only) at
+  `unknown`/`denied`; Meta events are only dispatched when consent is `granted`.
+  Meta Pixel (`NEXT_PUBLIC_META_PIXEL_ID`) script and Meta CAPI (`/api/analytics/meta`) remain
+  fully blocked until consent is `granted`. Map shared commerce/lead actions to GA4 recommended
+  events and Meta standard events in the central provider.
 - **Paid conversion attribution**: Capture GA4 client/session IDs in the browser when checkout
   begins, validate them before adding them to Stripe metadata, and forward them to GA4 Measurement
   Protocol when the payment webhook emits `deposit_paid`.

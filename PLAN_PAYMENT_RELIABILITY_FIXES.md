@@ -1,8 +1,12 @@
 # Fix payment reliability & data-integrity bugs
 
-> **Status: implemented and deployed 2026-08-03.** Both database phases are registered in the live
-> Supabase migration history, the application is deployed to production, and the payment-safe expiry
-> cron is active. The original analysis and rollout order remain below as an operational record.
+> **Status: implemented, merged, and deployed 2026-08-03.** All database phases are registered in
+> the live Supabase migration history, the payment-safe expiry cron is active, and the complete change
+> set passed the `dev` preview pipeline before PR #13 merged into `main` as `7810e34`. Post-merge GitHub
+> CI and Vercel production deployment `dpl_8qK7T2bki7eZjTZ9rzRjnwNUhRcz` succeeded. Production homepage,
+> application health, and webhook health smoke checks returned HTTP 200. The signed Stripe test-mode
+> scenarios are complete; a new live-card charge was intentionally left as an owner-operated check.
+> The original analysis and rollout order remain below as an operational record.
 
 ## Context
 

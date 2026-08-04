@@ -39,20 +39,9 @@ test.describe('Analytics & Consent Management', () => {
     await expect(getConsentButton(page)).toBeHidden({ timeout: 15_000 });
   });
 
-  test('analytics scripts do not load without consent', async ({ page }) => {
+  test('Meta analytics scripts do not load without consent', async ({ page }) => {
     // Block analytics requests
-    const gaRequests: string[] = [];
     const fbRequests: string[] = [];
-
-    await page.route('**/*google-analytics.com/**', (route) => {
-      gaRequests.push(route.request().url());
-      route.abort();
-    });
-
-    await page.route('**/*googletagmanager.com/**', (route) => {
-      gaRequests.push(route.request().url());
-      route.abort();
-    });
 
     await page.route('**/*facebook.net/**', (route) => {
       fbRequests.push(route.request().url());
@@ -65,8 +54,7 @@ test.describe('Analytics & Consent Management', () => {
     // Wait a bit to ensure no scripts are loaded
     await page.waitForTimeout(2000);
 
-    // Verify no analytics scripts were requested
-    expect(gaRequests.length).toBe(0);
+    // Verify no Meta scripts were requested
     expect(fbRequests.length).toBe(0);
   });
 
@@ -128,9 +116,8 @@ test.describe('Analytics & Consent Management', () => {
     const gtagCalls = await page.evaluate(() => window.__gtagCalls || []);
     const fbqCalls = await page.evaluate(() => window.__fbqCalls || []);
 
-    // Events might be tracked but not sent to analytics (blocked by consent)
-    // The trackEvent function is called, but gtag/fbq are not invoked
-    expect(gtagCalls.length).toBe(0);
+    // Events should be tracked for GA (cookieless) but NOT for Meta (blocked by consent)
+    expect(gtagCalls.length).toBeGreaterThan(0);
     expect(fbqCalls.length).toBe(0);
   });
 
