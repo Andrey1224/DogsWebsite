@@ -78,6 +78,13 @@ npx playwright test tests/e2e/foo.spec.ts     # Single E2E test
 
 **Important:** Never commit directly to `main`. Always work in `dev` and merge via PR.
 
+**Never delete the `dev` branch — not even after a PR merges, not with GitHub's "Delete branch"
+button, not with `git push origin --delete dev`, not via the repo's auto-delete-on-merge
+setting.** `dev` is a persistent, long-lived branch that every session continues from — deleting
+it after each merge forces it to be recreated from `main` every time and breaks the workflow
+above. If `dev` is ever found missing on the remote, recreate it from `main` and flag this to
+the user rather than treating it as routine cleanup.
+
 ## Testing Configuration
 
 - **E2E consent handling**: Use `acceptConsent(page)` helper from `tests/e2e/helpers/consent.ts`
