@@ -6,6 +6,22 @@ export function getConsentButton(page: Page) {
   return page.getByRole('button', { name: /accept & continue/i }).first();
 }
 
+/**
+ * Pre-seeds the consent choice in localStorage before any navigation, so the consent
+ * banner never renders for tests that aren't exercising consent behavior itself. The site
+ * no longer auto-grants consent for automated browsers, so tests that don't care about
+ * analytics/consent must opt out explicitly — either via this helper, by clicking
+ * Accept/Decline, or by asserting on the banner directly.
+ */
+export async function presetConsent(page: Page, value: 'granted' | 'denied') {
+  await page.addInitScript(
+    ({ key, value: consentValue }) => {
+      window.localStorage.setItem(key, consentValue);
+    },
+    { key: CONSENT_STORAGE_KEY, value },
+  );
+}
+
 export async function getStoredConsent(page: Page) {
   return page.evaluate((key) => window.localStorage.getItem(key), CONSENT_STORAGE_KEY);
 }

@@ -5,28 +5,19 @@ import { Cookie, ShieldCheck, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAnalytics } from '@/components/analytics-provider';
 
+const BANNER_SHOW_DELAY_MS = 1500;
+
 export function ConsentBanner() {
   const { consent, grantConsent, denyConsent } = useAnalytics();
   const [isVisible, setIsVisible] = useState(false);
 
-  // Auto-accept for automated browsers (e.g., Playwright) to keep e2e stable and avoid overlay blocking clicks
   useEffect(() => {
-    if (consent !== 'unknown') return;
-    const isAutomation = typeof navigator !== 'undefined' && navigator.webdriver;
-    if (isAutomation) {
-      grantConsent();
+    if (consent !== 'unknown') {
       setIsVisible(false);
+      return;
     }
-  }, [consent, grantConsent]);
-
-  useEffect(() => {
-    if (consent === 'unknown') {
-      // Skip delay for automated browsers (e.g., Playwright) to keep tests stable
-      const isAutomation = typeof navigator !== 'undefined' && navigator.webdriver;
-      const delay = isAutomation ? 0 : 1500;
-      const timer = setTimeout(() => setIsVisible(true), delay);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => setIsVisible(true), BANNER_SHOW_DELAY_MS);
+    return () => clearTimeout(timer);
   }, [consent]);
 
   if (consent !== 'unknown' || !isVisible) {
@@ -45,18 +36,17 @@ export function ConsentBanner() {
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/70 px-3 py-1 ring-1 ring-slate-700">
                   <ShieldCheck size={14} className="text-emerald-400" />
-                  Privacy-first
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/70 px-3 py-1 ring-1 ring-slate-700">
-                  <Cookie size={14} className="text-orange-300" />
-                  Analytics Only
+                  Your choice, either way
                 </span>
               </div>
               <div className="space-y-2">
-                <p className="text-base font-semibold text-white">We use cookies responsibly</p>
+                <p className="text-base font-semibold text-white">
+                  Analytics &amp; advertising measurement
+                </p>
                 <p className="text-[13px] leading-relaxed text-slate-300">
-                  We use Google Analytics and Meta Pixel to measure interest in our puppies. Data is
-                  anonymous and helps us find the best homes.
+                  Google Analytics uses cookieless measurement before you make a choice. If you
+                  accept, analytics and advertising cookies, Meta Pixel, and Conversions API will be
+                  enabled to help us measure site and ad performance.
                 </p>
                 <Link
                   href="/policies"

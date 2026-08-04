@@ -17,6 +17,77 @@
 
 ## Current Status
 
+- **Completed (Aug 3, 2026)**: Final hardening pass on the Advanced Consent Mode v2 analytics
+  stack (no architecture changes — cookieless GA/Meta-after-Accept/Vercel-always design kept).
+  - Removed the `navigator.webdriver` auto-Accept branch from `components/consent-banner.tsx`
+    entirely; the banner never grants consent on its own for any browser, automated or not.
+    Playwright specs that don't test consent (`admin.spec.ts`, `smoke.spec.ts`,
+    `reservation.spec.ts`) now preset `localStorage` consent via a new
+    `tests/e2e/helpers/consent.ts#presetConsent()` (or `context.addInitScript`) instead.
+  - Rewrote the consent banner copy: dropped "Analytics Only" / "Data is anonymous"; added the
+    "Analytics & advertising measurement" heading and cookieless/Meta-after-Accept explanation.
+    Buttons stay equally weighted (`Decline` / `Accept & Continue`).
+  - New `lib/analytics/safe-url.ts`: shared allowlist-based URL sanitizer
+    (`utm_*`, `gclid`, `dclid`, `fbclid`, `msclkid` only; everything else — including
+    `session_id`, `email`, `token`, etc. — is dropped by default). Exposes
+    `getSafeUrlParts(href) -> {safeLocation, safePath}` and `sanitizeUrlValue()` for
+    path/URL-shaped strings. Parse failures fall back to origin+pathname only, never the raw
+    input. Used by GA4 page views, Meta page views/CAPI `sourceUrl`, `trackEvent`'s
+    `page_location`/`page_path`/`context_path` fields, and the new Vercel Analytics
+    `beforeSend`.
+  - New `lib/analytics/sensitive-params.ts`: `stripSensitiveEventParams()` denylist
+    (email/phone/name/address/message/password/token/session_id/customer_id/order_id/etc.),
+    applied to GA4 events in granted mode and to Meta's `trackCustom` fallback — consent never
+    authorizes sending raw form input, on top of the existing cookieless-mode allowlist.
+  - `GaPageViewTracker` now sources both `page_location` and `page_path` from the shared
+    sanitizer applied to `window.location.href`; the React-side `pageKey` is dedup-only and
+    is never sent to GA. Same for Meta's `PageView` and the CAPI `sourceUrl` forwarded to
+    `/api/analytics/meta`.
+  - `/api/analytics/meta` hardened: added a same-origin check (`request.nextUrl.host` vs.
+    `Origin`/`Referer`, only enforced when one of those headers is present — keepalive
+    requests during outbound navigation still work), tightened `sourceUrl`/`eventId`/`fbp`/
+    `fbc` length limits, added an `eventId` charset check, and replaced the pass-through
+    `customData` with an allowlist (`content_ids`/`content_name`/`content_category`/
+    `content_type`/`value`/`currency`) that rejects nested objects and unknown fields. The
+    consent-cookie gate and Meta event-name allowlist are unchanged.
+  - Added `components/vercel-analytics.tsx`, a client wrapper around `<Analytics />` from
+    `@vercel/analytics/next` (v2.0.1, confirmed `beforeSend` support in its `.d.ts`) that
+    applies the shared sanitizer to `event.url`. `app/layout.tsx` (a Server Component) now
+    renders `<VercelAnalytics />` instead of importing `<Analytics />` directly, since a
+    `beforeSend` function prop cannot cross the Server → Client Component boundary.
+  - Added `components/privacy-settings-button.tsx` and a new `resetConsent()` method on
+    `AnalyticsProvider` (denies GA consent, revokes Meta, clears the consent
+    localStorage/cookie, sets state back to `unknown` so the banner reopens without a full
+    reload). Wired into `SiteFooter`'s bottom bar as "Privacy settings".
+  - Rewrote the "Cookie & Analytics Policy" section on `/policies`: documents Vercel's
+    always-cookieless aggregated stats, GA's cookieless-before-Accept mode (with the honest
+    disclosure that such requests can technically include IP/user-agent/referrer/device
+    params), Meta Pixel/CAPI only after Accept, Decline keeping Google cookieless and Meta
+    fully blocked, and the footer "Privacy settings" link — without absolute claims like
+    "completely anonymous".
+  - Test coverage: new `lib/analytics/safe-url.test.ts`, `lib/analytics/sensitive-params.test.ts`,
+    `components/consent-banner.test.tsx`, `app/api/analytics/meta/route.test.ts`; extended
+    `components/analytics-provider.test.tsx` (URL sanitization, PII stripping in both
+    granted/cookieless modes, Meta `sourceUrl` sanitization, `send_page_view:false`
+    bootstrap assertion, `resetConsent` behavior) and `components/site-footer.test.tsx`
+    (Privacy settings button). Rewrote `tests/e2e/analytics-consent.spec.ts` with real
+    assertions matching each test's name (cookie presence, script requests, a GA
+    `dataLayer` bootstrap-order check, an Accept/Decline/Privacy-settings flow) instead of
+    the old webdriver-override + localStorage-only checks.
+  - **Verification**: `npm run lint`/`typecheck` clean; Vitest 766 passed / 12 skipped (778
+    total); `npm run build` succeeded; full Playwright suite passed serially (33 passed, 1
+    skipped) — one `reservation.spec.ts` timeout was reproduced only under parallel workers
+    sharing live puppy-status data with `admin.spec.ts` (pre-existing flake pattern already
+    documented below under Jul 10, not caused by this change) and did not reproduce serially
+    or in isolation.
+  - **Known limitation**: Reset/Decline does not force-expire already-set `_ga`/`_fbp`
+    browser cookies (per spec, this is acceptable — the policy copy no longer claims
+    immediate removal). Local dev `/api/analytics/meta` returns 503 because
+    `META_CONVERSION_API_TOKEN`'s pixel-ID pairing (`NEXT_PUBLIC_META_PIXEL_ID`) isn't set
+    in `.env.local` (only the server-only `META_PIXEL_ID` fallback used for the browser
+    Pixel) — pre-existing, unrelated to this change, and no env vars were modified.
+  - Not deployed; no PR opened. Awaiting explicit approval before merge to `main`.
+
 - **Completed (Aug 3, 2026)**: Implemented GA4 Advanced Consent Mode v2.
   - `beforeInteractive` inline script in `app/layout.tsx` initialises `dataLayer`/`gtag` and calls
     `gtag('consent', 'default', ...)` synchronously — reads `localStorage('exoticbulldoglegacy-consent')`

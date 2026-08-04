@@ -3,6 +3,14 @@ import { test, expect } from '@playwright/test';
 const ADMIN_LOGIN = process.env.ADMIN_LOGIN ?? 'owner@example.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'supersecure';
 
+test.beforeEach(async ({ context }) => {
+  // Not exercising consent behavior here — preset it at the context level so the banner
+  // never blocks assertions on either the admin tab or the public tab opened mid-test.
+  await context.addInitScript(() => {
+    window.localStorage.setItem('exoticbulldoglegacy-consent', 'granted');
+  });
+});
+
 function slugify(value: string) {
   return value
     .toLowerCase()

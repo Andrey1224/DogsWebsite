@@ -40,6 +40,27 @@
   Meta Pixel (`NEXT_PUBLIC_META_PIXEL_ID`) script and Meta CAPI (`/api/analytics/meta`) remain
   fully blocked until consent is `granted`. Map shared commerce/lead actions to GA4 recommended
   events and Meta standard events in the central provider.
+  - **Consent is user-driven only**: `components/consent-banner.tsx` must never grant consent
+    automatically for any browser signal (including `navigator.webdriver`) — Playwright tests
+    that don't test consent must preset it via `tests/e2e/helpers/consent.ts#presetConsent()`
+    (or `context.addInitScript`) instead of relying on production auto-accept behavior.
+  - **URL sanitization**: every analytics integration (GA4, Meta, Vercel Analytics) must route
+    URL-shaped values through `lib/analytics/safe-url.ts` (`getSafeUrlParts()` /
+    `sanitizeUrlValue()`) — an allowlist of `utm_*`/`gclid`/`dclid`/`fbclid`/`msclkid` query
+    params; everything else, including anything on `lib/analytics/sensitive-params.ts`'s
+    denylist, is dropped by default. Parse failures fall back to origin+pathname only, never
+    the raw input.
+  - **PII never leaves the browser, even after Accept**: `lib/analytics/sensitive-params.ts`'s
+    `stripSensitiveEventParams()` denylist (email/phone/name/address/message/token/
+    session_id/customer_id/order_id/etc.) is applied to GA4 `trackEvent` params in granted
+    mode and to Meta's `trackCustom` fallback — consent controls _whether_ analytics run, not
+    _what_ gets sent once it does.
+  - **Vercel Analytics `beforeSend`**: must be defined inside a client component
+    (`components/vercel-analytics.tsx`) — a function prop can't cross the Server → Client
+    Component boundary from `app/layout.tsx`.
+  - **Changing consent later**: use `AnalyticsProvider`'s `resetConsent()` (wired to the
+    footer's "Privacy settings" button), not a raw `denyConsent()` — it also revokes Meta and
+    clears the stored consent so the banner reopens.
 - **Paid conversion attribution**: Capture GA4 client/session IDs in the browser when checkout
   begins, validate them before adding them to Stripe metadata, and forward them to GA4 Measurement
   Protocol when the payment webhook emits `deposit_paid`.
