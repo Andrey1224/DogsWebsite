@@ -33,6 +33,9 @@
 - Verified the payment contract against a production-derived local Supabase copy with real
   Postgres concurrency tests and signed Stripe test-mode webhooks, including full refunds and the
   second-payment/no-reservation failure path.
+- Migrated Google Analytics 4 to Advanced Consent Mode v2, enabling cookieless pings prior to
+  consent while maintaining strict blocking of Meta Pixel and Meta Conversions API until explicit
+  Accept.
 
 ## Known Debt
 
