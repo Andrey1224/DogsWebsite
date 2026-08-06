@@ -24,6 +24,38 @@ describe('sendMetaConversionEvent', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('falls back to META_PIXEL_ID when NEXT_PUBLIC_META_PIXEL_ID is unset, matching the browser Pixel fallback', async () => {
+    vi.stubEnv('NEXT_PUBLIC_META_PIXEL_ID', '');
+    vi.stubEnv('META_PIXEL_ID', '654321');
+
+    await expect(
+      sendMetaConversionEvent({ eventName: 'Contact', eventId: 'event-12345678' }),
+    ).resolves.toBe(true);
+
+    const [url] = vi.mocked(fetch).mock.calls[0];
+    expect(String(url)).toContain('/654321/events');
+  });
+
+  it('does not call Meta when neither pixel ID var is set', async () => {
+    vi.stubEnv('NEXT_PUBLIC_META_PIXEL_ID', '');
+    vi.stubEnv('META_PIXEL_ID', '');
+
+    await expect(
+      sendMetaConversionEvent({ eventName: 'Contact', eventId: 'event-12345678' }),
+    ).resolves.toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('accepts a non-standard (custom) event name', async () => {
+    await expect(
+      sendMetaConversionEvent({ eventName: 'reserve_click', eventId: 'reserve-12345678' }),
+    ).resolves.toBe(true);
+
+    const [, request] = vi.mocked(fetch).mock.calls[0];
+    const payload = JSON.parse(String(request?.body));
+    expect(payload.data[0].event_name).toBe('reserve_click');
+  });
+
   it('hashes normalized customer data and sends a deduplication event ID', async () => {
     await expect(
       sendMetaConversionEvent({

@@ -6,7 +6,7 @@ type FbqCommand =
   | ['init', string, Record<string, unknown>?]
   | ['consent', 'grant' | 'revoke']
   | ['track', string, Record<string, unknown>?, { eventID: string }?]
-  | ['trackCustom', string, Record<string, unknown>?];
+  | ['trackCustom', string, Record<string, unknown>?, { eventID: string }?];
 
 type FacebookPixel = ((...args: FbqCommand) => void) & {
   callMethod?: (...args: FbqCommand) => void;

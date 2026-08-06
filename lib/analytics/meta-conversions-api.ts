@@ -21,7 +21,10 @@ type MetaUserData = {
 };
 
 export type MetaConversionEvent = {
-  eventName: MetaStandardEvent;
+  // Meta's Conversions API accepts custom event names too (the standard/custom
+  // split is an Ads Manager reporting concept, not an API restriction), so this
+  // isn't narrowed to MetaStandardEvent.
+  eventName: string;
   eventId: string;
   eventSourceUrl?: string;
   customData?: Record<string, unknown>;
@@ -41,7 +44,9 @@ function normalizePhone(value: string): string {
 }
 
 export async function sendMetaConversionEvent(event: MetaConversionEvent): Promise<boolean> {
-  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  // Mirrors the browser Pixel ID fallback in app/layout.tsx so CAPI resolves the
+  // same Pixel ID the client-side script uses, regardless of which var is set.
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.META_PIXEL_ID;
   const accessToken = process.env.META_CONVERSION_API_TOKEN;
   if (!pixelId || !accessToken) return false;
 

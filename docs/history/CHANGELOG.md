@@ -2,6 +2,20 @@
 
 Unified timeline of features, optimizations, and bugfixes.
 
+## [2026-08-06] Meta Pixel/CAPI event-count mismatch fix
+
+- **Bugfix**: `sendMetaConversionEvent` read the Pixel ID only from `NEXT_PUBLIC_META_PIXEL_ID`,
+  while the browser Pixel also accepted a legacy `META_PIXEL_ID` fallback — when only the legacy
+  var was set, every server CAPI call silently no-opped while the browser Pixel fired normally,
+  causing Meta to report far more Browser events than Server events. CAPI now honors the same
+  fallback as the browser Pixel.
+- **Deduplication**: `reserve_click` previously fired as a browser-only custom Pixel event with no
+  shared `event_id` and no server relay. It now participates in the same Browser+Server dedup
+  pairing as the standard events (`PageView`, `ViewContent`, `Contact`, `Lead`,
+  `InitiateCheckout`).
+- **Note**: `Purchase` remains declared but unimplemented (no client or webhook trigger exists yet)
+  — intentionally deferred to a follow-up task, not part of this fix.
+
 ## [2026-08-03] GA4 Advanced Consent Mode v2
 
 - **Analytics**: Implemented GA4 Advanced Consent Mode v2 to provide cookieless signals before user consent is granted.
