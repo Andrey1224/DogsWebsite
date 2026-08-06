@@ -50,6 +50,13 @@
   endpoint — no production config changes were needed. See `memory-bank/activeContext.md`
   (Aug 4, 2026 entry) for the full writeup, including a race-condition gotcha when testing with
   `stripe listen --live` locally while production is also live.
+- Fixed the Meta Pixel/Conversions API event-count mismatch Meta flagged in its own diagnostics
+  (Aug 6, 2026): `reserve_click` now dedupes with a shared `event_id` between Browser Pixel and
+  Server CAPI (previously browser-only), and server CAPI's Pixel ID resolution falls back to
+  `META_PIXEL_ID` the same way the browser Pixel already did, closing a gap where a missing
+  `NEXT_PUBLIC_META_PIXEL_ID` could silently no-op every CAPI call. Shipped via PR #16, merged to
+  `main` as `e756861`, confirmed `READY` in production. See `memory-bank/activeContext.md`
+  (Aug 6, 2026 entry) for the full root-cause writeup.
 
 ## Known Debt
 
@@ -59,6 +66,10 @@
 - **Analytics follow-ups**: see `docs/planning/ANALYTICS_BACKLOG.md` — re-sanitizing Meta CAPI
   `sourceUrl` server-side with a domain restriction, and strengthening the PII filter to catch
   substring-matched keys and nested objects.
+- **Meta `Purchase` event not implemented**: declared as a supported standard event in
+  `lib/analytics/meta-conversions-api.ts`, but no client or webhook code path fires it yet.
+  Deliberately deferred (Aug 6, 2026) since it would require touching the Stripe/PayPal webhook
+  handlers — see `memory-bank/activeContext.md` (Aug 6, 2026 entry).
 - **CI/CD follow-ups**: see `docs/planning/CICD_BACKLOG.md` — caching Playwright browser binaries
   and parallelizing lint/typecheck/unit-test jobs. (The two highest-value fixes — dropping
   `optimize-images` from CI's build step and deduping push/pull_request runs — already shipped in

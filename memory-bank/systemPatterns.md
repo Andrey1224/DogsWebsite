@@ -78,6 +78,19 @@
   - **Changing consent later**: use `AnalyticsProvider`'s `resetConsent()` (wired to the
     footer's "Privacy settings" button), not a raw `denyConsent()` — it also revokes Meta and
     clears the stored consent so the banner reopens.
+  - **Meta Pixel ID env var fallback must match on both sides**: the browser Pixel
+    (`app/layout.tsx`) and server CAPI (`lib/analytics/meta-conversions-api.ts`) each resolve the
+    Pixel ID independently — `NEXT_PUBLIC_META_PIXEL_ID || META_PIXEL_ID` on both. If a future
+    change adds a new fallback var to one side without the other, CAPI silently returns `false`
+    (no error, no log visible to the browser) while the Pixel keeps firing — exactly the
+    Browser/Server event-count mismatch Meta's diagnostics flagged and that was fixed Aug 6, 2026.
+    Keep both resolutions textually identical.
+  - **Adding a new dedup-eligible custom Meta event**: a `trackCustom` event (one with no
+    standard-event mapping in `lib/analytics/meta-events.ts`) needs three coordinated additions to
+    participate in Pixel/CAPI dedup, not just one: the event name in
+    `ALLOWED_CUSTOM_EVENTS` (`app/api/analytics/meta/route.ts`), in
+    `DEDUPED_CUSTOM_EVENTS` (`components/analytics-provider.tsx`), and nowhere else — leaving any
+    one of the three out means the event fires from only one side (Browser or Server), never both.
 - **Paid conversion attribution**: Capture GA4 client/session IDs in the browser when checkout
   begins, validate them before adding them to Stripe metadata, and forward them to GA4 Measurement
   Protocol when the payment webhook emits `deposit_paid`.
