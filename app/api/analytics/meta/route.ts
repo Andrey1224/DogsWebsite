@@ -3,11 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   META_STANDARD_EVENTS,
   sendMetaConversionEvent,
-  type MetaStandardEvent,
 } from '@/lib/analytics/meta-conversions-api';
 
 const CONSENT_COOKIE = 'exoticbulldoglegacy_consent';
-const allowedEvents = new Set<string>(META_STANDARD_EVENTS);
+
+// Custom (non-standard) Meta events allowed through this endpoint, in addition to
+// META_STANDARD_EVENTS. Kept as an explicit allowlist rather than accepting any
+// client-supplied event name.
+const ALLOWED_CUSTOM_EVENTS = new Set(['reserve_click']);
+const allowedEvents = new Set<string>([...META_STANDARD_EVENTS, ...ALLOWED_CUSTOM_EVENTS]);
 
 const MAX_SOURCE_URL_LENGTH = 512;
 const MAX_STRING_FIELD_LENGTH = 200;
@@ -119,7 +123,7 @@ export async function POST(request: NextRequest) {
 
   const forwarded = request.headers.get('x-forwarded-for');
   const accepted = await sendMetaConversionEvent({
-    eventName: input.eventName as MetaStandardEvent,
+    eventName: input.eventName,
     eventId: input.eventId,
     eventSourceUrl:
       typeof input.sourceUrl === 'string'

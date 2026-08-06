@@ -62,6 +62,13 @@ describe('POST /api/analytics/meta', () => {
     expect(response.status).toBe(400);
   });
 
+  it('accepts the reserve_click custom event', async () => {
+    const response = await POST(
+      createRequest({ eventName: 'reserve_click', eventId: VALID_EVENT_ID }),
+    );
+    expect(response.status).toBe(202);
+  });
+
   it('rejects a malformed eventId', async () => {
     const response = await POST(createRequest({ eventName: 'Contact', eventId: 'short' }));
     expect(response.status).toBe(400);

@@ -17,6 +17,76 @@
 
 ## Current Status
 
+- **Completed (Aug 6, 2026)**: Fixed the Meta Pixel/Conversions API (CAPI) event-count
+  mismatch flagged by Meta's own diagnostics (browser Pixel reporting ~231 more events than
+  the server CAPI in a review window).
+  - **Root cause**: `lib/analytics/meta-conversions-api.ts` read the Pixel ID only from
+    `NEXT_PUBLIC_META_PIXEL_ID`, while the browser Pixel (`app/layout.tsx`) falls back to a
+    second, undocumented `META_PIXEL_ID` var. `.env.local` only defines `META_PIXEL_ID`
+    (confirmed by grep), so `sendMetaConversionEvent()` was silently returning `false` for
+    **every** CAPI call — the browser Pixel fired normally via its fallback while the server
+    side no-opped. This was already flagged as a local "known limitation" below (now removed)
+    but had never been fixed in the shared code path. Fix: `sendMetaConversionEvent` now reads
+    `NEXT_PUBLIC_META_PIXEL_ID || META_PIXEL_ID`, mirroring the browser fallback. Also added
+    `NEXT_PUBLIC_META_PIXEL_ID` to `.env.local` alongside the legacy `META_PIXEL_ID`, since it's
+    the documented/validated var (`lib/env-validation.ts`).
+  - **`reserve_click` had no dedup at all**: it fell through `getMetaTrackingCommand`'s default
+    branch to `fbq('trackCustom', ...)` with no `eventID` and no server relay (the route's
+    allowlist only accepted the six standard event names), so it showed up in Meta as
+    browser-only. Added a small, explicit `ALLOWED_CUSTOM_EVENTS` allowlist (`reserve_click`)
+    in `app/api/analytics/meta/route.ts`, loosened `MetaConversionEvent.eventName` from the
+    standard-event union to `string` in `lib/analytics/meta-conversions-api.ts` (Meta's CAPI
+    accepts custom event names; the standard/custom split is an Ads Manager reporting concept,
+    not an API restriction), and generalized `analytics-provider.tsx`'s dedup dispatch
+    (`dispatchMetaEvent(method, name, params)`) so `reserve_click` now fires
+    `fbq('trackCustom', 'reserve_click', params, { eventID })` and relays the same `eventId` to
+    `/api/analytics/meta`, same as the standard events. Other `trackCustom` events
+    (`chat_open`, `checkout_error`, `about_cta`, etc.) are unchanged — still browser-only, out
+    of scope.
+  - **Deliberately deferred**: `Purchase` is declared in `META_STANDARD_EVENTS` and prior
+    changelog/memory-bank entries claimed it was "added," but no code path anywhere (client or
+    the Stripe/PayPal webhook handlers) actually fires it — that claim was inaccurate. The user
+    chose to defer implementing `Purchase` to a separate follow-up, since it would require
+    touching `lib/stripe/webhook-handler.ts`/`lib/paypal/webhook-handler.ts` (payment-critical
+    code previously earmarked for isolated review — see `PLAN_PAYMENT_RELIABILITY_FIXES.md`
+    history). Not touched in this pass.
+  - Test coverage: extended `lib/analytics/meta-conversions-api.test.ts` (Pixel ID fallback,
+    missing-both-vars case, custom event name acceptance), `app/api/analytics/meta/route.test.ts`
+    (`reserve_click` now accepted), and `components/analytics-provider.test.tsx` (`reserve_click`
+    dedup event_id sharing, and that it's still consent-gated).
+  - **Verification**: `npm run lint`/`typecheck` clean; Vitest 772 passed / 12 skipped (784
+    total).
+  - **User follow-up still needed**: confirm `NEXT_PUBLIC_META_PIXEL_ID` and
+    `META_CONVERSION_API_TOKEN` are set correctly in Vercel Production (the same var-naming
+    mismatch may exist there — user is checking directly); after deploy, verify in Meta Events
+    Manager → Test Events that Browser+Server sources merge per event; Meta's mismatch warning
+    can take 24–72h to clear after the fix ships.
+
+- **Completed (Aug 4, 2026)**: Live $1 Stripe payment QA — verified deposit and pay-in-full
+  checkout end-to-end on the client's real (live) Stripe account.
+  - `.env.local` Stripe keys are now **live** (`sk_live_`/`pk_live_`), not sandbox — restored
+    from the previously-commented values. Sandbox keys are now the commented-out fallback.
+    See memory `stripe-test-keys-active-in-env-local` (needs updating to match).
+  - Key discovery: the deployed production site already has its own **live-mode Stripe webhook
+    endpoint** configured and working independently of local dev — it has its own
+    `STRIPE_WEBHOOK_SECRET` on Vercel (referenced in `.env.local` as the commented "Moms real
+    one" secret) and its own `OWNER_EMAIL` (`mosss73@myyahoo.com`, not the local
+    `nepod77@gmail.com`). Any live Stripe event now gets delivered to both production and any
+    local `stripe listen --live` session running at the same time — production wins the
+    race to create the reservation, and a local listener that loses the race fires a
+    "money taken without reservation" alert email that looks like a bug but isn't (the
+    reservation exists, just created by prod's handler, not the local one). Don't be alarmed
+    by that alert if this is retested locally — verify the DB/Resend dashboard, not just the
+    local terminal log.
+  - Verified via two real $1 charges against test/hidden puppy records (created directly via
+    Supabase MCP `insert`, archived immediately after): deposit flow → reservation `paid`,
+    puppy → `reserved`; full-pay flow → reservation `paid`, puppy → `sold`. Both customer and
+    real-owner (`mosss73@myyahoo.com`) emails confirmed delivered via the Resend dashboard.
+  - `STRIPE_DEPOSIT_AMOUNT_CENTS` and `RESEND_DELIVERY_MODE` were temporarily changed for the
+    test window and have been reverted to their prior values (`unset`/$300 default,
+    `"never"`). Live Stripe keys were intentionally left active per user request — local dev
+    now runs against the real payment account, not sandbox.
+
 - **Completed (Aug 3, 2026)**: Final hardening pass on the Advanced Consent Mode v2 analytics
   stack (no architecture changes — cookieless GA/Meta-after-Accept/Vercel-always design kept).
   - Removed the `navigator.webdriver` auto-Accept branch from `components/consent-banner.tsx`
@@ -82,10 +152,9 @@
     or in isolation.
   - **Known limitation**: Reset/Decline does not force-expire already-set `_ga`/`_fbp`
     browser cookies (per spec, this is acceptable — the policy copy no longer claims
-    immediate removal). Local dev `/api/analytics/meta` returns 503 because
-    `META_CONVERSION_API_TOKEN`'s pixel-ID pairing (`NEXT_PUBLIC_META_PIXEL_ID`) isn't set
-    in `.env.local` (only the server-only `META_PIXEL_ID` fallback used for the browser
-    Pixel) — pre-existing, unrelated to this change, and no env vars were modified.
+    immediate removal). The local dev `/api/analytics/meta` 503 (caused by
+    `NEXT_PUBLIC_META_PIXEL_ID` not being set in `.env.local`, only the `META_PIXEL_ID`
+    fallback) was fixed Aug 6, 2026 — see the entry above.
   - Not deployed; no PR opened. Awaiting explicit approval before merge to `main`.
 
 - **Completed (Aug 3, 2026)**: Implemented GA4 Advanced Consent Mode v2.
@@ -658,8 +727,8 @@
 
 ## Active Workstream
 
-- Meta Conversions API integration added (Aug 3, 2026): consent-gated browser/server events now share `event_id` for deduplication. Standard events include PageView, ViewContent, Contact, Lead, InitiateCheckout, and Purchase. The server token is never exposed to the browser; email/phone support is SHA-256 hashed before transmission.
-- New `/api/analytics/meta` endpoint accepts only allowlisted standard events after the `exoticbulldoglegacy_consent=granted` cookie is present. Browser delivery uses `keepalive` so outbound WhatsApp/contact navigation does not silently drop the server copy.
+- Meta Conversions API integration added (Aug 3, 2026): consent-gated browser/server events now share `event_id` for deduplication. `PageView`, `ViewContent`, `Contact`, `Lead`, `InitiateCheckout`, and `reserve_click` (Aug 6, 2026) are wired up. `Purchase` is declared as a supported standard event but is **not yet fired anywhere** (client or webhook handlers) — deliberately deferred, see Aug 6, 2026 Current Status entry. The server token is never exposed to the browser; email/phone support is SHA-256 hashed before transmission.
+- `/api/analytics/meta` endpoint accepts allowlisted standard events plus a small custom-event allowlist (currently just `reserve_click`) after the `exoticbulldoglegacy_consent=granted` cookie is present. Browser delivery uses `keepalive` so outbound WhatsApp/contact navigation does not silently drop the server copy.
 
 - Debugging `NEXT_PUBLIC_PROMO_DISABLED` not taking effect on production.
 - Pausing reservation UI via `NEXT_PUBLIC_RESERVATIONS_DISABLED` and server payment entrypoints via `RESERVATIONS_DISABLED`.
@@ -676,7 +745,7 @@
 
 ## Next Steps
 
-1. Confirm `NEXT_PUBLIC_META_PIXEL_ID` and `META_CONVERSION_API_TOKEN` are present in the Vercel Production environment, deploy, then verify Browser + Server event sources and deduplication in Meta Events Manager.
+1. Deploy the Aug 6, 2026 Meta CAPI fix (see Current Status), confirm `NEXT_PUBLIC_META_PIXEL_ID` and `META_CONVERSION_API_TOKEN` are present in the Vercel Production environment, then verify Browser + Server event sources merge (not double-count) in Meta Events Manager → Test Events. Implementing a `Purchase` event (client + Stripe/PayPal webhook handlers) was deliberately deferred to a separate task.
 
 1. Check browser console on production to see `[PromoGate]` log output.
 1. Based on result:
@@ -684,7 +753,7 @@
    - If `true` but modal still shows → investigate `PromoModal` component for separate disable logic.
 1. Remove debug `console.log` from `components/home/promo-gate.tsx` once fixed.
 1. Sync `dev` with `main` after fix: `git checkout dev && git merge main && git push`.
-1. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed.
+1. Deploy server-side reservation guard, keep `NEXT_PUBLIC_RESERVATIONS_DISABLED=true` and `RESERVATIONS_DISABLED=true`, then switch both to `false` only when live Stripe webhook verification is confirmed. **Live Stripe webhook verification is now confirmed (Aug 4, 2026, see Current Status)** — flipping the kill switches off is a business decision for the user, not done automatically here.
 1. Turn off intro in `.env.local` when ready to hide the splash screen.
 1. Compare Search Console excluded puppy URLs against current sitemap output to confirm whether missing/retired puppy slugs are generating `noindex` pages.
 1. Inspect live rendered HTML for `/puppies` and several puppy detail URLs to confirm Googlebot can see `<a href=\"/puppies/...\">` links in production source.

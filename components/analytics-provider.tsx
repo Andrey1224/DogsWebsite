@@ -86,10 +86,24 @@ function sendMetaServerEvent(
   });
 }
 
-function trackMetaStandardEvent(eventName: string, params?: Record<string, unknown>) {
+// Dedup-eligible custom (non-standard) Meta events: fired via fbq('trackCustom', ...)
+// but still paired with a server CAPI call sharing the same event_id, unlike other
+// trackCustom events which remain browser-only. Must match the server allowlist in
+// app/api/analytics/meta/route.ts (ALLOWED_CUSTOM_EVENTS).
+const DEDUPED_CUSTOM_EVENTS = new Set(['reserve_click']);
+
+function dispatchMetaEvent(
+  method: 'track' | 'trackCustom',
+  eventName: string,
+  params?: Record<string, unknown>,
+) {
   const eventId = createMetaEventId();
-  window.fbq?.('track', eventName, params, { eventID: eventId });
+  window.fbq?.(method, eventName, params, { eventID: eventId });
   sendMetaServerEvent(eventName, eventId, params);
+}
+
+function trackMetaStandardEvent(eventName: string, params?: Record<string, unknown>) {
+  dispatchMetaEvent('track', eventName, params);
 }
 
 function MetaPageViewTracker({ consent, ready }: MetaPageViewTrackerProps) {
@@ -393,6 +407,8 @@ export function AnalyticsProvider({
       const safeMetaParams = stripSensitiveEventParams(metaCommand.params);
       if (metaCommand.method === 'track') {
         trackMetaStandardEvent(metaCommand.name, safeMetaParams);
+      } else if (DEDUPED_CUSTOM_EVENTS.has(metaCommand.name)) {
+        dispatchMetaEvent('trackCustom', metaCommand.name, safeMetaParams);
       } else {
         window.fbq?.(metaCommand.method, metaCommand.name, safeMetaParams);
       }

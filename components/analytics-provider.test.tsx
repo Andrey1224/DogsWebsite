@@ -78,6 +78,9 @@ const TestComponent = () => {
       <button data-testid="btn-track-checkout" onClick={() => trackEvent('begin_checkout')}>
         Checkout
       </button>
+      <button data-testid="btn-track-reserve" onClick={() => trackEvent('reserve_click')}>
+        Reserve
+      </button>
       <button
         data-testid="btn-track-form"
         onClick={() =>
@@ -585,6 +588,50 @@ describe('AnalyticsProvider', () => {
         expect.any(Object),
         expect.any(Object),
       );
+    });
+
+    it('reserve_click → Meta trackCustom with a shared event_id sent to /api/analytics/meta (granted only)', async () => {
+      const user = userEvent.setup();
+      render(
+        <AnalyticsProvider gaMeasurementId={GA_ID} metaPixelId={META_ID}>
+          <TestComponent />
+        </AnalyticsProvider>,
+      );
+      await user.click(screen.getByTestId('btn-track-reserve'));
+
+      const reserveCall = fbqMock.mock.calls.find(
+        (c) => c[0] === 'trackCustom' && c[1] === 'reserve_click',
+      );
+      expect(reserveCall).toBeDefined();
+      const eventId = (reserveCall?.[3] as { eventID: string } | undefined)?.eventID;
+      expect(eventId).toBeTruthy();
+
+      const reserveBody = fetchMock.mock.calls
+        .map(([, init]) => JSON.parse((init as RequestInit).body as string))
+        .find((body) => body.eventName === 'reserve_click');
+      expect(reserveBody?.eventId).toBe(eventId);
+    });
+
+    it('does not send reserve_click to /api/analytics/meta when consent is denied', async () => {
+      window.localStorage.setItem('exoticbulldoglegacy-consent', 'denied');
+      const user = userEvent.setup();
+      render(
+        <AnalyticsProvider gaMeasurementId={GA_ID} metaPixelId={META_ID}>
+          <TestComponent />
+        </AnalyticsProvider>,
+      );
+      await user.click(screen.getByTestId('btn-track-reserve'));
+
+      expect(fbqMock).not.toHaveBeenCalledWith(
+        'trackCustom',
+        'reserve_click',
+        expect.anything(),
+        expect.anything(),
+      );
+      const reserveBody = fetchMock.mock.calls
+        .map(([, init]) => JSON.parse((init as RequestInit).body as string))
+        .find((body) => body.eventName === 'reserve_click');
+      expect(reserveBody).toBeUndefined();
     });
   });
 

@@ -10,6 +10,10 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    # Skip the pull_request-triggered run for same-repo PRs: the push trigger
+    # above already ran CI for these commits. Fork PRs still get pull_request CI
+    # since they have no push trigger of their own.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     env:
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       # CI uses staging/test Supabase keys. Fall back to prod secrets only if CI-specific ones are missing.
@@ -75,7 +79,9 @@ jobs:
         run: npm run test
 
       - name: Build
-        run: npm run build
+        # Skip optimize-images here: public/ images are already optimized and
+        # committed, and CI's output is discarded when the runner is torn down.
+        run: npx next build
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
