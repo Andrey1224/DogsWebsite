@@ -14,8 +14,70 @@
 - **P9**: Keep sold puppy profiles public and indexable while blocking reservations.
 - **P10**: Disable the unused Crisp live chat without loading its client script.
 - **P11**: Add a "Pay Full" option (Stripe-only) alongside the existing deposit reservation flow.
+- **P12**: Prepare the site for a Meta ads launch targeting Sunny/Dory — accurate legal pages,
+  reservation-process copy, softened marketing/medical claims, restructured CTAs, and a
+  non-opt-in contact form.
 
 ## Current Status
+
+- **Completed (Aug 10, 2026)**: Shipped a full Meta-ads-launch-readiness pass on `dev`, targeting
+  the Sunny/Dory listings and Pixel `1924892261406006` (not merged to `main`, not deployed).
+  - Split `/policies` into real `/privacy` + `/terms` pages (the old URL becomes a short hub, no
+    duplicate content); rewrote the reservation sequence sitewide to match reality — inquiry →
+    contact → video call/visit → kennel confirms → signed contract → **then** $300 deposit →
+    balance per contract — replacing prior copy that implied instant self-serve checkout.
+  - Softened unverified marketing/medical claims sitewide (Award Winning badge, placement-count
+    stats, OFA/DNA/AKC wording, numeric health-guarantee restatements outside `/terms`) to neutral,
+    accurate phrasing across `app/(site)/(chrome)/{about,reviews,page}.tsx`,
+    `components/hero-carousel.tsx`, `components/puppy-detail/health-badge.tsx`, `app/manifest.ts`,
+    `app/opengraph-image.tsx`, `lib/data/locations.ts`, `lib/emails/simple-templates.ts`.
+  - Restructured puppy detail CTAs (`app/(site)/(chrome)/puppies/[slug]/reserve-button.tsx`): the
+    primary CTAs are now "Apply for {name}" / "Schedule a Video Call" (routing to
+    `/contact?puppy=slug`, reusing the existing `context` prop on `ContactForm`); the Stripe
+    deposit button is demoted to a secondary "final step after approval" with the accessible name
+    changed from "Reserve …" to `Pay $X deposit`; the old "Buy Now — pay full" CTA was removed
+    from the UI entirely (backend `paymentType: 'full'` code path and webhook handling stay
+    intact, unreachable from the current UI).
+  - Contact form (`components/contact-form.tsx`): added a Privacy Policy link next to the consent
+    line; then, after user follow-up, fully **removed** the "we may also reach out about future
+    litters — opt out anytime" sentence from both dark/light variants (it still read as a default
+    marketing opt-in even with an opt-out mention). The consent copy now covers only "we'll
+    respond to this inquiry." A marketing-consent checkbox was considered and rejected for this
+    pass — it would need a new Supabase column (blocked by the standing "coordinate schema changes
+    with maintainer" rule) and there is no marketing-email sender in the codebase to wire it to;
+    any future request to add one needs a real schema-change discussion first, not cosmetic-only
+    UI.
+  - **Meta Pixel finding, resolved same day**: local Chrome testing showed the Pixel's own console
+    warning (`traffic permission settings`) on `localhost` — initially flagged as a possible
+    pre-ad-spend blocker. The user confirmed this is expected: the Pixel is domain-restricted to
+    `exoticbulldoglegacy.com`, so localhost is _supposed_ to be rejected, and production was
+    independently verified via Meta Test Events (PageView/ViewContent/Lead all arrive correctly
+    from the live domain). **Do not re-raise the localhost warning as a blocker and do not touch
+    Meta Traffic Permissions settings** — both are explicit standing instructions now.
+  - Committed as `4db7b23` (47 files) + `d6fdbe0` (contact-form consent fix), pushed to `dev`.
+  - **CI fix**: the push triggered a real CI failure — `tests/e2e/reservation.spec.ts` still
+    looked for a button named `/^reserve\s+/i`, which no longer exists after the CTA text change
+    above. Fixed the locator to match the new `Pay $X deposit` name (commit `d6fdbe0`). Verified
+    against a local production build (`npm run build && next start`, matching CI's `next start`
+    rather than `next dev`) with `CI=true HCAPTCHA_ALLOW_BYPASS_IN_PROD=true` — the full suite
+    passes (32 passed, 1 skipped). CI run `31439224028` confirmed green after the push.
+    **Gotcha for next time**: running e2e locally against a production build needs
+    `HCAPTCHA_ALLOW_BYPASS_IN_PROD=true` in addition to the usual bypass token env vars, or the
+    hCaptcha bypass silently no-ops in prod mode even though it works fine under `next dev`.
+  - **Facts still needing the owner's confirmation** (never published as on-site placeholders):
+    real Telegram handle (link stays hidden until confirmed); whether the existing 12-month health
+    guarantee clause/scope in `/terms` is still accurate (left verbatim); exact balance-payment
+    timing/method (not defined anywhere in the repo, `/terms` uses neutral "per your signed
+    contract" wording); Dory's DB `birth_date` (`2026-05-10`, live but never explicitly restated
+    by the owner) and her missing `sire_name`/`dam_name` in Supabase (Sunny has both, Dory has
+    neither — confirmed via live read, not a regression from this session); and
+    `sire_health_notes`/`dam_health_notes = "Health tested"` on both Sunny and Dory, a bare
+    unverifiable claim that needs exact replacement wording from the owner **and** separate
+    explicit permission before any production DB write.
+  - **Verification**: `npm run verify` (check:links, lint, typecheck, 801 unit/a11y tests, 30 e2e,
+    3 pre-existing skips) and `npm run build` clean before the first push; full e2e re-verified
+    against a production build after the locator fix. Browser QA (desktop + mobile) covered `/`,
+    `/puppies`, `/puppies/sunny`, `/puppies/dory`, `/contact`, `/privacy`, `/terms`, `/policies`.
 
 - **Completed (Aug 6, 2026)**: Fixed the Meta Pixel/Conversions API (CAPI) event-count
   mismatch flagged by Meta's own diagnostics (browser Pixel reporting ~231 more events than

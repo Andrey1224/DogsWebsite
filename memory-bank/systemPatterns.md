@@ -95,6 +95,24 @@
   begins, validate them before adding them to Stripe metadata, and forward them to GA4 Measurement
   Protocol when the payment webhook emits `deposit_paid`.
 - **React Forms**: When using `defaultValue` with dynamic data, add `key` prop that includes the data to force re-mount on updates (e.g., `key={`${id}-${value}`}`).
+- **Puppy detail CTA hierarchy**: The primary CTAs are "Apply for {name}" / "Schedule a Video
+  Call" (`app/(site)/(chrome)/puppies/[slug]/reserve-button.tsx` → `/contact?puppy=slug`, via the
+  existing `context` prop on `ContactForm`). The Stripe deposit button is a secondary, clearly
+  labeled step ("final step after approval") with the accessible name `Pay $X deposit` — do not
+  restore "Reserve …"-style wording or promote it back above the Apply/Schedule CTAs without a
+  product decision, since the reservation flow (site copy in `/terms` and the homepage FAQ)
+  describes deposit as something that happens only after a human-approved application.
+- **E2E locators tied to button/link text**: `tests/e2e/*.spec.ts` frequently locate controls by
+  accessible name (`getByRole('button', { name: /regex/i })`). Any copy change to a CTA's visible
+  text must be grepped against `tests/e2e/` before merging — CI will time out (not fail fast) if a
+  locator's regex no longer matches, since Playwright waits the full timeout before erroring. This
+  bit the Aug 10, 2026 CTA restructuring (`tests/e2e/reservation.spec.ts` still matched the old
+  "Reserve …" name).
+- **Testing an e2e fix locally against a production build**: `next start` (not `next dev`) needs
+  `HCAPTCHA_ALLOW_BYPASS_IN_PROD=true` in addition to `NEXT_PUBLIC_HCAPTCHA_BYPASS_TOKEN`/
+  `HCAPTCHA_BYPASS_TOKEN`, or the hCaptcha bypass silently no-ops even though it works under
+  `next dev`. CI sets this automatically; reproduce it locally with
+  `CI=true HCAPTCHA_ALLOW_BYPASS_IN_PROD=true npx playwright test` after `npm run build`.
 
 ## SEO Conventions
 
