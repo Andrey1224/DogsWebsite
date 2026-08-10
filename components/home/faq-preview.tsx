@@ -4,12 +4,12 @@ const topFaqs = [
   {
     question: 'How do I place a deposit?',
     answer:
-      "Open the puppy's detail page and tap Reserve with Stripe or PayPal. The $300 deposit immediately marks the puppy as reserved while we finalize your contract and pickup timeline.",
+      "Send us an inquiry, and once we've scheduled a video call or visit, confirmed you as the buyer, and you've signed our contract, a $300 deposit secures your reservation.",
   },
   {
     question: 'Is the deposit refundable?',
     answer:
-      'Deposits are non-refundable because we pause all other inquiries for that puppy. If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
+      'Deposits are non-refundable once paid, because we pause all other inquiries for that puppy. If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
   },
   {
     question: 'What are the pickup and delivery options?',

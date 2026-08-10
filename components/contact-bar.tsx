@@ -1,4 +1,4 @@
-// New Sticky Action Bar with 5 contact channels and CTA button
+// Sticky Action Bar with contact channels (count varies — see CONTACT_CHANNELS) and CTA button
 'use client';
 
 import Link from 'next/link';

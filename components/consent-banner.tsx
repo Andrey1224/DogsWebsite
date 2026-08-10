@@ -49,7 +49,7 @@ export function ConsentBanner() {
                   enabled to help us measure site and ad performance.
                 </p>
                 <Link
-                  href="/policies"
+                  href="/privacy"
                   className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-400 underline underline-offset-4 transition hover:text-orange-300"
                 >
                   Read our privacy policy

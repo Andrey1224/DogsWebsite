@@ -98,10 +98,15 @@ const DEFAULTS = {
     link: 'https://t.me/exoticbulldoglevel',
   },
   instagram: {
-    handle: 'exoticbuldoglevel',
-    link: 'https://instagram.com/exoticbuldoglevel',
+    handle: 'exoticbulldoglegacy',
+    link: 'https://www.instagram.com/exoticbulldoglegacy/',
   },
 } as const;
+
+// Telegram's public handle has not been confirmed as correct (the previous value looked like the
+// same typo pattern the Instagram handle had). Rather than publish a possibly-wrong link, Telegram
+// is omitted from CONTACT_CHANNELS/social surfaces until a real @handle is confirmed.
+export const TELEGRAM_CONFIRMED = false;
 
 const envPhoneRaw = readEnv('NEXT_PUBLIC_CONTACT_PHONE');
 const envPhoneE164 = normalizeE164(envPhoneRaw);
@@ -154,7 +159,9 @@ export const CONTACT_CHANNELS: ContactChannel[] = [
   { id: 'call', label: 'Call', href: `tel:${CONTACT_DETAILS.phone.e164}` },
   { id: 'sms', label: 'Text', href: `sms:${CONTACT_DETAILS.phone.e164}` },
   { id: 'whatsapp', label: 'WhatsApp', href: CONTACT_DETAILS.whatsapp.link },
-  { id: 'telegram', label: 'Telegram', href: CONTACT_DETAILS.telegram.link },
+  ...(TELEGRAM_CONFIRMED
+    ? [{ id: 'telegram' as const, label: 'Telegram', href: CONTACT_DETAILS.telegram.link }]
+    : []),
   { id: 'email', label: 'Email', href: `mailto:${CONTACT_DETAILS.email.address}` },
 ];
 
@@ -175,13 +182,17 @@ export const CONTACT_CARDS: ContactCard[] = [
     description:
       'Personal line for fast WhatsApp replies, puppy photos, videos, and quick updates.',
   },
-  {
-    id: 'telegram',
-    label: 'Telegram (personal)',
-    value: CONTACT_DETAILS.personalPhone.display,
-    href: CONTACT_DETAILS.telegram.link,
-    description: 'Personal Telegram contact for quick questions and direct messaging.',
-  },
+  ...(TELEGRAM_CONFIRMED
+    ? [
+        {
+          id: 'telegram' as const,
+          label: 'Telegram (personal)',
+          value: CONTACT_DETAILS.personalPhone.display,
+          href: CONTACT_DETAILS.telegram.link,
+          description: 'Personal Telegram contact for quick questions and direct messaging.',
+        },
+      ]
+    : []),
   {
     id: 'email',
     label: 'Email',

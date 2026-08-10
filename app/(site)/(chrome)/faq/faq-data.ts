@@ -18,12 +18,12 @@ export const faqData: FaqCategory[] = [
       {
         question: 'How do I place a deposit?',
         answer:
-          "It's simple and secure. Open the puppy's detail page and tap 'Reserve' to pay via Stripe or PayPal. The $300 deposit immediately marks the puppy as reserved while we finalize your contract and pickup timeline.",
+          "Start by sending us an inquiry through a puppy's detail page or our contact page. We'll schedule a video call or visit, confirm you as the buyer and confirm the puppy is still available, and send you a contract to sign. Only after your contract is signed do you place a $300 deposit (via Stripe or PayPal, or in person) to reserve the puppy.",
       },
       {
         question: 'Is the deposit refundable?',
         answer:
-          'Deposits are non-refundable because we pause all other inquiries for that puppy, turning away other potential families. However, life happens! If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
+          'Deposits are non-refundable once paid, because we pause all other inquiries for that puppy, turning away other potential families. However, life happens! If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
       },
       {
         question: 'How do I know the site is legitimate?',
@@ -87,7 +87,7 @@ export const faqData: FaqCategory[] = [
       {
         question: 'What documents come with the puppy?',
         answer:
-          'Every puppy goes home with a licensed veterinary health certificate, a detailed vaccination and deworming record, microchip registration details, and our custom starter guide for nutrition and training.',
+          'Every puppy goes home with vet health and vaccination records, a deworming record, microchip registration details, and our custom starter guide for nutrition and training.',
       },
       {
         question: 'What vaccinations does the puppy receive before going home?',

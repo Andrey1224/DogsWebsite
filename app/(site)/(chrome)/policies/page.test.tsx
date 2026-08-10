@@ -1,13 +1,13 @@
 /**
- * Policies Page Tests
+ * Policies Hub Page Tests
  *
- * Tests the Policies page rendering, accessibility, and structured data.
- * Ensures all policy sections are displayed correctly with the new UI.
+ * Tests the Policies hub page, which links out to /privacy and /terms
+ * rather than duplicating legal text.
  */
 
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import type { AnchorHTMLAttributes, ReactNode } from 'react';
+import type { AnchorHTMLAttributes } from 'react';
 
 import PoliciesPage from './page';
 import { expectNoA11yViolations } from '@/tests/helpers/axe';
@@ -24,23 +24,11 @@ vi.mock('next/link', () => ({
   },
 }));
 
-vi.mock('@/components/analytics-provider', () => {
-  const mockTrack = vi.fn();
-  const Provider = ({ children }: { children: ReactNode }) => <>{children}</>;
-  const useAnalytics = () => ({
-    consent: 'granted' as const,
-    grantConsent: vi.fn(),
-    denyConsent: vi.fn(),
-    trackEvent: mockTrack,
-  });
-  return { AnalyticsProvider: Provider, useAnalytics };
-});
-
 function renderPoliciesPage() {
   return render(<PoliciesPage />);
 }
 
-describe('Policies Page', () => {
+describe('Policies Hub Page', () => {
   it('renders page heading and description', () => {
     renderPoliciesPage();
 
@@ -62,91 +50,35 @@ describe('Policies Page', () => {
     renderPoliciesPage();
 
     expect(screen.getByText(/Transparency First/i)).toBeInTheDocument();
-    expect(screen.getByText(/No hidden clauses, just honest commitments/i)).toBeInTheDocument();
   });
 
-  it('renders trust signals bar', () => {
+  it('links to the Privacy Policy page', () => {
     renderPoliciesPage();
 
-    expect(screen.getByText(/AKC Registered/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vet Certified/i)).toBeInTheDocument();
-    expect(screen.getByText(/Secure Payments/i)).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /Read Privacy Policy/i });
+    expect(link).toHaveAttribute('href', '/privacy');
   });
 
-  it('renders all 6 policy sections', () => {
+  it('links to the Terms of Service page', () => {
     renderPoliciesPage();
 
-    expect(screen.getByRole('heading', { level: 2, name: /Deposit Policy/i })).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Health Guarantee/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Delivery & Pickup/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Refunds & Exchanges/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Privacy & Payments/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Documents & Contracts/i }),
-    ).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /Read Terms of Service/i });
+    expect(link).toHaveAttribute('href', '/terms');
   });
 
-  it('renders deposit policy content correctly', () => {
+  it('does not duplicate legal text on this page', () => {
     renderPoliciesPage();
 
-    expect(screen.getByText(/\$300 deposit/i)).toBeInTheDocument();
-    expect(screen.getByText(/reserves your selected puppy/i)).toBeInTheDocument();
-    expect(screen.getByText(/deposits are non-refundable/i)).toBeInTheDocument();
+    expect(screen.queryByText(/12 months/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/non-refundable/i)).not.toBeInTheDocument();
   });
 
-  it('renders health guarantee content correctly', () => {
-    renderPoliciesPage();
-
-    expect(screen.getByText(/Every puppy receives a comprehensive vet exam/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/We guarantee against life-threatening congenital conditions for/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/12 months/i)).toBeInTheDocument();
-  });
-
-  it('renders delivery and pickup content correctly', () => {
+  it('mentions secure payments via Stripe and PayPal', () => {
     renderPoliciesPage();
 
     expect(
-      screen.getByText(/Pickup takes place in Falkville, AL by appointment/i),
+      screen.getByText(/Payments are processed securely through Stripe and PayPal/i),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Flight nanny transport/i)).toBeInTheDocument();
-  });
-
-  it('renders refunds and exchanges content correctly', () => {
-    renderPoliciesPage();
-
-    expect(
-      screen.getByText(
-        /Once reserved, refunds are not provided unless a licensed veterinarian documents a health concern/i,
-      ),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/replacement puppy/i)).toBeInTheDocument();
-  });
-
-  it('renders privacy and payments content correctly', () => {
-    renderPoliciesPage();
-
-    expect(screen.getByText(/We process payments exclusively through/i)).toBeInTheDocument();
-    expect(screen.getByText(/Stripe and PayPal/i)).toBeInTheDocument();
-    expect(screen.getByText(/no wire transfers/i)).toBeInTheDocument();
-  });
-
-  it('renders documents and contracts content correctly', () => {
-    renderPoliciesPage();
-
-    expect(
-      screen.getByText(/Adoption contracts, medical records, and AKC paperwork are compiled in a/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/secure client portal/i)).toBeInTheDocument();
   });
 
   it('renders breadcrumbs with correct links', () => {
@@ -155,87 +87,20 @@ describe('Policies Page', () => {
     const homeLink = screen.getByRole('link', { name: /Home/i });
     expect(homeLink).toHaveAttribute('href', '/');
 
-    // Policies breadcrumb should be in navigation (current page)
     const nav = screen.getByRole('navigation');
     expect(nav).toHaveTextContent('Policies');
   });
 
-  it('renders contact link in footer note', () => {
+  it('renders contact link', () => {
     renderPoliciesPage();
-
-    expect(
-      screen.getByText(/These policies are part of our legal contract provided upon reservation/i),
-    ).toBeInTheDocument();
 
     const contactLink = screen.getByRole('link', { name: /Contact us/i });
     expect(contactLink).toHaveAttribute('href', '/contact');
-  });
-
-  it('renders JSON-LD structured data script', () => {
-    const { container } = renderPoliciesPage();
-
-    const jsonLdScripts = container.querySelectorAll('script[type="application/ld+json"]');
-    expect(jsonLdScripts.length).toBeGreaterThan(0);
-
-    // Find the MerchantReturnPolicy schema (may have multiple schemas including BreadcrumbList)
-    const schemas = Array.from(jsonLdScripts).map((script) =>
-      JSON.parse(script.textContent || '{}'),
-    );
-    const returnPolicySchema = schemas.find((schema) => schema['@type'] === 'MerchantReturnPolicy');
-
-    expect(returnPolicySchema).toBeTruthy();
-    expect(returnPolicySchema?.returnPolicyCategory).toBeTruthy();
-    expect(returnPolicySchema?.merchantReturnDays).toBeDefined();
   });
 
   it('passes accessibility checks', async () => {
     const { container } = renderPoliciesPage();
     await expectNoA11yViolations(container);
     expect(container).toBeTruthy();
-  });
-
-  it('renders all policy sections with proper article structure', () => {
-    const { container } = renderPoliciesPage();
-
-    // 7 policy sections as articles
-    const articles = container.querySelectorAll('article');
-    expect(articles.length).toBe(7);
-  });
-
-  it('has proper styling classes for policy cards', () => {
-    const { container } = renderPoliciesPage();
-
-    const articles = container.querySelectorAll('article');
-    articles.forEach((article) => {
-      expect(article.className).toContain('rounded-[2rem]');
-      expect(article.className).toContain('border');
-      expect(article.className).toContain('bg-[#151e32]');
-    });
-  });
-
-  it('renders section headings as h2 elements', () => {
-    renderPoliciesPage();
-
-    const h2Elements = screen.getAllByRole('heading', { level: 2 });
-    expect(h2Elements.length).toBe(7);
-  });
-
-  it('renders icons for each policy section', () => {
-    const { container } = renderPoliciesPage();
-
-    // Each article should have an icon container
-    const iconContainers = container.querySelectorAll('article svg');
-    expect(iconContainers.length).toBe(7);
-  });
-
-  it('applies hover effects to policy cards', () => {
-    const { container } = renderPoliciesPage();
-
-    const articles = container.querySelectorAll('article');
-    articles.forEach((article) => {
-      expect(article.className).toContain('hover:border-slate-600');
-      expect(article.className).toContain('hover:bg-[#1a253a]');
-      expect(article.className).toContain('group');
-    });
   });
 });

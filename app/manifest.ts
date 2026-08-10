@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Exotic Bulldog Legacy - Premium French & English Bulldog Breeder',
     short_name: 'Exotic Bulldog Legacy',
     description:
-      'Premium French and English Bulldog breeder in Falkville, AL. Family-raised puppies with health guarantees and lifetime support.',
+      'French and English Bulldog breeder in Falkville, AL. Family-raised, vet-checked puppies with ongoing breeder support.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F9FAFB',

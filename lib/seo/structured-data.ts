@@ -1,5 +1,5 @@
 import { BUSINESS_PROFILE } from '@/lib/config/business';
-import { CONTACT_DETAILS } from '@/lib/config/contact';
+import { CONTACT_DETAILS, TELEGRAM_CONFIRMED } from '@/lib/config/contact';
 import { getSiteUrl } from '@/lib/utils/env';
 import type { PuppyWithRelations } from '@/lib/supabase/types';
 import { resolveLocalImage } from '@/lib/utils/images';
@@ -62,7 +62,7 @@ export function getOrganizationSchema() {
     ],
     sameAs: [
       CONTACT_DETAILS.whatsapp.link,
-      CONTACT_DETAILS.telegram.link,
+      ...(TELEGRAM_CONFIRMED ? [CONTACT_DETAILS.telegram.link] : []),
       CONTACT_DETAILS.instagram.link,
       siteUrl,
     ].filter(Boolean),
@@ -106,7 +106,7 @@ export function getLocalBusinessSchema() {
     openingHoursSpecification: hours,
     sameAs: [
       CONTACT_DETAILS.whatsapp.link,
-      CONTACT_DETAILS.telegram.link,
+      ...(TELEGRAM_CONFIRMED ? [CONTACT_DETAILS.telegram.link] : []),
       CONTACT_DETAILS.instagram.link,
     ].filter(Boolean),
   };

@@ -156,7 +156,7 @@ export default async function LocationPage({ params }: { params: Params }) {
             </span>
           </Link>
           <Link
-            href="/policies"
+            href="/terms"
             className="rounded-2xl border border-slate-800 bg-[#151e32] p-6 transition-colors hover:border-orange-500/50"
           >
             <h3 className="text-lg font-bold text-white">Health &amp; Deposit Policies</h3>
@@ -187,7 +187,7 @@ export default async function LocationPage({ params }: { params: Params }) {
               <Link href="/puppies" className="text-orange-400 hover:text-orange-300">
                 Check current puppies →
               </Link>
-              <Link href="/policies" className="text-orange-400 hover:text-orange-300">
+              <Link href="/terms" className="text-orange-400 hover:text-orange-300">
                 Review health &amp; deposit policies →
               </Link>
               <Link href="/contact" className="text-orange-400 hover:text-orange-300">

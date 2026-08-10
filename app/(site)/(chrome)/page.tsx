@@ -61,7 +61,7 @@ const features: FeatureItem[] = [
   {
     title: 'Health-first standards',
     description:
-      'AKC pedigrees, OFA screenings, and transparent vet documentation for every sire and dam.',
+      "Ask us for available parent health-testing and AKC documentation for your puppy's litter.",
     icon: Heart,
   },
   {
@@ -102,12 +102,12 @@ const faqs = [
   {
     question: 'How do I place a deposit?',
     answer:
-      "First, contact us to schedule a visit or video call to meet your future puppy. Once you've chosen your match, you can place a $300 deposit online (via Stripe or PayPal) or in person. The deposit immediately marks the puppy as reserved while we finalize your contract and pickup timeline.",
+      "Start by sending us an inquiry about a specific puppy. We'll schedule a video call or visit, confirm you as the buyer and confirm the puppy is still available, and send you a contract to sign. Only after your contract is signed do you place a $300 deposit (via Stripe or PayPal, or in person) to reserve the puppy.",
   },
   {
     question: 'Is the deposit refundable?',
     answer:
-      'Deposits are non-refundable because we pause all other inquiries for that puppy. If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
+      'Deposits are non-refundable once paid, because we pause all other inquiries for that puppy. If your timing changes, we can transfer the deposit to another available or upcoming puppy by agreement.',
   },
   {
     question: 'What are the pickup options?',
@@ -185,9 +185,9 @@ function HeroSection() {
             </span>
           </h1>
           <p className="max-w-lg text-lg leading-relaxed text-slate-400 md:text-xl">
-            Contact us to meet your future puppy, then secure your reservation with a $300 deposit.
-            Choose appointment pickup in Falkville or vetted courier delivery. Health-first
-            pedigrees and transparent updates at every step.
+            Contact us to meet your future puppy. Once we&apos;ve confirmed your match and
+            you&apos;ve signed our contract, a $300 deposit secures your reservation. Choose
+            appointment pickup in Falkville or vetted courier delivery.
           </p>
           <div className="flex flex-wrap gap-4">
             <ActionLink href="/puppies" variant="primary">
@@ -266,11 +266,11 @@ function LogisticsSection() {
             How our puppy deposit and pickup options work
           </h2>
           <p className="text-lg leading-relaxed text-slate-400">
-            We encourage you to contact us first to discuss your needs, schedule a kennel visit, or
-            arrange a video call to meet your future puppy. Once you&apos;ve found your perfect
-            match, you can secure your puppy with a $300 deposit (online or in person). We&apos;ll
-            then confirm your reservation, lock availability, and coordinate pickup in Falkville (by
-            appointment) or arrange trusted delivery to your door.
+            Contact us first to discuss your needs and schedule a video call or kennel visit to meet
+            your future puppy. Once we&apos;ve confirmed you as the buyer and confirmed the
+            puppy&apos;s availability, you&apos;ll receive a contract to sign — then a $300 deposit
+            secures your reservation. From there we coordinate pickup in Falkville (by appointment)
+            or arrange trusted delivery to your door.
           </p>
           <div className="space-y-4 rounded-3xl border border-slate-800 bg-[#0f1629] p-6">
             <div className="flex gap-4">
@@ -280,8 +280,8 @@ function LogisticsSection() {
               <div>
                 <h3 className="text-lg font-semibold text-white">Secure deposit</h3>
                 <p className="text-sm text-slate-400">
-                  Stripe or PayPal checkout marks your bulldog puppy as reserved immediately and we
-                  send the contract next.
+                  Once we&apos;ve confirmed your application and you&apos;ve signed the contract, a
+                  $300 deposit via Stripe or PayPal secures your reservation.
                 </p>
               </div>
             </div>
@@ -329,7 +329,8 @@ function LogisticsSection() {
               <li className="flex gap-3">
                 <span className="mt-0.5 text-xs font-bold text-orange-400">2</span>
                 <span>
-                  Select <strong>Reserve with Stripe or PayPal</strong> to place your $300 deposit.
+                  Once we confirm your match and you sign our contract, place your{' '}
+                  <strong>$300 deposit</strong> via Stripe or PayPal.
                 </span>
               </li>
               <li className="flex gap-3">
@@ -341,7 +342,7 @@ function LogisticsSection() {
           <div className="flex flex-col gap-3 rounded-2xl border border-orange-500/20 bg-orange-500/5 p-6 text-sm text-slate-200">
             <div className="flex items-center gap-2 text-orange-300">
               <ShieldCheck size={18} />
-              <span>Health guarantee + lifetime support on every placement.</span>
+              <span>Vet-checked puppies with ongoing support after you bring them home.</span>
             </div>
             <div className="flex flex-wrap gap-3">
               <ActionLink href="/puppies" variant="primary">

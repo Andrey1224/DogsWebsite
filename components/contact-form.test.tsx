@@ -294,7 +294,14 @@ describe('ContactForm', () => {
       render(<ContactForm />);
 
       expect(screen.getByText(/we respond within one business day/i)).toBeInTheDocument();
-      expect(screen.getByText(/by submitting, you consent to be contacted/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/by submitting, you agree to be contacted about this inquiry/i),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/future litters/i)).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /privacy policy/i })).toHaveAttribute(
+        'href',
+        '/privacy',
+      );
     });
   });
 
@@ -351,7 +358,9 @@ describe('ContactForm', () => {
       render(<ContactForm />);
 
       expect(screen.getByText(/we respond within one business day/i)).toBeInTheDocument();
-      expect(screen.getByText(/by submitting, you consent to be contacted/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/by submitting, you agree to be contacted about this inquiry/i),
+      ).toBeInTheDocument();
     });
   });
 

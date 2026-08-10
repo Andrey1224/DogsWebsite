@@ -115,7 +115,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
               href={`/puppies/${puppy.slug}`}
               className="flex-1 rounded-xl bg-orange-500 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600"
             >
-              Reserve Now
+              Apply
             </Link>
           ) : isAvailable ? (
             <button

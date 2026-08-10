@@ -19,7 +19,9 @@ describe('Home', () => {
       }),
     ).toBeInTheDocument();
 
-    expect(screen.getByText(/akC pedigrees, OFA screenings/i)).toBeVisible();
+    expect(
+      screen.getByText(/Ask us for available parent health-testing and AKC documentation/i),
+    ).toBeVisible();
     const primaryCtas = screen.getAllByRole('link', { name: /view available puppies/i });
     expect(primaryCtas).toHaveLength(3);
     primaryCtas.forEach((cta) => expect(cta).toBeVisible());

@@ -8,16 +8,19 @@ test.describe('Contact Links', () => {
     await acceptConsent(page);
   });
 
-  test('displays all 5 contact channels in ContactBar', async ({ page }) => {
+  test('displays all 4 contact channels in ContactBar', async ({ page }) => {
     // Find the ContactBar (sticky aside at bottom)
     const contactBar = page.locator('aside').filter({ hasText: 'Call' });
 
     // Verify all contact channels are rendered within ContactBar
+    // Telegram is intentionally omitted until a confirmed @handle is available (see
+    // lib/config/contact.ts TELEGRAM_CONFIRMED) — publishing an unconfirmed handle risks a dead
+    // or wrong link.
     await expect(contactBar.getByRole('link', { name: 'Call', exact: true })).toBeVisible();
     await expect(contactBar.getByRole('link', { name: 'Text', exact: true })).toBeVisible();
     await expect(contactBar.getByRole('link', { name: 'WhatsApp', exact: true })).toBeVisible();
-    await expect(contactBar.getByRole('link', { name: 'Telegram', exact: true })).toBeVisible();
     await expect(contactBar.getByRole('link', { name: 'Email', exact: true })).toBeVisible();
+    await expect(contactBar.getByRole('link', { name: 'Telegram' })).toHaveCount(0);
   });
 
   test('Call link uses tel: URI scheme', async ({ page }) => {
@@ -45,14 +48,6 @@ test.describe('Contact Links', () => {
 
     expect(href).toMatch(/^https:\/\/wa\.me\/\d{10,15}$/);
     expect(href).toBe('https://wa.me/17727779442');
-  });
-
-  test('Telegram link uses t.me domain', async ({ page }) => {
-    const contactBar = page.locator('aside').filter({ hasText: 'Call' });
-    const telegramLink = contactBar.getByRole('link', { name: 'Telegram', exact: true });
-    const href = await telegramLink.getAttribute('href');
-
-    expect(href).toMatch(/^https:\/\/t\.me\/[a-zA-Z0-9_]{5,32}$/);
   });
 
   test('Email link uses mailto: URI scheme', async ({ page }) => {
@@ -133,7 +128,6 @@ test.describe('Contact Links', () => {
       { name: 'Call', expectedAttr: 'tel:' },
       { name: 'Text', expectedAttr: 'sms:' },
       { name: 'WhatsApp', expectedAttr: 'https://wa.me/' },
-      { name: 'Telegram', expectedAttr: 'https://t.me/' },
       { name: 'Email', expectedAttr: 'mailto:' },
     ];
 

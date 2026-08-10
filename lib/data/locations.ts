@@ -32,7 +32,7 @@ export const locations: Location[] = [
     state: 'AL',
     metaTitle: 'French & English Bulldog Puppies Near Birmingham, AL',
     metaDescription:
-      'Looking for a French or English bulldog puppy near Birmingham, AL? Exotic Bulldog Legacy is about an hour away with health-guaranteed pups, transparent pedigrees, and flexible delivery options.',
+      'Looking for a French or English bulldog puppy near Birmingham, AL? Exotic Bulldog Legacy is about an hour away with vet-checked pups, transparent records, and flexible delivery options.',
     heroTitle: 'Bulldog Puppies for Birmingham Families',
     heroText:
       'Metro Birmingham families have been trusting Exotic Bulldog Legacy for health-tested, lovingly raised French and English bulldogs. Whether you live in Hoover, Vestavia Hills, Mountain Brook, or downtown Birmingham, we make the pickup process straightforward — and we ship nationwide for families who prefer a flight nanny.',
@@ -71,9 +71,9 @@ export const locations: Location[] = [
           'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price.',
       },
       {
-        question: 'Are your puppies health-guaranteed for Birmingham buyers?',
+        question: 'What health documentation comes with a Birmingham puppy?',
         answer:
-          'Absolutely. All puppies come with a 1-year genetic health guarantee, up-to-date vaccinations, a health certificate from our licensed vet, and microchipping. The guarantee is the same regardless of how you receive your puppy.',
+          'Every puppy goes home vet-checked with up-to-date, age-appropriate vaccinations and microchipping. Ask us for available health-testing documentation — the same standard applies regardless of how you receive your puppy. Guarantee terms are outlined in the signed contract.',
       },
     ],
     familyNote: {
@@ -137,7 +137,7 @@ export const locations: Location[] = [
       {
         question: 'What health testing do your bulldogs receive?',
         answer:
-          'All breeding adults are OFA-evaluated and tested for breed-specific genetic conditions. Puppies receive age-appropriate vaccinations, deworming, a full veterinary exam, and a health certificate before going home. A 1-year genetic health guarantee is included.',
+          'Ask us for available parent health-testing documentation. Puppies receive age-appropriate vaccinations, deworming, a full veterinary exam, and a health certificate before going home. Guarantee terms are outlined in the signed contract.',
       },
     ],
     localContext: [
@@ -152,7 +152,7 @@ export const locations: Location[] = [
     state: 'AL',
     metaTitle: 'Bulldog Puppies Near Cullman, Alabama',
     metaDescription:
-      'Browse French and English Bulldog puppies near Cullman, Alabama. Exotic Bulldog Legacy is based near Falkville with pickup by appointment, health records, and a 1-year genetic health guarantee.',
+      'Browse French and English Bulldog puppies near Cullman, Alabama. Exotic Bulldog Legacy is based near Falkville with pickup by appointment, health records, and vet-checked puppies.',
     heroTitle: 'French & English Bulldog Puppies Near Cullman, Alabama',
     heroText:
       'Exotic Bulldog Legacy is based near Falkville, roughly 20 minutes north of Cullman. Local families can browse current puppy profiles online, review health and deposit policies, and arrange pickup by appointment after choosing the right French or English Bulldog for their home.',
@@ -188,7 +188,7 @@ export const locations: Location[] = [
       {
         question: 'What comes with a puppy picked up near Cullman?',
         answer:
-          'Each puppy goes home with age-appropriate vaccination and deworming records, a veterinary health certificate, microchipping, and a 1-year genetic health guarantee. The puppy profile and policies explain the available records in more detail.',
+          'Each puppy goes home with age-appropriate vaccination and deworming records, a veterinary health certificate, and microchipping. The puppy profile and policies explain the available records and guarantee terms in more detail.',
       },
       {
         question: 'How do I reserve a Bulldog puppy near Cullman?',
@@ -249,7 +249,7 @@ export const locations: Location[] = [
       {
         question: 'What health protection is included for Decatur buyers?',
         answer:
-          'The same health standards apply to every buyer: age-appropriate vaccinations and deworming, a veterinary health certificate, microchipping, and a 1-year genetic health guarantee. Review the written policies before reserving.',
+          'The same health standards apply to every buyer: age-appropriate vaccinations and deworming, a veterinary health certificate, and microchipping. Review the written policies for guarantee terms before reserving.',
       },
     ],
     localContext: [

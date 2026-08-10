@@ -222,7 +222,7 @@ export function generateCustomerConfirmationEmail(name: string): string {
         <div class="section">
             <div class="info-box" style="background: #fff3cd; border: 1px solid #ffeaa7;">
                 <h3>🏠 About Exotic Bulldog Legacy</h3>
-                <p>We specialize in breeding high-quality French and English Bulldogs with health guarantees, proper socialization, and loving care. All our puppies come with health records and lifetime support.</p>
+                <p>We specialize in raising French and English Bulldogs with proper socialization and loving care. All our puppies are vet-checked, with available health records and ongoing breeder support.</p>
             </div>
         </div>
 

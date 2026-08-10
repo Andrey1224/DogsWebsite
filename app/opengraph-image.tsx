@@ -70,8 +70,8 @@ export default async function Image() {
             <span style={{ marginLeft: 8 }}>Falkville, Alabama</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span>🏆</span>
-            <span style={{ marginLeft: 8 }}>Health Guaranteed</span>
+            <span>🐾</span>
+            <span style={{ marginLeft: 8 }}>Vet-Checked</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span>❤️</span>

@@ -81,10 +81,7 @@ export default function LocationsPage() {
             <Link href="/faq" className="text-orange-400 transition-colors hover:text-orange-300">
               Read FAQ
             </Link>
-            <Link
-              href="/policies"
-              className="text-orange-400 transition-colors hover:text-orange-300"
-            >
+            <Link href="/terms" className="text-orange-400 transition-colors hover:text-orange-300">
               Deposit &amp; Health Policies
             </Link>
           </div>

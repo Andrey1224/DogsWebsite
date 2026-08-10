@@ -115,7 +115,7 @@ describe('Location Page', () => {
       expect(
         screen
           .getAllByRole('link', { name: /health & deposit policies/i })
-          .some((link) => link.getAttribute('href') === '/policies'),
+          .some((link) => link.getAttribute('href') === '/terms'),
       ).toBe(true);
     },
   );

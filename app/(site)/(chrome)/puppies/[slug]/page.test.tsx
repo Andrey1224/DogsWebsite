@@ -60,8 +60,8 @@ vi.mock('@/components/puppy-detail/parent-card', () => ({
 }));
 
 vi.mock('./reserve-button', () => ({
-  ReserveButton: ({ puppyPrice }: { puppyPrice: number | null }) => (
-    <button data-testid="reserve-button" data-puppy-price={puppyPrice ?? ''}>
+  ReserveButton: ({ puppySlug }: { puppySlug: string }) => (
+    <button data-testid="reserve-button" data-puppy-slug={puppySlug}>
       Reserve
     </button>
   ),
@@ -115,10 +115,10 @@ describe('PuppyDetailPage', () => {
     expect(screen.getByTestId('puppy-view-tracker')).toBeInTheDocument();
     expect(screen.getByTestId('stats-grid')).toBeInTheDocument();
     expect(screen.getByText('Reserve')).toBeInTheDocument();
-    expect(screen.getByTestId('reserve-button')).toHaveAttribute(
-      'data-puppy-price',
-      String(mockPuppy.price_usd),
-    );
+    expect(screen.getByTestId('reserve-button')).toHaveAttribute('data-puppy-slug', mockPuppy.slug);
+    expect(
+      screen.getByText(/Go-home timing will be confirmed after the required age/i),
+    ).toBeInTheDocument();
   });
 
   it('calls notFound when puppy is not returned', async () => {

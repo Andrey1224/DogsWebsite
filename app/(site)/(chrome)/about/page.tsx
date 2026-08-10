@@ -6,7 +6,6 @@ import {
   Shield,
   Sparkles,
   Users,
-  Award,
   Star,
   Bone,
   PlayCircle,
@@ -29,7 +28,7 @@ export const metadata = buildMetadata({
 
 const stats = [
   { value: '10+', label: 'Years with bulldogs' },
-  { value: '100+', label: 'Healthy placements' },
+  { value: '2019', label: 'Family-run since' },
   { value: '100%', label: 'Lifetime support' },
 ];
 
@@ -38,7 +37,7 @@ const values = [
     icon: Shield,
     iconColor: 'text-orange-400',
     title: 'Health-first philosophy',
-    desc: 'Parents are DNA-tested and OFA-screened. Every pairing reduces hereditary risks while building sound temperaments.',
+    desc: 'Ask us for available parent health-testing documentation. Every pairing is chosen with temperament and soundness in mind.',
   },
   {
     icon: Sparkles,
@@ -125,17 +124,6 @@ export default function AboutPage() {
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-transparent to-transparent opacity-60" />
-
-              {/* Floating Badge */}
-              <div className="absolute bottom-8 right-8 max-w-[200px] rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
-                <div className="mb-1 flex items-center gap-2 font-bold text-white">
-                  <Award className="text-yellow-400" size={20} />
-                  <span>Award Winning</span>
-                </div>
-                <p className="text-xs text-slate-200">
-                  Recognized for excellence in temperament and health.
-                </p>
-              </div>
             </div>
           </div>
         </div>

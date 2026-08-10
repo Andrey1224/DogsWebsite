@@ -7,8 +7,8 @@ export function HealthBadge() {
         <ShieldCheck className="text-green-400" size={20} />
       </div>
       <div>
-        <div className="text-sm font-bold text-white">Health Guarantee Included</div>
-        <div className="text-xs text-slate-400">Vet checked, vaccinated, and microchipped.</div>
+        <div className="text-sm font-bold text-white">Vet-checked before go-home</div>
+        <div className="text-xs text-slate-400">Age-appropriate vaccinations and microchip.</div>
       </div>
     </div>
   );
