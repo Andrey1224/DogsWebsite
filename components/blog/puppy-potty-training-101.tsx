@@ -382,7 +382,7 @@ export function PuppyPottyTraining101() {
           </Link>
           . You can also review our{' '}
           <Link
-            href="/policies"
+            href="/terms"
             className="text-white underline transition-colors hover:text-[#ff6b00]"
           >
             health and deposit policies

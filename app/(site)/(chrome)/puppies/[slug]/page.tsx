@@ -129,7 +129,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
     },
     {
       label: 'Health',
-      value: puppy.sire_health_notes || 'Health tested',
+      value: puppy.sire_health_notes || 'Ask us for health-testing documentation',
       icon: Activity,
     },
   ];
@@ -147,7 +147,7 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
     },
     {
       label: 'Health',
-      value: puppy.dam_health_notes || 'Health tested',
+      value: puppy.dam_health_notes || 'Ask us for health-testing documentation',
       icon: Activity,
     },
   ];
@@ -220,12 +220,17 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             weight={weightDisplay}
           />
 
+          {/* Go-home timing */}
+          <p className="mb-8 text-xs text-slate-500">
+            Go-home timing will be confirmed after the required age and veterinary clearance.
+          </p>
+
           {/* Description */}
           <div className="mb-8">
             <h3 className="mb-2 text-lg font-semibold text-white">Temperament & Notes</h3>
             <p className="text-sm leading-relaxed text-slate-400">
               {puppy.description ??
-                'Raised in-home with daily enrichment and early neurological stimulation. Comes with vet health certificate, vaccination record, and lifetime breeder support.'}
+                'Raised in-home with daily enrichment and early neurological stimulation. Vet-checked before go-home, with vaccination records and ongoing breeder support.'}
             </p>
           </div>
 
@@ -244,7 +249,6 @@ export default async function PuppyDetailPage({ params }: { params: Promise<{ sl
             reservationsDisabled={reservationsDisabled}
             reservationsDisabledMessage={reservationsDisabledMessage}
             depositAmount={depositAmount}
-            puppyPrice={puppy.price_usd ?? null}
             paypalClientId={paypalClientId}
           />
         </div>

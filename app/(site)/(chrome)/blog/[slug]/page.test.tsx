@@ -120,7 +120,7 @@ describe('ArticlePage', () => {
     expect(screen.getByRole('link', { name: /read our faq/i })).toHaveAttribute('href', '/faq');
     expect(screen.getByRole('link', { name: /review health & deposit policies/i })).toHaveAttribute(
       'href',
-      '/policies',
+      '/terms',
     );
     expect(screen.getByRole('link', { name: /pickup & delivery in alabama/i })).toHaveAttribute(
       'href',

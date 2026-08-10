@@ -63,7 +63,7 @@ describe('About Page', () => {
     renderAboutPage();
 
     expect(screen.getByText('10+')).toBeInTheDocument();
-    expect(screen.getByText('100+')).toBeInTheDocument();
+    expect(screen.getByText('2019')).toBeInTheDocument();
     expect(screen.getByText('100%')).toBeInTheDocument();
     expect(screen.getByText(/Years with bulldogs/i)).toBeInTheDocument();
   });
@@ -76,10 +76,10 @@ describe('About Page', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders Award Winning badge', () => {
+  it('does not render an unverifiable "Award Winning" badge', () => {
     renderAboutPage();
 
-    expect(screen.getByText(/Award Winning/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Award Winning/i)).not.toBeInTheDocument();
   });
 
   it('displays program values', () => {

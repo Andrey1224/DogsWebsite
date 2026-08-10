@@ -3,6 +3,7 @@
 
 import { useActionState, useCallback, useEffect, useId, useRef, useState } from 'react';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Check, Send } from 'lucide-react';
 
@@ -26,6 +27,7 @@ type ContactFormProps = {
   context?: {
     puppyId?: string | null;
     puppySlug?: string | null;
+    puppyName?: string | null;
   };
   variant?: 'default' | 'dark';
 };
@@ -56,7 +58,7 @@ export function ContactForm({ heading, context, variant = 'default' }: ContactFo
     name: '',
     email: '',
     phone: '',
-    message: '',
+    message: context?.puppyName ? `I'm interested in ${context.puppyName}. ` : '',
   });
 
   useEffect(() => {
@@ -322,8 +324,12 @@ export function ContactForm({ heading, context, variant = 'default' }: ContactFo
           </button>
 
           <p className="text-center text-[10px] text-slate-500">
-            We respond within one business day. By submitting, you consent to be contacted about
-            current and upcoming litters.
+            We respond within one business day. By submitting, you agree to be contacted about this
+            inquiry. See our{' '}
+            <Link href="/privacy" className="underline hover:text-slate-300">
+              Privacy Policy
+            </Link>
+            .
           </p>
 
           {state.status === 'error' && state.message ? (
@@ -459,8 +465,12 @@ export function ContactForm({ heading, context, variant = 'default' }: ContactFo
       </div>
 
       <p className="text-xs text-muted">
-        We respond within one business day. By submitting, you consent to be contacted about current
-        and upcoming litters.
+        We respond within one business day. By submitting, you agree to be contacted about this
+        inquiry. See our{' '}
+        <Link href="/privacy" className="underline hover:text-foreground">
+          Privacy Policy
+        </Link>
+        .
       </p>
 
       <button

@@ -80,10 +80,11 @@ vi.mock('@/lib/config/contact', () => ({
       link: 'https://t.me/exoticbulldoglevel',
     },
     instagram: {
-      handle: 'exoticbuldoglevel',
-      link: 'https://instagram.com/exoticbuldoglevel',
+      handle: 'exoticbulldoglegacy',
+      link: 'https://www.instagram.com/exoticbulldoglegacy/',
     },
   },
+  TELEGRAM_CONFIRMED: false,
 }));
 
 describe('SEO Structured Data', () => {
@@ -120,9 +121,14 @@ describe('SEO Structured Data', () => {
       const schema = getOrganizationSchema();
 
       expect(schema.sameAs).toContain('https://wa.me/12055551234');
-      expect(schema.sameAs).toContain('https://t.me/exoticbulldoglevel');
-      expect(schema.sameAs).toContain('https://instagram.com/exoticbuldoglevel');
+      expect(schema.sameAs).toContain('https://www.instagram.com/exoticbulldoglegacy/');
       expect(schema.sameAs).toContain('https://exoticbulldoglegacy.com');
+    });
+
+    it('omits Telegram from sameAs until a confirmed handle is set', () => {
+      const schema = getOrganizationSchema();
+
+      expect(schema.sameAs).not.toContain('https://t.me/exoticbulldoglevel');
     });
 
     it('includes business slogan and description', () => {

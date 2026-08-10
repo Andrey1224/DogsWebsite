@@ -49,7 +49,7 @@ describe('Locations Page', () => {
     expect(screen.getByRole('link', { name: /read faq/i })).toHaveAttribute('href', '/faq');
     expect(screen.getByRole('link', { name: /deposit & health policies/i })).toHaveAttribute(
       'href',
-      '/policies',
+      '/terms',
     );
   });
 

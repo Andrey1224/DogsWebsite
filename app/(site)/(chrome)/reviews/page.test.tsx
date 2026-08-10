@@ -97,15 +97,25 @@ describe('Reviews Page', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders static stats', async () => {
+  it('renders stats computed from real review data', async () => {
+    await renderReviewsPage();
+
+    // Mock data is one 4-star and one 5-star review -> average 4.5, count 2.
+    expect(screen.getByText(/Average Rating/i)).toBeInTheDocument();
+    expect(screen.getByText('4.5 / 5.0')).toBeInTheDocument();
+    expect(screen.getByText(/Total Reviews/i)).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText(/Delivery Area/i)).toBeInTheDocument();
+    expect(screen.getByText('Southeast US')).toBeInTheDocument();
+  });
+
+  it('shows "New" for average rating when there are no reviews yet', async () => {
+    mocks.getPublishedReviews.mockResolvedValue([]);
     await renderReviewsPage();
 
     expect(screen.getByText(/Average Rating/i)).toBeInTheDocument();
-    expect(screen.getByText('5.0 / 5.0')).toBeInTheDocument();
-    expect(screen.getByText(/Happy Families/i)).toBeInTheDocument();
-    expect(screen.getByText('120+')).toBeInTheDocument();
-    expect(screen.getByText(/States Served/i)).toBeInTheDocument();
-    expect(screen.getByText('14')).toBeInTheDocument();
+    expect(screen.getByText('New')).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
   });
 
   it('displays review cards without badges', async () => {

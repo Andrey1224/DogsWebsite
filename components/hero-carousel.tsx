@@ -81,14 +81,14 @@ export function HeroCarousel() {
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/80 via-transparent to-transparent z-20 pointer-events-none" />
 
-      {/* Health Guarantee Badge */}
+      {/* Vet-checked Badge */}
       <div className="absolute top-8 right-8 flex max-w-xs items-center gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-4 backdrop-blur-md z-30">
         <div className="rounded-full bg-green-500/20 p-2">
           <ShieldCheck className="text-green-400" size={24} aria-hidden="true" />
         </div>
         <div>
-          <p className="text-sm font-bold">Health Guarantee</p>
-          <p className="text-xs text-slate-400">Vet-checked & vaccinated</p>
+          <p className="text-sm font-bold">Vet-Checked</p>
+          <p className="text-xs text-slate-400">Age-appropriate vaccinations</p>
         </div>
       </div>
     </div>

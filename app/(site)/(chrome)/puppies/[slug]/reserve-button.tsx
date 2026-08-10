@@ -1,14 +1,16 @@
 /**
  * Reserve Button Component
  *
- * Client component that handles deposit reservations via Stripe Checkout
- * and PayPal Smart Buttons, providing customers with multiple secure
- * payment options.
+ * Client component with the primary "Apply" / "Schedule a Video Call" CTAs
+ * that start the human-approval process, plus a demoted deposit step
+ * (Stripe Checkout / PayPal Smart Buttons) for buyers who have already been
+ * confirmed and signed a contract.
  */
 
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Lock } from 'lucide-react';
 
 import { useAnalytics } from '@/components/analytics-provider';
@@ -23,7 +25,6 @@ interface ReserveButtonProps {
   reservationsDisabled: boolean;
   reservationsDisabledMessage?: string | null;
   depositAmount: number;
-  puppyPrice: number | null;
   paypalClientId: string | null;
 }
 
@@ -36,42 +37,32 @@ export function ReserveButton({
   reservationsDisabled,
   reservationsDisabledMessage,
   depositAmount,
-  puppyPrice,
   paypalClientId,
 }: ReserveButtonProps) {
   const { getAnalyticsIdentifiers, trackEvent } = useAnalytics();
   const [isDepositLoading, setIsDepositLoading] = useState(false);
-  const [isFullPaymentLoading, setIsFullPaymentLoading] = useState(false);
   const isPayPalProcessing = false;
   const [error, setError] = useState<string | null>(null);
   const depositLabel = depositAmount.toLocaleString('en-US', {
     minimumFractionDigits: depositAmount % 1 === 0 ? 0 : 2,
     maximumFractionDigits: depositAmount % 1 === 0 ? 0 : 2,
   });
-  const fullPriceLabel = (puppyPrice ?? 0).toLocaleString('en-US', {
-    minimumFractionDigits: (puppyPrice ?? 0) % 1 === 0 ? 0 : 2,
-    maximumFractionDigits: (puppyPrice ?? 0) % 1 === 0 ? 0 : 2,
-  });
-  const isAnyLoading = isDepositLoading || isFullPaymentLoading;
 
-  const handleCheckout = async (paymentType: 'deposit' | 'full') => {
-    if (isPayPalProcessing || isAnyLoading) return;
+  const handleCheckout = async () => {
+    if (isPayPalProcessing || isDepositLoading) return;
 
-    const amount = paymentType === 'full' ? (puppyPrice ?? 0) : depositAmount;
-    const setLoading = paymentType === 'full' ? setIsFullPaymentLoading : setIsDepositLoading;
-
-    setLoading(true);
+    setIsDepositLoading(true);
     setError(null);
 
     const commerceParams = {
       currency: 'USD',
-      value: amount,
+      value: depositAmount,
       items: [
         {
           item_id: puppySlug,
           item_name: puppyName || puppySlug,
-          item_category: paymentType === 'full' ? 'Puppy full payment' : 'Puppy deposit',
-          price: amount,
+          item_category: 'Puppy deposit',
+          price: depositAmount,
           quantity: 1,
         },
       ],
@@ -80,25 +71,25 @@ export function ReserveButton({
     trackEvent('reserve_click', {
       puppy_slug: puppySlug,
       puppy_name: puppyName ?? undefined,
-      deposit_amount: amount,
+      deposit_amount: depositAmount,
       payment_provider: 'stripe',
-      payment_type: paymentType,
+      payment_type: 'deposit',
     });
     trackEvent('begin_checkout', commerceParams);
 
     try {
       const analyticsIdentifiers = await getAnalyticsIdentifiers();
-      const result = await createCheckoutSession(puppySlug, paymentType, analyticsIdentifiers);
+      const result = await createCheckoutSession(puppySlug, 'deposit', analyticsIdentifiers);
 
       if (!result.success) {
         trackEvent('checkout_error', {
           puppy_slug: puppySlug,
           payment_provider: 'stripe',
-          payment_type: paymentType,
+          payment_type: 'deposit',
           error_code: result.errorCode,
         });
         setError(result.error || 'Failed to create checkout session');
-        setLoading(false);
+        setIsDepositLoading(false);
         return;
       }
 
@@ -109,28 +100,45 @@ export function ReserveButton({
         trackEvent('checkout_error', {
           puppy_slug: puppySlug,
           payment_provider: 'stripe',
-          payment_type: paymentType,
+          payment_type: 'deposit',
           error_code: 'MISSING_CHECKOUT_URL',
         });
         setError('No checkout URL received');
-        setLoading(false);
+        setIsDepositLoading(false);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       trackEvent('checkout_error', {
         puppy_slug: puppySlug,
         payment_provider: 'stripe',
-        payment_type: paymentType,
+        payment_type: 'deposit',
         error_code: 'UNEXPECTED_ERROR',
       });
       setError(errorMessage);
-      setLoading(false);
+      setIsDepositLoading(false);
     }
   };
 
   const reserveLabel = puppyName || puppySlug.split('-')[0] || 'Puppy';
   const paypalConfigured = Boolean(paypalClientId);
-  const showFullPaymentOption = Boolean(puppyPrice && puppyPrice > 0);
+  const applyHref = `/contact?puppy=${encodeURIComponent(puppySlug)}`;
+
+  const primaryCtas = (
+    <div className="flex flex-col gap-3 sm:flex-row">
+      <Link
+        href={applyHref}
+        className="flex-1 rounded-2xl bg-[#F97316] py-4 text-center text-lg font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] hover:bg-[#EA580C] active:scale-[0.99]"
+      >
+        Apply for {reserveLabel}
+      </Link>
+      <Link
+        href={applyHref}
+        className="flex-1 rounded-2xl border-2 border-slate-700 py-4 text-center text-lg font-bold text-white transition-all hover:scale-[1.01] hover:border-slate-500 active:scale-[0.99]"
+      >
+        Schedule a Video Call
+      </Link>
+    </div>
+  );
 
   if (status === 'sold') {
     return (
@@ -152,26 +160,20 @@ export function ReserveButton({
 
   if (reservationsDisabled) {
     return (
-      <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
-        <p className="text-sm font-semibold text-orange-400">Reservations temporarily paused</p>
-        <p className="text-sm text-slate-400">
-          {reservationsDisabledMessage ??
-            "We're finalizing Stripe customer setup. Please check back soon or reach out if you need help."}
-        </p>
-        <button
-          type="button"
-          disabled
-          className="w-full cursor-not-allowed rounded-2xl bg-slate-800 py-4 text-sm font-semibold text-slate-500"
-        >
-          Reservations Unavailable
-        </button>
-        <p className="text-xs text-slate-500">
-          Need assistance?{' '}
-          <a href="/contact" className="font-semibold text-orange-400 hover:underline">
-            Contact us
-          </a>
-          .
-        </p>
+      <div className="space-y-5">
+        {primaryCtas}
+        <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
+          <p className="text-sm font-semibold text-orange-400">
+            Deposit payments temporarily paused
+          </p>
+          <p className="text-sm text-slate-400">
+            {reservationsDisabledMessage ??
+              "We're finalizing Stripe customer setup. Please check back soon or reach out if you need help."}
+          </p>
+          <p className="text-xs text-slate-500">
+            Applications and video call requests above are still open.
+          </p>
+        </div>
       </div>
     );
   }
@@ -179,16 +181,19 @@ export function ReserveButton({
   if (!canReserve) {
     if (reservationBlocked) {
       return (
-        <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
-          <p className="text-sm font-semibold text-orange-400">Reservation in progress</p>
-          <p className="text-sm text-slate-400">
-            Someone is currently completing a deposit for this puppy. Please check back in about 15
-            minutes or{' '}
-            <a href="/contact" className="font-semibold text-orange-400 hover:underline">
-              contact us
-            </a>{' '}
-            if you&apos;d like to be notified when it becomes available again.
-          </p>
+        <div className="space-y-5">
+          {primaryCtas}
+          <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-[#1E293B] p-6">
+            <p className="text-sm font-semibold text-orange-400">Reservation in progress</p>
+            <p className="text-sm text-slate-400">
+              Someone is currently completing a deposit for this puppy. Please check back in about
+              15 minutes or{' '}
+              <a href="/contact" className="font-semibold text-orange-400 hover:underline">
+                contact us
+              </a>{' '}
+              if you&apos;d like to be notified when it becomes available again.
+            </p>
+          </div>
         </div>
       );
     }
@@ -213,47 +218,34 @@ export function ReserveButton({
 
   return (
     <div className="space-y-5">
+      {primaryCtas}
+
       {error && (
         <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3">
           <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
-      <div>
+      <div className="rounded-2xl border border-slate-800 bg-[#151e32] p-5">
+        <p className="mb-4 text-sm text-slate-400">
+          Already approved? A ${depositLabel} deposit secures {reserveLabel} once we&apos;ve
+          confirmed your application and you&apos;ve signed the contract.
+        </p>
+
         <button
           type="button"
-          onClick={() => handleCheckout('deposit')}
-          disabled={isAnyLoading || isPayPalProcessing}
-          className="mb-2 w-full rounded-2xl bg-[#F97316] py-4 text-lg font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] hover:bg-[#EA580C] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={handleCheckout}
+          disabled={isDepositLoading || isPayPalProcessing}
+          className="mb-2 w-full rounded-2xl border-2 border-[#F97316] bg-transparent py-3 text-base font-bold text-[#F97316] transition-all hover:scale-[1.01] hover:bg-[#F97316]/10 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isDepositLoading ? 'Loading...' : `Reserve ${reserveLabel}`}
+          {isDepositLoading ? 'Loading...' : `Pay $${depositLabel} deposit`}
         </button>
-        <div className="flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
-          ${depositLabel} deposit • Powered by
+        <div className="mb-4 flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
+          Final step after approval • Powered by
           <Lock size={8} />
           <span className="font-semibold">Stripe</span>
         </div>
-      </div>
 
-      {showFullPaymentOption && (
-        <div>
-          <button
-            type="button"
-            onClick={() => handleCheckout('full')}
-            disabled={isAnyLoading || isPayPalProcessing}
-            className="mb-2 w-full rounded-2xl border-2 border-[#F97316] bg-transparent py-3 text-base font-bold text-[#F97316] transition-all hover:scale-[1.01] hover:bg-[#F97316]/10 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isFullPaymentLoading ? 'Loading...' : `Buy Now — Pay full $${fullPriceLabel}`}
-          </button>
-          <div className="flex items-center justify-center gap-1 text-[10px] font-medium text-slate-500">
-            Pay in full • Powered by
-            <Lock size={8} />
-            <span className="font-semibold">Stripe</span>
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-2xl border border-slate-800 bg-[#151e32] p-4">
         <div className="mb-3 ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
           Or pay with
         </div>

@@ -7,6 +7,7 @@ import { ContactCards } from '@/components/contact-cards';
 import { CONTACT_CARDS } from '@/lib/config/contact';
 import { BUSINESS_PROFILE } from '@/lib/config/business';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getPuppyBySlug } from '@/lib/supabase/queries';
 
 export const metadata = buildMetadata({
   title: 'Contact',
@@ -15,7 +16,14 @@ export const metadata = buildMetadata({
   path: '/contact',
 });
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ puppy?: string }>;
+}) {
+  const { puppy: puppySlugParam } = await searchParams;
+  const puppy = puppySlugParam ? await getPuppyBySlug(puppySlugParam) : null;
+
   return (
     <div className="min-h-screen bg-[#0B1120] pb-20 font-sans text-white">
       {/* SEO - Hidden Breadcrumbs */}
@@ -42,14 +50,26 @@ export default function ContactPage() {
                 </span>
               </div>
               <h1 className="mb-6 text-4xl font-bold leading-tight md:text-6xl">
-                Let&apos;s plan your <br />
-                <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
-                  bulldog match
-                </span>
+                {puppy ? (
+                  <>
+                    Let&apos;s talk about <br />
+                    <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
+                      {puppy.name}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Let&apos;s plan your <br />
+                    <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
+                      bulldog match
+                    </span>
+                  </>
+                )}
               </h1>
               <p className="max-w-lg text-lg text-slate-400">
-                Share a bit about your family, desired timing, and any must-have traits so we can
-                recommend the right puppy.
+                {puppy
+                  ? `Tell us about your family and preferred timing, and we'll follow up to schedule a video call or visit for ${puppy.name}.`
+                  : 'Share a bit about your family, desired timing, and any must-have traits so we can recommend the right puppy.'}
               </p>
             </div>
 
@@ -82,7 +102,14 @@ export default function ContactPage() {
         <div className="pointer-events-none absolute -right-4 bottom-20 h-32 w-32 rounded-full bg-orange-500 opacity-20 blur-3xl" />
 
         <div className="rounded-[2.5rem] border border-slate-700 bg-[#1E293B]/80 p-8 shadow-2xl backdrop-blur-2xl md:p-16">
-          <ContactForm variant="dark" />
+          <ContactForm
+            variant="dark"
+            context={
+              puppy
+                ? { puppyId: puppy.id, puppySlug: puppy.slug, puppyName: puppy.name }
+                : undefined
+            }
+          />
         </div>
       </div>
     </div>

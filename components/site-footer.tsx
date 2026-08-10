@@ -1,14 +1,6 @@
 // New dark footer UI with 4-column layout and integrated map
 import Link from 'next/link';
-import {
-  Instagram,
-  Send,
-  MessageCircle,
-  Clock,
-  ArrowUpRight,
-  MapPin,
-  Navigation,
-} from 'lucide-react';
+import { Instagram, MessageCircle, Clock, ArrowUpRight, MapPin, Navigation } from 'lucide-react';
 
 import { CONTACT_DETAILS } from '@/lib/config/contact';
 import { BUSINESS_PROFILE } from '@/lib/config/business';
@@ -40,7 +32,7 @@ const footerLinks = [
       { label: 'Available Puppies', href: '/puppies' },
       { label: 'Reviews', href: '/reviews' },
       { label: 'Our Story', href: '/about' },
-      { label: 'Health Policy', href: '/policies' },
+      { label: 'Health Policy', href: '/terms' },
       { label: 'Service Areas', href: '/locations' },
       { label: 'Cullman, AL', href: '/locations/cullman-al' },
       { label: 'Decatur, AL', href: '/locations/decatur-al' },
@@ -53,8 +45,8 @@ const footerLinks = [
     items: [
       { label: 'FAQ', href: '/faq' },
       { label: 'Contact Us', href: '/contact' },
-      { label: 'Deposit Terms', href: '/policies' },
-      { label: 'Flight Nanny Info', href: '/policies#delivery' },
+      { label: 'Deposit Terms', href: '/terms' },
+      { label: 'Flight Nanny Info', href: '/terms#delivery' },
     ],
   },
   {
@@ -123,7 +115,6 @@ export function SiteFooter() {
                 label="Instagram"
                 href={CONTACT_DETAILS.instagram.link}
               />
-              <SocialButton icon={Send} label="Telegram" href={CONTACT_DETAILS.telegram.link} />
               <SocialButton
                 icon={MessageCircle}
                 label="WhatsApp"
@@ -254,10 +245,10 @@ export function SiteFooter() {
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 text-xs text-slate-500 md:flex-row">
           <p>© {new Date().getFullYear()} Exotic Bulldog Legacy. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/policies" className="hover:text-slate-300">
+            <Link href="/privacy" className="hover:text-slate-300">
               Privacy Policy
             </Link>
-            <Link href="/policies" className="hover:text-slate-300">
+            <Link href="/terms" className="hover:text-slate-300">
               Terms of Service
             </Link>
             <Link href="/sitemap.xml" className="hover:text-slate-300">

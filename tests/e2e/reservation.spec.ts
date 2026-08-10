@@ -29,7 +29,7 @@ test.describe('Reservation flow', () => {
     await page.waitForLoadState('networkidle');
 
     const reserveButton = page.getByRole('button', {
-      name: /^reserve\s+/i,
+      name: /^pay \$[\d,.]+ deposit$/i,
     });
     await reserveButton.waitFor({ state: 'visible', timeout: 15_000 });
 

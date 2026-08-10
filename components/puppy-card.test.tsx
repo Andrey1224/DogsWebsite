@@ -102,11 +102,11 @@ describe('PuppyCard', () => {
     expect(badge).toHaveClass('bg-orange-500/20', 'text-orange-400', 'border-orange-500/30');
   });
 
-  it('renders Reserve Now button for available puppies', () => {
+  it('renders Apply button for available puppies', () => {
     const puppy = buildPuppy({ status: 'available' });
     render(<PuppyCard puppy={puppy} />);
 
-    const button = screen.getByRole('link', { name: /reserve now/i });
+    const button = screen.getByRole('link', { name: /^apply$/i });
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute('href', '/puppies/milo');
     expect(button).toHaveClass('bg-orange-500');

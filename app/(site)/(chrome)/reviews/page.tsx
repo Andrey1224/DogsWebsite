@@ -84,11 +84,17 @@ export default async function ReviewsPage() {
         <div className="mx-auto mb-20 grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-3">
           <StatCard
             label="Average Rating"
-            value="5.0 / 5.0"
+            value={
+              aggregate.reviewCount > 0 ? `${aggregate.averageRating.toFixed(1)} / 5.0` : 'New'
+            }
             icon={<Star className="fill-orange-400" />}
           />
-          <StatCard label="Happy Families" value="120+" icon={<CheckCircle2 />} />
-          <StatCard label="States Served" value="14" icon={<MapPin />} />
+          <StatCard
+            label="Total Reviews"
+            value={String(aggregate.reviewCount)}
+            icon={<CheckCircle2 />}
+          />
+          <StatCard label="Delivery Area" value="Southeast US" icon={<MapPin />} />
         </div>
       </div>
 

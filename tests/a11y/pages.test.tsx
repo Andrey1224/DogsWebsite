@@ -9,6 +9,8 @@ import AboutPage from '@/app/(site)/(chrome)/about/page';
 import ContactPage from '@/app/(site)/(chrome)/contact/page';
 import FAQPage from '@/app/(site)/(chrome)/faq/page';
 import PoliciesPage from '@/app/(site)/(chrome)/policies/page';
+import PrivacyPage from '@/app/(site)/(chrome)/privacy/page';
+import TermsPage from '@/app/(site)/(chrome)/terms/page';
 import ReviewsPage from '@/app/(site)/(chrome)/reviews/page';
 
 // Mock dependencies
@@ -64,6 +66,8 @@ vi.mock('@/app/(site)/(chrome)/reviews/upload-actions', () => ({
 }));
 
 type PageComponent = () => Promise<ReactElement> | ReactElement;
+
+const ContactPageNoQuery: PageComponent = () => ContactPage({ searchParams: Promise.resolve({}) });
 
 async function renderPage(component: PageComponent) {
   let renderResult: ReturnType<typeof render>;
@@ -145,7 +149,7 @@ describe('Page Accessibility Tests', () => {
 
   describe('Contact Page', () => {
     it('should not have accessibility violations', async () => {
-      const { container } = await renderPage(ContactPage);
+      const { container } = await renderPage(ContactPageNoQuery);
       const results = await axe(container, {
         rules: {
           // Contact page has form header which creates duplicate landmark
@@ -158,7 +162,7 @@ describe('Page Accessibility Tests', () => {
     });
 
     it('should have accessible form labels', async () => {
-      const { container } = await renderPage(ContactPage);
+      const { container } = await renderPage(ContactPageNoQuery);
       const inputs = container.querySelectorAll('input, textarea');
 
       inputs.forEach((input: Element) => {
@@ -175,7 +179,7 @@ describe('Page Accessibility Tests', () => {
     });
 
     it('should have accessible buttons', async () => {
-      const { container } = await renderPage(ContactPage);
+      const { container } = await renderPage(ContactPageNoQuery);
       const buttons = container.querySelectorAll('button');
 
       buttons.forEach((button: HTMLButtonElement) => {
@@ -231,6 +235,36 @@ describe('Page Accessibility Tests', () => {
     });
   });
 
+  describe('Privacy Policy Page', () => {
+    it('should not have accessibility violations', async () => {
+      const { container } = await renderPage(PrivacyPage);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have proper document structure', async () => {
+      const { container } = await renderPage(PrivacyPage);
+      const h1 = container.querySelector('h1');
+
+      expect(h1).toBeInTheDocument();
+    });
+  });
+
+  describe('Terms of Service Page', () => {
+    it('should not have accessibility violations', async () => {
+      const { container } = await renderPage(TermsPage);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have proper document structure', async () => {
+      const { container } = await renderPage(TermsPage);
+      const h1 = container.querySelector('h1');
+
+      expect(h1).toBeInTheDocument();
+    });
+  });
+
   describe('Reviews Page', () => {
     it('should not have accessibility violations', async () => {
       const { container } = await renderPage(ReviewsPage);
@@ -268,9 +302,11 @@ describe('Page Accessibility Tests', () => {
     const pages = [
       { name: 'Home', component: HomePage },
       { name: 'About', component: AboutPage },
-      { name: 'Contact', component: ContactPage },
+      { name: 'Contact', component: ContactPageNoQuery },
       { name: 'FAQ', component: FAQPage },
       { name: 'Policies', component: PoliciesPage },
+      { name: 'Privacy', component: PrivacyPage },
+      { name: 'Terms', component: TermsPage },
       { name: 'Reviews', component: ReviewsPage },
     ];
 
