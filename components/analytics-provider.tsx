@@ -26,6 +26,7 @@ type ConsentState = 'unknown' | 'granted' | 'denied';
 
 type AnalyticsContextValue = {
   consent: ConsentState;
+  metaReady: boolean;
   grantConsent: () => void;
   denyConsent: () => void;
   resetConsent: () => void;
@@ -298,7 +299,13 @@ export function AnalyticsProvider({
   }, [consent, gaMeasurementId]);
 
   useEffect(() => {
-    if (!metaPixelId) return;
+    if (!metaPixelId) {
+      // No pixel configured (e.g. local dev without env vars) — nothing to
+      // wait for, so callers gating on metaReady (like PuppyViewTracker)
+      // aren't blocked forever.
+      setMetaReady(true);
+      return;
+    }
 
     if (consent === 'granted' && pixelLoadedRef.current) {
       window.fbq?.('consent', 'grant');
@@ -427,13 +434,22 @@ export function AnalyticsProvider({
   const value = useMemo(
     () => ({
       consent,
+      metaReady,
       grantConsent,
       denyConsent,
       resetConsent,
       trackEvent,
       getAnalyticsIdentifiers,
     }),
-    [consent, grantConsent, denyConsent, resetConsent, getAnalyticsIdentifiers, trackEvent],
+    [
+      consent,
+      metaReady,
+      grantConsent,
+      denyConsent,
+      resetConsent,
+      getAnalyticsIdentifiers,
+      trackEvent,
+    ],
   );
 
   return (
