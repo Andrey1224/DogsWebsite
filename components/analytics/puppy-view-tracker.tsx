@@ -13,11 +13,11 @@ type PuppyViewTrackerProps = {
 };
 
 export function PuppyViewTracker({ slug, name, breed, price, status }: PuppyViewTrackerProps) {
-  const { consent, trackEvent } = useAnalytics();
+  const { consent, metaReady, trackEvent } = useAnalytics();
   const trackedSlugRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (consent !== 'granted' || trackedSlugRef.current === slug) return;
+    if (consent !== 'granted' || !metaReady || trackedSlugRef.current === slug) return;
 
     trackEvent('view_item', {
       currency: 'USD',
@@ -34,7 +34,7 @@ export function PuppyViewTracker({ slug, name, breed, price, status }: PuppyView
       ],
     });
     trackedSlugRef.current = slug;
-  }, [breed, consent, name, price, slug, status, trackEvent]);
+  }, [breed, consent, metaReady, name, price, slug, status, trackEvent]);
 
   return null;
 }

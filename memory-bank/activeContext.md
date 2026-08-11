@@ -20,6 +20,38 @@
 
 ## Current Status
 
+- **Completed (Aug 10, 2026, later still same day)**: Fixed a second, distinct cause of the same
+  symptom as the entry directly below — `ViewContent` still missing on cold/direct loads of
+  `/puppies/sunny` and `/puppies/dory` even after the effect-ordering race fix.
+  - **Root cause**: when consent is already `granted` from a prior visit (localStorage/cookie),
+    `PuppyViewTracker` (`components/analytics/puppy-view-tracker.tsx`) gated only on
+    `consent === 'granted'` and fired immediately on mount — before the `fb-pixel` `<Script>`
+    (`strategy="lazyOnload"`, `analytics-provider.tsx`) has loaded and called
+    `fbq('init', metaPixelId)`. The resulting `track`/`ViewContent` call gets queued via
+    `ensureMetaPixelQueue()`'s placeholder (`lib/analytics/meta-pixel.ts`) _before_ `init` is ever
+    queued or executed — `init` is only ever called directly in the Script's `onLoad`, never
+    pushed through the queue. Meta's real `fbevents.js`, once it loads and drains that queue, does
+    not honor a `track` call that predates `init` for the same pixel — it is dropped. This is
+    exactly the gap `MetaPageViewTracker` already avoids for `PageView` by gating on a `ready`
+    prop wired to internal `metaReady` state; `PuppyViewTracker` had no equivalent gate.
+  - **Fix**: exposed `metaReady` through `AnalyticsContextValue`/`useAnalytics()` in
+    `components/analytics-provider.tsx` (it already existed as internal state, just wasn't
+    exported). `PuppyViewTracker` now also gates on `metaReady`, in addition to `consent` and its
+    existing per-slug dedup ref. Kept dispatch going through `trackEvent` → `dispatchMetaEvent`
+    (not a direct `fbq('track', ...)` call) so the existing browser/CAPI `eventID` dedup is
+    unaffected. **Side-fix required**: the pixel-consent effect previously never set `metaReady`
+    to `true` when `metaPixelId` is falsy (e.g. local dev without env vars) — gating
+    `PuppyViewTracker` on `metaReady` would otherwise have permanently blocked its GA4 `view_item`
+    tracking too in that case, since `trackEvent` sends both GA4 and Meta from one call. Fixed by
+    setting `metaReady(true)` immediately when no pixel is configured (nothing to wait for).
+  - **Test coverage**: `components/analytics/puppy-view-tracker.test.tsx` — added cases for
+    `metaReady: false` (no track call), `metaReady` flipping `true` (exactly one call with Sunny's
+    params), and an SPA transition to a new slug (Dory) while `metaReady` stays `true` (exactly
+    one more call, no duplicate for the prior slug).
+  - **Verification**: `npm run lint`, `npm run typecheck`, `npm run test` (804 passed, 12 skipped)
+    all clean. Live Meta Test Events verification on a direct `/puppies/sunny` load is a manual
+    follow-up for the user post-deploy, not done as part of this session.
+
 - **Completed (Aug 10, 2026, later same day)**: Fixed `ViewContent` silently not firing on the
   puppy detail pages (`/puppies/sunny`, `/puppies/dory`) for fresh/direct visits — the exact
   traffic pattern Meta ads produce. `PageView` kept working; only `ViewContent` (and, by the same
