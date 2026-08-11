@@ -403,6 +403,14 @@ export function AnalyticsProvider({
 
       // Meta: only when granted
       if (consent !== 'granted') return;
+      // Guard against the consent-grant effect ordering race: a child component
+      // (e.g. PuppyViewTracker) can call trackEvent in the same commit where
+      // consent flips to 'granted', before AnalyticsProvider's own effect has
+      // created window.fbq. Ensuring the queue exists here keeps the call from
+      // being silently dropped by `window.fbq?.()` on an undefined fbq.
+      if (metaPixelId) {
+        ensureMetaPixelQueue();
+      }
       const metaCommand = getMetaTrackingCommand(event, params);
       const safeMetaParams = stripSensitiveEventParams(metaCommand.params);
       if (metaCommand.method === 'track') {
@@ -413,7 +421,7 @@ export function AnalyticsProvider({
         window.fbq?.(metaCommand.method, metaCommand.name, safeMetaParams);
       }
     },
-    [consent, gaMeasurementId],
+    [consent, gaMeasurementId, metaPixelId],
   );
 
   const value = useMemo(
