@@ -524,6 +524,51 @@ describe('AnalyticsProvider', () => {
       );
       expect(screen.getByTestId('consent-state').textContent).toBe('denied');
     });
+
+    it('does not silently drop a Meta event fired by a child effect on the same render where consent resolves to granted (e.g. PuppyViewTracker on a fresh ad-landing visit)', async () => {
+      // Regression test: a child component (like PuppyViewTracker) that calls
+      // trackEvent from its own mount effect races AnalyticsProvider's mount
+      // effect, which is the one that normally creates window.fbq. React runs
+      // child effects before parent effects, so without a guard in trackEvent
+      // itself, window.fbq is still undefined when the child fires and
+      // `window.fbq?.(...)` silently no-ops — the event never reaches the
+      // pixel queue at all.
+      window.localStorage.setItem('exoticbulldoglegacy-consent', 'granted');
+      // Unlike other tests in this file, don't pre-stub window.fbq — that
+      // would mask exactly the bug this test exists to catch.
+      Reflect.deleteProperty(window, 'fbq');
+
+      function ChildTracker() {
+        // Mirrors PuppyViewTracker's own guard: only skip once the event has
+        // actually been dispatched while granted, not merely "effect ran".
+        const { consent, trackEvent } = useAnalytics();
+        const dispatched = React.useRef(false);
+        React.useEffect(() => {
+          if (consent !== 'granted' || dispatched.current) return;
+          trackEvent('view_item', {
+            currency: 'USD',
+            value: 3000,
+            items: [{ item_id: 'sunny', item_name: 'Sunny', price: 3000, quantity: 1 }],
+          });
+          dispatched.current = true;
+        }, [consent, trackEvent]);
+        return null;
+      }
+
+      render(
+        <AnalyticsProvider gaMeasurementId={GA_ID} metaPixelId={META_ID}>
+          <ChildTracker />
+        </AnalyticsProvider>,
+      );
+
+      await waitFor(() => {
+        expect(window.fbq).toBeDefined();
+      });
+
+      const queue = (window.fbq as unknown as { queue?: unknown[][] }).queue;
+      const queuedViewContent = queue?.some((call) => call[1] === 'ViewContent');
+      expect(queuedViewContent).toBe(true);
+    });
   });
 
   describe('existing event mapping backward-compat', () => {

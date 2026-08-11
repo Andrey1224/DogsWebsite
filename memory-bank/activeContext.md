@@ -20,6 +20,46 @@
 
 ## Current Status
 
+- **Completed (Aug 10, 2026, later same day)**: Fixed `ViewContent` silently not firing on the
+  puppy detail pages (`/puppies/sunny`, `/puppies/dory`) for fresh/direct visits — the exact
+  traffic pattern Meta ads produce. `PageView` kept working; only `ViewContent` (and, by the same
+  mechanism, any other `trackEvent` call fired from a component's own mount effect) was affected.
+  - **Root cause**: a React effect-ordering race, not a deleted tracker or broken consent guard.
+    `PuppyViewTracker` (`components/analytics/puppy-view-tracker.tsx`) is a descendant of
+    `AnalyticsProvider`. When `consent` resolves from `'unknown'` to `'granted'` on the _same_
+    render (i.e. a first-time visitor who accepts the consent banner while already on the puppy
+    page — normal for someone landing cold from an ad, abnormal for someone who clicked through
+    from the homepage first), React fires effects child-before-parent. `PuppyViewTracker`'s effect
+    (which calls `trackEvent('view_item', …)` → `window.fbq?.(...)`) ran _before_
+    `AnalyticsProvider`'s own effect that creates the `window.fbq` queue placeholder via
+    `ensureMetaPixelQueue()`. At that instant `window.fbq` was still `undefined`, so
+    `window.fbq?.(...)` silently no-opped — the event was dropped, not queued, not retried.
+    `MetaPageViewTracker` never hit this because it gates on `metaReady` (set only after the real
+    pixel script's `onLoad`), not just on `consent`; `reserve_click`/`Lead` didn't hit it either
+    since those fire from a later user click, well after the provider's bootstrap effect has run.
+    This also explains why the Aug 10 same-day verification (noted below) reported
+    `PageView`/`ViewContent`/`Lead` all arriving fine: that check was done via in-site navigation
+    (consent already resolved on an earlier page), which never triggers the race — only a cold
+    direct load of the puppy URL does.
+  - **Fix**: `components/analytics-provider.tsx` — `trackEvent`'s Meta branch now calls
+    `ensureMetaPixelQueue()` itself (idempotent, already used elsewhere in the same file) right
+    before dispatching, so `window.fbq` is guaranteed to exist regardless of which component's
+    effect runs first. Added `metaPixelId` to `trackEvent`'s `useCallback` deps (it's now read
+    inside the callback). No changes to CAPI (`sendMetaServerEvent`/`/api/analytics/meta`), Lead,
+    Purchase (still deliberately unimplemented), the cookie/consent banner, or Ads Manager
+    settings — this was purely a client-side pixel-dispatch ordering bug.
+  - **Regression test**: `components/analytics-provider.test.tsx` — new test under "returning user
+    scenarios" that, unlike every other test in the file, does _not_ pre-stub `window.fbq`
+    (pre-stubbing masks exactly this race). It mounts a child that mirrors `PuppyViewTracker`'s
+    own guard shape and fires `trackEvent('view_item', …)` from its mount effect while consent
+    resolves to `'granted'` on the same render, then asserts the event landed in the pixel queue.
+    Confirmed the test fails without the fix (`window.fbq` never gets defined) and passes with it.
+  - **Verification**: `npm run lint`, `npm run typecheck`, `npm run test` (803 tests) all clean.
+    Did not re-run the full local Playwright e2e suite for this fix (no UI/markup changed, only
+    the trackEvent dispatch path) — relying on CI's e2e run on push to `dev` per the standard
+    workflow.
+  - Committed and pushed to `dev`.
+
 - **Completed (Aug 10, 2026)**: Shipped a full Meta-ads-launch-readiness pass on `dev`, targeting
   the Sunny/Dory listings and Pixel `1924892261406006` (not merged to `main`, not deployed).
   - Split `/policies` into real `/privacy` + `/terms` pages (the old URL becomes a short hub, no

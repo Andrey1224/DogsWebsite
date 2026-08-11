@@ -131,3 +131,10 @@
 - **Do NOT**: Duplicate business logic in API routes; use `lib/` services.
 - **Do NOT**: Include brand name in page-level title strings — the layout template handles it.
 - **Do NOT**: Add Organization/LocalBusiness JSON-LD to individual pages — already in root layout.
+- **Do NOT**: Assume a `useAnalytics().trackEvent(...)` call fired from a _child_ component's own
+  mount effect (e.g. a `*ViewTracker`) will see `window.fbq` already initialized, even when
+  `consent === 'granted'`. React fires effects child-before-parent, and `AnalyticsProvider`
+  bootstraps `window.fbq` in its _own_ effect — a child effect firing on the same render where
+  consent resolves to `'granted'` runs first. `trackEvent`'s Meta branch calls
+  `ensureMetaPixelQueue()` itself before dispatching specifically to close this gap; don't remove
+  that call or assume it's redundant with the provider's bootstrap effect.
