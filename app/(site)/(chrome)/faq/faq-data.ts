@@ -6,7 +6,11 @@ export type FaqCategory = {
   category: string;
   icon: LucideIcon;
   iconColor: string;
-  items: { question: string; answer: string }[];
+  items: {
+    question: string;
+    answer: string;
+    link?: { text: string; href: string };
+  }[];
 };
 
 export const faqData: FaqCategory[] = [
@@ -98,6 +102,10 @@ export const faqData: FaqCategory[] = [
         question: 'Do you do genetic testing on the parents?',
         answer:
           "Our breeding program prioritizes health and quality. Some parents may have health and/or genetic screening depending on the pairing. If you want details for a specific litter, we can share what's available for that pairing.",
+        link: {
+          text: 'Learn what Bulldog health testing means \u2192',
+          href: '/blog/choose-healthy-bulldog-puppy-health-tests',
+        },
       },
       {
         question: 'What does the 12-month health guarantee cover?',

@@ -20,6 +20,12 @@
 
 ## Current Status
 
+- **Completed (Sep 8, 2026)**: Added two new "Bulldog Owner School" articles: "Bringing a Puppy Home" and "How to Choose a Healthy Bulldog Puppy".
+  - Created custom React layouts (`components/blog/bringing-puppy-home-first-weeks.tsx` and `components/blog/choose-healthy-bulldog-puppy-health-tests.tsx`) implementing the premium article design system with visually engaging flows, color-coded DNA statuses, and interactive checklists.
+  - Copied and optimized header images (`bringing-puppy-home-first-weeks.jpg` and `choose-healthy-bulldog-puppy-health-tests.jpg`).
+  - Merged local post registry metadata into `/blog` and configured dynamic rendering routes in `app/(site)/(chrome)/blog/[slug]/page.tsx`.
+  - Upgraded FAQ system (`faq-data.ts`, `faq-content.tsx`) to support inline internal links and cross-linked the genetic testing question directly to the new health test article.
+
 - **Completed (Aug 10, 2026, later still same day)**: Fixed a second, distinct cause of the same
   symptom as the entry directly below — `ViewContent` still missing on cold/direct loads of
   `/puppies/sunny` and `/puppies/dory` even after the effect-ordering race fix.

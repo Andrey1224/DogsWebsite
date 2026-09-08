@@ -71,6 +71,44 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
     updatedAt: '2026-08-02T21:30:00.000Z',
     publishedAt: '2026-07-21T11:00:00.000Z',
   },
+  {
+    id: 'local-post-bringing-puppy-home-first-weeks',
+    slug: 'bringing-puppy-home-first-weeks',
+    title: 'Bringing a Puppy Home: Stress-Free Training from Day One',
+    excerpt:
+      'Bringing a puppy home is exciting, but the first few weeks shape habits that can last a lifetime. Learn how to build a safe routine, potty habits, calm boundaries, confidence, and essential first commands from day one.',
+    category: 'Care',
+    categoryLabel: 'Bulldog Owner School',
+    readTime: '8–9 min',
+    date: 'September 8, 2026',
+    image: '/images/blog/bringing-puppy-home-first-weeks.jpg',
+    imageAlt:
+      'Young girl training a bulldog puppy outdoors with a high-five during early puppy training',
+    featured: false,
+    seoTitle: 'Bringing a Puppy Home: First Weeks Training Guide',
+    seoDescription:
+      'Bringing a puppy home? Learn how to build a safe routine, potty habits, calm boundaries, confidence, and essential puppy training from day one.',
+    publishedAt: '2026-09-08T12:00:00.000Z',
+  },
+  {
+    id: 'local-post-choose-healthy-bulldog-puppy-health-tests',
+    slug: 'choose-healthy-bulldog-puppy-health-tests',
+    title: 'How to Choose a Healthy Bulldog Puppy: DNA Health Tests & Vet Checkup Guide',
+    excerpt:
+      'Choosing a Bulldog puppy is about more than color, wrinkles, or personality. Learn which parent DNA tests, veterinary checks, and health records can help you make a more informed decision before bringing your puppy home.',
+    category: 'Health',
+    categoryLabel: 'Bulldog Health',
+    readTime: '7–8 min',
+    date: 'September 8, 2026',
+    image: '/images/blog/choose-healthy-bulldog-puppy-health-tests.jpg',
+    imageAlt:
+      'Veterinarian examining a French Bulldog puppy with a stethoscope during a pre-sale puppy health check.',
+    featured: false,
+    seoTitle: 'How to Choose a Healthy Bulldog Puppy | Health Tests',
+    seoDescription:
+      'Learn what DNA health tests, veterinary checks, records, and breeder questions to review before choosing a French or English Bulldog puppy.',
+    publishedAt: '2026-09-08T12:05:00.000Z',
+  },
 ];
 
 export function getLocalPost(slug: string): LocalPostDetails | undefined {
