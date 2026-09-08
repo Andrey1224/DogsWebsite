@@ -177,6 +177,10 @@ export const faqData: FaqCategory[] = [
         question: 'Do you provide feeding/vet recommendations?',
         answer:
           'Yes. We provide general care guidance (feeding, routine, transition tips) and can share recommendations when requested.',
+        link: {
+          text: 'Read our nutrition guide on raw vs dry food \u2192',
+          href: '/blog/dry-food-vs-raw-diet-bulldogs',
+        },
       },
       {
         question: 'Can I reach out months after purchase?',

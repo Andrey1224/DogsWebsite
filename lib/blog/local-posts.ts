@@ -27,7 +27,7 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
     imageAlt:
       'French Bulldog and English Bulldog with fresh raw food, meat, organs, fish, vegetables, and supplements for a bulldog nutrition article.',
     featured: false,
-    seoTitle: 'Dry Food vs Raw Diet for Bulldogs | Bulldog Microbiome & Allergies',
+    seoTitle: 'Raw vs Kibble for Bulldogs | Gut Health & Microbiome',
     seoDescription:
       'Why industrial dry food contributes to itching, red paws, yeast, gas, and gut imbalance in French and English Bulldogs — and why raw feeding matters.',
     publishedAt: '2026-07-01T21:45:00.000Z',
@@ -108,6 +108,24 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
     seoDescription:
       'Learn what DNA health tests, veterinary checks, records, and breeder questions to review before choosing a French or English Bulldog puppy.',
     publishedAt: '2026-09-08T12:05:00.000Z',
+  },
+  {
+    id: 'local-post-high-carb-commercial-dog-food-risks',
+    slug: 'high-carb-commercial-dog-food-risks',
+    title: 'Why High-Carbohydrate Commercial Dog Food Can Harm Your Dog’s Health',
+    excerpt:
+      'Commercial dog food often contains far more carbohydrates than dogs naturally need. This article explains how high-carb diets affect digestion, skin health, and metabolism, and how to choose food that better supports your dog’s natural nutritional needs.',
+    category: 'Nutrition',
+    categoryLabel: 'Bulldog Nutrition',
+    readTime: '5 min',
+    date: 'March 11, 2026',
+    image: '/images/blog/high-carb.jpg', // Placeholder
+    imageAlt: 'Dog eating food from a bowl illustrating healthy vs high carbohydrate dog diet',
+    featured: true,
+    seoTitle: 'High-Carb Dog Food: Why Commercial Diets May Harm Your Dog',
+    seoDescription:
+      'Learn how high-carbohydrate commercial dog food affects digestion, skin health, and metabolism. Discover how to choose a healthier diet for your dog.',
+    publishedAt: '2026-03-11T21:03:37.502Z',
   },
 ];
 

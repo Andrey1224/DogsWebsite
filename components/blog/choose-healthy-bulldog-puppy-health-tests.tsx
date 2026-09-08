@@ -402,7 +402,16 @@ export function ChooseHealthyBulldogPuppy() {
           Ask questions until you are comfortable with the answers. A beautiful puppy may catch your
           eye.{' '}
           <strong className="text-white">
-            A thoughtfully bred, properly cared-for puppy should earn your confidence.
+            A thoughtfully bred, properly cared-for puppy should earn your confidence. Learn more
+            about our approach by viewing our{' '}
+            <Link href="/puppies" className="text-[#ff6b00] hover:underline">
+              available puppies
+            </Link>{' '}
+            or reviewing our{' '}
+            <Link href="/terms" className="text-[#ff6b00] hover:underline">
+              health guarantee and deposit terms
+            </Link>
+            .
           </strong>
         </p>
 

@@ -535,7 +535,23 @@ export function DryFoodVsRawDietBulldogs() {
         <h4 className="text-lg font-bold text-white mb-4">What to Read Next</h4>
         <p className="leading-relaxed text-slate-400 mb-6 text-sm">
           In the next article, we will break down the exact raw feeding percentages for a growing
-          bulldog puppy, including muscle meat, bone, organs, fish, and supportive supplements.
+          bulldog puppy, including muscle meat, bone, organs, fish, and supportive supplements. To
+          learn more about why kibble poses specific risks, read our article on{' '}
+          <Link
+            href="/blog/high-carb-commercial-dog-food-risks"
+            className="text-[#ff6b00] hover:underline"
+          >
+            high-carbohydrate commercial dog foods
+          </Link>
+          . Be sure to review our{' '}
+          <Link href="/faq" className="text-[#ff6b00] hover:underline">
+            FAQ
+          </Link>{' '}
+          on diet or explore our{' '}
+          <Link href="/puppies" className="text-[#ff6b00] hover:underline">
+            available puppies
+          </Link>{' '}
+          to see our healthy dogs in action.
         </p>
 
         {/* Call to Actions */}

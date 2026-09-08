@@ -52,12 +52,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: puppy.updated_at ?? puppy.created_at ?? undefined,
     }));
 
-  const blogEntries: MetadataRoute.Sitemap = blogSlugs.map((s) => ({
-    url: withBase(`/blog/${s.slug}`, siteUrl),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-    lastModified: new Date(s._updatedAt),
-  }));
+  const blogEntries: MetadataRoute.Sitemap = blogSlugs
+    .filter((s) => !LOCAL_POSTS.some((lp) => lp.slug === s.slug))
+    .map((s) => ({
+      url: withBase(`/blog/${s.slug}`, siteUrl),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      lastModified: new Date(s._updatedAt),
+    }));
 
   const localBlogEntries: MetadataRoute.Sitemap = LOCAL_POSTS.map((p) => ({
     url: withBase(`/blog/${p.slug}`, siteUrl),

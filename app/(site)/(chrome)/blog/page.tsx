@@ -40,11 +40,13 @@ interface SortingPost {
 export default async function BlogPage() {
   const raw = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
 
-  const sanityItems: SortingPost[] = raw.map((post) => ({
-    post: normalizePost(post),
-    publishedAt: post.publishedAt,
-    featured: post.featured,
-  }));
+  const sanityItems: SortingPost[] = raw
+    .filter((post) => !LOCAL_POSTS.some((lp) => lp.slug === post.slug.current))
+    .map((post) => ({
+      post: normalizePost(post),
+      publishedAt: post.publishedAt,
+      featured: post.featured,
+    }));
 
   const localItems: SortingPost[] = LOCAL_POSTS.map((post) => ({
     post: {

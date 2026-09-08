@@ -96,7 +96,15 @@ export default async function PuppiesPage({
             </h1>
             <p className="max-w-xl text-lg text-slate-400">
               Browse current litters and puppies who have already found homes, with photographs,
-              temperament notes, and availability clearly marked.
+              temperament notes, and availability clearly marked. Learn how to choose a healthy
+              puppy in our{' '}
+              <Link
+                href="/blog/choose-healthy-bulldog-puppy-health-tests"
+                className="text-orange-400 hover:underline"
+              >
+                DNA &amp; Health Tests Guide
+              </Link>
+              .
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
               Exotic Bulldog Legacy is based near Falkville, just outside Cullman, Alabama. We offer

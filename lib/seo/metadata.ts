@@ -33,6 +33,10 @@ export type SeoOptions = {
    * Allow opting out of indexing for draft/system pages.
    */
   noIndex?: boolean;
+  /**
+   * OpenGraph type.
+   */
+  ogType?: 'website' | 'article';
 };
 
 const SITE_NAME = 'Exotic Bulldog Legacy';
@@ -100,6 +104,7 @@ export function buildMetadata({
   path,
   image,
   noIndex = false,
+  ogType,
 }: SeoOptions): Metadata {
   const siteUrl = getSiteUrl();
   const resolvedImage = resolveImage(image);
@@ -114,7 +119,7 @@ export function buildMetadata({
       canonical,
     },
     openGraph: {
-      type: 'website',
+      type: ogType ?? 'website',
       url: canonical,
       title,
       description,

@@ -28,6 +28,7 @@ import { UltimateGuideForNewBulldogOwners } from '@/components/blog/ultimate-gui
 import { PuppyPottyTraining101 } from '@/components/blog/puppy-potty-training-101';
 import { BringingPuppyHomeFirstWeeks } from '@/components/blog/bringing-puppy-home-first-weeks';
 import { ChooseHealthyBulldogPuppy } from '@/components/blog/choose-healthy-bulldog-puppy-health-tests';
+import { HighCarbCommercialDogFoodRisks } from '@/components/blog/high-carb-commercial-dog-food-risks';
 
 const LOCAL_POST_COMPONENTS: Record<string, ComponentType> = {
   'dry-food-vs-raw-diet-bulldogs': DryFoodVsRawDietBulldogs,
@@ -35,6 +36,7 @@ const LOCAL_POST_COMPONENTS: Record<string, ComponentType> = {
   'puppy-potty-training-101': PuppyPottyTraining101,
   'bringing-puppy-home-first-weeks': BringingPuppyHomeFirstWeeks,
   'choose-healthy-bulldog-puppy-health-tests': ChooseHealthyBulldogPuppy,
+  'high-carb-commercial-dog-food-risks': HighCarbCommercialDogFoodRisks,
 };
 
 const categoryLabel: Record<string, string> = {
@@ -115,6 +117,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     description: post.seoDescription ?? post.excerpt,
     path: `/blog/${post.slug.current}`,
     image: imageUrl,
+    ogType: 'article',
   });
 }
 
@@ -164,7 +167,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
   });
 
   return (
-    <div className="min-h-screen bg-[#0b101a] pb-24 font-sans text-slate-300 selection:bg-[#ff6b00] selection:text-white">
+    <div className="min-h-screen bg-[#0b101a] pb-40 md:pb-24 font-sans text-slate-300 selection:bg-[#ff6b00] selection:text-white">
       <JsonLd id={`blog-posting-${post.slug.current}`} data={articleSchema} />
       <div className="sr-only">
         <Breadcrumbs

@@ -132,7 +132,15 @@ export function BringingPuppyHomeFirstWeeks() {
           A puppy needs to learn:{' '}
           <strong className="text-white">
             &quot;This is my safe place. Nobody bothers me here.&quot;
-          </strong>
+          </strong>{' '}
+          Make sure to review our{' '}
+          <Link
+            href="/blog/ultimate-guide-for-new-bulldog-owners"
+            className="text-[#ff6b00] hover:underline"
+          >
+            Ultimate Guide for New Bulldog Owners
+          </Link>{' '}
+          to help prepare your home for their arrival.
         </p>
       </div>
 
