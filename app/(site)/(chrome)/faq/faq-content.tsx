@@ -139,7 +139,15 @@ export function FaqContent() {
                           >
                             <div className="overflow-hidden">
                               <div className="mt-2 border-t border-slate-700/50 px-6 pb-6 pt-4 leading-relaxed text-slate-400">
-                                {item.answer}
+                                <p>{item.answer}</p>
+                                {item.link && (
+                                  <Link
+                                    href={item.link.href}
+                                    className="mt-4 inline-block text-sm font-medium text-[#ff6b00] hover:underline"
+                                  >
+                                    {item.link.text}
+                                  </Link>
+                                )}
                               </div>
                             </div>
                           </div>
