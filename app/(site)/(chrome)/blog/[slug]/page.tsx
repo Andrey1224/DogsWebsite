@@ -22,7 +22,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { BlogPortableText } from '@/components/blog/portable-text';
 import { ShareButtons } from './share-buttons';
-import { getLocalPost, LOCAL_POSTS } from '@/lib/blog/local-posts';
+import { getLocalPost, LOCAL_POSTS, deduplicateSanityPosts } from '@/lib/blog/local-posts';
 import { DryFoodVsRawDietBulldogs } from '@/components/blog/dry-food-vs-raw-diet-bulldogs';
 import { UltimateGuideForNewBulldogOwners } from '@/components/blog/ultimate-guide-for-new-bulldog-owners';
 import { PuppyPottyTraining101 } from '@/components/blog/puppy-potty-training-101';
@@ -66,8 +66,9 @@ type ExtendedPostPreview = SanityPostPreview & {
 // Pre-render known slugs at build time; new slugs are generated on-demand
 export async function generateStaticParams() {
   const slugs = (await sanityFetch<Array<{ slug: string }>>(ALL_POST_SLUGS_QUERY)) ?? [];
+  const deduplicatedSlugs = deduplicateSanityPosts(slugs);
   const localSlugs = LOCAL_POSTS.map((p) => ({ slug: p.slug }));
-  return [...slugs, ...localSlugs];
+  return [...deduplicatedSlugs, ...localSlugs];
 }
 
 type Params = Promise<{ slug: string }>;
@@ -127,7 +128,8 @@ export default async function ArticlePage({ params }: { params: Params }) {
   if (!post) notFound();
 
   // Related: other published posts, same category preferred
-  const sanityPosts = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
+  const rawSanityPosts = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
+  const sanityPosts = deduplicateSanityPosts(rawSanityPosts);
   const localPostsNormalized: ExtendedPostPreview[] = LOCAL_POSTS.map((p) => ({
     _id: p.id,
     title: p.title,

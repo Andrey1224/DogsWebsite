@@ -5,7 +5,7 @@ import { urlFor } from '@/sanity/lib/image';
 import { ALL_POSTS_QUERY, formatPostDate, type SanityPostPreview } from '@/sanity/lib/queries';
 import { BlogClient, type BlogClientPost } from './blog-client';
 
-import { LOCAL_POSTS } from '@/lib/blog/local-posts';
+import { LOCAL_POSTS, deduplicateSanityPosts } from '@/lib/blog/local-posts';
 
 // ISR: regenerate at most every 60 seconds
 export const revalidate = 60;
@@ -40,13 +40,11 @@ interface SortingPost {
 export default async function BlogPage() {
   const raw = (await sanityFetch<SanityPostPreview[]>(ALL_POSTS_QUERY)) ?? [];
 
-  const sanityItems: SortingPost[] = raw
-    .filter((post) => !LOCAL_POSTS.some((lp) => lp.slug === post.slug.current))
-    .map((post) => ({
-      post: normalizePost(post),
-      publishedAt: post.publishedAt,
-      featured: post.featured,
-    }));
+  const sanityItems: SortingPost[] = deduplicateSanityPosts(raw).map((post) => ({
+    post: normalizePost(post),
+    publishedAt: post.publishedAt,
+    featured: post.featured,
+  }));
 
   const localItems: SortingPost[] = LOCAL_POSTS.map((post) => ({
     post: {

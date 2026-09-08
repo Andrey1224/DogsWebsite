@@ -119,7 +119,8 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
     categoryLabel: 'Bulldog Nutrition',
     readTime: '5 min',
     date: 'March 11, 2026',
-    image: '/images/blog/high-carb.jpg', // Placeholder
+    image:
+      'https://cdn.sanity.io/images/pmvtmbpa/production/e421d5e9f7b0cf49c80557301f54d8d0a3e7d2f2-1024x1024.jpg',
     imageAlt: 'Dog eating food from a bowl illustrating healthy vs high carbohydrate dog diet',
     featured: true,
     seoTitle: 'High-Carb Dog Food: Why Commercial Diets May Harm Your Dog',
@@ -131,4 +132,17 @@ export const LOCAL_POSTS: LocalPostDetails[] = [
 
 export function getLocalPost(slug: string): LocalPostDetails | undefined {
   return LOCAL_POSTS.find((p) => p.slug === slug);
+}
+
+/**
+ * Helper to remove any Sanity posts that are already defined in LOCAL_POSTS.
+ * This enforces local-over-Sanity precedence and prevents duplicates.
+ */
+export function deduplicateSanityPosts<T extends { slug: string } | { slug: { current: string } }>(
+  sanityPosts: T[],
+): T[] {
+  return sanityPosts.filter((post) => {
+    const slug = typeof post.slug === 'string' ? post.slug : post.slug.current;
+    return !LOCAL_POSTS.some((lp) => lp.slug === slug);
+  });
 }
