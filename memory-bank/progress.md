@@ -20,6 +20,7 @@
 
 ## Recent Wins
 
+- Executed post-publish SEO fixes: internal linking, Sanity post component migration (High Carb), sitemap deduplication, and article schema enforcement.
 - Added two high-quality interactive "Bulldog Owner School" blog posts ("Bringing a Puppy Home" and "How to Choose a Healthy Bulldog Puppy") with integrated SEO metadata, robust local routing, and internal FAQ cross-linking.
 - Fixed admin puppy status dropdown not reflecting database updates after page refresh.
 - Fixed critical Stripe webhook bug preventing "paid" status updates.
