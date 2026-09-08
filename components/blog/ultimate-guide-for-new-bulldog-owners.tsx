@@ -35,7 +35,18 @@ export function UltimateGuideForNewBulldogOwners() {
         <p className="leading-relaxed">
           French and English Bulldogs have breed-specific needs, especially around breathing,
           temperature, skin folds, joints, and water safety. Learning those needs early helps owners
-          build a safe routine and recognize when veterinary guidance is needed.
+          build a safe routine as they{' '}
+          <Link
+            href="/blog/bringing-puppy-home-first-weeks"
+            className="text-[#ff6b00] hover:underline"
+          >
+            bring their puppy home
+          </Link>
+          , master{' '}
+          <Link href="/blog/puppy-potty-training-101" className="text-[#ff6b00] hover:underline">
+            potty training
+          </Link>
+          , and recognize when veterinary guidance is needed.
         </p>
         <p className="leading-relaxed">
           Here is your essential guide to making life with your{' '}

@@ -72,7 +72,14 @@ const sections = [
         microchip. We guarantee against life-threatening congenital conditions for{' '}
         <span className="font-bold text-white">12 months</span> and require notification within 48
         hours of detection. Health records are provided when applicable to your puppy; ask us for
-        available parent health-testing documentation.
+        available parent health-testing documentation. Learn more in our{' '}
+        <Link
+          href="/blog/choose-healthy-bulldog-puppy-health-tests"
+          className="text-orange-400 hover:underline"
+        >
+          DNA &amp; Health Tests Guide
+        </Link>
+        .
       </>
     ),
   },

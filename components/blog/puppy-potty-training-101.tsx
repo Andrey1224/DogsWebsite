@@ -87,8 +87,22 @@ export function PuppyPottyTraining101() {
         </p>
         <p className="leading-relaxed">
           This process requires patience, consistency, and a clear understanding of puppy
-          physiology. Let&rsquo;s look at the two main methods, their pros and cons, and how to
-          build a routine without stress.
+          physiology. Establish a routine from day one as outlined in our{' '}
+          <Link
+            href="/blog/bringing-puppy-home-first-weeks"
+            className="text-[#ff6b00] hover:underline"
+          >
+            First Weeks Guide
+          </Link>
+          , and refer to the{' '}
+          <Link
+            href="/blog/ultimate-guide-for-new-bulldog-owners"
+            className="text-[#ff6b00] hover:underline"
+          >
+            Ultimate Guide for New Bulldog Owners
+          </Link>{' '}
+          to understand your puppy&rsquo;s overall breed needs. Let&rsquo;s look at the two main
+          methods, their pros and cons, and how to build a routine without stress.
         </p>
       </div>
 

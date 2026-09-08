@@ -25,6 +25,13 @@
   - Copied and optimized header images (`bringing-puppy-home-first-weeks.jpg` and `choose-healthy-bulldog-puppy-health-tests.jpg`).
   - Merged local post registry metadata into `/blog` and configured dynamic rendering routes in `app/(site)/(chrome)/blog/[slug]/page.tsx`.
   - Upgraded FAQ system (`faq-data.ts`, `faq-content.tsx`) to support inline internal links and cross-linked the genetic testing question directly to the new health test article.
+- **Completed (Sep 8, 2026)**: Executed Post-Publish SEO fixes.
+  - Interlinked Care, Health, and Nutrition cluster articles.
+  - Restructured the Sanity `high-carb-commercial-dog-food-risks` post into a local React component (`components/blog/high-carb-commercial-dog-food-risks.tsx`) with proper H2/H3s.
+  - Deduplicated Sanity and local posts in `/blog` listing and `/sitemap.ts`.
+  - Enforced `og:type: 'article'` and improved bottom mobile padding on blog post pages.
+  - Added new E2E tests for blog SEO (`tests/e2e/blog-seo.spec.ts`).
+  - Generated PR #21.
 
 - **Completed (Aug 10, 2026, later still same day)**: Fixed a second, distinct cause of the same
   symptom as the entry directly below — `ViewContent` still missing on cold/direct loads of
