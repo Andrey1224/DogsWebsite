@@ -22,6 +22,8 @@
 ## Planning & Requirements
 - docs/planning/PRD.md: Product Requirements Document.
 - docs/planning/SPRINT_PLAN.md: Master execution roadmap.
+- docs/planning/SEO_PLAN.md: Current SEO baseline, ownership, monitoring dates, decision
+  thresholds, and prioritized actions.
 
 ## Architecture & Features
 - docs/database/migration-guide.md: Database schema management and migration workflows.

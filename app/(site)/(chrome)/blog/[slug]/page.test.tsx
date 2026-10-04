@@ -184,4 +184,53 @@ describe('ArticlePage', () => {
       '/blog/puppy-potty-training-101',
     );
   });
+
+  it('renders the French vs English Bulldog guide with useful internal links', async () => {
+    const { sanityFetch } = await import('@/sanity/lib/client');
+
+    vi.mocked(sanityFetch).mockResolvedValueOnce([]);
+
+    const component = await ArticlePage({
+      params: Promise.resolve({ slug: 'french-bulldog-vs-english-bulldog' }),
+    });
+    render(component);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      /French Bulldog vs\. English Bulldog/i,
+    );
+    expect(
+      screen.getByRole('heading', {
+        name: /French Bulldog vs\. English Bulldog: Quick Comparison/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /choosing a healthy Bulldog puppy/i })).toHaveAttribute(
+      'href',
+      '/blog/choose-healthy-bulldog-puppy-health-tests',
+    );
+    expect(screen.getByRole('link', { name: /essential new-owner guide/i })).toHaveAttribute(
+      'href',
+      '/blog/ultimate-guide-for-new-bulldog-owners',
+    );
+    expect(screen.getByRole('link', { name: /view available puppies/i })).toHaveAttribute(
+      'href',
+      '/puppies',
+    );
+    expect(
+      screen.getByRole('img', {
+        name: /French Bulldog and English Bulldog lying together on a sofa/i,
+      }),
+    ).toHaveAttribute('src', '/images/blog/french-bulldog-vs-english-bulldog.png');
+  });
+
+  it('uses search-focused metadata for the French vs English Bulldog guide', async () => {
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ slug: 'french-bulldog-vs-english-bulldog' }),
+    });
+
+    expect(metadata.title).toBe('French Bulldog vs English Bulldog: Which Is Right?');
+    expect(metadata.description).toMatch(/personality, size, exercise needs/i);
+    expect(new URL(String(metadata.alternates?.canonical)).pathname).toBe(
+      '/blog/french-bulldog-vs-english-bulldog',
+    );
+  });
 });
