@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Star, MapPin, Quote } from 'lucide-react';
 
 import type { Review } from '@/lib/reviews/types';
+import { isRemoteImage } from '@/lib/utils/images';
 
 type ReviewCardProps = {
   review: Review;
@@ -59,6 +60,7 @@ export function ReviewCard({ review, variant = 'full' }: ReviewCardProps) {
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                unoptimized={isRemoteImage(photoUrl)}
               />
             </div>
           ))}

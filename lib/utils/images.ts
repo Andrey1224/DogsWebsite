@@ -17,3 +17,12 @@ export function resolveLocalImage(
 
   return fallback;
 }
+
+/**
+ * Remote (Supabase-hosted) images are served pre-compressed from their own CDN,
+ * so we skip Next.js image optimization for them to avoid consuming the
+ * Vercel Image Optimization quota on every new upload.
+ */
+export function isRemoteImage(url: string): boolean {
+  return url.startsWith('http://') || url.startsWith('https://');
+}

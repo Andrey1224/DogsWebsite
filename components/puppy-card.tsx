@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 
 import type { PuppyWithRelations } from '@/lib/supabase/types';
-import { resolveLocalImage } from '@/lib/utils/images';
+import { isRemoteImage, resolveLocalImage } from '@/lib/utils/images';
 
 const statusStyles: Record<string, string> = {
   available: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -62,6 +62,7 @@ export function PuppyCard({ puppy, index = 0 }: PuppyCardProps) {
           className="object-cover transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading={loading}
+          unoptimized={isRemoteImage(coverImage)}
         />
 
         {/* Breed Badge */}

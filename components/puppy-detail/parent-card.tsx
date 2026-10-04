@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { Activity, Quote, Star, Weight } from 'lucide-react';
 
-import { resolveLocalImage } from '@/lib/utils/images';
+import { isRemoteImage, resolveLocalImage } from '@/lib/utils/images';
 
 type ParentStat = {
   label: string;
@@ -36,6 +36,7 @@ export function ParentCard({ role, name, photoUrl, title, stats = [], quote }: P
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 50vw"
+          unoptimized={isRemoteImage(resolvedImage)}
         />
 
         {/* Gradient Overlay */}
