@@ -20,6 +20,26 @@
 
 ## Recent Wins
 
+- Published the Breeds article “French Bulldog vs. English Bulldog: Which Is Right for Your
+  Family?” from `Task12.md` with a polished responsive layout, restrained icon use, a practical
+  comparison, responsible care context, internal links, SEO metadata, BlogPosting schema, and
+  automatic `/blog` and sitemap integration. The original tall static test was subsequently
+  replaced with a compact six-question interactive quiz and calculated breed result. Full
+  `npm run verify` passed for the initial article implementation (Oct 4, 2026).
+- Consolidated supplied breeder SEO research into `docs/seo/`, added a clear documentation index,
+  and created an owner-focused breeder checklist covering GBP, genuine reviews, NAP, citations,
+  authority, trust evidence, measurement, and the October checkpoint. GBP verification is in
+  progress; the canonical strategy remains `docs/planning/SEO_PLAN.md`.
+- Recorded the Sep 19 Search Console checkpoint: weekly clicks increased from 1 to 3, CTR rose
+  from 0.6% to 2.5%, and average position improved from 27.5 to 8.3. Sitemap, HTTPS, manual-action,
+  and security status remain healthy; the rolling 28-day trend is mixed and will be reassessed
+  after Oct 6. See `SEO-GSC-report-2026-09-19.md`.
+- Verified the Sep 8 blog release in Google Search Console on Sep 13: both new articles are indexed
+  with correct sitemap discovery and canonicals, all six articles remain unique in the 35-URL
+  sitemap, and no structured-data, HTTPS, manual-action, or security problems were reported.
+- Consolidated the June–September Search Console evidence into a single actionable
+  docs/planning/SEO_PLAN.md with owners, Sep 22/Oct 6 checkpoints, and thresholds that prevent
+  reacting to small-sample volatility.
 - Executed post-publish SEO fixes: internal linking, Sanity post component migration (High Carb), sitemap deduplication, and article schema enforcement.
 - Added two high-quality interactive "Bulldog Owner School" blog posts ("Bringing a Puppy Home" and "How to Choose a Healthy Bulldog Puppy") with integrated SEO metadata, robust local routing, and internal FAQ cross-linking.
 - Fixed admin puppy status dropdown not reflecting database updates after page refresh.

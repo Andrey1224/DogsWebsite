@@ -13,6 +13,25 @@ export type LocalPostDetails = Omit<BlogClientPost, 'category'> & {
 
 export const LOCAL_POSTS: LocalPostDetails[] = [
   {
+    id: 'local-post-french-bulldog-vs-english-bulldog',
+    slug: 'french-bulldog-vs-english-bulldog',
+    title: 'French Bulldog vs. English Bulldog: Which Is Right for Your Family?',
+    excerpt:
+      'French Bulldog or English Bulldog? Compare their personality, size, exercise needs, family fit, and signature sense of humor before choosing your companion.',
+    category: 'Breeds',
+    categoryLabel: 'Bulldog Breed Guide',
+    readTime: '8 min',
+    date: 'October 4, 2026',
+    image: '/images/blog/french-bulldog-vs-english-bulldog.png',
+    imageAlt:
+      'French Bulldog and English Bulldog lying together on a sofa for a breed comparison guide.',
+    featured: false,
+    seoTitle: 'French Bulldog vs English Bulldog: Which Is Right?',
+    seoDescription:
+      'Compare French and English Bulldog personality, size, exercise needs, family fit, and care considerations to choose the right companion for your home.',
+    publishedAt: '2026-10-04T17:00:00.000Z',
+  },
+  {
     id: 'local-post-dry-food-vs-raw-diet-bulldogs',
     slug: 'dry-food-vs-raw-diet-bulldogs',
     title:

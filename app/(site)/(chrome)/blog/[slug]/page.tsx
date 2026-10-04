@@ -29,6 +29,7 @@ import { PuppyPottyTraining101 } from '@/components/blog/puppy-potty-training-10
 import { BringingPuppyHomeFirstWeeks } from '@/components/blog/bringing-puppy-home-first-weeks';
 import { ChooseHealthyBulldogPuppy } from '@/components/blog/choose-healthy-bulldog-puppy-health-tests';
 import { HighCarbCommercialDogFoodRisks } from '@/components/blog/high-carb-commercial-dog-food-risks';
+import { FrenchBulldogVsEnglishBulldog } from '@/components/blog/french-bulldog-vs-english-bulldog';
 
 const LOCAL_POST_COMPONENTS: Record<string, ComponentType> = {
   'dry-food-vs-raw-diet-bulldogs': DryFoodVsRawDietBulldogs,
@@ -37,6 +38,7 @@ const LOCAL_POST_COMPONENTS: Record<string, ComponentType> = {
   'bringing-puppy-home-first-weeks': BringingPuppyHomeFirstWeeks,
   'choose-healthy-bulldog-puppy-health-tests': ChooseHealthyBulldogPuppy,
   'high-carb-commercial-dog-food-risks': HighCarbCommercialDogFoodRisks,
+  'french-bulldog-vs-english-bulldog': FrenchBulldogVsEnglishBulldog,
 };
 
 const categoryLabel: Record<string, string> = {

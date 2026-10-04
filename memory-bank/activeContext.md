@@ -20,6 +20,67 @@
 
 ## Current Status
 
+- **Completed (Oct 4, 2026)**: Published the local breed-comparison article from `Task12.md` as
+  `/blog/french-bulldog-vs-english-bulldog`.
+  - Reworked the emoji-heavy draft into a readable, responsive article while preserving its humor
+    and Frenchie-versus-English-Bulldog personality test.
+  - Added visual question cards, breed-specific sections, a mobile-friendly comparison table,
+    responsible care guidance, and contextual links to the health-test guide, new-owner guide,
+    FAQ, contact page, and available puppies.
+  - Registered the article in the local post system with Breeds metadata, canonical/OG support,
+    BlogPosting schema, `/blog` listing, static params, related posts, and sitemap inclusion.
+  - Added the owner-provided `FrenchEnglish.png` as the dedicated article cover and social preview,
+    plus focused route/metadata regression tests.
+  - Replaced the long stack of static personality-test cards with a compact six-question
+    interactive quiz that shows one question at a time and calculates a French Bulldog, English
+    Bulldog, or both-breeds result. Added interaction and reset coverage.
+  - Pre-push verification passed: docs/link checks, lint, typecheck, 808 unit tests (12 skipped),
+    and the clean Playwright rerun completed with 34 passed and 3 expected skips. The first E2E run
+    had one transient local Next.js compilation HTTP 500 on `/blog`; it did not repeat.
+- **SEO documentation consolidation (Sep 19, 2026)**: Added `docs/seo/README.md` as the document
+  index and `docs/seo/BREEDER_SEO_CHECKLIST.md` as the owner-operated checklist. Copied the supplied
+  deep research, Meta/SEO funnel, local SEO action plan, and historical implementation summary into
+  `docs/seo/research/` and `docs/seo/history/`. These copied documents are reference material, not
+  executable instructions. The owner confirmed that Google Business Profile verification is in
+  progress; `docs/planning/SEO_PLAN.md` remains the canonical strategy.
+- **SEO trend and health check (Sep 19, 2026)**: Completed a read-only Google Search Console
+  follow-up; no settings, sitemap submissions, validation requests, or indexing requests changed.
+  - Latest seven available days: 3 clicks versus 1, 120 impressions versus 167, CTR 2.5% versus
+    0.6%, and average position 8.3 versus 27.5. All three clicks came from the Huntsville and main
+    locations pages, so the freshest signal is positive and commercially relevant.
+  - Rolling 28 days remain mixed: 13 clicks versus 15, 517 impressions versus 570, CTR 2.5% versus
+    2.6%, and average position 20.7 versus 19.3. Do not make broad SEO changes before the next
+    complete checkpoint after Oct 6.
+  - `dry-food-vs-raw-diet-bulldogs` led the article cluster with 2 clicks and 17 impressions. Both
+    Sep 8 articles continue receiving impressions and are absent from indexing exclusions.
+  - Sitemap remains Success with 35 discovered URLs and was last read Sep 18. HTTPS, Manual
+    Actions, and Security Issues are clean. Core Web Vitals still lacks sufficient field data.
+  - Detailed snapshot: `SEO-GSC-report-2026-09-19.md`; strategy updated in
+    `docs/planning/SEO_PLAN.md`.
+- **SEO verification (Sep 13, 2026)**: Completed a read-only production and Google Search Console
+  follow-up using complete performance data through Sep 11.
+  - Both Sep 8 articles are indexed, sitemap-discovered, self-canonical, crawlable, and already
+    receiving impressions: Bringing a Puppy Home (6 impressions, average position 18.7) and the
+    Healthy Bulldog Puppy guide (5 impressions, average position 10.2).
+  - The latest 28 days produced 15 clicks versus 11 (+36%), 501 impressions versus 537 (-7%), and
+    CTR improved from 2.0% to 3.0%. The latest seven days produced 167 impressions versus 102
+    (+64%) but only 2 clicks versus 5 because the new visibility is mostly lower-ranking.
+  - Sitemap remains Success with 35 discovered URLs and all six articles exactly once. There are
+    no Breadcrumbs/Review snippet errors, HTTPS issues, manual actions, or security issues.
+  - `/terms` remains Discovered — currently not indexed, but its Sep 13 live test passed. Request
+    Indexing was not submitted. Nine unavailable puppy profiles remain discovered but not indexed;
+    do not mass-submit them before deciding the long-term sold-profile indexing strategy.
+  - Detailed snapshot: `SEO-GSC-report-2026-09-13.md`. Next meaningful checkpoints remain Sep 22
+    for early article query data and after Oct 6 for a complete 28-day comparison.
+- **Planning Update (Sep 9, 2026)**: Consolidated the historical GSC audits and the Sep 6 live
+  performance snapshot into docs/planning/SEO_PLAN.md.
+  - Technical SEO is healthy; no broad code rewrite is planned.
+  - P0 is owner-led local authority: verify/complete Google Business Profile, keep NAP consistent,
+    request genuine reviews, and earn a few legitimate local citations.
+  - Reinspect the two September articles on Sep 22 and run the first fair 28-day post-deployment
+    comparison after Oct 6.
+  - Huntsville and /puppies are the first possible code/content candidates, but only after the
+    documented impression, position, and CTR thresholds are met.
 - **Completed (Sep 8, 2026)**: Added two new "Bulldog Owner School" articles: "Bringing a Puppy Home" and "How to Choose a Healthy Bulldog Puppy".
   - Created custom React layouts (`components/blog/bringing-puppy-home-first-weeks.tsx` and `components/blog/choose-healthy-bulldog-puppy-health-tests.tsx`) implementing the premium article design system with visually engaging flows, color-coded DNA statuses, and interactive checklists.
   - Copied and optimized header images (`bringing-puppy-home-first-weeks.jpg` and `choose-healthy-bulldog-puppy-health-tests.jpg`).
