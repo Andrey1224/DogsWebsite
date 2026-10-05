@@ -257,6 +257,21 @@ improves, or the page average moves from about 11 toward the first page without 
 
 ## Page plan: Birmingham
 
+> **Status (Oct 5, 2026): Batch 2B implemented on `dev`, not deployed, not indexed, not measured.**
+> Implemented per `docs/seo/tasks/birmingham-location-page-batch-2b-2026-10-05.md` (the final,
+> owner-approved brief — its copy, FAQ, and internal links supersede the draft suggestions below).
+> Replaced the unverified "families have been trusting" and "we ship nationwide" claims and the
+> broad "health-tested puppies" language with qualified, verifiable copy; rewrote the FAQ to 5
+> items (availability, distance, delivery, deposit, health information) with visible text generated
+> from the same data as the `FAQPage` JSON-LD; added a "Before You Choose a Puppy" block with the 5
+> required contextual links (`/puppies`, the health-test guide, `/reviews`, `/contact`, `/terms`);
+> and added a per-location "Available Bulldog Puppies for Birmingham Families" section
+> heading/intro (new optional `availableHeading`/`availableIntro` fields on `Location`, defaulting
+> to the prior generic copy for Huntsville/Cullman/Decatur, which were not changed). The $300
+> deposit figure was checked against `lib/payments/deposit.ts` (`DEFAULT_FIXED_DEPOSIT = 300`) and
+> `/terms` and is consistent. See the "Birmingham Batch 2B" entry in `memory-bank/activeContext.md`
+> for the full implementation summary, changed files, and test results.
+
 ### Evidence
 
 - 214 impressions, one click, 0.47% CTR, average position 22.5.

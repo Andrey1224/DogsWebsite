@@ -101,7 +101,7 @@ describe('Location Page', () => {
 
     expect(
       screen.getByText(
-        'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price.',
+        'A $300 non-refundable deposit reserves an approved available puppy and is applied to the final purchase price. Review the current deposit terms and complete the buyer-approval process before submitting payment.',
       ),
     ).toBeInTheDocument();
   });
@@ -110,18 +110,26 @@ describe('Location Page', () => {
     const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
     render(component);
 
-    expect(screen.getByRole('heading', { name: /^Birmingham Families$/i })).toBeInTheDocument();
     expect(
-      screen.getByText(/currently collecting approved stories from Birmingham-area families/i),
+      screen.getByRole('heading', { name: /^Before You Choose a Puppy$/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /read verified reviews/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /see available bulldog puppies/i })).toHaveAttribute(
+      'href',
+      '/puppies',
+    );
+    expect(
+      screen.getByRole('link', { name: /learn how to review bulldog health tests/i }),
+    ).toHaveAttribute('href', '/blog/choose-healthy-bulldog-puppy-health-tests');
+    expect(screen.getByRole('link', { name: /read puppy-family reviews/i })).toHaveAttribute(
       'href',
       '/reviews',
     );
-    expect(screen.getAllByRole('link', { name: /contact us/i })[0]).toHaveAttribute(
-      'href',
-      '/contact',
-    );
+    expect(
+      screen.getByRole('link', { name: /contact us about birmingham pickup or delivery/i }),
+    ).toHaveAttribute('href', '/contact');
+    expect(
+      screen.getByRole('link', { name: /review deposit and delivery terms/i }),
+    ).toHaveAttribute('href', '/terms');
     expect(screen.queryByText(/Melissa T\./i)).not.toBeInTheDocument();
     expect(screen.queryByText(/DeShawn R\./i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Carla W\./i)).not.toBeInTheDocument();
@@ -351,5 +359,198 @@ describe('Huntsville location page (Batch 2A)', () => {
     const breadcrumbData = JSON.parse(breadcrumbSchema?.textContent ?? '{}');
     expect(breadcrumbData['@type']).toBe('BreadcrumbList');
     expect(breadcrumbData.itemListElement.at(-1).item.name).toBe('Huntsville, AL');
+  });
+});
+
+describe('Birmingham location page (Batch 2B)', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+  });
+
+  it('uses the expected title, meta description, self-canonical, and indexable robots', async () => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+
+    expect(metadata.title).toBe('French & English Bulldog Puppies Near Birmingham, AL');
+    expect(metadata.description).toBe(
+      'Browse French and English Bulldog puppies available near Birmingham, Alabama. View current profiles and plan Falkville-area pickup, ground transport, or approved delivery.',
+    );
+    expect(new URL(String(metadata.alternates?.canonical)).pathname).toBe(
+      '/locations/birmingham-al',
+    );
+    expect(metadata.robots).toBeUndefined();
+  });
+
+  it('renders exactly one H1 with the required Birmingham, Alabama heading', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    render(component);
+
+    const headings = screen.getAllByRole('heading', { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent(
+      'French & English Bulldog Puppies Near Birmingham, Alabama',
+    );
+  });
+
+  it('renders Birmingham/Falkville/nearby-community context without the removed claims', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    const { container } = render(component);
+
+    expect(container).toHaveTextContent(/Falkville, Alabama/i);
+    expect(container).toHaveTextContent(/Hoover/i);
+    expect(container).toHaveTextContent(/Homewood/i);
+    expect(container).toHaveTextContent(/Vestavia Hills/i);
+    expect(container).toHaveTextContent(/Mountain Brook/i);
+    expect(container).toHaveTextContent(/Pelham/i);
+    expect(container).toHaveTextContent(/Trussville/i);
+
+    // Removed/unverified claims must not appear.
+    expect(container).not.toHaveTextContent(/families have been trusting/i);
+    expect(container).not.toHaveTextContent(/we ship nationwide/i);
+  });
+
+  it('does not promise unconditional nationwide or direct-to-BHM delivery', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    const { container } = render(component);
+
+    expect(container).not.toHaveTextContent(/we ship nationwide/i);
+    expect(container).not.toHaveTextContent(/directly to birmingham-shuttlesworth/i);
+    expect(container).toHaveTextContent(/may be arranged/i);
+    expect(container).toHaveTextContent(/can be discussed/i);
+  });
+
+  it('shows the required "Available Bulldog Puppies for Birmingham Families" section heading and copy', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    render(component);
+
+    expect(
+      screen.getByRole('heading', { name: /^Available Bulldog Puppies for Birmingham Families$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Current French and English Bulldog puppy profiles are updated as availability changes/i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('renders an available puppy returned by the query and links to its detail page', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([
+      mockPuppy({ id: 'nippet-1', name: 'Nippet', slug: 'nippet', status: 'available' }),
+    ]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    render(component);
+
+    expect(getFilteredPuppies).toHaveBeenCalledWith({ status: 'available' });
+    expect(screen.getByText('Nippet')).toBeInTheDocument();
+    const cardLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href')?.includes('/puppies/nippet'));
+    expect(cardLinks.length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText(/We do not have puppies available for Birmingham families/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows an honest /contact fallback CTA when no puppies are available', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    render(component);
+
+    expect(
+      screen.getByText(/We do not have puppies available for Birmingham families/i),
+    ).toBeInTheDocument();
+    const contactLinks = screen
+      .getAllByRole('link', { name: /contact us/i })
+      .filter((link) => link.getAttribute('href') === '/contact');
+    expect(contactLinks.length).toBeGreaterThan(0);
+  });
+
+  it('includes all five required contextual links to /puppies, the health-test guide, /reviews, /contact, and /terms', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    render(component);
+
+    expect(screen.getByRole('link', { name: /see available bulldog puppies/i })).toHaveAttribute(
+      'href',
+      '/puppies',
+    );
+    expect(
+      screen.getByRole('link', { name: /learn how to review bulldog health tests/i }),
+    ).toHaveAttribute('href', '/blog/choose-healthy-bulldog-puppy-health-tests');
+    expect(screen.getByRole('link', { name: /read puppy-family reviews/i })).toHaveAttribute(
+      'href',
+      '/reviews',
+    );
+    expect(
+      screen.getByRole('link', { name: /contact us about birmingham pickup or delivery/i }),
+    ).toHaveAttribute('href', '/contact');
+    expect(
+      screen.getByRole('link', { name: /review deposit and delivery terms/i }),
+    ).toHaveAttribute('href', '/terms');
+  });
+
+  it('renders visible FAQ answers that match the FAQPage JSON-LD exactly, plus valid Breadcrumb data', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const { locations } = await import('@/lib/data/locations');
+    const birmingham = locations.find((loc) => loc.slug === 'birmingham-al');
+    if (!birmingham) throw new Error('birmingham-al location missing');
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'birmingham-al' }) });
+    const { container } = render(component);
+
+    for (const item of birmingham.faq) {
+      expect(screen.getByText(item.question)).toBeInTheDocument();
+      expect(screen.getByText(item.answer)).toBeInTheDocument();
+    }
+
+    const faqSchema = document.querySelector('#location-faq-birmingham-al');
+    const faqData = JSON.parse(faqSchema?.textContent ?? '{}');
+    expect(faqData['@type']).toBe('FAQPage');
+    expect(faqData.mainEntity).toEqual(
+      birmingham.faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    );
+
+    const breadcrumbNav = within(container).getByRole('navigation', { name: /breadcrumb/i });
+    const breadcrumbSchema = breadcrumbNav.querySelector('script[type="application/ld+json"]');
+    const breadcrumbData = JSON.parse(breadcrumbSchema?.textContent ?? '{}');
+    expect(breadcrumbData['@type']).toBe('BreadcrumbList');
+    expect(breadcrumbData.itemListElement.at(-1).item.name).toBe('Birmingham, AL');
+  });
+
+  it('does not change Huntsville, Cullman, or Decatur location data', async () => {
+    const { locations } = await import('@/lib/data/locations');
+    const huntsville = locations.find((loc) => loc.slug === 'huntsville-al');
+    const cullman = locations.find((loc) => loc.slug === 'cullman-al');
+    const decatur = locations.find((loc) => loc.slug === 'decatur-al');
+
+    expect(huntsville?.heroTitle).toBe('French & English Bulldog Puppies Near Huntsville, Alabama');
+    expect(huntsville?.faq).toHaveLength(4);
+    expect(cullman?.heroTitle).toBe('French & English Bulldog Puppies Near Cullman, Alabama');
+    expect(cullman?.faq).toHaveLength(4);
+    expect(decatur?.heroTitle).toBe('French & English Bulldog Puppies Near Decatur, Alabama');
+    expect(decatur?.faq).toHaveLength(4);
   });
 });

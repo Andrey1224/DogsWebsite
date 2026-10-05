@@ -23,6 +23,12 @@ export type Location = {
   localContext?: string[];
   nearbyAreas?: string[];
   isIndexable?: boolean;
+  /**
+   * Optional per-location override for the "available puppies" section heading/intro.
+   * Falls back to the shared generic copy when omitted.
+   */
+  availableHeading?: string;
+  availableIntro?: string;
 };
 
 export const locations: Location[] = [
@@ -32,63 +38,77 @@ export const locations: Location[] = [
     state: 'AL',
     metaTitle: 'French & English Bulldog Puppies Near Birmingham, AL',
     metaDescription:
-      'Looking for a French or English bulldog puppy near Birmingham, AL? Exotic Bulldog Legacy is about an hour away with vet-checked pups, transparent records, and flexible delivery options.',
-    heroTitle: 'Bulldog Puppies for Birmingham Families',
+      'Browse French and English Bulldog puppies available near Birmingham, Alabama. View current profiles and plan Falkville-area pickup, ground transport, or approved delivery.',
+    heroTitle: 'French & English Bulldog Puppies Near Birmingham, Alabama',
     heroText:
-      'Metro Birmingham families have been trusting Exotic Bulldog Legacy for health-tested, lovingly raised French and English bulldogs. Whether you live in Hoover, Vestavia Hills, Mountain Brook, or downtown Birmingham, we make the pickup process straightforward — and we ship nationwide for families who prefer a flight nanny.',
+      'Looking for a French or English Bulldog puppy near Birmingham? Exotic Bulldog Legacy is based near Falkville, Alabama, roughly an hour from much of the Birmingham metro depending on your starting point and traffic. Browse current puppy profiles, pricing, temperament notes, and available health information, then contact us to arrange pickup by appointment or discuss delivery options.',
     driveTimeMinutes: 60,
+    availableHeading: 'Available Bulldog Puppies for Birmingham Families',
+    availableIntro:
+      'Current French and English Bulldog puppy profiles are updated as availability changes. Open a profile to review photos, pricing, temperament notes, and available health information.',
     deliveryOptions: [
       {
         type: 'Pickup by Appointment',
         description:
-          'Schedule a visit to our kennel about an hour from Birmingham. We share the address after a deposit is placed for privacy and safety.',
-      },
-      {
-        type: 'Flight Nanny Delivery',
-        description:
-          'A professional pet nanny hand-delivers your puppy in-cabin directly to Birmingham-Shuttlesworth International Airport (BHM). No cargo holds — ever.',
+          'Our pickup area is near Falkville, approximately an hour from much of the Birmingham metro depending on the starting point, route, and traffic. Contact us to arrange an appointment before traveling. The private pickup address is shared according to our reservation and safety process.',
       },
       {
         type: 'Ground Transport',
         description:
-          'For Birmingham metro buyers, we can arrange a meet-up at a mutually convenient location. Contact us to discuss options.',
+          'Ground transport or an agreed meet-up may be available for Birmingham-area families depending on timing, distance, and puppy readiness. Confirm the arrangement and cost before placing a deposit.',
+      },
+      {
+        type: 'Flight Nanny Delivery',
+        description:
+          'Professional in-cabin flight nanny delivery may be arranged when available. Birmingham-Shuttlesworth International Airport or another agreed airport can be discussed before scheduling. Puppies do not travel in cargo, and delivery cost and timing must be confirmed in advance.',
       },
     ],
     faq: [
       {
-        question: 'How far is the kennel from Birmingham?',
+        question: 'What Bulldog puppies are currently available near Birmingham?',
         answer:
-          'Our kennel is approximately one hour from the Birmingham metro area. We share the exact address after a deposit is placed for privacy and safety. Most Birmingham families find the drive well worth it.',
+          "The available-puppy section on this page uses our current puppy records. Open a profile to review the puppy's status, photos, published price, temperament notes, and available health information. Availability may change when a puppy is reserved.",
       },
       {
-        question: 'Can you deliver a puppy to Birmingham without me driving?',
+        question: 'How far is Exotic Bulldog Legacy from Birmingham?',
         answer:
-          'Yes. We offer flight nanny delivery directly to Birmingham-Shuttlesworth International Airport (BHM). A professional nanny accompanies your puppy in-cabin — no cargo. We also offer ground transport meet-ups for Birmingham metro buyers.',
+          'Our pickup area is near Falkville, approximately an hour from much of the Birmingham metro. Actual driving time depends on your starting point, route, and traffic. Contact us before traveling to arrange an appointment.',
       },
       {
-        question: 'What deposit is required to reserve a Birmingham puppy?',
+        question: 'Can a puppy be delivered to Birmingham?',
         answer:
-          'A $300 non-refundable deposit secures your pick from the litter. The deposit is applied to the final purchase price.',
+          'Pickup near Falkville is available by appointment. Depending on timing, distance, and puppy readiness, we may also arrange ground transport, an agreed meet-up, or professional in-cabin flight nanny delivery. Confirm availability, timing, and cost before placing a deposit.',
       },
       {
-        question: 'What health documentation comes with a Birmingham puppy?',
+        question: 'What deposit is required to reserve a puppy?',
         answer:
-          'Every puppy goes home vet-checked with up-to-date, age-appropriate vaccinations and microchipping. Ask us for available health-testing documentation — the same standard applies regardless of how you receive your puppy. Guarantee terms are outlined in the signed contract.',
+          'A $300 non-refundable deposit reserves an approved available puppy and is applied to the final purchase price. Review the current deposit terms and complete the buyer-approval process before submitting payment.',
+      },
+      {
+        question: 'What health information is available with a puppy?',
+        answer:
+          'Available health information can vary by puppy and breeding pair. Ask to review the records available for the specific puppy and parents. Puppies receive age-appropriate veterinary care before going home, and the applicable health-guarantee terms are provided in the signed contract.',
       },
     ],
     familyNote: {
-      heading: 'Birmingham Families',
-      text: 'We are currently collecting approved stories from Birmingham-area families. In the meantime, you can read verified reviews from our puppy families or contact us with questions about pickup and delivery near Birmingham.',
+      heading: 'Before You Choose a Puppy',
+      text: 'Before reserving, see available Bulldog puppies, learn how to review Bulldog health tests, and read puppy-family reviews. Contact us about Birmingham pickup or delivery, and review deposit and delivery terms before placing a deposit.',
       links: [
-        { label: 'Read verified reviews', href: '/reviews' },
-        { label: 'Contact us', href: '/contact' },
+        { label: 'See available Bulldog puppies', href: '/puppies' },
+        {
+          label: 'Learn how to review Bulldog health tests',
+          href: '/blog/choose-healthy-bulldog-puppy-health-tests',
+        },
+        { label: 'Read puppy-family reviews', href: '/reviews' },
+        { label: 'Contact us about Birmingham pickup or delivery', href: '/contact' },
+        { label: 'Review deposit and delivery terms', href: '/terms' },
       ],
     },
     localContext: [
       'Birmingham families can plan an appointment near Falkville or ask about ground and flight-nanny delivery. Availability, transport timing, and the puppy’s go-home date should be confirmed before making travel plans.',
       'For a comfortable ride home, bring a secured travel crate or restraint, water, cooling supplies during warm weather, and the veterinarian contact you plan to use after pickup.',
     ],
-    nearbyAreas: ['Hoover', 'Vestavia Hills', 'Mountain Brook', 'Homewood', 'Pelham', 'Trussville'],
+    nearbyAreas: ['Hoover', 'Homewood', 'Vestavia Hills', 'Mountain Brook', 'Pelham', 'Trussville'],
   },
   {
     slug: 'huntsville-al',
