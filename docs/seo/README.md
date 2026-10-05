@@ -1,6 +1,6 @@
 # SEO Documentation Index
 
-Last updated: 2026-09-19
+Last updated: 2026-10-04
 
 This directory keeps the active breeder checklist, supporting research, and historical SEO notes
 in one place. It prevents old research or campaign notes from being mistaken for the current plan.
@@ -11,8 +11,12 @@ in one place. It prevents old research or campaign notes from being mistaken for
    decision rules, and Search Console checkpoints.
 2. [Breeder SEO checklist](BREEDER_SEO_CHECKLIST.md) — owner-operated work outside the codebase:
    Google Business Profile, reviews, NAP, citations, partnerships, and breeder trust evidence.
-3. [Latest GSC report — September 19, 2026](../../SEO-GSC-report-2026-09-19.md) — the latest
-   measured search-performance and technical-health snapshot.
+3. [Landing-page improvement plan — October 4, 2026](landing-page-improvement-plan-2026-10-04.md)
+   — evidence-based implementation brief for Puppies, location pages, the nutrition cluster, and
+   the next content-research phase.
+4. [Latest GSC report — September 19, 2026](../../SEO-GSC-report-2026-09-19.md) — the latest
+   saved full search-performance and technical-health snapshot; the October 4 landing-page plan
+   includes a newer targeted three-month page/query baseline.
 
 When these documents disagree with older research, use the current SEO plan and latest dated GSC
 report.
@@ -27,6 +31,12 @@ them on the website.
 
 - [Breeder SEO deep research](research/breeder-seo-deep-research-2026.md) — broad idea bank for
   local SEO, breeder trust, content, conversion, and outreach. Do not implement wholesale.
+- [French Bulldog colors and genetics article brief](research/french-bulldog-color-genetics-article-brief-2026-10-04.md)
+  — source-grounded editorial plan, claim-safety rules, and an original buyer-facing format for
+  the next genetics article.
+- [French Bulldog colors and genetics article draft](research/french-bulldog-colors-genetics-article-draft-2026-10-04.md)
+  — unpublished long-form copy built around the Four-Layer Color Decoder and Color Receipt; it
+  still requires verified breeder-specific evidence and final review before implementation.
 - [Marketing and SEO funnel](research/marketing-and-seo-funnel-2026.md) — mixed Meta advertising,
   analytics, and SEO plan. August campaign dates and budgets are historical.
 - [Local SEO action plan](research/local-seo-action-plan-2026.md) — useful local SEO priorities;
