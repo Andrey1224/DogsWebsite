@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyPuppyFilters } from './queries';
+import { applyPuppyFilters, bucketPuppiesByStatus } from './queries';
 import type { PuppyWithRelations } from './types';
 
 const basePuppy: Omit<PuppyWithRelations, 'parents' | 'litter'> = {
@@ -207,6 +207,38 @@ describe('applyPuppyFilters', () => {
       'upcoming',
       'sold-newer',
       'sold-older',
+    ]);
+  });
+});
+
+describe('bucketPuppiesByStatus', () => {
+  it('splits puppies into available, upcoming, and past (reserved + sold) buckets', () => {
+    const sold: PuppyWithRelations = { ...puppies[0], id: 'sold-dog', status: 'sold' };
+    const result = bucketPuppiesByStatus([...puppies, sold]);
+
+    expect(result.available.map((puppy) => puppy.id)).toEqual(['available-french']);
+    expect(result.upcoming.map((puppy) => puppy.id)).toEqual(['upcoming-english']);
+    expect(result.past.map((puppy) => puppy.id)).toEqual(['reserved-english', 'sold-dog']);
+  });
+
+  it('returns three empty arrays for an empty input', () => {
+    const result = bucketPuppiesByStatus([]);
+    expect(result).toEqual({ available: [], upcoming: [], past: [] });
+  });
+
+  it('preserves relative order within each bucket without re-sorting', () => {
+    const records: PuppyWithRelations[] = [
+      { ...puppies[0], id: 'sold-first', status: 'sold' },
+      { ...puppies[0], id: 'reserved-first', status: 'reserved' },
+      { ...puppies[0], id: 'sold-second', status: 'sold' },
+    ];
+
+    const result = bucketPuppiesByStatus(records);
+
+    expect(result.past.map((puppy) => puppy.id)).toEqual([
+      'sold-first',
+      'reserved-first',
+      'sold-second',
     ]);
   });
 });

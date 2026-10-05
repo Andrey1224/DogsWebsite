@@ -20,6 +20,91 @@
 
 ## Current Status
 
+- **`/puppies` SEO restructure — Batch 1, implemented and hardened, NOT deployed, NOT measured
+  (Oct 4–5, 2026)**: Implemented the `/puppies` listing-page changes from the "Page plan:
+  /puppies" section of `docs/seo/landing-page-improvement-plan-2026-10-04.md` on `dev`.
+  Code-complete only — not merged to `main`, not deployed to production, no Google Search Console
+  changes.
+  - **Current DB state**: 1 available puppy (Nippet), 0 upcoming, 14 past (reserved/sold).
+  - **Final page order**: compact hero → filters → puppy inventory (Available Now → Upcoming
+    Litters → Past Puppies, whichever buckets are non-empty) → "How the Process Works" (4
+    verified steps, grounded in `/terms`) → Puppy FAQ (4 items, `FAQPage` JSON-LD built directly
+    from the same array as the visible text) → Pickup & Delivery Options → SEO/local-context links
+    (DNA guide, `/locations`, `/faq`, `/contact`) at the very bottom. The gallery always renders
+    immediately after the filter bar; when nothing is available or upcoming, a short notice plus
+    Past Puppies appears there instead of the page falling through to FAQ/process content first.
+  - Title/H1/meta description: `Available French & English Bulldog Puppies in Alabama` (verbatim,
+    character-identical per Google's title/H1-alignment guidance).
+  - Hero eyebrow/copy/CTA are driven by a **separate, always-unfiltered** `getFilteredPuppies({})`
+    call (`hasGlobalAvailable`), independent of whatever status/breed/sex/price/search filter is
+    applied to the grid, so a narrow or zero-result filter can't make the hero falsely claim no
+    puppies are available. CTA href is `/puppies?status=available#available-now` — clears any
+    active filter so the anchor target always shows real inventory, not a bare `#available-now`
+    that could scroll to an empty filtered section.
+  - `bucketPuppiesByStatus()` in `lib/supabase/queries.ts` — pure post-fetch grouping helper over
+    the array `getFilteredPuppies` already returns; does not change `PUPPY_STATUS_PRIORITY` or
+    `applyPuppyFilters`. The three-layer reservation-eligibility gate (DB RPC / server action /
+    `lib/reservations/state.ts`) was not touched.
+  - Open flags for the user: (1) no Product JSON-LD on the listing grid — still detail-page-only,
+    out of scope; (2) this page's Pickup & Delivery copy still says "North Alabama" while
+    `/terms`/`/faq` describe Southeast-wide flight-nanny delivery — the FAQ answer is written
+    conservatively around this, the inconsistency itself wasn't reconciled.
+  - Verification (latest round): full Vitest suite 826 passed/12 skipped (36 tests in
+    `page.test.tsx` alone, covering section order, hero/CTA independence from filters, and the
+    empty-inventory/Past-Puppies-immediately-after-filters cases), ESLint zero-warnings,
+    `tsc --noEmit` clean, production `next build` clean, targeted Playwright
+    (`smoke.spec.ts`/`contact-links.spec.ts`/`admin.spec.ts`) all passing, `git diff --check`
+    clean. Desktop (1440×900) and mobile (390×844) Playwright screenshots confirm the order and
+    that the fixed contact bar doesn't obscure puppy cards/CTAs at rest.
+  - Next steps: commit, then user review before pushing to `dev`, opening a PR to `main`,
+    deploying, and comparing Search Console data after ~28 days per the SEO plan's measurement
+    procedure.
+
+- **Admin E2E mutation-safety fix (Oct 5, 2026)**: `tests/e2e/admin.spec.ts`'s
+  `'admin can change puppy status and it reflects on public site'` test previously picked "the
+  first row" in the admin puppy list, toggled its status, and restored it with an unverified
+  `waitForTimeout` — a raced/failed restore once left a real puppy ("Nippet") stuck in `reserved`
+  status in production with no corresponding reservation (confirmed via a Supabase audit: zero
+  matching rows in `reservations`/`webhook_events`; fixed via direct SQL — Nippet is now the
+  site's one available puppy). **This has been fixed, not just flagged**:
+  - The test is now **skipped by default** — a plain `npm run e2e` never runs it.
+  - Requires explicit opt-in (`E2E_ALLOW_ADMIN_MUTATIONS=true`) and a dedicated fixture
+    (`E2E_TEST_PUPPY_SLUG`) — it never falls back to "the first row" or any other real puppy.
+  - Requires `E2E_TEST_SUPABASE_PROJECT_REF`, an **allowlist**: the Supabase project ref resolved
+    from `SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_URL` must match it exactly or the test refuses to
+    run — chosen over a hardcoded production-ref blocklist, which would silently stop protecting
+    anything if the production project is ever recreated or migrated.
+  - After every status change (both the mutation and the restore), the test waits for the success
+    toast and the dropdown to re-enable, then **reloads `/admin/puppies` and re-reads the status
+    from a fresh server fetch** — `selectOption()` alone only proves the DOM updated, not that
+    Supabase persisted the write. No fixed timeouts anywhere in the flow.
+  - Restore runs in a `try/finally`; `retries: 0` on this test block specifically, so a CI retry
+    can't double the blast radius of a real-data mutation.
+  - No dedicated Supabase test project exists yet — the correct long-term fix is a separate
+    Supabase project with its own seed/cleanup fixture; until then this test stays off by default.
+- **SEO landing-page plan (Oct 4, 2026)**: Added
+  `docs/seo/landing-page-improvement-plan-2026-10-04.md` after reviewing the live site, local post
+  registry, current page copy, and Google Search Console data for Jul 3–Oct 2.
+  - Prioritized `/puppies`, Huntsville, Birmingham, Cullman, and the two nutrition articles using
+    measured clicks, impressions, CTR, positions, and visible query intent.
+  - Documented proposed title/H1/meta copy, visible content blocks, internal-link anchors, owner
+    facts that must be confirmed, phased implementation, measurement thresholds, and release QA.
+  - Confirmed that a generic breeder-question article would overlap the existing Healthy Puppy
+    Guide and that a general feeding guide needs a narrower practical schedule/portion intent to
+    avoid duplicating Raw vs. Kibble and High-Carb content.
+  - Reserved `French Bulldog Colors & Genetics: What Buyers Should Know` as the next separate
+    research project, with FBDCA/AKC/UC Davis/peer-reviewed sourcing and an original visual
+    coat-color-decoder concept. No production pages or Search Console settings were changed.
+- **French Bulldog color-genetics research brief (Oct 4, 2026)**: Added
+  `docs/seo/research/french-bulldog-color-genetics-article-brief-2026-10-04.md`. The brief separates
+  breed-standard status, registration terminology, marketing labels, coat genotype, and health
+  screening; maps buyer-safe claims to FBDCA, AKC, UC Davis VGL, OFA/CHIC, and peer-reviewed
+  evidence; and defines the original `Four-Layer Color Decoder` plus `Color Receipt` article
+  format. No website code was created and nothing was published.
+  - Added an unpublished companion draft at
+    `docs/seo/research/french-bulldog-colors-genetics-article-draft-2026-10-04.md`. It turns the
+    research into reader-ready long-form copy, but publication remains blocked on verified
+    breeder-specific evidence, images, and final review.
 - **Completed (Oct 4, 2026)**: Published the local breed-comparison article from `Task12.md` as
   `/blog/french-bulldog-vs-english-bulldog`.
   - Reworked the emoji-heavy draft into a readable, responsive article while preserving its humor

@@ -164,6 +164,20 @@ export function applyPuppyFilters(puppies: PuppyWithRelations[], filter: PuppyFi
     });
 }
 
+export type PuppyBuckets = {
+  available: PuppyWithRelations[];
+  upcoming: PuppyWithRelations[];
+  past: PuppyWithRelations[]; // reserved + sold
+};
+
+export function bucketPuppiesByStatus(puppies: PuppyWithRelations[]): PuppyBuckets {
+  return {
+    available: puppies.filter((puppy) => puppy.status === 'available'),
+    upcoming: puppies.filter((puppy) => puppy.status === 'upcoming'),
+    past: puppies.filter((puppy) => puppy.status === 'reserved' || puppy.status === 'sold'),
+  };
+}
+
 export const getPuppiesWithRelations = cache(async () => {
   const [puppies, litters, parents] = await Promise.all([getPuppies(), getLitters(), getParents()]);
 
