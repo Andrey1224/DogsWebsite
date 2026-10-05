@@ -96,55 +96,61 @@ export const locations: Location[] = [
     state: 'AL',
     metaTitle: 'French & English Bulldog Puppies Near Huntsville, AL',
     metaDescription:
-      'Exotic Bulldog Legacy serves Huntsville, AL families — including tech professionals and military families — with health-tested French and English bulldog puppies. Flight nanny and pickup options available.',
-    heroTitle: 'Bulldog Puppies for Huntsville & Rocket City Families',
+      'Browse available French and English Bulldog puppies near Huntsville, AL. Review current profiles, health information, Falkville-area pickup, and approved delivery options.',
+    heroTitle: 'French & English Bulldog Puppies Near Huntsville, Alabama',
     heroText:
-      "Huntsville's tech community and military families deserve a breeder who takes health and transparency as seriously as they do. Exotic Bulldog Legacy offers rigorously health-tested French and English bulldogs with full vet records, genetic testing, and a support team that stays in touch long after your puppy comes home.",
-    driveTimeMinutes: 45,
+      'Exotic Bulldog Legacy is based near Falkville, Alabama. Driving time varies depending on your starting point and traffic — Huntsville and the Rocket City area are both within reach. Browse our current French and English Bulldog puppy profiles below, review the available health information for each one, and schedule a pickup appointment by request or ask about our approved delivery options.',
     deliveryOptions: [
       {
         type: 'Pickup by Appointment',
         description:
-          'Our kennel is under an hour from Huntsville. Schedule a visit at a time that works for your schedule — evenings and weekends available.',
+          'Our kennel is near Falkville, AL. Driving time varies depending on your starting point and traffic. Contact us to arrange an appointment before traveling to Falkville.',
       },
       {
         type: 'Flight Nanny Delivery',
         description:
-          'We deliver directly to Huntsville International Airport (HSV) via professional in-cabin flight nanny. Ideal for active-duty families with demanding schedules.',
-      },
-      {
-        type: 'Military Family Coordination',
-        description:
-          'Flexible scheduling and deposit holds for Redstone Arsenal and other military families. We understand PCS moves and deployment timelines — just ask.',
+          'A professional flight nanny can fly in-cabin with your puppy to your nearest airport — never cargo. Ground transport meet-ups are also available. Delivery fees are quoted at cost, and a signed contract is required before pickup or delivery is scheduled.',
       },
     ],
     faq: [
       {
         question: 'How far is the kennel from Huntsville?',
         answer:
-          'Our kennel is approximately 45 minutes from Huntsville. We share the full address after a deposit is placed. Most Huntsville families make a relaxed day trip of the visit.',
+          'Our kennel is near Falkville, AL. Driving time varies depending on your starting point and traffic. We share the full address after a deposit is placed. Most Huntsville families make a relaxed day trip of the visit.',
       },
       {
-        question: 'Do you accommodate military families at Redstone Arsenal?',
+        question: 'Can I arrange delivery instead of driving to Falkville?',
         answer:
-          'Yes. We offer flexible deposit holds and scheduling for active-duty and reserve military families. We understand PCS timelines and deployment schedules and are happy to work around them. Just mention your situation when you reach out.',
+          'Yes. In addition to pickup by appointment, we offer ground transport and flight nanny delivery — your puppy travels in-cabin, never in cargo. Delivery fees are quoted at cost, and a signed contract is required before pickup or delivery is scheduled.',
       },
       {
-        question: 'Can you fly a puppy to Huntsville International Airport?',
+        question: 'What is currently available for Huntsville families?',
         answer:
-          'Yes. We use professional in-cabin flight nannies who deliver your puppy directly to Huntsville International Airport (HSV). Your puppy travels in the cabin — never in cargo.',
+          'Availability changes as litters are born and reserved. Review the puppy profiles shown on this page for what is currently available, or browse the full current list on our Puppies page.',
       },
       {
-        question: 'What health testing do your bulldogs receive?',
+        question: 'What health information comes with a Huntsville puppy?',
         answer:
           'Ask us for available parent health-testing documentation. Puppies receive age-appropriate vaccinations, deworming, a full veterinary exam, and a health certificate before going home. Guarantee terms are outlined in the signed contract.',
       },
     ],
     localContext: [
       'Huntsville and Madison families usually choose pickup by appointment near Falkville or coordinate delivery when schedules make the drive difficult. Confirm the puppy’s availability and pickup window before traveling.',
-      'Military moves and work schedules can change quickly, so contact us before placing a deposit if your timing depends on a PCS date, deployment, or a specific delivery window.',
+      'Work and travel schedules can change quickly, so contact us before placing a deposit if your timing depends on a specific delivery window.',
     ],
     nearbyAreas: ['Madison', 'Decatur', 'Athens', 'Hartselle', 'Scottsboro', 'Muscle Shoals'],
+    familyNote: {
+      heading: 'Before Your Visit',
+      text: 'Take a look at what is currently available, review how we evaluate parent and puppy health tests, and reach out any time to schedule a video call, an in-person visit, or pickup near Falkville.',
+      links: [
+        { label: 'See available Bulldog puppies', href: '/puppies' },
+        {
+          label: 'Review our health-test guide',
+          href: '/blog/choose-healthy-bulldog-puppy-health-tests',
+        },
+        { label: 'Contact us to schedule', href: '/contact' },
+      ],
+    },
   },
   {
     slug: 'cullman-al',
