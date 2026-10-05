@@ -86,7 +86,14 @@ export default async function LocationPage({ params }: { params: Params }) {
           <div className="mb-2 text-xs font-bold uppercase tracking-widest text-orange-400">
             Available Now
           </div>
-          <h2 className="text-3xl font-bold">Puppies Ready for {loc.city} Families</h2>
+          <h2 className="text-3xl font-bold">
+            {loc.availableHeading ?? `Puppies Ready for ${loc.city} Families`}
+          </h2>
+          {loc.availableIntro && (
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+              {loc.availableIntro}
+            </p>
+          )}
         </div>
         {puppies.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-700 bg-[#151e32]/50 p-10 text-center text-sm text-slate-400">

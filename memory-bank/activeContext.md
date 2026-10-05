@@ -20,6 +20,67 @@
 
 ## Current Status
 
+- **`/locations/birmingham-al` SEO restructure — Batch 2B, implemented on `dev`, NOT deployed, NOT
+  indexed, NOT measured (Oct 5, 2026)**: Implemented
+  `docs/seo/tasks/birmingham-location-page-batch-2b-2026-10-05.md` (the final, owner-approved
+  brief) against the Birmingham-only scope of
+  `docs/seo/landing-page-improvement-plan-2026-10-04.md`. Did not touch Huntsville, Cullman, or
+  Decatur.
+  - **Pre-change verification**: read the existing Birmingham entry in `lib/data/locations.ts`
+    first and confirmed against code (not assumption) that the $300 deposit figure in the brief's
+    FAQ matches `DEFAULT_FIXED_DEPOSIT = 300` in `lib/payments/deposit.ts` and the `/terms` page
+    copy — no inconsistency found, so no business-fact blocker to report.
+  - **Copy changes** (`lib/data/locations.ts`, Birmingham entry only): meta description, H1
+    (`heroTitle`), hero paragraph (`heroText`), all 3 `deliveryOptions` (reordered Pickup → Ground
+    Transport → Flight Nanny, each rewritten to qualified "may be arranged"/"can be discussed"
+    language), the FAQ (rewritten from 4 to the brief's 5 items verbatim), and `familyNote`
+    (renamed "Birmingham Families" → "Before You Choose a Puppy", now links to all 5 required
+    contextual destinations: `/puppies`, `/blog/choose-healthy-bulldog-puppy-health-tests`,
+    `/reviews`, `/contact`, `/terms`). Removed the unverified "families have been trusting", the
+    broad "health-tested puppies" claim, and the unconditional "we ship nationwide" claim.
+    `metaTitle` was already correct per the brief and was left unchanged. `nearbyAreas` reordered
+    to match the brief (Hoover, Homewood, Vestavia Hills, Mountain Brook, Pelham, Trussville) —
+    same six areas as before, order only. `localContext` (the "Planning Your Birmingham Puppy
+    Pickup" block) was out of the brief's scope and left as-is.
+  - **Shared template change** (`app/(site)/(chrome)/locations/[slug]/page.tsx`): added two
+    **optional** `Location` fields, `availableHeading`/`availableIntro`
+    (`lib/data/locations.ts`), so Birmingham can show the brief's required "Available Bulldog
+    Puppies for Birmingham Families" heading + supporting copy without changing the other three
+    cities, which fall back to the prior generic `Puppies Ready for {city} Families` heading with
+    no intro paragraph (verified via the added "does not change Huntsville, Cullman, or Decatur
+    location data" test). The live-data puppy query (`getFilteredPuppies({ status: 'available' })`
+    via the shared `PuppyCard`) and the honest `/contact` empty state were already shared/correct
+    and were not modified.
+  - **Tests** (`app/(site)/(chrome)/locations/[slug]/page.test.tsx`): updated the two pre-existing
+    Birmingham-specific assertions that hard-coded the old FAQ/family-note copy, and added a new
+    "Birmingham location page (Batch 2B)" describe block (11 tests) covering: single H1 with the
+    exact required text; title/description/self-canonical/no-noindex; Birmingham/Falkville/all 6
+    nearby areas visible; the old "trusting"/"ship nationwide" claims absent; no unconditional
+    nationwide or direct-to-BHM delivery promise; the new available-puppies heading/intro; the
+    a mocked available puppy (Nippet, the unit test's fixture, not a production assertion) →
+    its `/puppies/{slug}` card link; the `/contact` empty-state path; all 5 contextual links
+    (anchor text now says "puppy-family reviews", not "verified puppy-family reviews" — a public
+    review's status doesn't prove a verified purchase); visible FAQ text matching the `FAQPage`
+    JSON-LD byte-for-byte (asserted against the actual `locations.ts` data, not a hard-coded
+    copy); and that Huntsville/Cullman/Decatur `heroTitle`/FAQ counts are unchanged. Full suite:
+    844 passed / 12 skipped (up from 826/12 in the Batch 1 entry below), including 37/37 in the
+    location page test file alone. ESLint zero-warnings and `tsc --noEmit` clean. Separately,
+    manual visual QA against the dev server (not the unit test) confirmed the real production
+    puppy (Nippet) renders and links correctly on `/locations/birmingham-al` at desktop
+    (1440×900) and mobile (390×844).
+  - Open flags for the user: no genuine Birmingham testimonial exists yet (brief explicitly
+    forbids inventing one) — the family-note block links out to `/reviews` instead; the `/contact`
+    non-opt-in form question from P12 is unrelated and untouched.
+  - **Status: user review complete, ready to commit.** Not pushed, not merged, not deployed.
+    Visual QA (desktop/mobile), `npm run build`, `npm run check:links`, and the relevant
+    Playwright smoke tests (`smoke.spec.ts`, `contact-links.spec.ts`) are already done — see
+    above. Next: commit (including the new
+    `docs/seo/tasks/birmingham-location-page-batch-2b-2026-10-05.md` brief file, or the
+    `docs/seo/README.md` link to it breaks), push to `dev`, and open a PR to `main`. Production
+    verification and the Search Console Live Test/Request Indexing step wait for the combined
+    SEO release deployment, per the brief's measurement procedure — do not resubmit indexing
+    requests once submitted.
+
 - **`/puppies` SEO restructure — Batch 1, implemented, deployed to production, and verified
   (Oct 4–5, 2026)**: Implemented the `/puppies` listing-page changes from the "Page plan:
   /puppies" section of `docs/seo/landing-page-improvement-plan-2026-10-04.md` on `dev`, then

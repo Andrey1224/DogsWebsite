@@ -17,6 +17,10 @@ in one place. It prevents old research or campaign notes from being mistaken for
 4. [Latest GSC report — September 19, 2026](../../SEO-GSC-report-2026-09-19.md) — the latest
    saved full search-performance and technical-health snapshot; the October 4 landing-page plan
    includes a newer targeted three-month page/query baseline.
+5. [Birmingham location page — Batch 2B implementation brief](tasks/birmingham-location-page-batch-2b-2026-10-05.md)
+   — SEO copy, query targets, internal links, tests, and documentation requirements for
+   `/locations/birmingham-al`, implemented on `dev` (not yet deployed), plus the pre-change
+   Search Console baseline.
 
 When these documents disagree with older research, use the current SEO plan and latest dated GSC
 report.
