@@ -5,6 +5,7 @@ import { PuppyGallery } from './puppy-gallery';
 // Mock dependencies
 vi.mock('@/lib/utils/images', () => ({
   resolveLocalImage: (url: string) => url,
+  isRemoteImage: (url: string) => url.startsWith('http://') || url.startsWith('https://'),
 }));
 
 vi.mock('./puppy-detail/share-button', () => ({

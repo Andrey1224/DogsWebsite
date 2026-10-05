@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 
-import { resolveLocalImage } from '@/lib/utils/images';
+import { isRemoteImage, resolveLocalImage } from '@/lib/utils/images';
 import { ShareButton } from './puppy-detail/share-button';
 import type { PuppyStatus } from '@/lib/supabase/types';
 
@@ -38,6 +38,7 @@ export function PuppyGallery({ photos, videos = [], name, status, shareUrl }: Pu
           sizes="(max-width: 768px) 100vw, 50vw"
           priority={activeIndex === 0}
           loading={activeIndex === 0 ? 'eager' : 'lazy'}
+          unoptimized={isRemoteImage(media[activeIndex])}
         />
 
         {/* Status Badge Overlay (Top Left) */}
@@ -87,6 +88,7 @@ export function PuppyGallery({ photos, videos = [], name, status, shareUrl }: Pu
                 className="object-cover"
                 sizes="96px"
                 loading="lazy"
+                unoptimized={isRemoteImage(url)}
               />
             </button>
           ))}
