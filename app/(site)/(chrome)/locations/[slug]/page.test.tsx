@@ -1,8 +1,55 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnchorHTMLAttributes } from 'react';
 
 import LocationPage, { generateMetadata, generateStaticParams } from './page';
+import type { PuppyWithRelations } from '@/lib/supabase/types';
+
+const basePuppy: Omit<PuppyWithRelations, 'parents' | 'litter'> = {
+  id: 'puppy-1',
+  litter_id: null,
+  name: 'Nippet',
+  slug: 'nippet',
+  breed: 'french_bulldog',
+  sex: 'female',
+  color: 'Fawn',
+  birth_date: '2026-01-01',
+  price_usd: 3500,
+  status: 'available',
+  weight_oz: 28,
+  description: 'A lovely puppy',
+  photo_urls: ['/test-image.jpg'],
+  video_urls: null,
+  paypal_enabled: true,
+  stripe_payment_link: null,
+  is_archived: false,
+  sold_at: null,
+  created_at: '2026-01-01',
+  updated_at: '2026-01-01',
+  sire_id: null,
+  dam_id: null,
+  sire_name: null,
+  dam_name: null,
+  sire_photo_urls: null,
+  dam_photo_urls: null,
+  sire_color_notes: null,
+  sire_health_notes: null,
+  sire_temperament_notes: null,
+  sire_weight_notes: null,
+  dam_color_notes: null,
+  dam_health_notes: null,
+  dam_temperament_notes: null,
+  dam_weight_notes: null,
+};
+
+function mockPuppy(overrides: Partial<PuppyWithRelations>): PuppyWithRelations {
+  return {
+    ...basePuppy,
+    parents: null,
+    litter: null,
+    ...overrides,
+  };
+}
 
 vi.mock('next/link', () => ({
   __esModule: true,
@@ -161,5 +208,148 @@ describe('Location Page', () => {
 
     expect(metadata.title).toBe(title);
     expect(new URL(String(metadata.alternates?.canonical)).pathname).toBe(`/locations/${slug}`);
+  });
+});
+
+describe('Huntsville location page (Batch 2A)', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+  });
+
+  it('uses the expected title, meta description, self-canonical, and indexable robots', async () => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+
+    expect(metadata.title).toBe('French & English Bulldog Puppies Near Huntsville, AL');
+    expect(metadata.description).toBe(
+      'Browse available French and English Bulldog puppies near Huntsville, AL. Review current profiles, health information, Falkville-area pickup, and approved delivery options.',
+    );
+    expect(new URL(String(metadata.alternates?.canonical)).pathname).toBe(
+      '/locations/huntsville-al',
+    );
+    expect(metadata.robots).toBeUndefined();
+  });
+
+  it('renders exactly one H1 with the Huntsville, Alabama heading', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    render(component);
+
+    const headings = screen.getAllByRole('heading', { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent(
+      'French & English Bulldog Puppies Near Huntsville, Alabama',
+    );
+  });
+
+  it('renders Huntsville-specific Falkville/pickup copy without the removed claims', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    const { container } = render(component);
+
+    expect(container).toHaveTextContent(/Falkville, Alabama/i);
+    expect(container).toHaveTextContent(/Rocket City/i);
+
+    // Removed/unverified claims must not appear.
+    expect(container).not.toHaveTextContent(/trust/i);
+    expect(container).not.toHaveTextContent(/Redstone Arsenal/i);
+    expect(container).not.toHaveTextContent(/military/i);
+    expect(container).not.toHaveTextContent(/active-duty/i);
+  });
+
+  it('shows only the real available puppy (Nippet) and links its card to /puppies/nippet', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([
+      mockPuppy({ id: 'nippet-1', name: 'Nippet', slug: 'nippet', status: 'available' }),
+    ]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    render(component);
+
+    expect(getFilteredPuppies).toHaveBeenCalledWith({ status: 'available' });
+    expect(screen.getByText('Nippet')).toBeInTheDocument();
+    const cardLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href')?.includes('/puppies/nippet'));
+    expect(cardLinks.length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText(/We do not have puppies available for Huntsville families/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it('requests available puppies only for the Huntsville block', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    // Filtering by status happens in the query layer (getFilteredPuppies); this asserts
+    // the page requests only available puppies and doesn't re-filter or widen the query.
+    vi.mocked(getFilteredPuppies).mockResolvedValue([
+      mockPuppy({ id: 'nippet-1', name: 'Nippet', slug: 'nippet', status: 'available' }),
+    ]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    render(component);
+
+    expect(getFilteredPuppies).toHaveBeenCalledWith({ status: 'available' });
+  });
+
+  it('shows an honest /contact fallback CTA when no puppies are available', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    render(component);
+
+    expect(
+      screen.getByText(/We do not have puppies available for Huntsville families/i),
+    ).toBeInTheDocument();
+    const contactLinks = screen
+      .getAllByRole('link', { name: /contact us/i })
+      .filter((link) => link.getAttribute('href') === '/contact');
+    expect(contactLinks.length).toBeGreaterThan(0);
+  });
+
+  it('includes the required contextual links to /puppies, the health-test guide, and /contact', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    render(component);
+
+    const puppiesLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/puppies');
+    expect(puppiesLinks.length).toBeGreaterThan(0);
+
+    const healthGuideLink = screen.getByRole('link', { name: /review our health-test guide/i });
+    expect(healthGuideLink).toHaveAttribute(
+      'href',
+      '/blog/choose-healthy-bulldog-puppy-health-tests',
+    );
+
+    const contactLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/contact');
+    expect(contactLinks.length).toBeGreaterThan(0);
+  });
+
+  it('renders valid FAQPage and Breadcrumb structured data', async () => {
+    const { getFilteredPuppies } = await import('@/lib/supabase/queries');
+    vi.mocked(getFilteredPuppies).mockResolvedValue([]);
+
+    const component = await LocationPage({ params: Promise.resolve({ slug: 'huntsville-al' }) });
+    const { container } = render(component);
+
+    const faqSchema = document.querySelector('#location-faq-huntsville-al');
+    const faqData = JSON.parse(faqSchema?.textContent ?? '{}');
+    expect(faqData['@type']).toBe('FAQPage');
+    expect(faqData.mainEntity.length).toBeGreaterThan(0);
+
+    const breadcrumbNav = within(container).getByRole('navigation', { name: /breadcrumb/i });
+    const breadcrumbSchema = breadcrumbNav.querySelector('script[type="application/ld+json"]');
+    const breadcrumbData = JSON.parse(breadcrumbSchema?.textContent ?? '{}');
+    expect(breadcrumbData['@type']).toBe('BreadcrumbList');
+    expect(breadcrumbData.itemListElement.at(-1).item.name).toBe('Huntsville, AL');
   });
 });

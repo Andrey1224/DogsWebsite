@@ -20,11 +20,18 @@
 
 ## Current Status
 
-- **`/puppies` SEO restructure — Batch 1, implemented and hardened, NOT deployed, NOT measured
+- **`/puppies` SEO restructure — Batch 1, implemented, deployed to production, and verified
   (Oct 4–5, 2026)**: Implemented the `/puppies` listing-page changes from the "Page plan:
-  /puppies" section of `docs/seo/landing-page-improvement-plan-2026-10-04.md` on `dev`.
-  Code-complete only — not merged to `main`, not deployed to production, no Google Search Console
-  changes.
+  /puppies" section of `docs/seo/landing-page-improvement-plan-2026-10-04.md` on `dev`, then
+  deployed to production on **October 4, 2026**.
+  - **Production verification (Oct 4, 2026)**: the live page shows the new availability-first
+    structure with Nippet correctly rendered as the current available puppy. Canonical, title,
+    meta description, H1, and HTTPS were all confirmed correct on production; Breadcrumbs
+    structured data validates. Sitemap status is `Success` and includes both `/puppies` and
+    `/puppies/nippet`. `/puppies` is indexed in Google; its URL Inspection Live Test passed.
+    Request Indexing for the updated `/puppies` was submitted **once**, on October 4, 2026 — do
+    not resubmit. `/puppies/nippet` is already indexed, last crawled October 4, 2026 at 8:28 PM.
+    Do not resubmit the sitemap or request indexing again for this batch.
   - **Current DB state**: 1 available puppy (Nippet), 0 upcoming, 14 past (reserved/sold).
   - **Final page order**: compact hero → filters → puppy inventory (Available Now → Upcoming
     Litters → Past Puppies, whichever buckets are non-empty) → "How the Process Works" (4
@@ -56,9 +63,9 @@
     (`smoke.spec.ts`/`contact-links.spec.ts`/`admin.spec.ts`) all passing, `git diff --check`
     clean. Desktop (1440×900) and mobile (390×844) Playwright screenshots confirm the order and
     that the fixed contact bar doesn't obscure puppy cards/CTAs at rest.
-  - Next steps: commit, then user review before pushing to `dev`, opening a PR to `main`,
-    deploying, and comparing Search Console data after ~28 days per the SEO plan's measurement
-    procedure.
+  - Next steps: compare Search Console data after ~28 full days post-deployment/recrawl per the
+    SEO plan's measurement procedure. No further sitemap submissions or indexing requests needed
+    for this batch.
 
 - **Admin E2E mutation-safety fix (Oct 5, 2026)**: `tests/e2e/admin.spec.ts`'s
   `'admin can change puppy status and it reflects on public site'` test previously picked "the

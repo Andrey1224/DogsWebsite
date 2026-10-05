@@ -97,11 +97,16 @@ See [Google's people-first content guidance](https://developers.google.com/searc
 
 ## Page plan: `/puppies`
 
-> **Status (Oct 4, 2026): Batch 1 implemented on `dev`, code-complete.** Not merged to `main`, not
-> deployed, not measured in Search Console. See the "`/puppies` SEO restructure — Batch 1" entry in
-> `memory-bank/activeContext.md` for the full implementation summary, verification results, and
-> open flags (Product schema scope, pickup/delivery copy inconsistency, current zero-available/
-> zero-upcoming dev data state).
+> **Status (Oct 4, 2026): Batch 1 deployed to production and verified.** The restructured
+> `/puppies` page (availability-first hierarchy, Nippet as the current available puppy, process
+> block, FAQs, contextual links) is live on `exoticbulldoglegacy.com`. Production canonical, title,
+> H1, meta description, and HTTPS were all confirmed correct; Breadcrumbs structured data is valid.
+> The sitemap is `Success` and includes both `/puppies` and `/puppies/nippet`; `/puppies` is
+> indexed in Google, its URL Inspection Live Test passed, and Request Indexing was submitted once
+> on October 4, 2026. `/puppies/nippet` is already indexed (last crawl October 4, 2026, 8:28 PM).
+> Do not resubmit the sitemap or request indexing again for this batch — only re-request if the
+> page's content materially changes. See the "`/puppies` SEO restructure — Batch 1" entry in
+> `memory-bank/activeContext.md` for the full implementation summary and verification results.
 
 ### Evidence
 
