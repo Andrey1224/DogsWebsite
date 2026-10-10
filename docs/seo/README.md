@@ -19,8 +19,8 @@ in one place. It prevents old research or campaign notes from being mistaken for
    includes a newer targeted three-month page/query baseline.
 5. [Birmingham location page — Batch 2B implementation brief](tasks/birmingham-location-page-batch-2b-2026-10-05.md)
    — SEO copy, query targets, internal links, tests, and documentation requirements for
-   `/locations/birmingham-al`, implemented on `dev` (not yet deployed), plus the pre-change
-   Search Console baseline.
+   `/locations/birmingham-al`, deployed and production-verified October 5, 2026, plus the
+   pre-change Search Console baseline and post-deployment measurement dates.
 
 When these documents disagree with older research, use the current SEO plan and latest dated GSC
 report.

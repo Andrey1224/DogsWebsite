@@ -257,7 +257,8 @@ improves, or the page average moves from about 11 toward the first page without 
 
 ## Page plan: Birmingham
 
-> **Status (Oct 5, 2026): Batch 2B implemented on `dev`, not deployed, not indexed, not measured.**
+> **Status (Oct 5, 2026): Batch 2B deployed to production, verified, and submitted for recrawl;
+> post-change measurement pending.**
 > Implemented per `docs/seo/tasks/birmingham-location-page-batch-2b-2026-10-05.md` (the final,
 > owner-approved brief — its copy, FAQ, and internal links supersede the draft suggestions below).
 > Replaced the unverified "families have been trusting" and "we ship nationwide" claims and the
@@ -270,7 +271,13 @@ improves, or the page average moves from about 11 toward the first page without 
 > to the prior generic copy for Huntsville/Cullman/Decatur, which were not changed). The $300
 > deposit figure was checked against `lib/payments/deposit.ts` (`DEFAULT_FIXED_DEPOSIT = 300`) and
 > `/terms` and is consistent. See the "Birmingham Batch 2B" entry in `memory-bank/activeContext.md`
-> for the full implementation summary, changed files, and test results.
+> for the full implementation summary, changed files, and test results. Implementation commit
+> `2c19cb3` was merged through PR `#26` as merge commit `75014e1`. Production validation passed:
+> HTTP 200, expected title/meta/H1/self-canonical/indexability, Nippet, internal links, five visible
+> FAQs, matching `FAQPage` JSON-LD, and Breadcrumbs were confirmed. Search Console Live Test passed
+> October 5 at 12:51 PM Central Time and Request Indexing was accepted once. Do not resubmit. Use
+> October 6–November 2 as the first 28-complete-day measurement window and review it on or after
+> November 3, 2026.
 
 ### Evidence
 
@@ -543,9 +550,13 @@ The code agent must not guess or copy competitor claims. Confirm the following w
 
 ### Batch 2 — Location pages
 
-- Huntsville: controlled H1/opening/meta test; preserve URL and title initially.
-- Birmingham: rewrite hero and strengthen verified local pickup context.
-- Cullman: strengthen internal prominence and add real local proof when available.
+- Huntsville: controlled H1/opening/meta test; implemented and deployed October 5, 2026.
+- Birmingham: rewritten hero and strengthened local pickup context; deployed and submitted for
+  recrawl October 5, 2026.
+- **Next implementation step — Batch 2C, Cullman:** strengthen internal prominence from the
+  homepage, `/puppies`, `/locations`, and About; preserve the existing URL/title/H1 during the
+  first test; add genuine local proof only when available. Prepare a separate evidence-based brief
+  before changing code.
 - Decatur: internal-link support only unless more data arrives.
 
 ### Batch 3 — Nutrition trust and intent
