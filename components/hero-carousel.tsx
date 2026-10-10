@@ -89,8 +89,8 @@ export function HeroCarousel() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/80 via-transparent to-transparent z-20 pointer-events-none" />
       </div>
 
-      {/* Vet-checked Badge: anchored to the right edge, outside the photo itself */}
-      <div className="absolute top-1/2 -right-4 sm:-right-6 lg:-right-8 -translate-y-1/2 flex max-w-[11rem] sm:max-w-xs items-center gap-3 sm:gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-3 sm:p-4 backdrop-blur-md z-30 shadow-xl shadow-black/30">
+      {/* Vet-checked Badge: sits below the card, fully off the photo itself */}
+      <div className="absolute top-full right-4 mt-4 flex max-w-[11rem] sm:max-w-xs items-center gap-3 sm:gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-3 sm:p-4 backdrop-blur-md z-30 shadow-xl shadow-black/30">
         <div className="rounded-full bg-green-500/20 p-2 shrink-0">
           <ShieldCheck className="text-green-400" size={24} aria-hidden="true" />
         </div>
