@@ -52,7 +52,7 @@ export function HeroCarousel() {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-orange-900/20 transition-transform duration-700 hover:rotate-0 rotate-2">
+    <div className="relative rounded-[3rem] border border-slate-700/50 shadow-2xl shadow-orange-900/20 transition-transform duration-700 hover:rotate-0 rotate-2">
       <div
         className="relative h-[500px] w-full overflow-hidden rounded-[3rem]"
         suppressHydrationWarning
@@ -84,14 +84,14 @@ export function HeroCarousel() {
             />
           );
         })}
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/80 via-transparent to-transparent z-20 pointer-events-none" />
       </div>
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/80 via-transparent to-transparent z-20 pointer-events-none" />
-
-      {/* Vet-checked Badge */}
-      <div className="absolute top-8 right-8 flex max-w-xs items-center gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-4 backdrop-blur-md z-30">
-        <div className="rounded-full bg-green-500/20 p-2">
+      {/* Vet-checked Badge: anchored to the right edge, outside the photo itself */}
+      <div className="absolute top-1/2 -right-4 sm:-right-6 lg:-right-8 -translate-y-1/2 flex max-w-[11rem] sm:max-w-xs items-center gap-3 sm:gap-4 rounded-2xl border border-slate-600/50 bg-[#1E293B]/90 p-3 sm:p-4 backdrop-blur-md z-30 shadow-xl shadow-black/30">
+        <div className="rounded-full bg-green-500/20 p-2 shrink-0">
           <ShieldCheck className="text-green-400" size={24} aria-hidden="true" />
         </div>
         <div>
