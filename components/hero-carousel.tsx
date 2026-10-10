@@ -9,24 +9,32 @@ const HERO_BLUR_DATA_URL =
 
 const carouselImages = [
   {
-    src: '/images/home/hero/puppy-play.webp',
-    alt: 'Playful Bulldog Puppy',
+    src: '/images/home/hero/litter-grass-trio.webp',
+    alt: 'Three bulldog puppies snuggled together outdoors',
   },
   {
-    src: '/images/home/hero/dog-running.webp',
-    alt: 'French Bulldog Running',
+    src: '/images/home/hero/car-ride-quartet.webp',
+    alt: 'Four French bulldog puppies riding together',
   },
   {
-    src: '/images/home/hero/dusya.webp',
-    alt: 'French Bulldog with Toy',
+    src: '/images/home/hero/lap-cuddle-duo.webp',
+    alt: 'Bulldog puppies being held and cuddled',
   },
   {
-    src: '/images/home/hero/puppy-eating.webp',
-    alt: 'Bulldog Puppy Feeding Time',
+    src: '/images/home/hero/play-session-trio.webp',
+    alt: 'Bulldog puppies playing together outdoors',
   },
   {
-    src: '/images/home/hero/puppy-hiding.webp',
-    alt: 'Adorable Bulldog Puppy',
+    src: '/images/home/hero/blanket-nose-boop.webp',
+    alt: 'Two bulldog puppies nose to nose on a blanket',
+  },
+  {
+    src: '/images/home/hero/patio-pillow-duo.webp',
+    alt: 'Two bulldog puppies resting on a patio pillow',
+  },
+  {
+    src: '/images/home/hero/couch-kisses-duo.webp',
+    alt: 'Two bulldog puppies playing on a couch',
   },
 ];
 

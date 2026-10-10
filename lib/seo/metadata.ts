@@ -42,7 +42,7 @@ export type SeoOptions = {
 const SITE_NAME = 'Exotic Bulldog Legacy';
 const DEFAULT_DESCRIPTION =
   'Health-first French & English bulldog breeding in Alabama with transparent pedigrees, concierge ownership support, and secure deposit flows.';
-const DEFAULT_IMAGE = '/images/home/hero/puppy-play.webp';
+const DEFAULT_IMAGE = '/images/home/hero/litter-grass-trio.webp';
 
 function resolveImage(image?: ImageInput) {
   if (!image) {

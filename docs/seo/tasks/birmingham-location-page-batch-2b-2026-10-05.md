@@ -3,7 +3,7 @@
 **Site:** Exotic Bulldog Legacy  
 **Target URL:** `https://exoticbulldoglegacy.com/locations/birmingham-al`  
 **Prepared:** October 5, 2026  
-**Status:** Implemented on `dev`; not committed, pushed, merged, deployed, indexed, or measured  
+**Status:** Deployed and production-verified on October 5, 2026; awaiting post-change measurement
 **Scope:** Birmingham page only. Do not change Huntsville, Cullman, or Decatur in this batch.
 
 ## Objective
@@ -29,6 +29,32 @@ Evidence window: July 3–October 2, 2026.
 | `french bulldogs for sale birmingham al` | approximately position 33 |
 
 Record the deployment and recrawl dates before starting the post-change measurement window.
+
+## Production and Search Console record
+
+- Implementation commit: `2c19cb3`
+- PR: `#26` (`dev` → `main`)
+- Merge commit: `75014e1`
+- Production deployment and verification: October 5, 2026
+- Production result: PASS — HTTP 200; expected title, meta description, H1, self-canonical,
+  indexable robots state, current Nippet card, contextual links, five visible FAQs, matching
+  `FAQPage` JSON-LD, and valid Breadcrumbs were confirmed.
+- Sitemap: the live `sitemap.xml` is reachable and contains
+  `/locations/birmingham-al`.
+- Existing Google index status: URL is on Google; the index view still reflected the previous
+  crawl from August 5, 2026 at the time of verification.
+- Search Console Live Test: PASS on October 5, 2026 at 12:51 PM Central Time; URL available to
+  Google, page can be indexed, and one valid Breadcrumbs item detected.
+- Request Indexing: submitted once and accepted on October 5, 2026. Do not resubmit for this
+  release.
+- Search Console displayed a temporary sitemap-processing message in the historical URL-inspection
+  details. The live sitemap itself remained available and contained the URL, so this was not a
+  deployment blocker.
+
+Measurement should use the next 28 complete days after deployment (October 6–November 2, 2026).
+Review the first complete comparison on or after November 3, 2026. Do not change Birmingham again
+during that window unless a material technical, legal, inventory, or business-information error is
+found.
 
 ## Target search intent
 

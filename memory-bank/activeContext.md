@@ -20,8 +20,8 @@
 
 ## Current Status
 
-- **`/locations/birmingham-al` SEO restructure — Batch 2B, implemented on `dev`, NOT deployed, NOT
-  indexed, NOT measured (Oct 5, 2026)**: Implemented
+- **`/locations/birmingham-al` SEO restructure — Batch 2B, deployed, production-verified, and
+  submitted for recrawl; NOT yet measured (Oct 5, 2026)**: Implemented
   `docs/seo/tasks/birmingham-location-page-batch-2b-2026-10-05.md` (the final, owner-approved
   brief) against the Birmingham-only scope of
   `docs/seo/landing-page-improvement-plan-2026-10-04.md`. Did not touch Huntsville, Cullman, or
@@ -71,15 +71,27 @@
   - Open flags for the user: no genuine Birmingham testimonial exists yet (brief explicitly
     forbids inventing one) — the family-note block links out to `/reviews` instead; the `/contact`
     non-opt-in form question from P12 is unrelated and untouched.
-  - **Status: user review complete, ready to commit.** Not pushed, not merged, not deployed.
-    Visual QA (desktop/mobile), `npm run build`, `npm run check:links`, and the relevant
-    Playwright smoke tests (`smoke.spec.ts`, `contact-links.spec.ts`) are already done — see
-    above. Next: commit (including the new
-    `docs/seo/tasks/birmingham-location-page-batch-2b-2026-10-05.md` brief file, or the
-    `docs/seo/README.md` link to it breaks), push to `dev`, and open a PR to `main`. Production
-    verification and the Search Console Live Test/Request Indexing step wait for the combined
-    SEO release deployment, per the brief's measurement procedure — do not resubmit indexing
-    requests once submitted.
+  - **Release and production verification**: implementation commit `2c19cb3` was merged from
+    `dev` to `main` in PR `#26` as merge commit `75014e1` and deployed to Vercel production on
+    October 5, 2026. Production validation passed: HTTP 200; expected title, meta description, H1,
+    self-canonical and indexable robots state; current Nippet card; all contextual links; five
+    visible FAQs matching the `FAQPage` JSON-LD; and valid Breadcrumbs. The live sitemap is
+    reachable and contains `/locations/birmingham-al`.
+  - **Search Console verification**: the URL was already on Google, but the index view still
+    reflected its August 5, 2026 crawl. Live Test passed October 5, 2026 at 12:51 PM Central Time:
+    URL available to Google, page can be indexed, and one valid Breadcrumbs item detected. Request
+    Indexing was submitted once and accepted. Do not resubmit for this release. Search Console
+    displayed a temporary sitemap-processing message in the historical inspection details; the
+    live sitemap itself remained healthy and included the URL.
+  - **Measurement**: preserve the pre-change baseline (`1` click, `214` impressions, `0.47%` CTR,
+    average position `22.5`; `french bulldogs for sale birmingham al` approximately position 33).
+    Use October 6–November 2, 2026 as the first 28-complete-day post-deployment window and review
+    it on or after November 3. Do not change Birmingham during that window unless a material
+    technical, legal, inventory, or business-information error is found.
+  - **Next SEO implementation step**: prepare the evidence-based Batch 2C brief for Cullman. Focus
+    on internal prominence from the homepage, `/puppies`, `/locations`, and About; preserve the
+    current Cullman URL/title/H1 for the first test; add genuine local proof only when it becomes
+    available. No Batch 2C implementation has started.
 
 - **`/puppies` SEO restructure — Batch 1, implemented, deployed to production, and verified
   (Oct 4–5, 2026)**: Implemented the `/puppies` listing-page changes from the "Page plan:
