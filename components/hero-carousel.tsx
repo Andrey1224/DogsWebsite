@@ -60,6 +60,13 @@ export function HeroCarousel() {
         {carouselImages.map((image, index) => {
           const isLCP = index === 0;
           const isActive = mounted && currentIndex === index;
+          const nextIndex = (currentIndex + 1) % carouselImages.length;
+          // Only mount the slide that's showing, the one about to show next
+          // (so it's preloaded before the crossfade), and index 0 (needed
+          // for SSR/pre-hydration). Keeps simultaneous image requests low
+          // instead of fetching all slides on every page load.
+          const shouldMount = index === 0 || index === currentIndex || index === nextIndex;
+          if (!shouldMount) return null;
 
           return (
             <Image

@@ -75,6 +75,13 @@ const nextConfig: NextConfig = {
         source: '/studio(.*)',
         headers: securityHeaders.filter((h) => h.key !== 'X-Frame-Options'),
       },
+      {
+        // Static images in /public/images are build-time assets; cache them for a
+        // year so both the raw file and /_next/image variants stop re-validating
+        // on every request (was max-age=0, burning the Image Optimization quota)
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
     ];
   },
 };
