@@ -44,22 +44,31 @@ export function AboutBreedCarousel({ images, breedName }: AboutBreedCarouselProp
         className="relative aspect-square w-full overflow-hidden rounded-[3rem]"
         suppressHydrationWarning
       >
-        {images.map((image, index) => (
-          <Image
-            key={image.src}
-            src={image.src}
-            alt={image.alt}
-            fill
-            priority={index === 0}
-            placeholder={index === 0 ? 'blur' : undefined}
-            blurDataURL={index === 0 ? BREED_BLUR_DATA_URL : undefined}
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            suppressHydrationWarning
-            className={`object-cover absolute inset-0 transition-opacity duration-1500 ease-in-out ${
-              mounted && currentIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
-          />
-        ))}
+        {images.map((image, index) => {
+          const nextIndex = (currentIndex + 1) % images.length;
+          // Only mount the active slide, the next one (preloaded before the
+          // crossfade), and index 0 (needed for SSR/pre-hydration) — avoids
+          // fetching every slide on every page load.
+          const shouldMount = index === 0 || index === currentIndex || index === nextIndex;
+          if (!shouldMount) return null;
+
+          return (
+            <Image
+              key={image.src}
+              src={image.src}
+              alt={image.alt}
+              fill
+              priority={index === 0}
+              placeholder={index === 0 ? 'blur' : undefined}
+              blurDataURL={index === 0 ? BREED_BLUR_DATA_URL : undefined}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              suppressHydrationWarning
+              className={`object-cover absolute inset-0 transition-opacity duration-1500 ease-in-out ${
+                mounted && currentIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
+            />
+          );
+        })}
       </div>
 
       {/* Gradient overlay */}
